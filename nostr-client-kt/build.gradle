@@ -1,0 +1,24 @@
+plugins {
+    id 'com.android.library'
+    id 'kotlin-android'
+    id 'org.jetbrains.kotlin.android'
+}
+
+android {
+    compileSdk 33
+}
+
+dependencies {
+    // Kotlin
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:${kotlin_version}"
+    implementation 'androidx.core:core-ktx:1.9.0'
+
+    // JSON
+    implementation("com.google.code.gson:gson:2.10")
+
+    // HTTP client
+    implementation("com.squareup.okhttp3:okhttp:4.10.0")
+
+    // secp256k1
+    implementation("fr.acinq.secp256k1:secp256k1-kmp-jni-android:0.7.0")
+}
