@@ -7,20 +7,27 @@ plugins {
 android {
     compileSdk 33
     namespace 'com.dluvian.nostrclientkt'
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+    kotlinOptions {
+        jvmTarget = '17'
+    }
 }
 
 // TODO: delete this module and use cashapp/nostrino
 dependencies {
     // Kotlin
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:${kotlin_version}"
-    implementation 'androidx.core:core-ktx:1.9.0'
+    implementation 'androidx.core:core-ktx:1.10.1'
 
     // JSON
-    implementation("com.google.code.gson:gson:2.10")
+    implementation('com.google.code.gson:gson:2.10.1')
 
     // HTTP client
-    implementation("com.squareup.okhttp3:okhttp:4.10.0")
+    implementation('com.squareup.okhttp3:okhttp:5.0.0-alpha.11')
 
     // secp256k1
-    implementation("fr.acinq.secp256k1:secp256k1-kmp-jni-android:0.7.0")
+    implementation('fr.acinq.secp256k1:secp256k1-kmp-jni-android:0.10.0')
 }
