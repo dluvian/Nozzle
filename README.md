@@ -13,7 +13,7 @@ file or clone this repository and build it yourself.
 
 ## Screenshots
 
-<p float="left">
+<p>
 <img src="screenshots/feed.png" width="24%" height="24%" />
 <img src="screenshots/friend_profile.png" width="24%" height="24%" />
 <img src="screenshots/feed_dark.png" width="24%" height="24%" />
@@ -38,17 +38,6 @@ file or clone this repository and build it yourself.
 - [ ] Profile lists (likes, reposts, following, followers)
 - [ ] Lightning tip button, invoice widget, zaps
 - [ ] Multiple accounts
-
-## Implemented [NIPs](https://github.com/nostr-protocol/nips)
-
-- [NIP-01](https://github.com/nostr-protocol/nips/blob/master/01.md)
-- [NIP-02](https://github.com/nostr-protocol/nips/blob/master/02.md)
-- [NIP-10](https://github.com/nostr-protocol/nips/blob/master/10.md)
-- [NIP-15](https://github.com/nostr-protocol/nips/blob/master/15.md)
-- [NIP-19](https://github.com/nostr-protocol/nips/blob/master/19.md) (Partially)
-- [NIP-21](https://github.com/nostr-protocol/nips/blob/master/21.md) (Partially)
-- [NIP-25](https://github.com/nostr-protocol/nips/blob/master/25.md)
-- [NIP-65](https://github.com/nostr-protocol/nips/blob/master/65.md) (Partially)
 
 ## Contributing
 
