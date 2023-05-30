@@ -5,14 +5,15 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
-import com.google.accompanist.swiperefresh.SwipeRefresh
-import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
 import com.dluvian.nozzle.model.PostIds
 import com.dluvian.nozzle.model.PostWithMeta
+import com.dluvian.nozzle.ui.components.PullRefreshBox
 
+@OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun PostCardList(
     posts: List<PostWithMeta>,
@@ -24,16 +25,13 @@ fun PostCardList(
     onLoadMore: () -> Unit,
     onNavigateToThread: (PostIds) -> Unit,
     onNavigateToReply: () -> Unit,
-    modifier: Modifier = Modifier,
     lazyListState: LazyListState = rememberLazyListState(),
     onOpenProfile: ((String) -> Unit)? = null,
 ) {
-    SwipeRefresh(
-        modifier = modifier,
-        state = rememberSwipeRefreshState(isRefreshing),
-        onRefresh = onRefresh,
-    ) {
-        LazyColumn(modifier = Modifier.fillMaxSize(), state = lazyListState) {
+    PullRefreshBox(isRefreshing = isRefreshing, onRefresh = onRefresh) {
+        LazyColumn(
+            modifier = Modifier.fillMaxSize(), state = lazyListState
+        ) {
             itemsIndexed(posts) { index, post ->
                 PostCard(
                     post = post,

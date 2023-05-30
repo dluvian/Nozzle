@@ -10,17 +10,17 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.Divider
+import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
-import com.google.accompanist.swiperefresh.SwipeRefresh
-import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
 import com.dluvian.nozzle.R
 import com.dluvian.nozzle.model.PostIds
 import com.dluvian.nozzle.model.PostThread
 import com.dluvian.nozzle.model.PostWithMeta
 import com.dluvian.nozzle.model.ThreadPosition
+import com.dluvian.nozzle.ui.components.PullRefreshBox
 import com.dluvian.nozzle.ui.components.ReturnableTopBar
 import com.dluvian.nozzle.ui.components.postCard.PostCard
 import com.dluvian.nozzle.ui.components.postCard.PostNotFound
@@ -59,6 +59,7 @@ fun ThreadScreen(
     }
 }
 
+@OptIn(ExperimentalMaterialApi::class)
 @Composable
 private fun ThreadedPosts(
     thread: PostThread,
@@ -71,16 +72,15 @@ private fun ThreadedPosts(
     onOpenThread: (PostIds) -> Unit,
     onNavigateToReply: () -> Unit,
 ) {
-    SwipeRefresh(
-        state = rememberSwipeRefreshState(isRefreshing),
-        onRefresh = onRefresh,
-    ) {
-        val lazyListState =
-            rememberLazyListState(initialFirstVisibleItemIndex = thread.previous.size)
-        LaunchedEffect(key1 = thread.previous.size) {
-            lazyListState.scrollToItem(thread.previous.size)
-        }
-        LazyColumn(modifier = Modifier.fillMaxSize(), state = lazyListState) {
+    val lazyListState = rememberLazyListState(initialFirstVisibleItemIndex = thread.previous.size)
+    LaunchedEffect(key1 = thread.previous.size) {
+        lazyListState.scrollToItem(thread.previous.size)
+    }
+    PullRefreshBox(isRefreshing = isRefreshing, onRefresh = onRefresh) {
+        LazyColumn(
+            modifier = Modifier.fillMaxSize(),
+            state = lazyListState
+        ) {
             thread.current?.let {
                 itemsIndexed(thread.previous) { index, post ->
                     var threadPosition = ThreadPosition.MIDDLE

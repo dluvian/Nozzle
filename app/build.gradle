@@ -99,9 +99,6 @@ dependencies {
     implementation('io.coil-kt:coil-compose:2.4.0')
     implementation('io.coil-kt:coil-gif:2.4.0')
 
-    // Swipe refresh
-    implementation "com.google.accompanist:accompanist-swiperefresh:$accompanist_version"
-
     // Room
     implementation("androidx.room:room-runtime:$room_version")
     annotationProcessor("androidx.room:room-compiler:$room_version")
