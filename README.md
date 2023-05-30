@@ -42,26 +42,13 @@ file or clone this repository and build it yourself.
 ## Implemented [NIPs](https://github.com/nostr-protocol/nips)
 
 - [NIP-01](https://github.com/nostr-protocol/nips/blob/master/01.md)
-  - Profile metadata, text notes and basic protocol flow
 - [NIP-02](https://github.com/nostr-protocol/nips/blob/master/02.md)
-  - Writing and reading contact lists
 - [NIP-10](https://github.com/nostr-protocol/nips/blob/master/10.md)
-  - Marked e tags
-  - Set p tags when replying
 - [NIP-15](https://github.com/nostr-protocol/nips/blob/master/15.md)
-  - Close connection/subscription on EOSE
-- [NIP-19](https://github.com/nostr-protocol/nips/blob/master/19.md)
-  - npub, nsec and note1
-  - nprofile and nevent coming soon
-- [NIP-21](https://github.com/nostr-protocol/nips/blob/master/21.md)
-  - nostr:npub1... and nostr:note1...
-  - nostr:nprofile1... and nostr:nevent1... coming soon
+- [NIP-19](https://github.com/nostr-protocol/nips/blob/master/19.md) (Partially)
+- [NIP-21](https://github.com/nostr-protocol/nips/blob/master/21.md) (Partially)
 - [NIP-25](https://github.com/nostr-protocol/nips/blob/master/25.md)
-  - Create and read "like" reactions
-  - Ignores other reactions
-- [NIP-65](https://github.com/nostr-protocol/nips/blob/master/65.md)
-  - Read and use nip65 lists for autopilot (gossip model for selecting relays)
-  - Creating a nip65 list is coming soon
+- [NIP-65](https://github.com/nostr-protocol/nips/blob/master/65.md) (Partially)
 
 ## Contributing
 

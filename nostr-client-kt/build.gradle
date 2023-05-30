@@ -6,8 +6,10 @@ plugins {
 
 android {
     compileSdk 33
+    namespace 'com.dluvian.nostrclientkt'
 }
 
+// TODO: delete this module and use cashapp/nostrino
 dependencies {
     // Kotlin
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:${kotlin_version}"
