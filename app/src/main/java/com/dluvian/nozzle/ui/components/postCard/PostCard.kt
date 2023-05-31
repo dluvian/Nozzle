@@ -16,6 +16,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
@@ -81,6 +82,7 @@ fun PostCard(
                             width = small.toPx()
                         )
                     }
+
                     ThreadPosition.MIDDLE -> {
                         drawThread(
                             scope = this,
@@ -97,6 +99,7 @@ fun PostCard(
                             width = small.toPx()
                         )
                     }
+
                     ThreadPosition.END -> {
                         drawThread(
                             scope = this,
@@ -106,6 +109,7 @@ fun PostCard(
                             width = small.toPx()
                         )
                     }
+
                     ThreadPosition.SINGLE -> {}
                 }
             }
@@ -354,7 +358,10 @@ private fun ReplyAction(
                     onNavigateToReply()
                 })
         Spacer(Modifier.width(spacing.medium))
-        Text(text = numOfReplies.toString())
+        Text(
+            text = numOfReplies.toString(),
+            color = if (numOfReplies > 0) Color.Unspecified else Color.Transparent
+        )
     }
 }
 
@@ -379,9 +386,10 @@ private fun RepostAction(
         )
         Spacer(Modifier.width(spacing.medium))
         Text(
-            text = if (!isRepostedByMe && isClicked.value)
-                (numOfReposts + 1).toString()
-            else numOfReposts.toString()
+            text = if (!isRepostedByMe && isClicked.value) (numOfReposts + 1).toString()
+            else numOfReposts.toString(),
+            color = if (numOfReposts > 0 || isRepostedByMe || isClicked.value)
+                Color.Unspecified else Color.Transparent
         )
     }
 }
@@ -408,7 +416,9 @@ private fun LikeAction(
         Spacer(Modifier.width(spacing.medium))
         Text(
             text = if (!isLikedByMe && isClicked.value) (numOfLikes + 1).toString()
-            else numOfLikes.toString()
+            else numOfLikes.toString(),
+            color = if (numOfLikes > 0 || isLikedByMe || isClicked.value)
+                Color.Unspecified else Color.Transparent
         )
     }
 }
