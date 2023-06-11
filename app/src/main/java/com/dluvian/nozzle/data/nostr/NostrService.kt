@@ -1,13 +1,19 @@
 package com.dluvian.nozzle.data.nostr
 
 import android.util.Log
-import com.dluvian.nostrclientkt.model.*
-import com.dluvian.nostrclientkt.net.Client
-import com.dluvian.nostrclientkt.net.NostrListener
 import com.dluvian.nozzle.data.eventProcessor.IEventProcessor
 import com.dluvian.nozzle.data.manager.IKeyManager
+import com.dluvian.nozzle.data.nostr.client.model.ContactListEntry
+import com.dluvian.nozzle.data.nostr.client.model.Event
+import com.dluvian.nozzle.data.nostr.client.model.Filter
+import com.dluvian.nozzle.data.nostr.client.model.Metadata
+import com.dluvian.nozzle.data.nostr.client.model.Post
+import com.dluvian.nozzle.data.nostr.client.model.ReplyTo
+import com.dluvian.nozzle.data.nostr.client.model.RepostId
+import com.dluvian.nozzle.data.nostr.client.net.Client
+import com.dluvian.nozzle.data.nostr.client.net.NostrListener
 import com.dluvian.nozzle.data.provider.IRelayProvider
-import java.util.*
+import java.util.Collections
 
 private const val TAG = "NostrService"
 

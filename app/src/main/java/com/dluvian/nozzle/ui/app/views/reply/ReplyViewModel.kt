@@ -6,9 +6,9 @@ import android.widget.Toast
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
-import com.dluvian.nostrclientkt.model.ReplyTo
 import com.dluvian.nozzle.R
 import com.dluvian.nozzle.data.nostr.INostrService
+import com.dluvian.nozzle.data.nostr.client.model.ReplyTo
 import com.dluvian.nozzle.data.provider.IPersonalProfileProvider
 import com.dluvian.nozzle.data.provider.IRelayProvider
 import com.dluvian.nozzle.data.room.dao.PostDao

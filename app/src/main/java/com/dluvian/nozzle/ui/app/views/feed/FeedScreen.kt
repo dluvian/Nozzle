@@ -2,7 +2,15 @@ package com.dluvian.nozzle.ui.app.views.feed
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.FloatingActionButton
@@ -20,8 +28,14 @@ import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
-import com.dluvian.nostrclientkt.model.Metadata
-import com.dluvian.nozzle.model.*
+import com.dluvian.nozzle.data.nostr.client.model.Metadata
+import com.dluvian.nozzle.model.Everyone
+import com.dluvian.nozzle.model.FeedSettings
+import com.dluvian.nozzle.model.PostIds
+import com.dluvian.nozzle.model.PostWithMeta
+import com.dluvian.nozzle.model.RelayActive
+import com.dluvian.nozzle.model.RelaySelection
+import com.dluvian.nozzle.model.UserSpecific
 import com.dluvian.nozzle.ui.components.AddIcon
 import com.dluvian.nozzle.ui.components.ChooseRelayButton
 import com.dluvian.nozzle.ui.components.FeedSettingsButton

@@ -1,6 +1,6 @@
 package com.dluvian.nozzle.data.manager
 
-import com.dluvian.nostrclientkt.model.Keys
+import com.dluvian.nozzle.data.nostr.client.model.Keys
 import com.dluvian.nozzle.data.provider.IPubkeyProvider
 
 interface IKeyManager : IPubkeyProvider {

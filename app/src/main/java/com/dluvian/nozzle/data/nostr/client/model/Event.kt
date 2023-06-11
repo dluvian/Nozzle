@@ -1,11 +1,11 @@
-package com.dluvian.nostrclientkt.model
+package com.dluvian.nozzle.data.nostr.client.model
 
+import com.dluvian.nozzle.data.nostr.client.utils.JsonUtils.gson
+import com.dluvian.nozzle.data.nostr.client.utils.SchnorrUtils
+import com.dluvian.nozzle.data.nostr.client.utils.SchnorrUtils.secp256k1
+import com.dluvian.nozzle.data.nostr.client.utils.Sha256Utils.sha256
 import com.google.gson.JsonElement
 import com.google.gson.annotations.SerializedName
-import com.dluvian.nostrclientkt.utils.JsonUtils.gson
-import com.dluvian.nostrclientkt.utils.SchnorrUtils
-import com.dluvian.nostrclientkt.utils.SchnorrUtils.secp256k1
-import com.dluvian.nostrclientkt.utils.Sha256Utils.sha256
 import fr.acinq.secp256k1.Hex
 
 typealias Tag = List<String>

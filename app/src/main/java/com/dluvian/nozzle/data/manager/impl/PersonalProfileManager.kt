@@ -1,8 +1,8 @@
 package com.dluvian.nozzle.data.manager.impl
 
 import android.util.Log
-import com.dluvian.nostrclientkt.model.Metadata
 import com.dluvian.nozzle.data.manager.IPersonalProfileManager
+import com.dluvian.nozzle.data.nostr.client.model.Metadata
 import com.dluvian.nozzle.data.provider.IPubkeyProvider
 import com.dluvian.nozzle.data.room.dao.ProfileDao
 import kotlinx.coroutines.flow.Flow

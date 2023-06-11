@@ -14,4 +14,3 @@ dependencyResolutionManagement {
 }
 rootProject.name = "Nozzle"
 include ':app'
-include ':nostr-client-kt'

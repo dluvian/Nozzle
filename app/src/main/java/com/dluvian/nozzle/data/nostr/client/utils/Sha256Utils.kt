@@ -1,4 +1,4 @@
-package com.dluvian.nostrclientkt.utils
+package com.dluvian.nozzle.data.nostr.client.utils
 
 import java.security.MessageDigest
 

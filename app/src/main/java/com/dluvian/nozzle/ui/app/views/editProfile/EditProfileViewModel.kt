@@ -7,12 +7,12 @@ import android.widget.Toast
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
-import com.dluvian.nostrclientkt.model.Metadata
-import com.dluvian.nostrclientkt.utils.NostrUtils.isValidUsername
 import com.dluvian.nozzle.R
 import com.dluvian.nozzle.data.manager.IPersonalProfileManager
 import com.dluvian.nozzle.data.nostr.INostrService
 import com.dluvian.nozzle.data.nostr.INostrSubscriber
+import com.dluvian.nozzle.data.nostr.client.model.Metadata
+import com.dluvian.nozzle.data.nostr.client.utils.NostrUtils.isValidUsername
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.*

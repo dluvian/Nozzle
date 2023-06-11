@@ -1,4 +1,4 @@
-package com.dluvian.nostrclientkt.utils
+package com.dluvian.nozzle.data.nostr.client.utils
 
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder

@@ -1,7 +1,7 @@
 package com.dluvian.nozzle.data.room.entity
 
 import androidx.room.Entity
-import com.dluvian.nostrclientkt.model.ContactListEntry
+import com.dluvian.nozzle.data.nostr.client.model.ContactListEntry
 
 @Entity(tableName = "contact", primaryKeys = ["pubkey", "contactPubkey"])
 data class ContactEntity(

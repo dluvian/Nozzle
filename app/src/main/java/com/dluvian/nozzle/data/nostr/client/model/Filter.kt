@@ -1,7 +1,7 @@
-package com.dluvian.nostrclientkt.model
+package com.dluvian.nozzle.data.nostr.client.model
 
+import com.dluvian.nozzle.data.nostr.client.utils.JsonUtils
 import com.google.gson.annotations.SerializedName
-import com.dluvian.nostrclientkt.utils.JsonUtils
 
 class Filter(
     val ids: List<String>? = null,

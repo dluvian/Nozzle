@@ -1,4 +1,4 @@
-package com.dluvian.nostrclientkt.model
+package com.dluvian.nozzle.data.nostr.client.model
 
 data class Nip65Entry(
     val url: String,

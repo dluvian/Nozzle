@@ -1,6 +1,6 @@
 package com.dluvian.nozzle.model
 
-import com.dluvian.nostrclientkt.model.Metadata
+import com.dluvian.nozzle.data.nostr.client.model.Metadata
 
 data class ProfileWithAdditionalInfo(
     val pubkey: String,

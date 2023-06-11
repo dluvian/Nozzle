@@ -1,12 +1,15 @@
-package com.dluvian.nostrclientkt.net
+package com.dluvian.nozzle.data.nostr.client.net
 
 import android.util.Log
+import com.dluvian.nozzle.data.nostr.client.utils.JsonUtils.gson
 import com.google.gson.JsonElement
-import com.dluvian.nostrclientkt.model.Event
-import com.dluvian.nostrclientkt.model.Filter
-import com.dluvian.nostrclientkt.utils.JsonUtils.gson
-import okhttp3.*
-import java.util.*
+import okhttp3.OkHttpClient
+import okhttp3.Request
+import okhttp3.Response
+import okhttp3.WebSocket
+import okhttp3.WebSocketListener
+import java.util.Collections
+import java.util.UUID
 
 private const val TAG = "Client"
 
@@ -27,13 +30,14 @@ class Client {
                 val type = msg[0].asString
                 when (type) {
                     "EVENT" -> {
-                        Event.fromJson(msg[2]).onSuccess { event ->
-                            nostrListener?.onEvent(
-                                subscriptionId = msg[1].asString,
-                                event = event,
-                                relayUrl = getRelayUrl(webSocket)
-                            )
-                        }
+                        com.dluvian.nozzle.data.nostr.client.model.Event.fromJson(msg[2])
+                            .onSuccess { event ->
+                                nostrListener?.onEvent(
+                                    subscriptionId = msg[1].asString,
+                                    event = event,
+                                    relayUrl = getRelayUrl(webSocket)
+                                )
+                            }
                     }
                     "OK" -> nostrListener?.onOk(id = msg[1].asString.orEmpty())
                     "NOTICE" -> nostrListener?.onError(msg = msg[1].asString)
@@ -58,7 +62,10 @@ class Client {
         }
     }
 
-    fun subscribe(filters: List<Filter>, relays: Collection<String>? = null): List<String> {
+    fun subscribe(
+        filters: List<com.dluvian.nozzle.data.nostr.client.model.Filter>,
+        relays: Collection<String>? = null
+    ): List<String> {
         if (filters.isEmpty()) {
             return listOf()
         }
@@ -80,7 +87,10 @@ class Client {
         return ids
     }
 
-    private fun createSubscriptionRequest(subscriptionId: String, filters: List<Filter>): String {
+    private fun createSubscriptionRequest(
+        subscriptionId: String,
+        filters: List<com.dluvian.nozzle.data.nostr.client.model.Filter>
+    ): String {
         return """["REQ","$subscriptionId",${filters.joinToString(",") { it.toJson() }}]"""
     }
 
@@ -92,7 +102,10 @@ class Client {
         }
     }
 
-    fun publishToRelays(event: Event, relays: Collection<String>? = null) {
+    fun publishToRelays(
+        event: com.dluvian.nozzle.data.nostr.client.model.Event,
+        relays: Collection<String>? = null
+    ) {
         val request = """["EVENT",${event.toJson()}]"""
         Log.i(TAG, "Publish $request to ${relays?.size} relays")
         relays?.let { addRelays(it) }
