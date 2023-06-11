@@ -2,7 +2,7 @@ package com.dluvian.nozzle.data.room.entity
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
-import com.dluvian.nozzle.data.nostr.client.model.Event
+import com.dluvian.nozzle.model.nostr.Event
 
 @Entity(tableName = "post")
 data class PostEntity(

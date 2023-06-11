@@ -1,7 +1,7 @@
 package com.dluvian.nozzle.data.manager
 
-import com.dluvian.nozzle.data.nostr.client.model.Keys
 import com.dluvian.nozzle.data.provider.IPubkeyProvider
+import com.dluvian.nozzle.model.nostr.Keys
 
 interface IKeyManager : IPubkeyProvider {
     fun getPrivkey(): String

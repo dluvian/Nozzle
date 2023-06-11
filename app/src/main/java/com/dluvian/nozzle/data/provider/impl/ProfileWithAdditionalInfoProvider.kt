@@ -3,7 +3,6 @@ package com.dluvian.nozzle.data.provider.impl
 import android.util.Log
 import com.dluvian.nozzle.data.getDefaultRelays
 import com.dluvian.nozzle.data.nostr.INostrSubscriber
-import com.dluvian.nozzle.data.nostr.client.model.Metadata
 import com.dluvian.nozzle.data.provider.IProfileWithAdditionalInfoProvider
 import com.dluvian.nozzle.data.provider.IPubkeyProvider
 import com.dluvian.nozzle.data.room.dao.ContactDao
@@ -12,6 +11,7 @@ import com.dluvian.nozzle.data.room.dao.Nip65Dao
 import com.dluvian.nozzle.data.room.dao.ProfileDao
 import com.dluvian.nozzle.data.utils.hexToNpub
 import com.dluvian.nozzle.model.ProfileWithAdditionalInfo
+import com.dluvian.nozzle.model.nostr.Metadata
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine

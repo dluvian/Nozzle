@@ -1,13 +1,13 @@
 package com.dluvian.nozzle.data.nostr
 
 import android.util.Log
-import com.dluvian.nozzle.data.nostr.client.model.Filter
 import com.dluvian.nozzle.data.room.dao.PostDao
 import com.dluvian.nozzle.data.utils.getCurrentTimeInSeconds
 import com.dluvian.nozzle.data.utils.getIdsPerRelayHintMap
 import com.dluvian.nozzle.data.utils.listReferencedPostIds
 import com.dluvian.nozzle.data.utils.listReferencedPubkeys
 import com.dluvian.nozzle.model.PostWithMeta
+import com.dluvian.nozzle.model.nostr.Filter
 import java.util.Collections
 
 private const val TAG = "NostrSubscriber"

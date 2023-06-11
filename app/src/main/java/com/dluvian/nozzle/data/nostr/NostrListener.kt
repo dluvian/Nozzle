@@ -1,10 +1,12 @@
-package com.dluvian.nozzle.data.nostr.client.net
+package com.dluvian.nozzle.data.nostr
+
+import com.dluvian.nozzle.model.nostr.Event
 
 interface NostrListener {
     fun onOpen(msg: String)
     fun onEvent(
         subscriptionId: String,
-        event: com.dluvian.nozzle.data.nostr.client.model.Event,
+        event: Event,
         relayUrl: String?
     )
 

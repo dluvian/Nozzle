@@ -1,10 +1,10 @@
 package com.dluvian.nozzle.data.room.dao
 
 import androidx.room.*
-import com.dluvian.nozzle.data.nostr.client.model.Metadata
 import com.dluvian.nozzle.data.room.entity.ProfileEntity
 import com.dluvian.nozzle.model.NameAndPicture
 import com.dluvian.nozzle.model.NameAndPubkey
+import com.dluvian.nozzle.model.nostr.Metadata
 import kotlinx.coroutines.flow.Flow
 
 @Dao

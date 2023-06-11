@@ -2,10 +2,10 @@ package com.dluvian.nozzle.data.profileFollower
 
 import android.util.Log
 import com.dluvian.nozzle.data.nostr.INostrService
-import com.dluvian.nozzle.data.nostr.client.model.Event
 import com.dluvian.nozzle.data.provider.IPubkeyProvider
 import com.dluvian.nozzle.data.room.dao.ContactDao
 import com.dluvian.nozzle.data.room.entity.ContactEntity
+import com.dluvian.nozzle.model.nostr.Event
 
 private const val TAG = "ProfileFollower"
 

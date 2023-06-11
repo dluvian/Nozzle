@@ -1,4 +1,4 @@
-package com.dluvian.nozzle.data.nostr.client.model
+package com.dluvian.nozzle.model.nostr
 
 data class Post(
     val replyTo: ReplyTo? = null,

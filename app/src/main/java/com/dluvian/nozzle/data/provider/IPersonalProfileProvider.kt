@@ -1,6 +1,6 @@
 package com.dluvian.nozzle.data.provider
 
-import com.dluvian.nozzle.data.nostr.client.model.Metadata
+import com.dluvian.nozzle.model.nostr.Metadata
 import kotlinx.coroutines.flow.Flow
 
 interface IPersonalProfileProvider : IPubkeyProvider {

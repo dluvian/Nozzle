@@ -7,7 +7,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import com.dluvian.nozzle.R
-import com.dluvian.nozzle.data.nostr.client.model.Metadata
+import com.dluvian.nozzle.model.nostr.Metadata
 import com.dluvian.nozzle.ui.components.ContentCreationTopBar
 import com.dluvian.nozzle.ui.components.InputBox
 import com.dluvian.nozzle.ui.components.text.ReplyingTo

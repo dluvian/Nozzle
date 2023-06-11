@@ -1,7 +1,9 @@
-package com.dluvian.nozzle.data.nostr.client.net
+package com.dluvian.nozzle.data.nostr
 
 import android.util.Log
-import com.dluvian.nozzle.data.nostr.client.utils.JsonUtils.gson
+import com.dluvian.nozzle.data.utils.JsonUtils
+import com.dluvian.nozzle.model.nostr.Event
+import com.dluvian.nozzle.model.nostr.Filter
 import com.google.gson.JsonElement
 import okhttp3.OkHttpClient
 import okhttp3.Request
@@ -26,11 +28,11 @@ class Client {
 
         override fun onMessage(webSocket: WebSocket, text: String) {
             try {
-                val msg = gson.fromJson(text, JsonElement::class.java).asJsonArray
+                val msg = JsonUtils.gson.fromJson(text, JsonElement::class.java).asJsonArray
                 val type = msg[0].asString
                 when (type) {
                     "EVENT" -> {
-                        com.dluvian.nozzle.data.nostr.client.model.Event.fromJson(msg[2])
+                        Event.fromJson(msg[2])
                             .onSuccess { event ->
                                 nostrListener?.onEvent(
                                     subscriptionId = msg[1].asString,
@@ -39,6 +41,7 @@ class Client {
                                 )
                             }
                     }
+
                     "OK" -> nostrListener?.onOk(id = msg[1].asString.orEmpty())
                     "NOTICE" -> nostrListener?.onError(msg = msg[1].asString)
                     "EOSE" -> nostrListener?.onEOSE(subscriptionId = msg[1].asString)
@@ -63,7 +66,7 @@ class Client {
     }
 
     fun subscribe(
-        filters: List<com.dluvian.nozzle.data.nostr.client.model.Filter>,
+        filters: List<Filter>,
         relays: Collection<String>? = null
     ): List<String> {
         if (filters.isEmpty()) {
@@ -89,7 +92,7 @@ class Client {
 
     private fun createSubscriptionRequest(
         subscriptionId: String,
-        filters: List<com.dluvian.nozzle.data.nostr.client.model.Filter>
+        filters: List<Filter>
     ): String {
         return """["REQ","$subscriptionId",${filters.joinToString(",") { it.toJson() }}]"""
     }
@@ -103,15 +106,21 @@ class Client {
     }
 
     fun publishToRelays(
-        event: com.dluvian.nozzle.data.nostr.client.model.Event,
+        event: Event,
         relays: Collection<String>? = null
     ) {
         val request = """["EVENT",${event.toJson()}]"""
-        Log.i(TAG, "Publish $request to ${relays?.size} relays")
+        Log.i(
+            TAG,
+            "Publish $request to ${relays?.size} relays"
+        )
         relays?.let { addRelays(it) }
         for (relay in relays ?: sockets.keys) {
             val socket = sockets[relay]
-            if (socket == null) Log.w(TAG, "Relay $relay is not registered")
+            if (socket == null) Log.w(
+                TAG,
+                "Relay $relay is not registered"
+            )
             else socket.send(request)
         }
     }
@@ -168,6 +177,9 @@ class Client {
             subscriptions.remove(it.key)
         }
         Log.i(TAG, "Removed socket of $removedUrls")
-        Log.i(TAG, "Removed socket of $removedSubCount subscriptions")
+        Log.i(
+            TAG,
+            "Removed socket of $removedSubCount subscriptions"
+        )
     }
 }

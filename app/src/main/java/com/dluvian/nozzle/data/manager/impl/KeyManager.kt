@@ -6,12 +6,12 @@ import androidx.security.crypto.EncryptedSharedPreferences
 import androidx.security.crypto.MasterKey
 import com.dluvian.nozzle.data.PreferenceFileNames
 import com.dluvian.nozzle.data.manager.IKeyManager
-import com.dluvian.nozzle.data.nostr.client.model.Keys
 import com.dluvian.nozzle.data.utils.derivePubkey
 import com.dluvian.nozzle.data.utils.generatePrivkey
 import com.dluvian.nozzle.data.utils.hexToNpub
 import com.dluvian.nozzle.data.utils.hexToNsec
 import com.dluvian.nozzle.data.utils.nsecToHex
+import com.dluvian.nozzle.model.nostr.Keys
 import fr.acinq.secp256k1.Hex
 
 

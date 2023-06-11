@@ -28,7 +28,6 @@ import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
-import com.dluvian.nozzle.data.nostr.client.model.Metadata
 import com.dluvian.nozzle.model.Everyone
 import com.dluvian.nozzle.model.FeedSettings
 import com.dluvian.nozzle.model.PostIds
@@ -36,6 +35,7 @@ import com.dluvian.nozzle.model.PostWithMeta
 import com.dluvian.nozzle.model.RelayActive
 import com.dluvian.nozzle.model.RelaySelection
 import com.dluvian.nozzle.model.UserSpecific
+import com.dluvian.nozzle.model.nostr.Metadata
 import com.dluvian.nozzle.ui.components.AddIcon
 import com.dluvian.nozzle.ui.components.ChooseRelayButton
 import com.dluvian.nozzle.ui.components.FeedSettingsButton

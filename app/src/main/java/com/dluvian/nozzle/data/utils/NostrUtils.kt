@@ -1,4 +1,4 @@
-package com.dluvian.nozzle.data.nostr.client.utils
+package com.dluvian.nozzle.data.utils
 
 object NostrUtils {
     private val usernameRegex by lazy { Regex("\\w[\\w\\-]+\\w") }

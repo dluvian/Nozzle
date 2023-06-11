@@ -1,9 +1,9 @@
-package com.dluvian.nozzle.data.nostr.client.model
+package com.dluvian.nozzle.model.nostr
 
-import com.dluvian.nozzle.data.nostr.client.utils.JsonUtils.gson
-import com.dluvian.nozzle.data.nostr.client.utils.SchnorrUtils
-import com.dluvian.nozzle.data.nostr.client.utils.SchnorrUtils.secp256k1
-import com.dluvian.nozzle.data.nostr.client.utils.Sha256Utils.sha256
+import com.dluvian.nozzle.data.utils.JsonUtils.gson
+import com.dluvian.nozzle.data.utils.SchnorrUtils
+import com.dluvian.nozzle.data.utils.SchnorrUtils.secp256k1
+import com.dluvian.nozzle.data.utils.Sha256Utils.sha256
 import com.google.gson.JsonElement
 import com.google.gson.annotations.SerializedName
 import fr.acinq.secp256k1.Hex

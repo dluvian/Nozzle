@@ -1,10 +1,10 @@
 package com.dluvian.nozzle.data.nostr
 
-import com.dluvian.nozzle.data.nostr.client.model.ContactListEntry
-import com.dluvian.nozzle.data.nostr.client.model.Event
-import com.dluvian.nozzle.data.nostr.client.model.Filter
-import com.dluvian.nozzle.data.nostr.client.model.Metadata
-import com.dluvian.nozzle.data.nostr.client.model.ReplyTo
+import com.dluvian.nozzle.model.nostr.ContactListEntry
+import com.dluvian.nozzle.model.nostr.Event
+import com.dluvian.nozzle.model.nostr.Filter
+import com.dluvian.nozzle.model.nostr.Metadata
+import com.dluvian.nozzle.model.nostr.ReplyTo
 
 interface INostrService {
     fun publishProfile(metadata: Metadata): Event

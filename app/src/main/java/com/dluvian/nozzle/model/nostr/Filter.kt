@@ -1,6 +1,6 @@
-package com.dluvian.nozzle.data.nostr.client.model
+package com.dluvian.nozzle.model.nostr
 
-import com.dluvian.nozzle.data.nostr.client.utils.JsonUtils
+import com.dluvian.nozzle.data.utils.JsonUtils
 import com.google.gson.annotations.SerializedName
 
 class Filter(

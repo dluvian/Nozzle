@@ -2,9 +2,9 @@ package com.dluvian.nozzle.data.manager.impl
 
 import android.util.Log
 import com.dluvian.nozzle.data.manager.IPersonalProfileManager
-import com.dluvian.nozzle.data.nostr.client.model.Metadata
 import com.dluvian.nozzle.data.provider.IPubkeyProvider
 import com.dluvian.nozzle.data.room.dao.ProfileDao
+import com.dluvian.nozzle.model.nostr.Metadata
 import kotlinx.coroutines.flow.Flow
 
 private const val TAG = "PersonalProfileManager"

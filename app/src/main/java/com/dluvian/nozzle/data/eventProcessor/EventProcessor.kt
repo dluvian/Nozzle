@@ -1,9 +1,6 @@
 package com.dluvian.nozzle.data.eventProcessor
 
 import android.util.Log
-import com.dluvian.nozzle.data.nostr.client.model.Event
-import com.dluvian.nozzle.data.nostr.client.model.Metadata
-import com.dluvian.nozzle.data.nostr.client.model.Tag
 import com.dluvian.nozzle.data.room.dao.ContactDao
 import com.dluvian.nozzle.data.room.dao.EventRelayDao
 import com.dluvian.nozzle.data.room.dao.Nip65Dao
@@ -14,6 +11,9 @@ import com.dluvian.nozzle.data.room.entity.ContactEntity
 import com.dluvian.nozzle.data.room.entity.Nip65Entity
 import com.dluvian.nozzle.data.room.entity.PostEntity
 import com.dluvian.nozzle.data.room.entity.ProfileEntity
+import com.dluvian.nozzle.model.nostr.Event
+import com.dluvian.nozzle.model.nostr.Metadata
+import com.dluvian.nozzle.model.nostr.Tag
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import kotlinx.coroutines.CoroutineScope
