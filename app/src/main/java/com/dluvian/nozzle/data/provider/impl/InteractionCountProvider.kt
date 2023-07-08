@@ -16,8 +16,6 @@ class InteractionStatsProvider(
     private val postDao: PostDao,
 ) : IInteractionStatsProvider {
     override fun getStatsFlow(postIds: List<String>): Flow<InteractionStats> {
-        val numOfLikesFlow = reactionDao.getNumOfLikesPerPostFlow(postIds).distinctUntilChanged()
-        val numOfRepostsFlow = postDao.getNumOfRepostsPerPostFlow(postIds).distinctUntilChanged()
         val numOfRepliesFlow = postDao.getNumOfRepliesPerPostFlow(postIds).distinctUntilChanged()
         val likedByMeFlow = reactionDao.listLikedByFlow(pubkeyProvider.getPubkey(), postIds)
             .distinctUntilChanged()
@@ -27,8 +25,6 @@ class InteractionStatsProvider(
         val mainFlow = flow {
             emit(
                 InteractionStats(
-                    numOfLikesPerPost = mapOf(),
-                    numOfRepostsPerPost = mapOf(),
                     numOfRepliesPerPost = mapOf(),
                     likedByMe = listOf(),
                     repostedByMe = listOf(),
@@ -37,12 +33,6 @@ class InteractionStatsProvider(
         }
 
         return mainFlow
-            .combine(numOfLikesFlow) { main, likes ->
-                main.copy(numOfLikesPerPost = likes)
-            }
-            .combine(numOfRepostsFlow) { main, reposts ->
-                main.copy(numOfRepostsPerPost = reposts)
-            }
             .combine(numOfRepliesFlow) { main, replies ->
                 main.copy(numOfRepliesPerPost = replies)
             }

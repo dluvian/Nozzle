@@ -37,10 +37,6 @@ class EventProcessor(
     private val idRelayCache = Collections.synchronizedSet(mutableSetOf<String>())
 
     override fun process(event: Event, relayUrl: String?) {
-        if (event.isReaction()) {
-            processReaction(event = event)
-            return
-        }
         if (event.isPost()) {
             processPost(event = event, relayUrl = relayUrl)
             return
@@ -55,6 +51,10 @@ class EventProcessor(
         }
         if (event.isNip65()) {
             processNip65(event = event)
+            return
+        }
+        if (event.isReaction()) {
+            processReaction(event = event)
             return
         }
     }
@@ -79,20 +79,6 @@ class EventProcessor(
                     createdAt = event.createdAt,
                 )
             )
-        }
-    }
-
-    private fun processReaction(event: Event) {
-        if (event.content != "+") return
-        if (idCache.contains(event.id)) return
-        if (!verify(event)) return
-
-        idCache.add(event.id)
-
-        event.getReactedToId()?.let {
-            scope.launch {
-                reactionDao.like(eventId = it, pubkey = event.pubkey)
-            }
         }
     }
 
@@ -170,6 +156,20 @@ class EventProcessor(
                 timestamp = event.createdAt,
                 nip65Entities = entities.toTypedArray()
             )
+        }
+    }
+
+    private fun processReaction(event: Event) {
+        if (event.content != "+") return
+        if (idCache.contains(event.id)) return
+        if (!verify(event)) return
+
+        idCache.add(event.id)
+
+        event.getReactedToId()?.let {
+            scope.launch {
+                reactionDao.like(eventId = it, pubkey = event.pubkey)
+            }
         }
     }
 

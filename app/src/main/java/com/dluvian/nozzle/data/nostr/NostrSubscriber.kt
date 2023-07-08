@@ -1,6 +1,7 @@
 package com.dluvian.nozzle.data.nostr
 
 import android.util.Log
+import com.dluvian.nozzle.data.provider.IPubkeyProvider
 import com.dluvian.nozzle.data.room.dao.PostDao
 import com.dluvian.nozzle.data.utils.getCurrentTimeInSeconds
 import com.dluvian.nozzle.data.utils.getIdsPerRelayHintMap
@@ -15,6 +16,7 @@ private const val TAG = "NostrSubscriber"
 // TODO: Check if separation of sub and unsub is needed or should be combined for less code
 class NostrSubscriber(
     private val nostrService: INostrService,
+    private val pubkeyProvider: IPubkeyProvider,
     private val postDao: PostDao
 ) : INostrSubscriber {
     private val feedSubscriptions = Collections.synchronizedList(mutableListOf<String>())
@@ -79,7 +81,12 @@ class NostrSubscriber(
         referencedPubkeys.addAll(postDao.listAuthorPubkeys(referencedPostIds))
 
         val filters = mutableListOf<Filter>()
-        filters.add(Filter.createReactionFilter(e = postIds))
+        filters.add(
+            Filter.createReactionFilter(
+                e = postIds,
+                pubkeys = listOf(pubkeyProvider.getPubkey())
+            )
+        )
         filters.add(Filter.createPostFilter(e = postIds))
         if (referencedPostIds.isNotEmpty()) {
             filters.add(Filter.createPostFilter(ids = referencedPostIds))

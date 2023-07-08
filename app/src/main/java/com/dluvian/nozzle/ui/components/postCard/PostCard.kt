@@ -146,8 +146,6 @@ fun PostCard(
             Spacer(Modifier.height(spacing.medium))
             PostCardActions(
                 numOfReplies = post.numOfReplies,
-                numOfReposts = post.numOfReposts,
-                numOfLikes = post.numOfLikes,
                 post = post,
                 onLike = { onLike(post.id) },
                 onRepost = { onRepost(post.id) },
@@ -313,8 +311,6 @@ fun PostNotFound() {
 @Composable
 private fun PostCardActions(
     numOfReplies: Int,
-    numOfReposts: Int,
-    numOfLikes: Int,
     post: PostWithMeta,
     onLike: () -> Unit,
     onRepost: () -> Unit,
@@ -333,11 +329,10 @@ private fun PostCardActions(
             onNavigateToReply = onNavigateToReply
         )
         RepostAction(
-            numOfReposts = numOfReposts,
             isRepostedByMe = post.isRepostedByMe,
             onRepost = onRepost
         )
-        LikeAction(numOfLikes = numOfLikes, isLikedByMe = post.isLikedByMe, onLike = onLike)
+        LikeAction(isLikedByMe = post.isLikedByMe, onLike = onLike)
     }
 }
 
@@ -367,7 +362,6 @@ private fun ReplyAction(
 
 @Composable
 private fun RepostAction(
-    numOfReposts: Int,
     isRepostedByMe: Boolean,
     onRepost: () -> Unit,
 ) {
@@ -384,19 +378,11 @@ private fun RepostAction(
             },
             isReposted = isRepostedByMe || isClicked.value
         )
-        Spacer(Modifier.width(spacing.medium))
-        Text(
-            text = if (!isRepostedByMe && isClicked.value) (numOfReposts + 1).toString()
-            else numOfReposts.toString(),
-            color = if (numOfReposts > 0 || isRepostedByMe || isClicked.value)
-                Color.Unspecified else Color.Transparent
-        )
     }
 }
 
 @Composable
 private fun LikeAction(
-    numOfLikes: Int,
     isLikedByMe: Boolean,
     onLike: () -> Unit,
 ) {
@@ -414,12 +400,6 @@ private fun LikeAction(
             isLiked = isLikedByMe || isClicked.value,
         )
         Spacer(Modifier.width(spacing.medium))
-        Text(
-            text = if (!isLikedByMe && isClicked.value) (numOfLikes + 1).toString()
-            else numOfLikes.toString(),
-            color = if (numOfLikes > 0 || isLikedByMe || isClicked.value)
-                Color.Unspecified else Color.Transparent
-        )
     }
 }
 

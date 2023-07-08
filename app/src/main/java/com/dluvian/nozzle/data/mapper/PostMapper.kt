@@ -58,8 +58,6 @@ class PostMapper(
                     },
                     isLikedByMe = false,
                     isRepostedByMe = false,
-                    numOfLikes = 0,
-                    numOfReposts = 0,
                     numOfReplies = 0,
                     relays = listOf(),
                 )
@@ -71,8 +69,6 @@ class PostMapper(
                 it.copy(
                     isLikedByMe = stats.isLikedByMe(it.id),
                     isRepostedByMe = stats.isRepostedByMe(it.id),
-                    numOfLikes = stats.getNumOfLikes(it.id),
-                    numOfReposts = stats.getNumOfReposts(it.id),
                     numOfReplies = stats.getNumOfReplies(it.id),
                 )
             }

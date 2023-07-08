@@ -118,15 +118,6 @@ interface PostDao {
     )
     fun getRepostsPreviewMapFlow(postIds: Collection<String>): Flow<Map<String, RepostPreview>>
 
-    @MapInfo(keyColumn = "repostedId", valueColumn = "repostCount")
-    @Query(
-        "SELECT repostedId, COUNT(*) AS repostCount " +
-                "FROM post " +
-                "WHERE repostedId IN (:postIds) " +
-                "GROUP BY repostedId"
-    )
-    fun getNumOfRepostsPerPostFlow(postIds: Collection<String>): Flow<Map<String, Int>>
-
     @MapInfo(keyColumn = "replyToId", valueColumn = "replyCount")
     @Query(
         "SELECT replyToId, COUNT(*) AS replyCount " +

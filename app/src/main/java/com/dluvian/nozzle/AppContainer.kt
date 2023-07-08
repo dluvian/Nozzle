@@ -20,8 +20,20 @@ import com.dluvian.nozzle.data.preferences.IFeedSettingsPreferences
 import com.dluvian.nozzle.data.preferences.NozzlePreferences
 import com.dluvian.nozzle.data.profileFollower.IProfileFollower
 import com.dluvian.nozzle.data.profileFollower.ProfileFollower
-import com.dluvian.nozzle.data.provider.*
-import com.dluvian.nozzle.data.provider.impl.*
+import com.dluvian.nozzle.data.provider.IAutopilotProvider
+import com.dluvian.nozzle.data.provider.IContactListProvider
+import com.dluvian.nozzle.data.provider.IFeedProvider
+import com.dluvian.nozzle.data.provider.IInteractionStatsProvider
+import com.dluvian.nozzle.data.provider.IProfileWithAdditionalInfoProvider
+import com.dluvian.nozzle.data.provider.IRelayProvider
+import com.dluvian.nozzle.data.provider.IThreadProvider
+import com.dluvian.nozzle.data.provider.impl.AutopilotProvider
+import com.dluvian.nozzle.data.provider.impl.ContactListProvider
+import com.dluvian.nozzle.data.provider.impl.FeedProvider
+import com.dluvian.nozzle.data.provider.impl.InteractionStatsProvider
+import com.dluvian.nozzle.data.provider.impl.ProfileWithAdditionalInfoProvider
+import com.dluvian.nozzle.data.provider.impl.RelayProvider
+import com.dluvian.nozzle.data.provider.impl.ThreadProvider
 import com.dluvian.nozzle.data.room.AppDatabase
 
 class AppContainer(context: Context) {
@@ -74,6 +86,7 @@ class AppContainer(context: Context) {
 
     val nostrSubscriber: INostrSubscriber = NostrSubscriber(
         nostrService = nostrService,
+        pubkeyProvider = keyManager,
         postDao = roomDb.postDao()
     )
 
