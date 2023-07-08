@@ -34,11 +34,12 @@ class NozzleNavActions(private val navController: NavHostController) {
         }
     }
 
+    // TODO: Remove root?
     val navigateToThread: (String, String?, String?) -> Unit = { postId, replyToId, replyToRootId ->
         navController.navigate(
             NozzleRoute.THREAD + "/$postId" +
-                    "?replyToId=$replyToId" +
-                    "?replyToRootId=$replyToRootId"
+                    "?replyToId=${replyToId.orEmpty()}" +
+                    "?replyToRootId=${replyToRootId.orEmpty()}"
         ) {
             setSimpleNavOptions(optionsBuilder = this)
         }
