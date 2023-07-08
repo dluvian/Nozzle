@@ -322,6 +322,7 @@ private fun PostCardActions(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
+        // TODO: Fix Position of actions with equal weight
         ReplyAction(
             numOfReplies = numOfReplies,
             postToReplyTo = post,
@@ -353,6 +354,7 @@ private fun ReplyAction(
                     onNavigateToReply()
                 })
         Spacer(Modifier.width(spacing.medium))
+        // TODO: Humanize long numbers
         Text(
             text = numOfReplies.toString(),
             color = if (numOfReplies > 0) Color.Unspecified else Color.Transparent
