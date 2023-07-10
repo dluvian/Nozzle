@@ -54,68 +54,66 @@ fun PostCard(
     val small = spacing.small
     val clipboard = LocalClipboardManager.current
     val context = LocalContext.current
-    Row(
-        modifier
-            .combinedClickable(
-                enabled = !isCurrent,
-                onClick = { onNavigateToThread(post.getPostIds()) },
-                onLongClick = {
-                    clipboard.setText(AnnotatedString(hexToNote(post.id)))
-                    Toast
-                        .makeText(
-                            context,
-                            context.getString(R.string.note_id_copied),
-                            Toast.LENGTH_SHORT
-                        )
-                        .show()
+    Row(modifier
+        .combinedClickable(enabled = !isCurrent,
+            onClick = { onNavigateToThread(post.getPostIds()) },
+            onLongClick = {
+                clipboard.setText(AnnotatedString(hexToNote(post.id)))
+                Toast
+                    .makeText(
+                        context,
+                        context.getString(R.string.note_id_copied),
+                        Toast.LENGTH_SHORT
+                    )
+                    .show()
 
-                })
-            .fillMaxWidth()
-            .drawBehind {
-                when (threadPosition) {
-                    ThreadPosition.START -> {
-                        drawThread(
-                            scope = this,
-                            x = x.toPx(),
-                            yStart = yBottom.toPx(),
-                            yEnd = size.height,
-                            width = small.toPx()
-                        )
-                    }
-
-                    ThreadPosition.MIDDLE -> {
-                        drawThread(
-                            scope = this,
-                            x = x.toPx(),
-                            yStart = 0f,
-                            yEnd = yTop.toPx(),
-                            width = small.toPx()
-                        )
-                        drawThread(
-                            scope = this,
-                            x = x.toPx(),
-                            yStart = yBottom.toPx(),
-                            yEnd = size.height,
-                            width = small.toPx()
-                        )
-                    }
-
-                    ThreadPosition.END -> {
-                        drawThread(
-                            scope = this,
-                            x = x.toPx(),
-                            yStart = 0f,
-                            yEnd = yTop.toPx(),
-                            width = small.toPx()
-                        )
-                    }
-
-                    ThreadPosition.SINGLE -> {}
+            })
+        .fillMaxWidth()
+        .drawBehind {
+            when (threadPosition) {
+                ThreadPosition.START -> {
+                    drawThread(
+                        scope = this,
+                        x = x.toPx(),
+                        yStart = yBottom.toPx(),
+                        yEnd = size.height,
+                        width = small.toPx()
+                    )
                 }
+
+                ThreadPosition.MIDDLE -> {
+                    drawThread(
+                        scope = this,
+                        x = x.toPx(),
+                        yStart = 0f,
+                        yEnd = yTop.toPx(),
+                        width = small.toPx()
+                    )
+                    drawThread(
+                        scope = this,
+                        x = x.toPx(),
+                        yStart = yBottom.toPx(),
+                        yEnd = size.height,
+                        width = small.toPx()
+                    )
+                }
+
+                ThreadPosition.END -> {
+                    drawThread(
+                        scope = this,
+                        x = x.toPx(),
+                        yStart = 0f,
+                        yEnd = yTop.toPx(),
+                        width = small.toPx()
+                    )
+                }
+
+                ThreadPosition.SINGLE -> {}
             }
-            .padding(all = spacing.screenEdge)
-            .padding(end = spacing.medium)
-            .clipToBounds()
+        }
+        .padding(all = spacing.screenEdge)
+        .padding(end = spacing.medium)
+        .clipToBounds()
     ) {
         PostCardProfilePicture(
             modifier = Modifier
@@ -190,17 +188,14 @@ private fun RepostCardContent(
     onNavigateToThread: (PostIds) -> Unit,
 ) {
     post?.let {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .border(
-                    width = spacing.tiny,
-                    color = LightGray21,
-                    shape = RoundedCornerShape(spacing.large)
-                )
-                .clickable {
-                    onNavigateToThread(it.toPostIds())
-                }
+        Column(modifier = Modifier
+            .fillMaxWidth()
+            .border(
+                width = spacing.tiny,
+                color = LightGray21,
+                shape = RoundedCornerShape(spacing.large)
+            )
+            .clickable { onNavigateToThread(it.toPostIds()) }
         ) {
             Column(modifier = Modifier.padding(spacing.large)) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
@@ -258,8 +253,7 @@ private fun PostCardProfilePicture(
     onOpenProfile: ((String) -> Unit)?,
     modifier: Modifier = Modifier,
 ) {
-    ProfilePicture(
-        modifier = modifier,
+    ProfilePicture(modifier = modifier,
         pictureUrl = pictureUrl,
         pubkey = pubkey,
         onOpenProfile = if (onOpenProfile != null) {
@@ -322,18 +316,29 @@ private fun PostCardActions(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
-        // TODO: Fix Position of actions with equal weight
         ReplyAction(
+            modifier = Modifier
+                .fillMaxWidth()
+                .weight(1f),
             numOfReplies = numOfReplies,
             postToReplyTo = post,
             onPrepareReply = onPrepareReply,
             onNavigateToReply = onNavigateToReply
         )
         RepostAction(
+            modifier = Modifier
+                .fillMaxWidth()
+                .weight(1f),
             isRepostedByMe = post.isRepostedByMe,
             onRepost = onRepost
         )
-        LikeAction(isLikedByMe = post.isLikedByMe, onLike = onLike)
+        LikeAction(
+            modifier = Modifier
+                .fillMaxWidth()
+                .weight(1f),
+            isLikedByMe = post.isLikedByMe,
+            onLike = onLike
+        )
     }
 }
 
@@ -343,16 +348,16 @@ private fun ReplyAction(
     postToReplyTo: PostWithMeta,
     onPrepareReply: (PostWithMeta) -> Unit,
     onNavigateToReply: () -> Unit,
+    modifier: Modifier = Modifier
 ) {
-    Row(verticalAlignment = Alignment.CenterVertically) {
-        ReplyIcon(
-            modifier = Modifier
-                .size(sizing.smallIcon)
-                .clip(CircleShape)
-                .clickable {
-                    onPrepareReply(postToReplyTo)
-                    onNavigateToReply()
-                })
+    Row(modifier = modifier, verticalAlignment = Alignment.CenterVertically) {
+        ReplyIcon(modifier = Modifier
+            .size(sizing.smallIcon)
+            .clip(CircleShape)
+            .clickable {
+                onPrepareReply(postToReplyTo)
+                onNavigateToReply()
+            })
         Spacer(Modifier.width(spacing.medium))
         // TODO: Humanize long numbers
         Text(
@@ -366,19 +371,23 @@ private fun ReplyAction(
 private fun RepostAction(
     isRepostedByMe: Boolean,
     onRepost: () -> Unit,
+    modifier: Modifier = Modifier,
 ) {
     val isClicked = remember { mutableStateOf(false) }
-    Row(verticalAlignment = Alignment.CenterVertically) {
-        val modifier = Modifier
+    Row(
+        modifier = modifier,
+        horizontalArrangement = Arrangement.Center,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        val iconModifier = Modifier
             .size(sizing.smallIcon)
             .clip(CircleShape)
         RepostIcon(
-            modifier = if (isRepostedByMe) modifier.clickable { }
-            else modifier.clickable {
+            modifier = if (isRepostedByMe) iconModifier.clickable { }
+            else iconModifier.clickable {
                 onRepost()
                 isClicked.value = true
-            },
-            isReposted = isRepostedByMe || isClicked.value
+            }, isReposted = isRepostedByMe || isClicked.value
         )
     }
 }
@@ -387,21 +396,25 @@ private fun RepostAction(
 private fun LikeAction(
     isLikedByMe: Boolean,
     onLike: () -> Unit,
+    modifier: Modifier = Modifier,
 ) {
     val isClicked = remember { mutableStateOf(false) }
-    Row(verticalAlignment = Alignment.CenterVertically) {
-        val modifier = Modifier
+    Row(
+        modifier = modifier,
+        horizontalArrangement = Arrangement.End,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        val iconModifier = Modifier
             .size(sizing.smallIcon)
             .clip(CircleShape)
         LikeIcon(
-            modifier = if (isLikedByMe) modifier.clickable { }
-            else modifier.clickable {
+            modifier = if (isLikedByMe) iconModifier.clickable { }
+            else iconModifier.clickable {
                 onLike()
                 isClicked.value = true
             },
             isLiked = isLikedByMe || isClicked.value,
         )
-        Spacer(Modifier.width(spacing.medium))
     }
 }
 
