@@ -15,6 +15,7 @@ import java.util.UUID
 
 private const val TAG = "Client"
 
+// TODO: Check concurrent modification (not just in this file)
 class Client {
     private val httpClient = OkHttpClient()
     private val sockets: MutableMap<String, WebSocket> = Collections.synchronizedMap(mutableMapOf())
@@ -168,13 +169,17 @@ class Client {
     private fun removeSocket(socket: WebSocket) {
         val removedUrls = mutableSetOf<String>()
         var removedSubCount = 0
-        sockets.filter { it.value == socket }.forEach {
-            removedUrls.add(it.key)
-            sockets.remove(it.key)
+        synchronized(sockets) {
+            sockets.filter { it.value == socket }.forEach {
+                removedUrls.add(it.key)
+                sockets.remove(it.key)
+            }
         }
-        subscriptions.filter { it.value == socket }.forEach {
-            removedSubCount += 1
-            subscriptions.remove(it.key)
+        synchronized(subscriptions) {
+            subscriptions.filter { it.value == socket }.forEach {
+                removedSubCount += 1
+                subscriptions.remove(it.key)
+            }
         }
         Log.i(TAG, "Removed socket of $removedUrls")
         Log.i(
