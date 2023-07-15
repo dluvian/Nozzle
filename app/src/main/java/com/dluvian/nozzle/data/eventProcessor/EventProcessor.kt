@@ -176,7 +176,7 @@ class EventProcessor(
     private fun verify(event: Event): Boolean {
         val isValid = event.verify()
         if (!isValid) {
-            Log.w(TAG, "Invalid event ${event.id} kind ${event.kind}")
+            Log.w(TAG, "Invalid event kind ${event.kind} id ${event.id} ")
         }
         return isValid
     }
