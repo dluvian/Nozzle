@@ -20,4 +20,8 @@
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
 -keep class fr.acinq.secp256k1.jni.** { *; }
--keep class com.dluvian.nostrclientkt.model.** { <fields>; }
+-keep class com.dluvian.nozzle.model.** { <fields>; }
+
+# Please add these rules to your existing keep rules in order to suppress warnings.
+# This is generated automatically by the Android Gradle plugin.
+-dontwarn com.google.errorprone.annotations.**
