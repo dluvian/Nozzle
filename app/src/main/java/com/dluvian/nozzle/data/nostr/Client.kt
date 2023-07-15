@@ -131,9 +131,9 @@ class Client {
     }
 
     private fun addRelay(url: String) {
-        if (sockets.containsKey(url)) {
-            return
-        }
+        if (sockets.containsKey(url)) return
+        if (!url.startsWith("wss://")) return
+
         Log.i(TAG, "Add relay $url")
         try {
             val request = Request.Builder().url(url).build()

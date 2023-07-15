@@ -2,9 +2,9 @@ package com.dluvian.nozzle.data
 
 
 private val defaultRelays = listOf(
-    "wss://nos.lol",
+    "wss://relay.snort.social",
     "wss://nostr.einundzwanzig.space",
-    "wss://nostr-pub.wellorder.net",
+    "wss://nostr.lu.ke",
 )
 
 fun getDefaultRelays(): List<String> = defaultRelays
