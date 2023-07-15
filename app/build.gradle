@@ -18,8 +18,8 @@ android {
         applicationId "com.dluvian.nozzle"
         minSdk 23
         targetSdk 33
-        versionCode 10
-        versionName "v0.5.2-alpha"
+        versionCode 11
+        versionName "v0.5.3-alpha"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
