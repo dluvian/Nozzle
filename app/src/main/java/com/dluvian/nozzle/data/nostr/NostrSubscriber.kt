@@ -13,7 +13,6 @@ import java.util.Collections
 
 private const val TAG = "NostrSubscriber"
 
-// TODO: Check if separation of sub and unsub is needed or should be combined for less code
 class NostrSubscriber(
     private val nostrService: INostrService,
     private val pubkeyProvider: IPubkeyProvider,
@@ -100,13 +99,13 @@ class NostrSubscriber(
             unsubOnEOSE = true,
             relays = relays,
         ).toMutableList()
-        ids.addAll(subscribeToReplyRelayHint(posts, relays))
+        ids.addAll(subscribeReplyRelayHint(posts, relays))
         additionalFeedDataSubscriptions.addAll(ids)
 
         return ids
     }
 
-    private fun subscribeToReplyRelayHint(
+    private fun subscribeReplyRelayHint(
         posts: Collection<PostWithMeta>,
         relays: Collection<String>?,
     ): List<String> {
@@ -133,7 +132,7 @@ class NostrSubscriber(
         return ids
     }
 
-    override fun subscribeToThread(
+    override fun subscribeThread(
         currentPostId: String,
         replyToId: String?,
         replyToRootId: String?,
@@ -159,7 +158,7 @@ class NostrSubscriber(
         return ids
     }
 
-    override fun subscribeToProfiles(
+    override fun subscribeProfiles(
         pubkeys: Collection<String>,
         relays: Collection<String>?,
     ): List<String> {
@@ -180,7 +179,7 @@ class NostrSubscriber(
     }
 
     // No relaySelection needed because nip65 could be anywhere
-    override fun subscribeToNip65(pubkeys: Collection<String>): List<String> {
+    override fun subscribeNip65(pubkeys: Collection<String>): List<String> {
         Log.i(TAG, "Subscribe to ${pubkeys.size} nip65s")
 
         if (pubkeys.isEmpty()) return listOf()
@@ -217,7 +216,7 @@ class NostrSubscriber(
         profileSubscriptions.clear()
     }
 
-    override fun unsubscribeToNip65() {
+    override fun unsubscribeNip65() {
         nostrService.unsubscribe(nip65Subscriptions)
         nip65Subscriptions.clear()
     }

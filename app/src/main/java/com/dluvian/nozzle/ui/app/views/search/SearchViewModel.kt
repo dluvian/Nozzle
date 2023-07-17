@@ -33,7 +33,7 @@ class SearchViewModel : ViewModel() {
         Log.i(TAG, "Initialize SearchViewModel")
     }
 
-    val onValidateAndNavigateToDestination: ((String) -> Unit, (String, String?, String?) -> Unit) -> Unit =
+    val onValidateAndNavigateToDestination: ((String) -> Unit, (String, String?) -> Unit) -> Unit =
         { onNavigateToProfile, onNavigateToThread ->
             uiState.value.input.let { input ->
                 val trimmed = input.trim()
@@ -43,7 +43,7 @@ class SearchViewModel : ViewModel() {
                     npub.onFailure { setUIInvalid() }
                 } else if (trimmed.startsWith("note1")) {
                     val noteId = noteIdToHex(trimmed)
-                    noteId.onSuccess { id -> onNavigateToThread(id, null, null) }
+                    noteId.onSuccess { id -> onNavigateToThread(id, null) }
                     noteId.onFailure { setUIInvalid() }
                 } else {
                     setUIInvalid()

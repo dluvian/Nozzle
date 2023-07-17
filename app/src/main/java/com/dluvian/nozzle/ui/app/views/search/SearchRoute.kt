@@ -8,7 +8,7 @@ import androidx.compose.runtime.getValue
 fun SearchRoute(
     searchViewModel: SearchViewModel,
     onNavigateToProfile: (String) -> Unit,
-    onNavigateToThread: (String, String?, String?) -> Unit,
+    onNavigateToThread: (String, String?) -> Unit,
     onGoBack: () -> Unit,
 ) {
     val uiState by searchViewModel.uiState.collectAsState()

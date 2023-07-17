@@ -47,7 +47,7 @@ class ThreadProvider(
         relays: List<String>?
     ) {
         nostrSubscriber.unsubscribeThread()
-        nostrSubscriber.subscribeToThread(
+        nostrSubscriber.subscribeThread(
             currentPostId = currentPostId,
             replyToId = replyToId,
             replyToRootId = replyToId,

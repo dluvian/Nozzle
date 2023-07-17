@@ -12,7 +12,7 @@ private const val TAG = "ProfileRoute"
 fun ProfileRoute(
     profileViewModel: ProfileViewModel,
     onPrepareReply: (PostWithMeta) -> Unit,
-    onNavigateToThread: (String, String?, String?) -> Unit,
+    onNavigateToThread: (String, String?) -> Unit,
     onNavigateToReply: () -> Unit,
     onNavigateToEditProfile: () -> Unit,
 ) {
@@ -38,7 +38,6 @@ fun ProfileRoute(
             onNavigateToThread(
                 postIds.id,
                 postIds.replyToId,
-                postIds.replyToRootId
             )
         },
         onNavigateToReply = onNavigateToReply,

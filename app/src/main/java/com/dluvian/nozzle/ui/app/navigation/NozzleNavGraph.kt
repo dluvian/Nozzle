@@ -106,19 +106,17 @@ fun NozzleNavGraph(
         composable(
             route = NozzleRoute.THREAD +
                     "/{postId}" +
-                    "?replyToId={replyToId}" +
-                    "?replyToRootId={replyToRootId}",
+                    "?replyToId={replyToId}",
             arguments = listOf(
                 navArgument("postId") { type = NavType.StringType },
                 navArgument("replyToId") { type = NavType.StringType },
-                navArgument("replyToRootId") { type = NavType.StringType },
             )
         ) { backStackEntry ->
             vmContainer.threadViewModel.onOpenThread(
                 PostIds(
                     id = backStackEntry.arguments?.getString("postId").orEmpty(),
                     replyToId = backStackEntry.arguments?.getString("replyToId"),
-                    replyToRootId = backStackEntry.arguments?.getString("replyToRootId"),
+                    replyToRootId = null,
                 )
             )
             ThreadRoute(
@@ -157,7 +155,7 @@ fun NozzleNavGraph(
                     }
             } else if (nip21?.startsWith("note1") == true) {
                 noteIdToHex(nip21)
-                    .onSuccess { hex -> navActions.navigateToThread(hex, null, null) }
+                    .onSuccess { hex -> navActions.navigateToThread(hex, null) }
                     .onFailure {
                         Log.i(TAG, "note1 $nip21 is invalid")
                         navActions.navigateToFeed()

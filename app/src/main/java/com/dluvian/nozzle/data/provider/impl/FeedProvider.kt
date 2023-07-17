@@ -8,7 +8,16 @@ import com.dluvian.nozzle.data.provider.IFeedProvider
 import com.dluvian.nozzle.data.room.dao.PostDao
 import com.dluvian.nozzle.data.room.entity.PostEntity
 import com.dluvian.nozzle.data.utils.getCurrentTimeInSeconds
-import com.dluvian.nozzle.model.*
+import com.dluvian.nozzle.model.AllRelays
+import com.dluvian.nozzle.model.AuthorSelection
+import com.dluvian.nozzle.model.Contacts
+import com.dluvian.nozzle.model.Everyone
+import com.dluvian.nozzle.model.FeedSettings
+import com.dluvian.nozzle.model.MultipleRelays
+import com.dluvian.nozzle.model.PostWithMeta
+import com.dluvian.nozzle.model.RelaySelection
+import com.dluvian.nozzle.model.SingleAuthor
+import com.dluvian.nozzle.model.UserSpecific
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
@@ -109,7 +118,7 @@ class FeedProvider(
     private fun listPubkeys(authorSelection: AuthorSelection): List<String>? {
         return when (authorSelection) {
             is Everyone -> null
-            is Contacts -> contactListProvider.listPersonalContactPubkeys() // TODO: Use contactListProvider
+            is Contacts -> contactListProvider.listPersonalContactPubkeys()
             is SingleAuthor -> listOf(authorSelection.pubkey)
         }
     }

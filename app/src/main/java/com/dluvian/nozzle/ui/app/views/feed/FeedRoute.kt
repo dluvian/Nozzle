@@ -17,7 +17,7 @@ fun FeedRoute(
     onPreparePost: (RelaySelection) -> Unit,
     onOpenDrawer: () -> Unit,
     onNavigateToProfile: (String) -> Unit,
-    onNavigateToThread: (String, String?, String?) -> Unit,
+    onNavigateToThread: (String, String?) -> Unit,
     onNavigateToReply: () -> Unit,
     onNavigateToPost: () -> Unit,
 ) {
@@ -49,7 +49,6 @@ fun FeedRoute(
             onNavigateToThread(
                 postIds.id,
                 postIds.replyToId,
-                postIds.replyToRootId
             )
         },
         onNavigateToReply = onNavigateToReply,

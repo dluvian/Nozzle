@@ -54,9 +54,9 @@ class ProfileWithAdditionalInfoProvider(
                     isFollowedByMe = false,
                 )
             )
-            nostrSubscriber.unsubscribeToNip65()
+            nostrSubscriber.unsubscribeNip65()
             nostrSubscriber.unsubscribeProfiles()
-            nostrSubscriber.subscribeToNip65(listOf(pubkey))
+            nostrSubscriber.subscribeNip65(listOf(pubkey))
             delay(1000)
             nostrSubscriber.subscribeToProfileMetadataAndContactList(
                 pubkeys = listContactPubkeysIfIsOneself(pubkey = pubkey),

@@ -20,19 +20,19 @@ interface INostrSubscriber {
         relays: Collection<String>? = null
     ): List<String>
 
-    fun subscribeToThread(
+    fun subscribeThread(
         currentPostId: String,
         replyToId: String? = null,
         replyToRootId: String? = null,
         relays: Collection<String>? = null,
     ): List<String>
 
-    fun subscribeToProfiles(
+    fun subscribeProfiles(
         pubkeys: Collection<String>,
         relays: Collection<String>? = null
     ): List<String>
 
-    fun subscribeToNip65(pubkeys: Collection<String>): List<String>
+    fun subscribeNip65(pubkeys: Collection<String>): List<String>
 
     fun unsubscribeFeeds()
 
@@ -42,5 +42,5 @@ interface INostrSubscriber {
 
     fun unsubscribeProfiles()
 
-    fun unsubscribeToNip65()
+    fun unsubscribeNip65()
 }
