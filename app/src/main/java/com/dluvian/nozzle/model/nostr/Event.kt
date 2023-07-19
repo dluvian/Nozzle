@@ -232,7 +232,7 @@ class Event(
         return tags.filter {
             it.size >= 2
                     && it.first() == "r"
-                    && it[1].startsWith("wss://") // TODO: Better URL check
+                    && it[1].startsWith("wss://")
                     && it[1].length >= 10
         }.map {
             val restriction = it.getOrNull(2)

@@ -1,7 +1,16 @@
 package com.dluvian.nozzle.ui.app.views.profile
 
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.Divider
 import androidx.compose.material.MaterialTheme
@@ -14,6 +23,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
+import com.dluvian.nozzle.R
+import com.dluvian.nozzle.data.utils.getShortenedNpubFromPubkey
 import com.dluvian.nozzle.model.PostIds
 import com.dluvian.nozzle.model.PostWithMeta
 import com.dluvian.nozzle.model.ProfileWithAdditionalInfo
@@ -30,7 +41,6 @@ import com.dluvian.nozzle.ui.theme.LightGray21
 import com.dluvian.nozzle.ui.theme.Shapes
 import com.dluvian.nozzle.ui.theme.sizing
 import com.dluvian.nozzle.ui.theme.spacing
-import com.dluvian.nozzle.R
 
 
 @Composable
@@ -105,7 +115,8 @@ private fun ProfileData(
             onNavToEditProfile = onNavToEditProfile,
         )
         NameAndNpub(
-            name = profile.metadata.name.orEmpty(),
+            name = profile.metadata.name.orEmpty()
+                .ifEmpty { getShortenedNpubFromPubkey(profile.pubkey) },
             npub = profile.npub,
             onCopyNpub = onCopyNpub,
         )

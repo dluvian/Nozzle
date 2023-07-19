@@ -24,8 +24,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.style.TextAlign
 import com.dluvian.nozzle.R
+import com.dluvian.nozzle.data.utils.getShortenedNpubFromPubkey
 import com.dluvian.nozzle.data.utils.hexToNote
-import com.dluvian.nozzle.data.utils.hexToNpub
 import com.dluvian.nozzle.model.PostIds
 import com.dluvian.nozzle.model.PostWithMeta
 import com.dluvian.nozzle.model.RepostPreview
@@ -163,7 +163,7 @@ private fun PostCardHeaderAndContent(
 ) {
     Column {
         PostCardHeader(
-            name = post.name.ifEmpty { hexToNpub(post.pubkey) },
+            name = post.name.ifEmpty { getShortenedNpubFromPubkey(post.pubkey) },
             pubkey = post.pubkey,
             createdAt = post.createdAt,
             onOpenProfile = onOpenProfile
@@ -171,7 +171,11 @@ private fun PostCardHeaderAndContent(
         PostCardContentBase(
             replyToName = if (post.replyToId != null) {
                 post.replyToName.orEmpty()
-                    .ifEmpty { post.replyToPubkey.orEmpty().ifEmpty { "???" } }
+                    .ifEmpty {
+                        post.replyToPubkey?.let { getShortenedNpubFromPubkey(post.replyToPubkey) }
+                            .orEmpty()
+                    }
+                    .ifEmpty { "???" }
             } else null,
             relays = post.relays,
             content = post.content,
@@ -359,7 +363,6 @@ private fun ReplyAction(
                 onNavigateToReply()
             })
         Spacer(Modifier.width(spacing.medium))
-        // TODO: Humanize long numbers
         Text(
             text = numOfReplies.toString(),
             color = if (numOfReplies > 0) Color.Unspecified else Color.Transparent
