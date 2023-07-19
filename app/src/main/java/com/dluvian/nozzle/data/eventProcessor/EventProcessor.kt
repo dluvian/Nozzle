@@ -11,6 +11,7 @@ import com.dluvian.nozzle.data.room.entity.ContactEntity
 import com.dluvian.nozzle.data.room.entity.Nip65Entity
 import com.dluvian.nozzle.data.room.entity.PostEntity
 import com.dluvian.nozzle.data.room.entity.ProfileEntity
+import com.dluvian.nozzle.data.utils.hexToNpub
 import com.dluvian.nozzle.model.nostr.Event
 import com.dluvian.nozzle.model.nostr.Metadata
 import com.dluvian.nozzle.model.nostr.Tag
@@ -140,7 +141,7 @@ class EventProcessor(
 
         idCache.add(event.id)
 
-        Log.d(TAG, "Process ${nip65Entries.size} nip65 entries from ${event.pubkey}")
+        Log.d(TAG, "Process ${nip65Entries.size} nip65 entries from ${hexToNpub(event.pubkey)}")
         scope.launch {
             val entities = nip65Entries.map {
                 Nip65Entity(
