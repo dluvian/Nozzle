@@ -100,7 +100,7 @@ private fun PictureIndicator(modifier: Modifier = Modifier) {
                     .aspectRatio(1.0f),
                 imageVector = Icons.Filled.AccountCircle,
                 contentDescription = null,
-                tint = colors.primary
+                tint = colors.primaryVariant
             )
         }
     }

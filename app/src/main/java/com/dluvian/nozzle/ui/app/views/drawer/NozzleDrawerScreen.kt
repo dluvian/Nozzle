@@ -30,6 +30,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import com.dluvian.nozzle.R
+import com.dluvian.nozzle.data.utils.getShortenedNpub
 import com.dluvian.nozzle.model.nostr.Metadata
 import com.dluvian.nozzle.ui.app.navigation.NozzleNavActions
 import com.dluvian.nozzle.ui.components.ProfilePicture
@@ -113,7 +114,7 @@ private fun ProfileRow(
                 )
                 Spacer(Modifier.width(spacing.large))
                 Text(
-                    text = profileName.ifEmpty { npub },
+                    text = profileName.ifEmpty { getShortenedNpub(npub) },
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis,
                     style = MaterialTheme.typography.h6,
