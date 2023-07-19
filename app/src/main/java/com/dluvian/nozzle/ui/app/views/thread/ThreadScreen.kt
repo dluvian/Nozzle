@@ -92,12 +92,12 @@ private fun ThreadedPosts(
                     PostCard(
                         post = post,
                         onLike = onLike,
+                        threadPosition = threadPosition,
                         onRepost = onRepost,
                         onPrepareReply = onPrepareReply,
-                        threadPosition = threadPosition,
-                        onOpenProfile = onNavigateToProfile,
                         onNavigateToThread = onOpenThread,
-                        onNavigateToReply = onNavigateToReply
+                        onNavigateToReply = onNavigateToReply,
+                        onOpenProfile = onNavigateToProfile,
                     )
                 }
                 item {
@@ -105,16 +105,16 @@ private fun ThreadedPosts(
                         PostNotFound()
                     }
                     PostCard(
+                        modifier = Modifier.background(color = LightYellow),
                         post = it,
-                        isCurrent = true,
+                        threadPosition = thread.getCurrentThreadPosition(),
                         onLike = onLike,
+                        isCurrent = true,
                         onRepost = onRepost,
                         onPrepareReply = onPrepareReply,
-                        modifier = Modifier.background(color = LightYellow),
-                        threadPosition = thread.getCurrentThreadPosition(),
-                        onOpenProfile = onNavigateToProfile,
-                        onNavigateToReply = onNavigateToReply,
                         onNavigateToThread = onOpenThread,
+                        onNavigateToReply = onNavigateToReply,
+                        onOpenProfile = onNavigateToProfile,
                     )
                     Divider()
                     Spacer(modifier = Modifier.height(spacing.tiny))
@@ -126,9 +126,9 @@ private fun ThreadedPosts(
                         onLike = onLike,
                         onRepost = onRepost,
                         onPrepareReply = onPrepareReply,
-                        onOpenProfile = onNavigateToProfile,
                         onNavigateToThread = onOpenThread,
-                        onNavigateToReply = onNavigateToReply
+                        onNavigateToReply = onNavigateToReply,
+                        onOpenProfile = onNavigateToProfile,
                     )
                 }
             }

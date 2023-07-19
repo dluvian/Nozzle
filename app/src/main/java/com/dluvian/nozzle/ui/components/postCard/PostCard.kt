@@ -116,12 +116,11 @@ fun PostCard(
         .clipToBounds()
     ) {
         PostCardProfilePicture(
-            modifier = Modifier
-                .size(sizing.profilePicture)
-                .clip(CircleShape),
+            modifier = Modifier.size(sizing.profilePicture),
             pictureUrl = post.pictureUrl,
             pubkey = post.pubkey,
-            onOpenProfile = onOpenProfile
+            showFriendIndicator = post.isFollowedByMe,
+            onOpenProfile = onOpenProfile,
         )
         Spacer(Modifier.width(spacing.large))
         Column {
@@ -209,7 +208,8 @@ private fun RepostCardContent(
                             .clip(CircleShape),
                         pictureUrl = it.picture,
                         pubkey = it.pubkey,
-                        onOpenProfile = onOpenProfile
+                        showFriendIndicator = false,
+                        onOpenProfile = onOpenProfile,
                     )
                     Spacer(modifier = Modifier.width(spacing.medium))
                     PostCardHeader(
@@ -254,12 +254,15 @@ private fun PostCardContentBase(
 private fun PostCardProfilePicture(
     pictureUrl: String,
     pubkey: String,
+    showFriendIndicator: Boolean,
     onOpenProfile: ((String) -> Unit)?,
     modifier: Modifier = Modifier,
 ) {
-    ProfilePicture(modifier = modifier,
+    ProfilePicture(
+        modifier = modifier,
         pictureUrl = pictureUrl,
         pubkey = pubkey,
+        showFriendIndicator = showFriendIndicator,
         onOpenProfile = if (onOpenProfile != null) {
             { onOpenProfile(pubkey) }
         } else {

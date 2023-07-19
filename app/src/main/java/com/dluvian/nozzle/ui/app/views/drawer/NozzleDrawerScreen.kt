@@ -109,6 +109,7 @@ private fun ProfileRow(
                         .clip(CircleShape),
                     pictureUrl = picture,
                     pubkey = pubkey,
+                    showFriendIndicator = false
                 )
                 Spacer(Modifier.width(spacing.large))
                 Text(

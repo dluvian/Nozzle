@@ -1,6 +1,8 @@
 package com.dluvian.nozzle.data.mapper
 
 import com.dluvian.nozzle.data.provider.IInteractionStatsProvider
+import com.dluvian.nozzle.data.provider.IPubkeyProvider
+import com.dluvian.nozzle.data.room.dao.ContactDao
 import com.dluvian.nozzle.data.room.dao.EventRelayDao
 import com.dluvian.nozzle.data.room.dao.PostDao
 import com.dluvian.nozzle.data.room.dao.ProfileDao
@@ -14,9 +16,11 @@ import kotlinx.coroutines.flow.flow
 
 class PostMapper(
     private val interactionStatsProvider: IInteractionStatsProvider,
+    private val pubkeyProvider: IPubkeyProvider,
     private val postDao: PostDao,
     private val profileDao: ProfileDao,
     private val eventRelayDao: EventRelayDao,
+    private val contactDao: ContactDao,
 ) : IPostMapper {
 
     override suspend fun mapToPostsWithMetaFlow(posts: List<PostEntity>): Flow<List<PostWithMeta>> {
@@ -32,6 +36,9 @@ class PostMapper(
             profileDao.getAuthorNamesAndPubkeysMapFlow(posts.mapNotNull { it.replyToId })
                 .distinctUntilChanged()
         val relaysFlow = eventRelayDao.getRelaysPerEventIdMapFlow(postIds).distinctUntilChanged()
+        val contactPubkeysFlow = contactDao.listContactPubkeysFlow(
+            pubkey = pubkeyProvider.getPubkey(),
+        ).distinctUntilChanged()
 
         val mainFlow = flow {
             emit(posts.map {
@@ -49,7 +56,8 @@ class PostMapper(
                     pictureUrl = "",
                     repost = it.repostedId?.let { repostedId ->
                         RepostPreview(
-                            id = repostedId, pubkey = "",
+                            id = repostedId,
+                            pubkey = "",
                             content = "",
                             name = "",
                             picture = "",
@@ -58,6 +66,7 @@ class PostMapper(
                     },
                     isLikedByMe = false,
                     isRepostedByMe = false,
+                    isFollowedByMe = false,
                     numOfReplies = 0,
                     relays = listOf(),
                 )
@@ -96,6 +105,13 @@ class PostMapper(
             main.map {
                 it.copy(
                     relays = relays[it.id].orEmpty(),
+                )
+            }
+        }.combine(contactPubkeysFlow) { main, contactPubkeys ->
+            main.map {
+                it.copy(
+                    isFollowedByMe = if (it.pubkey == pubkeyProvider.getPubkey()) false
+                    else contactPubkeys.contains(it.pubkey),
                 )
             }
         }

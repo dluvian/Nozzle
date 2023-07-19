@@ -110,9 +110,11 @@ class AppContainer(context: Context) {
 
     private val postMapper: IPostMapper = PostMapper(
         interactionStatsProvider = interactionStatsProvider,
+        pubkeyProvider = keyManager,
         postDao = roomDb.postDao(),
         profileDao = roomDb.profileDao(),
         eventRelayDao = roomDb.eventRelayDao(),
+        contactDao = roomDb.contactDao()
     )
 
     val feedProvider: IFeedProvider = FeedProvider(

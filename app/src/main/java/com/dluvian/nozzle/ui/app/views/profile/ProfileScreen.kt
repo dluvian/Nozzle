@@ -11,7 +11,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.Divider
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
@@ -152,10 +151,10 @@ private fun ProfilePictureAndActions(
         ProfilePicture(
             modifier = Modifier
                 .size(sizing.largeProfilePicture)
-                .aspectRatio(1f)
-                .clip(CircleShape),
+                .aspectRatio(1f),
             pictureUrl = pictureUrl,
             pubkey = pubkey,
+            showFriendIndicator = isFollowed
         )
         FollowOrEditButton(
             isOneself = isOneself,

@@ -12,7 +12,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.FloatingActionButton
 import androidx.compose.material.MaterialTheme.typography
 import androidx.compose.material.Scaffold
@@ -23,8 +22,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -105,15 +102,15 @@ fun FeedScreen(
             PostCardList(
                 posts = feedState,
                 isRefreshing = uiState.isRefreshing,
-                lazyListState = lazyListState,
+                onRefresh = onRefreshFeedView,
                 onLike = onLike,
                 onRepost = onRepost,
                 onPrepareReply = onPrepareReply,
                 onLoadMore = onLoadMore,
-                onRefresh = onRefreshFeedView,
-                onOpenProfile = onNavigateToProfile,
                 onNavigateToThread = onNavigateToThread,
                 onNavigateToReply = onNavigateToReply,
+                lazyListState = lazyListState,
+                onOpenProfile = onNavigateToProfile,
             )
         }
         if (feedState.isEmpty()) {
@@ -147,13 +144,12 @@ private fun FeedTopBar(
             Row(modifier = Modifier.weight(0.15f)) {
                 Spacer(modifier = Modifier.width(spacing.large))
                 ProfilePicture(
-                    pictureUrl = picture,
-                    pubkey = pubkey,
                     modifier = Modifier
                         .size(sizing.smallProfilePicture)
-                        .clip(CircleShape)
-                        .drawBehind { drawCircle(color = White21, radius = size.width / 2) }
                         .clickable { onPictureClick() },
+                    pictureUrl = picture,
+                    pubkey = pubkey,
+                    showFriendIndicator = false
                 )
             }
             Headline(
