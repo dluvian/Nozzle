@@ -26,10 +26,13 @@ import androidx.compose.ui.text.style.TextAlign
 import com.dluvian.nozzle.R
 import com.dluvian.nozzle.data.utils.getShortenedNpubFromPubkey
 import com.dluvian.nozzle.data.utils.hexToNote
+import com.dluvian.nozzle.model.Oneself
 import com.dluvian.nozzle.model.PostIds
 import com.dluvian.nozzle.model.PostWithMeta
 import com.dluvian.nozzle.model.RepostPreview
 import com.dluvian.nozzle.model.ThreadPosition
+import com.dluvian.nozzle.model.TrustType
+import com.dluvian.nozzle.model.determineTrustType
 import com.dluvian.nozzle.ui.components.*
 import com.dluvian.nozzle.ui.components.text.*
 import com.dluvian.nozzle.ui.theme.*
@@ -119,7 +122,11 @@ fun PostCard(
             modifier = Modifier.size(sizing.profilePicture),
             pictureUrl = post.pictureUrl,
             pubkey = post.pubkey,
-            showFriendIndicator = post.isFollowedByMe,
+            trustType = determineTrustType(
+                isOneself = post.isOneself,
+                isFollowed = post.isFollowedByMe,
+                followedByFriendsPercentage = post.followedByFriendsPercentage,
+            ),
             onOpenProfile = onOpenProfile,
         )
         Spacer(Modifier.width(spacing.large))
@@ -208,7 +215,7 @@ private fun RepostCardContent(
                             .clip(CircleShape),
                         pictureUrl = it.picture,
                         pubkey = it.pubkey,
-                        showFriendIndicator = false,
+                        trustType = Oneself, // TODO: Find correct trust type
                         onOpenProfile = onOpenProfile,
                     )
                     Spacer(modifier = Modifier.width(spacing.medium))
@@ -254,7 +261,7 @@ private fun PostCardContentBase(
 private fun PostCardProfilePicture(
     pictureUrl: String,
     pubkey: String,
-    showFriendIndicator: Boolean,
+    trustType: TrustType,
     onOpenProfile: ((String) -> Unit)?,
     modifier: Modifier = Modifier,
 ) {
@@ -262,7 +269,7 @@ private fun PostCardProfilePicture(
         modifier = modifier,
         pictureUrl = pictureUrl,
         pubkey = pubkey,
-        showFriendIndicator = showFriendIndicator,
+        trustType = trustType,
         onOpenProfile = if (onOpenProfile != null) {
             { onOpenProfile(pubkey) }
         } else {

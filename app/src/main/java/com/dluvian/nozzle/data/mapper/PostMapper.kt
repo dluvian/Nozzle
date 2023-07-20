@@ -27,11 +27,13 @@ class PostMapper(
         if (posts.isEmpty()) return flow { emit(listOf()) }
 
         val postIds = posts.map { it.id }
+        val pubkeys = posts.map { it.pubkey }
+
         val statsFlow = interactionStatsProvider.getStatsFlow(postIds).distinctUntilChanged()
         val repostsFlow = postDao.getRepostsPreviewMapFlow(posts.mapNotNull { it.repostedId })
             .distinctUntilChanged()
-        val namesAndPicturesFlow =
-            profileDao.getNamesAndPicturesMapFlow(posts.map { it.pubkey }).distinctUntilChanged()
+        val namesAndPicturesFlow = profileDao.getNamesAndPicturesMapFlow(pubkeys)
+            .distinctUntilChanged()
         val replyRecipientsFlow =
             profileDao.getAuthorNamesAndPubkeysMapFlow(posts.mapNotNull { it.replyToId })
                 .distinctUntilChanged()
@@ -39,6 +41,10 @@ class PostMapper(
         val contactPubkeysFlow = contactDao.listContactPubkeysFlow(
             pubkey = pubkeyProvider.getPubkey(),
         ).distinctUntilChanged()
+        val followedByFriendsPercentagePerPubkeyFlow =
+            contactDao.getFollowedByFriendsPercentagePerPubkeyFlow(
+                pubkey = pubkeyProvider.getPubkey(), contactPubkeys = pubkeys
+            ).distinctUntilChanged()
 
         val mainFlow = flow {
             emit(posts.map {
@@ -67,53 +73,71 @@ class PostMapper(
                     isLikedByMe = false,
                     isRepostedByMe = false,
                     isFollowedByMe = false,
+                    isOneself = isOneself(it.pubkey),
+                    followedByFriendsPercentage = if (isOneself(it.pubkey)) null else 0f,
                     numOfReplies = 0,
                     relays = listOf(),
                 )
             })
         }
 
-        return mainFlow.combine(statsFlow) { main, stats ->
-            main.map {
-                it.copy(
-                    isLikedByMe = stats.isLikedByMe(it.id),
-                    isRepostedByMe = stats.isRepostedByMe(it.id),
-                    numOfReplies = stats.getNumOfReplies(it.id),
-                )
+        return mainFlow
+            .combine(statsFlow) { main, stats ->
+                main.map {
+                    it.copy(
+                        isLikedByMe = stats.isLikedByMe(it.id),
+                        isRepostedByMe = stats.isRepostedByMe(it.id),
+                        numOfReplies = stats.getNumOfReplies(it.id),
+                    )
+                }
             }
-        }.combine(repostsFlow) { main, reposts ->
-            main.map {
-                it.copy(
-                    repost = it.repost?.id.let { repostedId -> reposts[repostedId] },
-                )
+            .combine(repostsFlow) { main, reposts ->
+                main.map {
+                    it.copy(
+                        repost = it.repost?.id.let { repostedId -> reposts[repostedId] },
+                    )
+                }
             }
-        }.combine(namesAndPicturesFlow) { main, namesAndPictures ->
-            main.map {
-                it.copy(
-                    pictureUrl = namesAndPictures[it.pubkey]?.picture.orEmpty(),
-                    name = namesAndPictures[it.pubkey]?.name.orEmpty(),
-                )
+            .combine(namesAndPicturesFlow) { main, namesAndPictures ->
+                main.map {
+                    it.copy(
+                        pictureUrl = namesAndPictures[it.pubkey]?.picture.orEmpty(),
+                        name = namesAndPictures[it.pubkey]?.name.orEmpty(),
+                    )
+                }
             }
-        }.combine(replyRecipientsFlow) { main, replyRecipients ->
-            main.map {
-                it.copy(
-                    replyToName = replyRecipients[it.replyToId]?.name,
-                    replyToPubkey = replyRecipients[it.replyToId]?.pubkey,
-                )
+            .combine(replyRecipientsFlow) { main, replyRecipients ->
+                main.map {
+                    it.copy(
+                        replyToName = replyRecipients[it.replyToId]?.name,
+                        replyToPubkey = replyRecipients[it.replyToId]?.pubkey,
+                    )
+                }
             }
-        }.combine(relaysFlow) { main, relays ->
-            main.map {
-                it.copy(
-                    relays = relays[it.id].orEmpty(),
-                )
+            .combine(relaysFlow) { main, relays ->
+                main.map {
+                    it.copy(
+                        relays = relays[it.id].orEmpty(),
+                    )
+                }
             }
-        }.combine(contactPubkeysFlow) { main, contactPubkeys ->
-            main.map {
-                it.copy(
-                    isFollowedByMe = if (it.pubkey == pubkeyProvider.getPubkey()) false
-                    else contactPubkeys.contains(it.pubkey),
-                )
+            .combine(contactPubkeysFlow) { main, contactPubkeys ->
+                main.map {
+                    it.copy(
+                        isFollowedByMe = if (it.pubkey == pubkeyProvider.getPubkey()) false
+                        else contactPubkeys.contains(it.pubkey),
+                    )
+                }
             }
-        }
+            .combine(followedByFriendsPercentagePerPubkeyFlow) { main, followedByFriendsPercentagePerPubkey ->
+                main.map {
+                    it.copy(
+                        followedByFriendsPercentage = if (isOneself(it.pubkey)) null
+                        else followedByFriendsPercentagePerPubkey[it.pubkey]
+                    )
+                }
+            }
     }
+
+    private fun isOneself(pubkey: String) = pubkey == pubkeyProvider.getPubkey()
 }

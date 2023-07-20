@@ -15,6 +15,8 @@ data class PostWithMeta(
     val isLikedByMe: Boolean,
     val isRepostedByMe: Boolean,
     val isFollowedByMe: Boolean,
+    val isOneself: Boolean,
+    val followedByFriendsPercentage: Float?,
     val numOfReplies: Int,
     val repost: RepostPreview?,
     val relays: List<String>,

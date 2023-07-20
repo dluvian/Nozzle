@@ -11,4 +11,5 @@ data class ProfileWithAdditionalInfo(
     val relays: List<String>,
     val isOneself: Boolean,
     val isFollowedByMe: Boolean,
+    val followedByFriendsPercentage: Float?,
 )

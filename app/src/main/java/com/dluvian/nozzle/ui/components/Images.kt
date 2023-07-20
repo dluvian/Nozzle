@@ -12,12 +12,14 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.Icon
 import androidx.compose.material.MaterialTheme.colors
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AccountCircle
+import androidx.compose.material.icons.filled.QuestionMark
+import androidx.compose.material.icons.filled.VerifiedUser
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -27,19 +29,25 @@ import coil.request.ImageRequest
 import com.dluvian.nozzle.R
 import com.dluvian.nozzle.data.utils.getRobohashUrl
 import com.dluvian.nozzle.data.utils.hexToNpub
+import com.dluvian.nozzle.model.FollowedByFriend
+import com.dluvian.nozzle.model.Friend
+import com.dluvian.nozzle.model.Oneself
+import com.dluvian.nozzle.model.TrustType
+import com.dluvian.nozzle.model.Unknown
+import com.dluvian.nozzle.ui.theme.Orange500
 
 @Composable
 fun ProfilePicture(
     modifier: Modifier = Modifier,
     pictureUrl: String,
     pubkey: String,
-    showFriendIndicator: Boolean,
+    trustType: TrustType,
     onOpenProfile: (() -> Unit)? = null,
 ) {
     BaseProfilePicture(
         modifier = modifier,
         pictureUrl = pictureUrl.ifEmpty { getRobohashUrl(hexToNpub(pubkey)) },
-        showFriendIndicator = showFriendIndicator,
+        trustType = trustType,
         onOpenProfile = onOpenProfile,
     )
 }
@@ -48,7 +56,7 @@ fun ProfilePicture(
 fun BaseProfilePicture(
     modifier: Modifier = Modifier,
     pictureUrl: String,
-    showFriendIndicator: Boolean,
+    trustType: TrustType,
     onError: (() -> Unit)? = null,
     onOpenProfile: (() -> Unit)? = null,
 ) {
@@ -79,29 +87,75 @@ fun BaseProfilePicture(
             placeholder = painterResource(R.drawable.ic_default_profile),
             contentDescription = stringResource(id = R.string.profile_picture)
         )
-        if (showFriendIndicator) PictureIndicator(modifier = Modifier.fillMaxWidth())
+        PictureIndicator(modifier = Modifier.fillMaxWidth(), trustType = trustType)
     }
 }
 
 @Composable
-private fun PictureIndicator(modifier: Modifier = Modifier) {
+private fun PictureIndicator(
+    trustType: TrustType,
+    modifier: Modifier = Modifier
+) {
+    when (trustType) {
+        is Oneself -> {}
+
+        is Unknown -> PictureIndicatorBase(
+            modifier = modifier,
+            color = Color.Gray,
+            imageVector = Icons.Filled.QuestionMark,
+            percentage = 1.0f
+        )
+
+        is Friend -> PictureIndicatorBase(
+            modifier = modifier,
+            color = Color.Green,
+            imageVector = Icons.Filled.VerifiedUser,
+            percentage = 1.0f
+        )
+
+        is FollowedByFriend -> PictureIndicatorBase(
+            modifier = modifier,
+            color = Orange500,
+            imageVector = Icons.Filled.VerifiedUser,
+            percentage = trustType.percentageOfFriends
+        )
+    }
+
+}
+
+@Composable
+private fun PictureIndicatorBase(
+    color: Color,
+    imageVector: ImageVector,
+    percentage: Float, // TODO: Custom tint by percentage
+    modifier: Modifier = Modifier
+) {
     Row(modifier = modifier, horizontalArrangement = Arrangement.End) {
         Box(
             modifier = Modifier
                 .clip(CircleShape)
                 .background(color = colors.background)
-                .fillMaxWidth(0.33f)
+                .fillMaxWidth(0.35f)
                 .aspectRatio(1.0f),
             contentAlignment = Alignment.Center
         ) {
-            Icon(
+            Box(
                 modifier = Modifier
-                    .fillMaxWidth(0.9f)
+                    .clip(CircleShape)
+                    .background(color = color.copy(alpha = 0.2f))
+                    .fillMaxWidth(0.85f)
                     .aspectRatio(1.0f),
-                imageVector = Icons.Filled.AccountCircle,
-                contentDescription = null,
-                tint = colors.primaryVariant
-            )
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    modifier = Modifier
+                        .fillMaxWidth(0.95f)
+                        .aspectRatio(1.0f),
+                    imageVector = imageVector,
+                    contentDescription = null,
+                    tint = color
+                )
+            }
         }
     }
 }

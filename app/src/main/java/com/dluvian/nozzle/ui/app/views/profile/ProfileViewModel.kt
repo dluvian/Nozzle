@@ -68,6 +68,7 @@ class ProfileViewModel(
             relays = listOf(),
             isOneself = false,
             isFollowedByMe = false,
+            followedByFriendsPercentage = null,
         )
     )
 

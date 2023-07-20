@@ -19,6 +19,7 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.ImeAction
+import com.dluvian.nozzle.model.Oneself
 import com.dluvian.nozzle.ui.theme.sizing
 import com.dluvian.nozzle.ui.theme.spacing
 
@@ -44,7 +45,7 @@ fun InputBox(
                     .size(sizing.profilePicture),
                 pictureUrl = picture,
                 pubkey = pubkey,
-                showFriendIndicator = false
+                trustType = Oneself
             )
             ChangeableTextField(
                 modifier = Modifier

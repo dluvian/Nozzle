@@ -27,6 +27,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import com.dluvian.nozzle.model.Everyone
 import com.dluvian.nozzle.model.FeedSettings
+import com.dluvian.nozzle.model.Oneself
 import com.dluvian.nozzle.model.PostIds
 import com.dluvian.nozzle.model.PostWithMeta
 import com.dluvian.nozzle.model.RelayActive
@@ -149,7 +150,7 @@ private fun FeedTopBar(
                         .clickable { onPictureClick() },
                     pictureUrl = picture,
                     pubkey = pubkey,
-                    showFriendIndicator = false
+                    trustType = Oneself
                 )
             }
             Headline(

@@ -27,6 +27,7 @@ import com.dluvian.nozzle.data.utils.getShortenedNpubFromPubkey
 import com.dluvian.nozzle.model.PostIds
 import com.dluvian.nozzle.model.PostWithMeta
 import com.dluvian.nozzle.model.ProfileWithAdditionalInfo
+import com.dluvian.nozzle.model.determineTrustType
 import com.dluvian.nozzle.ui.components.CopyIcon
 import com.dluvian.nozzle.ui.components.EditProfileButton
 import com.dluvian.nozzle.ui.components.FollowButton
@@ -109,6 +110,7 @@ private fun ProfileData(
             pubkey = profile.pubkey,
             isOneself = profile.isOneself,
             isFollowed = profile.isFollowedByMe,
+            followedByFriendsPercentage = profile.followedByFriendsPercentage,
             onFollow = onFollow,
             onUnfollow = onUnfollow,
             onNavToEditProfile = onNavToEditProfile,
@@ -137,6 +139,7 @@ private fun ProfilePictureAndActions(
     pubkey: String,
     isOneself: Boolean,
     isFollowed: Boolean,
+    followedByFriendsPercentage: Float?,
     onFollow: (String) -> Unit,
     onUnfollow: (String) -> Unit,
     onNavToEditProfile: () -> Unit,
@@ -154,7 +157,11 @@ private fun ProfilePictureAndActions(
                 .aspectRatio(1f),
             pictureUrl = pictureUrl,
             pubkey = pubkey,
-            showFriendIndicator = isFollowed
+            trustType = determineTrustType(
+                isOneself = isOneself,
+                isFollowed = isFollowed,
+                followedByFriendsPercentage = followedByFriendsPercentage,
+            )
         )
         FollowOrEditButton(
             isOneself = isOneself,
