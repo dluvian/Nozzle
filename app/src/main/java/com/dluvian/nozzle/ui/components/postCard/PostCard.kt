@@ -222,7 +222,7 @@ private fun RepostCardContent(
                     PostCardHeader(
                         name = it.name,
                         pubkey = it.pubkey,
-                        createdAt = post.createdAt,
+                        createdAt = it.createdAt,
                         onOpenProfile = onOpenProfile
                     )
                 }

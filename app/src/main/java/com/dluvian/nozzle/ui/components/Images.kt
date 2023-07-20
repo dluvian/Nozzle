@@ -18,6 +18,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
@@ -99,18 +100,11 @@ private fun PictureIndicator(
     when (trustType) {
         is Oneself -> {}
 
-        is Unknown -> PictureIndicatorBase(
-            modifier = modifier,
-            color = Color.Gray,
-            imageVector = Icons.Filled.QuestionMark,
-            percentage = 1.0f
-        )
-
         is Friend -> PictureIndicatorBase(
             modifier = modifier,
             color = Color.Green,
             imageVector = Icons.Filled.VerifiedUser,
-            percentage = 1.0f
+            percentage = null
         )
 
         is FollowedByFriend -> PictureIndicatorBase(
@@ -119,22 +113,32 @@ private fun PictureIndicator(
             imageVector = Icons.Filled.VerifiedUser,
             percentage = trustType.percentageOfFriends
         )
+
+        is Unknown -> PictureIndicatorBase(
+            modifier = modifier,
+            color = Color.Gray,
+            imageVector = Icons.Filled.QuestionMark,
+            percentage = null
+        )
+
     }
 
 }
 
+// TODO: Sub to friends follower list
 @Composable
 private fun PictureIndicatorBase(
     color: Color,
     imageVector: ImageVector,
-    percentage: Float, // TODO: Custom tint by percentage
+    percentage: Float?,
     modifier: Modifier = Modifier
 ) {
     Row(modifier = modifier, horizontalArrangement = Arrangement.End) {
+        val bgColor = colors.background
         Box(
             modifier = Modifier
                 .clip(CircleShape)
-                .background(color = colors.background)
+                .background(color = bgColor)
                 .fillMaxWidth(0.35f)
                 .aspectRatio(1.0f),
             contentAlignment = Alignment.Center
@@ -144,7 +148,23 @@ private fun PictureIndicatorBase(
                     .clip(CircleShape)
                     .background(color = color.copy(alpha = 0.2f))
                     .fillMaxWidth(0.85f)
-                    .aspectRatio(1.0f),
+                    .aspectRatio(1.0f)
+                    .let {
+                        if (percentage != null) {
+                            it.drawBehind {
+                                drawArc(
+                                    Color.Green,
+                                    startAngle = -90f,
+                                    sweepAngle = percentage * 360,
+                                    useCenter = true,
+                                )
+                                drawCircle(
+                                    color = bgColor,
+                                    radius = size.minDimension * 0.33f
+                                )
+                            }
+                        } else it
+                    },
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
