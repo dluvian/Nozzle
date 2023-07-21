@@ -258,7 +258,7 @@ class ProfileViewModel(
                     .relays
                     .ifEmpty { getDefaultRelays() }
             }.shuffled()
-            .take(10)  // Don't ask more than 10 relays
+            .take(5)  // Don't ask more than 5 relays
     }
 
     companion object {

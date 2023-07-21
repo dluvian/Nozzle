@@ -141,6 +141,7 @@ interface ContactDao {
         pubkey: String,
         contactPubkeys: List<String>
     ): Flow<Map<String, Float>> {
+        // TODO: Use subset of total following (count only those that have db entries themselves)
         val numOfFollowingFlow = countFollowingFlow(pubkey).distinctUntilChanged()
         val rawTrustScorePerPubkeyFlow = getRawTrustScorePerPubkeyFlow(
             pubkey = pubkey,
