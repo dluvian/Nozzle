@@ -74,6 +74,7 @@ class NostrSubscriber(
         if (posts.isEmpty()) return listOf()
 
         val postIds = posts.map { it.id }
+        val followedAuthorPubkeys = posts.filter { it.isFollowedByMe }.map { it.pubkey }.distinct()
         val referencedPostIds = listReferencedPostIds(posts)
         val referencedPubkeys = mutableSetOf<String>()
         referencedPubkeys.addAll(listReferencedPubkeys(posts))
@@ -92,6 +93,10 @@ class NostrSubscriber(
         }
         if (referencedPubkeys.isNotEmpty()) {
             filters.add(Filter.createProfileFilter(pubkeys = referencedPubkeys.toList()))
+        }
+        // TODO: Do not resub same contact lists all the time
+        if (followedAuthorPubkeys.isNotEmpty()) {
+            filters.add(Filter.createContactListFilter(pubkeys = followedAuthorPubkeys))
         }
 
         val ids = nostrService.subscribe(

@@ -65,7 +65,7 @@ class ProfileWithAdditionalInfoProvider(
             nostrSubscriber.subscribeNip65(listOf(pubkey))
             delay(1000)
             nostrSubscriber.subscribeToProfileMetadataAndContactList(
-                pubkeys = listContactPubkeysIfIsOneself(pubkey = pubkey),
+                pubkeys = listOf(pubkey),
                 relays = nip65Dao.getWriteRelaysOfPubkey(pubkey = pubkey)
                     .ifEmpty {
                         relaysFlow.first().ifEmpty { getDefaultRelays() }
@@ -96,10 +96,4 @@ class ProfileWithAdditionalInfoProvider(
 
 
     private fun isOneself(pubkey: String) = pubkey == pubkeyProvider.getPubkey()
-
-    private suspend fun listContactPubkeysIfIsOneself(pubkey: String): List<String> {
-        return if (isOneself(pubkey = pubkey)) {
-            contactDao.listContactPubkeys(pubkey) + pubkey
-        } else listOf(pubkey)
-    }
 }
