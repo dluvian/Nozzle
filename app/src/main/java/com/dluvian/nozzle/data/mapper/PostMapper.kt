@@ -41,10 +41,10 @@ class PostMapper(
         val contactPubkeysFlow = contactDao.listContactPubkeysFlow(
             pubkey = pubkeyProvider.getPubkey(),
         ).distinctUntilChanged()
-        val followedByFriendsPercentagePerPubkeyFlow =
-            contactDao.getFollowedByFriendsPercentagePerPubkeyFlow(
-                pubkey = pubkeyProvider.getPubkey(), contactPubkeys = pubkeys
-            ).distinctUntilChanged()
+        val trustScorePerPubkeyFlow = contactDao.getTrustScorePerPubkeyFlow(
+            pubkey = pubkeyProvider.getPubkey(),
+            contactPubkeys = pubkeys
+        ).distinctUntilChanged()
 
         val mainFlow = flow {
             emit(posts.map {
@@ -74,7 +74,7 @@ class PostMapper(
                     isRepostedByMe = false,
                     isFollowedByMe = false,
                     isOneself = isOneself(it.pubkey),
-                    followedByFriendsPercentage = if (isOneself(it.pubkey)) null else 0f,
+                    trustScore = if (isOneself(it.pubkey)) null else 0f,
                     numOfReplies = 0,
                     relays = listOf(),
                 )
@@ -129,11 +129,11 @@ class PostMapper(
                     )
                 }
             }
-            .combine(followedByFriendsPercentagePerPubkeyFlow) { main, followedByFriendsPercentagePerPubkey ->
+            .combine(trustScorePerPubkeyFlow) { main, trustScorePerPubkey ->
                 main.map {
                     it.copy(
-                        followedByFriendsPercentage = if (isOneself(it.pubkey)) null
-                        else followedByFriendsPercentagePerPubkey[it.pubkey]
+                        trustScore = if (isOneself(it.pubkey)) null
+                        else trustScorePerPubkey[it.pubkey]
                     )
                 }
             }

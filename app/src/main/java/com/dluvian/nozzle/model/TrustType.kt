@@ -8,16 +8,16 @@ object Unknown : TrustType()
 
 object Friend : TrustType()
 
-class FollowedByFriend(val percentageOfFriends: Float) : TrustType()
+class FollowedByFriend(val trustScore: Float) : TrustType()
 
 fun determineTrustType(
     isOneself: Boolean,
     isFollowed: Boolean,
-    followedByFriendsPercentage: Float?
+    trustScore: Float?
 ): TrustType {
     return if (isOneself) Oneself
     else if (isFollowed) Friend
-    else if (followedByFriendsPercentage?.let { it > 0f && it <= 1f } == true) {
-        FollowedByFriend(percentageOfFriends = followedByFriendsPercentage)
+    else if (trustScore?.let { it > 0f && it <= 1f } == true) {
+        FollowedByFriend(trustScore = trustScore)
     } else Unknown
 }

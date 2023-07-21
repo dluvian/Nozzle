@@ -110,7 +110,7 @@ private fun ProfileData(
             pubkey = profile.pubkey,
             isOneself = profile.isOneself,
             isFollowed = profile.isFollowedByMe,
-            followedByFriendsPercentage = profile.followedByFriendsPercentage,
+            trustScore = profile.trustScore,
             onFollow = onFollow,
             onUnfollow = onUnfollow,
             onNavToEditProfile = onNavToEditProfile,
@@ -139,7 +139,7 @@ private fun ProfilePictureAndActions(
     pubkey: String,
     isOneself: Boolean,
     isFollowed: Boolean,
-    followedByFriendsPercentage: Float?,
+    trustScore: Float?,
     onFollow: (String) -> Unit,
     onUnfollow: (String) -> Unit,
     onNavToEditProfile: () -> Unit,
@@ -160,7 +160,7 @@ private fun ProfilePictureAndActions(
             trustType = determineTrustType(
                 isOneself = isOneself,
                 isFollowed = isFollowed,
-                followedByFriendsPercentage = followedByFriendsPercentage,
+                trustScore = trustScore,
             )
         )
         FollowOrEditButton(

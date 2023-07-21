@@ -104,33 +104,33 @@ private fun PictureIndicator(
             modifier = modifier,
             color = Color.Green,
             imageVector = Icons.Filled.VerifiedUser,
-            percentage = null
+            trustScore = null
         )
 
         is FollowedByFriend -> PictureIndicatorBase(
             modifier = modifier,
             color = Orange500,
             imageVector = Icons.Filled.VerifiedUser,
-            percentage = trustType.percentageOfFriends
+            trustScore = trustType.trustScore
         )
 
         is Unknown -> PictureIndicatorBase(
             modifier = modifier,
             color = Color.Gray,
             imageVector = Icons.Filled.QuestionMark,
-            percentage = null
+            trustScore = null
         )
 
     }
 
 }
 
-// TODO: Sub to friends follower list
+// TODO: Sub to friends follower list for friends visible in feed
 @Composable
 private fun PictureIndicatorBase(
     color: Color,
     imageVector: ImageVector,
-    percentage: Float?,
+    trustScore: Float?,
     modifier: Modifier = Modifier
 ) {
     Row(modifier = modifier, horizontalArrangement = Arrangement.End) {
@@ -150,12 +150,12 @@ private fun PictureIndicatorBase(
                     .fillMaxWidth(0.85f)
                     .aspectRatio(1.0f)
                     .let {
-                        if (percentage != null) {
+                        if (trustScore != null) {
                             it.drawBehind {
                                 drawArc(
                                     Color.Green,
                                     startAngle = -90f,
-                                    sweepAngle = percentage * 360,
+                                    sweepAngle = trustScore * 360,
                                     useCenter = true,
                                 )
                                 drawCircle(

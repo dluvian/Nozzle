@@ -41,7 +41,7 @@ class ProfileWithAdditionalInfoProvider(
             pubkey = pubkeyProvider.getPubkey(),
             contactPubkey = pubkey
         ).distinctUntilChanged()
-        val followedByFriendsPercentageFlow = contactDao.getFollowedByFriendsPercentageFlow(
+        val trustScoreFlow = contactDao.getTrustScoreFlow(
             pubkey = pubkeyProvider.getPubkey(),
             contactPubkey = pubkey
         ).distinctUntilChanged()
@@ -57,7 +57,7 @@ class ProfileWithAdditionalInfoProvider(
                     relays = listOf(),
                     isOneself = isOneself(pubkey = pubkey),
                     isFollowedByMe = false,
-                    followedByFriendsPercentage = if (isOneself(pubkey = pubkey)) null else 0f,
+                    trustScore = if (isOneself(pubkey = pubkey)) null else 0f,
                 )
             )
             nostrSubscriber.unsubscribeNip65()
@@ -89,8 +89,8 @@ class ProfileWithAdditionalInfoProvider(
             .combine(isFollowedByMeFlow) { main, isFollowedByMe ->
                 main.copy(isFollowedByMe = isFollowedByMe)
             }
-            .combine(followedByFriendsPercentageFlow) { main, followedByFriendsPercentage ->
-                main.copy(followedByFriendsPercentage = followedByFriendsPercentage)
+            .combine(trustScoreFlow) { main, trustScore ->
+                main.copy(trustScore = trustScore)
             }
     }
 

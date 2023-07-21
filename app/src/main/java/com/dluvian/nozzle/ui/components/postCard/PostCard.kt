@@ -125,7 +125,7 @@ fun PostCard(
             trustType = determineTrustType(
                 isOneself = post.isOneself,
                 isFollowed = post.isFollowedByMe,
-                followedByFriendsPercentage = post.followedByFriendsPercentage,
+                trustScore = post.trustScore,
             ),
             onOpenProfile = onOpenProfile,
         )

@@ -76,27 +76,6 @@ interface ContactDao {
     fun countFollowersFlow(pubkey: String): Flow<Int>
 
     @Query(
-        "SELECT COUNT(*) " +
-                "FROM contact " +
-                "WHERE contactPubkey = :contactPubkey " +
-                "AND pubkey IN (SELECT contactPubkey FROM contact WHERE pubkey = :pubkey)"
-    )
-    fun countFriendFollowersFlow(pubkey: String, contactPubkey: String): Flow<Int>
-
-    @MapInfo(keyColumn = "contactPubkey", valueColumn = "friendFollowerCount")
-    @Query(
-        "SELECT contactPubkey, COUNT(*) AS friendFollowerCount " +
-                "FROM contact " +
-                "WHERE contactPubkey IN (:contactPubkeys) " +
-                "AND pubkey IN (SELECT contactPubkey FROM contact WHERE pubkey = :pubkey) " +
-                "GROUP BY contactPubkey"
-    )
-    fun countFriendFollowersPerPubkeyFlow(
-        pubkey: String,
-        contactPubkeys: List<String>
-    ): Flow<Map<String, Int>>
-
-    @Query(
         "SELECT EXISTS(SELECT * " +
                 "FROM contact " +
                 "WHERE pubkey = :pubkey AND contactPubkey = :contactPubkey)"
@@ -126,36 +105,57 @@ interface ContactDao {
         insertOrIgnore(*contacts)
     }
 
-    fun getFollowedByFriendsPercentageFlow(
+    @Query(
+        "SELECT COUNT(*) " +
+                "FROM contact " +
+                "WHERE contactPubkey = :contactPubkey " +
+                "AND pubkey IN (SELECT contactPubkey FROM contact WHERE pubkey = :pubkey)"
+    )
+    fun getRawTrustScoreFlow(pubkey: String, contactPubkey: String): Flow<Int>
+
+    @MapInfo(keyColumn = "contactPubkey", valueColumn = "rawTrustScore")
+    @Query(
+        "SELECT contactPubkey, COUNT(*) AS rawTrustScore " +
+                "FROM contact " +
+                "WHERE contactPubkey IN (:contactPubkeys) " +
+                "AND pubkey IN (SELECT contactPubkey FROM contact WHERE pubkey = :pubkey) " +
+                "GROUP BY contactPubkey"
+    )
+    fun getRawTrustScorePerPubkeyFlow(
+        pubkey: String,
+        contactPubkeys: List<String>
+    ): Flow<Map<String, Int>>
+
+    fun getTrustScoreFlow(
         pubkey: String,
         contactPubkey: String
     ): Flow<Float> {
         val numOfFollowingFlow = countFollowingFlow(pubkey).distinctUntilChanged()
-        val numOfFriendFollowersFlow = countFriendFollowersFlow(
+        val trustScoreFlow = getRawTrustScoreFlow(
             pubkey = pubkey,
             contactPubkey = contactPubkey
         ).distinctUntilChanged()
         return numOfFollowingFlow
-            .combine(numOfFriendFollowersFlow) { numOfFollowing, numOfFriendFollowing ->
+            .combine(trustScoreFlow) { numOfFollowing, trustScore ->
                 getPercentage(
                     numOfFollowing = numOfFollowing,
-                    numOfFriendFollowing = numOfFriendFollowing
+                    numOfFriendFollowing = trustScore
                 )
             }
     }
 
-    fun getFollowedByFriendsPercentagePerPubkeyFlow(
+    fun getTrustScorePerPubkeyFlow(
         pubkey: String,
         contactPubkeys: List<String>
     ): Flow<Map<String, Float>> {
         val numOfFollowingFlow = countFollowingFlow(pubkey).distinctUntilChanged()
-        val numOfFriendFollowersPerPubkeyFlow = countFriendFollowersPerPubkeyFlow(
+        val rawTrustScorePerPubkeyFlow = getRawTrustScorePerPubkeyFlow(
             pubkey = pubkey,
             contactPubkeys = contactPubkeys
         ).distinctUntilChanged()
         return numOfFollowingFlow
-            .combine(numOfFriendFollowersPerPubkeyFlow) { numOfFollowing, numOfFriendFollowingPerPubkey ->
-                numOfFriendFollowingPerPubkey.mapValues {
+            .combine(rawTrustScorePerPubkeyFlow) { numOfFollowing, rawTrustScorePerPubkey ->
+                rawTrustScorePerPubkey.mapValues {
                     getPercentage(
                         numOfFollowing = numOfFollowing,
                         numOfFriendFollowing = it.value
