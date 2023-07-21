@@ -119,20 +119,28 @@ interface ContactDao {
         contactPubkeys: List<String>
     ): Flow<Map<String, Int>>
 
+    @Query(
+        "SELECT COUNT(*) " +
+                "FROM contact " +
+                "WHERE pubkey = :pubkey " +
+                "AND contactPubkey IN (SELECT pubkey FROM contact)"
+    )
+    fun getTrustScoreDividerFlow(pubkey: String): Flow<Int>
+
     fun getTrustScoreFlow(
         pubkey: String,
         contactPubkey: String
     ): Flow<Float> {
-        val numOfFollowingFlow = countFollowingFlow(pubkey).distinctUntilChanged()
-        val trustScoreFlow = getRawTrustScoreFlow(
+        val trustScoreDividerFlow = getTrustScoreDividerFlow(pubkey).distinctUntilChanged()
+        val rawTrustScoreFlow = getRawTrustScoreFlow(
             pubkey = pubkey,
             contactPubkey = contactPubkey
         ).distinctUntilChanged()
-        return numOfFollowingFlow
-            .combine(trustScoreFlow) { numOfFollowing, trustScore ->
+        return trustScoreDividerFlow
+            .combine(rawTrustScoreFlow) { divider, rawTrustScore ->
                 getPercentage(
-                    numOfFollowing = numOfFollowing,
-                    numOfFriendFollowing = trustScore
+                    numOfFollowing = divider,
+                    rawTrustScore = rawTrustScore
                 )
             }
     }
@@ -141,26 +149,25 @@ interface ContactDao {
         pubkey: String,
         contactPubkeys: List<String>
     ): Flow<Map<String, Float>> {
-        // TODO: Use subset of total following (count only those that have db entries themselves)
-        val numOfFollowingFlow = countFollowingFlow(pubkey).distinctUntilChanged()
+        val trustScoreDividerFlow = getTrustScoreDividerFlow(pubkey).distinctUntilChanged()
         val rawTrustScorePerPubkeyFlow = getRawTrustScorePerPubkeyFlow(
             pubkey = pubkey,
             contactPubkeys = contactPubkeys
         ).distinctUntilChanged()
-        return numOfFollowingFlow
-            .combine(rawTrustScorePerPubkeyFlow) { numOfFollowing, rawTrustScorePerPubkey ->
+        return trustScoreDividerFlow
+            .combine(rawTrustScorePerPubkeyFlow) { divider, rawTrustScorePerPubkey ->
                 rawTrustScorePerPubkey.mapValues {
                     getPercentage(
-                        numOfFollowing = numOfFollowing,
-                        numOfFriendFollowing = it.value
+                        numOfFollowing = divider,
+                        rawTrustScore = it.value
                     )
                 }
             }
     }
 
-    private fun getPercentage(numOfFollowing: Int, numOfFriendFollowing: Int): Float {
+    private fun getPercentage(numOfFollowing: Int, rawTrustScore: Int): Float {
         return if (numOfFollowing <= 0) 0f else {
-            val percentage = numOfFriendFollowing.toFloat() / numOfFollowing
+            val percentage = rawTrustScore.toFloat() / numOfFollowing
             if (percentage > 1f) 1f else percentage
         }
     }
