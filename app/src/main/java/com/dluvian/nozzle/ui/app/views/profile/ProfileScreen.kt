@@ -27,7 +27,7 @@ import com.dluvian.nozzle.data.utils.getShortenedNpubFromPubkey
 import com.dluvian.nozzle.model.PostIds
 import com.dluvian.nozzle.model.PostWithMeta
 import com.dluvian.nozzle.model.ProfileWithAdditionalInfo
-import com.dluvian.nozzle.model.determineTrustType
+import com.dluvian.nozzle.model.TrustType
 import com.dluvian.nozzle.ui.components.CopyIcon
 import com.dluvian.nozzle.ui.components.EditProfileButton
 import com.dluvian.nozzle.ui.components.FollowButton
@@ -157,7 +157,8 @@ private fun ProfilePictureAndActions(
                 .aspectRatio(1f),
             pictureUrl = pictureUrl,
             pubkey = pubkey,
-            trustType = determineTrustType(
+            trustType = TrustType.determineTrustType(
+                pubkey = pubkey,
                 isOneself = isOneself,
                 isFollowed = isFollowed,
                 trustScore = trustScore,

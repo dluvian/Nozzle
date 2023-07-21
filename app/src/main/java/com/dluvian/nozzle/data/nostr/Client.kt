@@ -116,13 +116,15 @@ class Client {
             "Publish $request to ${relays?.size} relays"
         )
         relays?.let { addRelays(it) }
-        for (relay in relays ?: sockets.keys) {
-            val socket = sockets[relay]
-            if (socket == null) Log.w(
-                TAG,
-                "Relay $relay is not registered"
-            )
-            else socket.send(request)
+        synchronized(sockets) {
+            for (relay in relays ?: sockets.keys) {
+                val socket = sockets[relay]
+                if (socket == null) Log.w(
+                    TAG,
+                    "Relay $relay is not registered"
+                )
+                else socket.send(request)
+            }
         }
     }
 

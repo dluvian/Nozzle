@@ -12,7 +12,8 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.Icon
 import androidx.compose.material.MaterialTheme.colors
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.QuestionMark
+import androidx.compose.material.icons.filled.Help
+import androidx.compose.material.icons.filled.Stars
 import androidx.compose.material.icons.filled.VerifiedUser
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -103,21 +104,24 @@ private fun PictureIndicator(
         is Friend -> PictureIndicatorBase(
             modifier = modifier,
             color = Color.Green,
-            imageVector = Icons.Filled.VerifiedUser,
+            imageVector = if (trustType.isVerified) Icons.Filled.Stars
+            else Icons.Filled.VerifiedUser,
             trustScore = null
         )
 
         is FollowedByFriend -> PictureIndicatorBase(
             modifier = modifier,
             color = Orange500,
-            imageVector = Icons.Filled.VerifiedUser,
+            imageVector = if (trustType.isVerified) Icons.Filled.Stars
+            else Icons.Filled.VerifiedUser,
             trustScore = trustType.trustScore
         )
 
         is Unknown -> PictureIndicatorBase(
             modifier = modifier,
-            color = Color.Gray,
-            imageVector = Icons.Filled.QuestionMark,
+            color = if (trustType.isVerified) Orange500 else Color.Gray,
+            imageVector = if (trustType.isVerified) Icons.Filled.Stars
+            else Icons.Filled.Help,
             trustScore = null
         )
 
@@ -158,12 +162,14 @@ private fun PictureIndicatorBase(
                                     sweepAngle = trustScore * 360,
                                     useCenter = true,
                                 )
-                                drawCircle(
-                                    color = bgColor,
-                                    radius = size.minDimension * 0.33f
-                                )
                             }
                         } else it
+                    }
+                    .drawBehind {
+                        drawCircle(
+                            color = bgColor,
+                            radius = size.minDimension * 0.33f
+                        )
                     },
                 contentAlignment = Alignment.Center
             ) {

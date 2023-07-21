@@ -32,7 +32,6 @@ import com.dluvian.nozzle.model.PostWithMeta
 import com.dluvian.nozzle.model.RepostPreview
 import com.dluvian.nozzle.model.ThreadPosition
 import com.dluvian.nozzle.model.TrustType
-import com.dluvian.nozzle.model.determineTrustType
 import com.dluvian.nozzle.ui.components.*
 import com.dluvian.nozzle.ui.components.text.*
 import com.dluvian.nozzle.ui.theme.*
@@ -122,7 +121,8 @@ fun PostCard(
             modifier = Modifier.size(sizing.profilePicture),
             pictureUrl = post.pictureUrl,
             pubkey = post.pubkey,
-            trustType = determineTrustType(
+            trustType = TrustType.determineTrustType(
+                pubkey = post.pubkey,
                 isOneself = post.isOneself,
                 isFollowed = post.isFollowedByMe,
                 trustScore = post.trustScore,
