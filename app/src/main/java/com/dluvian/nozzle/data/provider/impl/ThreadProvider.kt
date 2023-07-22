@@ -6,6 +6,7 @@ import com.dluvian.nozzle.data.provider.IThreadProvider
 import com.dluvian.nozzle.data.room.dao.PostDao
 import com.dluvian.nozzle.data.room.entity.PostEntity
 import com.dluvian.nozzle.model.PostThread
+import com.dluvian.nozzle.model.PostWithMeta
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
@@ -83,13 +84,23 @@ class ThreadProvider(
                 current = it.first(),
                 previous = if (previous.isNotEmpty()) it.subList(1, previous.size + 1)
                 else listOf(),
-                replies = it.takeLast(replies.size).sortedByDescending { reply ->
-                    if (reply.pubkey == it.first().pubkey) 4
-                    else if (reply.isFollowedByMe || reply.isOneself) 3
-                    else if ((reply.trustScore ?: 0f) > 0f) 2
-                    else 1
-                }
+                replies = sortReplies(
+                    replies = it.takeLast(replies.size),
+                    originalAuthor = it.first().pubkey
+                )
             )
+        }
+    }
+
+    private fun sortReplies(
+        replies: List<PostWithMeta>,
+        originalAuthor: String
+    ): List<PostWithMeta> {
+        return replies.sortedByDescending { reply ->
+            if (reply.pubkey == originalAuthor) 4
+            else if (reply.isFollowedByMe || reply.isOneself) 3
+            else if ((reply.trustScore ?: 0f) > 0f) 2
+            else 1
         }
     }
 }
