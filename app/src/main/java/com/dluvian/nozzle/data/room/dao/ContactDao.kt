@@ -2,8 +2,10 @@ package com.dluvian.nozzle.data.room.dao
 
 import androidx.room.*
 import com.dluvian.nozzle.data.room.entity.ContactEntity
+import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
 
 
@@ -127,33 +129,44 @@ interface ContactDao {
     )
     fun getTrustScoreDividerFlow(pubkey: String): Flow<Int>
 
+    @OptIn(FlowPreview::class)
     fun getTrustScoreFlow(
         pubkey: String,
         contactPubkey: String
     ): Flow<Float> {
-        val trustScoreDividerFlow = getTrustScoreDividerFlow(pubkey).distinctUntilChanged()
+        // TODO: Optimize debounce
+        val trustScoreDividerFlow = getTrustScoreDividerFlow(pubkey)
+            .distinctUntilChanged()
+            .debounce(300)
         val rawTrustScoreFlow = getRawTrustScoreFlow(
             pubkey = pubkey,
             contactPubkey = contactPubkey
         ).distinctUntilChanged()
+            .debounce(300)
         return trustScoreDividerFlow
             .combine(rawTrustScoreFlow) { divider, rawTrustScore ->
                 getPercentage(
                     numOfFollowing = divider,
                     rawTrustScore = rawTrustScore
                 )
-            }
+            }.distinctUntilChanged()
+            .debounce(100)
     }
 
+    @OptIn(FlowPreview::class)
     fun getTrustScorePerPubkeyFlow(
         pubkey: String,
         contactPubkeys: List<String>
     ): Flow<Map<String, Float>> {
-        val trustScoreDividerFlow = getTrustScoreDividerFlow(pubkey).distinctUntilChanged()
+        // TODO: Optimize debounce
+        val trustScoreDividerFlow = getTrustScoreDividerFlow(pubkey)
+            .distinctUntilChanged()
+            .debounce(300)
         val rawTrustScorePerPubkeyFlow = getRawTrustScorePerPubkeyFlow(
             pubkey = pubkey,
             contactPubkeys = contactPubkeys
         ).distinctUntilChanged()
+            .debounce(300)
         return trustScoreDividerFlow
             .combine(rawTrustScorePerPubkeyFlow) { divider, rawTrustScorePerPubkey ->
                 rawTrustScorePerPubkey.mapValues {
@@ -162,7 +175,8 @@ interface ContactDao {
                         rawTrustScore = it.value
                     )
                 }
-            }
+            }.distinctUntilChanged()
+            .debounce(100)
     }
 
     private fun getPercentage(numOfFollowing: Int, rawTrustScore: Int): Float {
