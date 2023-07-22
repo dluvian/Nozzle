@@ -12,11 +12,13 @@ import com.dluvian.nozzle.data.room.dao.ProfileDao
 import com.dluvian.nozzle.data.utils.hexToNpub
 import com.dluvian.nozzle.model.ProfileWithAdditionalInfo
 import com.dluvian.nozzle.model.nostr.Metadata
+import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.flow
 
 private const val TAG = "ProfileWithAdditionalInfoProvider"
@@ -29,14 +31,23 @@ class ProfileWithAdditionalInfoProvider(
     private val eventRelayDao: EventRelayDao,
     private val nip65Dao: Nip65Dao,
 ) : IProfileWithAdditionalInfoProvider {
+    // TODO: Optimize debounce
 
+    @OptIn(FlowPreview::class)
     override fun getProfileFlow(pubkey: String): Flow<ProfileWithAdditionalInfo> {
         Log.i(TAG, "Get profile $pubkey")
         val npub = hexToNpub(pubkey)
-        val profileFlow = profileDao.getProfileFlow(pubkey).distinctUntilChanged()
-        val relaysFlow = eventRelayDao.listUsedRelaysFlow(pubkey).distinctUntilChanged()
-        val numOfFollowingFlow = contactDao.countFollowingFlow(pubkey).distinctUntilChanged()
-        val numOfFollowersFlow = contactDao.countFollowersFlow(pubkey).distinctUntilChanged()
+        val profileFlow = profileDao.getProfileFlow(pubkey)
+            .distinctUntilChanged()
+            .debounce(300)
+        val relaysFlow = eventRelayDao.listUsedRelaysFlow(pubkey)
+            .distinctUntilChanged()
+            .debounce(300)
+        val numOfFollowingFlow = contactDao.countFollowingFlow(pubkey)
+            .distinctUntilChanged()
+            .debounce(300)
+        val numOfFollowersFlow = contactDao.countFollowersFlow(pubkey)
+            .distinctUntilChanged()
         val isFollowedByMeFlow = contactDao.isFollowedFlow(
             pubkey = pubkeyProvider.getPubkey(),
             contactPubkey = pubkey
@@ -45,16 +56,17 @@ class ProfileWithAdditionalInfoProvider(
             pubkey = pubkeyProvider.getPubkey(),
             contactPubkey = pubkey
         ).distinctUntilChanged()
+            .debounce(300)
 
         val mainFlow = flow {
             emit(
                 ProfileWithAdditionalInfo(
                     pubkey = pubkey,
                     npub = npub,
-                    metadata = Metadata(name = npub),
+                    metadata = Metadata(),
                     numOfFollowing = 0,
                     numOfFollowers = 0,
-                    relays = listOf(),
+                    relays = emptyList(),
                     isOneself = isOneself(pubkey = pubkey),
                     isFollowedByMe = false,
                     trustScore = if (isOneself(pubkey = pubkey)) null else 0f,
@@ -68,32 +80,40 @@ class ProfileWithAdditionalInfoProvider(
                 pubkeys = listOf(pubkey),
                 relays = nip65Dao.getWriteRelaysOfPubkey(pubkey = pubkey)
                     .ifEmpty {
-                        relaysFlow.first().ifEmpty { getDefaultRelays() }
+                        relaysFlow.firstOrNull().orEmpty().ifEmpty { getDefaultRelays() }
                     }.shuffled()
                     .take(5)  // Don't ask more than 5 relays
             )
         }
-        return mainFlow
-            .combine(profileFlow) { main, profile ->
-                profile?.let { main.copy(metadata = profile.getMetadata()) } ?: main
-            }
-            .combine(relaysFlow) { main, relays ->
-                main.copy(relays = relays)
-            }
-            .combine(numOfFollowingFlow) { main, numOfFollowing ->
-                main.copy(numOfFollowing = numOfFollowing)
-            }
-            .combine(numOfFollowersFlow) { main, numOfFollowers ->
-                main.copy(numOfFollowers = numOfFollowers)
-            }
-            .combine(isFollowedByMeFlow) { main, isFollowedByMe ->
-                main.copy(isFollowedByMe = isFollowedByMe)
-            }
-            .combine(trustScoreFlow) { main, trustScore ->
-                main.copy(trustScore = trustScore)
-            }
-    }
 
+        val notChangingMuch = combine(
+            mainFlow,
+            profileFlow,
+            relaysFlow,
+            numOfFollowingFlow
+        ) { main, profile, relays, numOfFollowing ->
+            Log.d(TAG, "Combining profile base flow")
+            main.copy(
+                metadata = profile?.getMetadata() ?: Metadata(),
+                relays = relays,
+                numOfFollowing = numOfFollowing
+            )
+        }.distinctUntilChanged().debounce(100)
+
+        return combine(
+            notChangingMuch,
+            trustScoreFlow,
+            isFollowedByMeFlow,
+            numOfFollowersFlow,
+        ) { main, trustScore, isFollowedByMe, numOfFollowers ->
+            Log.d(TAG, "Combining profile main flow")
+            main.copy(
+                trustScore = trustScore,
+                isFollowedByMe = isFollowedByMe,
+                numOfFollowers = numOfFollowers
+            )
+        }.distinctUntilChanged().debounce(100)
+    }
 
     private fun isOneself(pubkey: String) = pubkey == pubkeyProvider.getPubkey()
 }

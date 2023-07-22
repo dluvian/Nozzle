@@ -160,20 +160,28 @@ class ProfileViewModel(
     private var isInFollowProcess = AtomicBoolean(false)
 
     val onFollow: (String) -> Unit = { pubkeyToFollow ->
-        if (!profileState.value.isFollowedByMe && !isInFollowProcess.get()) {
+        if (!isInFollowProcess.get() && !profileState.value.isFollowedByMe) {
             isInFollowProcess.set(true)
             viewModelScope.launch(context = Dispatchers.IO) {
-                profileFollower.follow(pubkeyToFollow = pubkeyToFollow, relayUrl = "")
-            }.invokeOnCompletion { isInFollowProcess.set(false) }
+                // TODO: Set best relayUrl, not random
+                profileFollower.follow(
+                    pubkeyToFollow = pubkeyToFollow,
+                    relayUrl = profileState.value.relays.randomOrNull().orEmpty()
+                )
+            }.invokeOnCompletion {
+                isInFollowProcess.set(false)
+            }
         }
     }
 
     val onUnfollow: (String) -> Unit = { pubkeyToUnfollow ->
-        if (profileState.value.isFollowedByMe && !isInFollowProcess.get()) {
+        if (!isInFollowProcess.get() && profileState.value.isFollowedByMe) {
             isInFollowProcess.set(true)
             viewModelScope.launch(context = Dispatchers.IO) {
                 profileFollower.unfollow(pubkeyToUnfollow = pubkeyToUnfollow)
-            }.invokeOnCompletion { isInFollowProcess.set(false) }
+            }.invokeOnCompletion {
+                isInFollowProcess.set(false)
+            }
         }
     }
 
