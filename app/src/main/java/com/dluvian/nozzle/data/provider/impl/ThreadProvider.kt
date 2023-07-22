@@ -27,6 +27,7 @@ class ThreadProvider(
             replyToId = replyToId,
             relays = relays
         )
+        // TODO: Use a channel
         waitForSubscription?.let { delay(it) }
 
         val threadEnd = postDao.getThreadEnd(
@@ -50,7 +51,7 @@ class ThreadProvider(
         nostrSubscriber.subscribeThread(
             currentPostId = currentPostId,
             replyToId = replyToId,
-            replyToRootId = replyToId,
+            replyToRootId = replyToId, // TODO: Remove rootId?
             relays = relays
         )
     }
@@ -65,7 +66,7 @@ class ThreadProvider(
             previous.add(previousPost)
         }
 
-        previous.reverse() // root first
+        previous.reverse() // Root first
         previous.removeLast() // Removing 'current'
 
         return previous
@@ -80,9 +81,14 @@ class ThreadProvider(
         return postMapper.mapToPostsWithMetaFlow(relevantPosts).map {
             PostThread(
                 current = it.first(),
-                previous = if (previous.isNotEmpty())
-                    it.subList(1, previous.size + 1) else listOf(),
-                replies = it.takeLast(replies.size)
+                previous = if (previous.isNotEmpty()) it.subList(1, previous.size + 1)
+                else listOf(),
+                replies = it.takeLast(replies.size).sortedByDescending { reply ->
+                    if (reply.pubkey == it.first().pubkey) 4
+                    else if (reply.isFollowedByMe || reply.isOneself) 3
+                    else if ((reply.trustScore ?: 0f) > 0f) 2
+                    else 1
+                }
             )
         }
     }
