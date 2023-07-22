@@ -21,7 +21,7 @@ class ContactListProvider(
     private var personalPubkey = pubkeyProvider.getPubkey()
     private var personalContactListState = contactDao.listContactPubkeysFlow(personalPubkey)
         .stateIn(
-            scope, SharingStarted.Eagerly, listOf()
+            scope, SharingStarted.Eagerly, emptyList()
         )
 
     override fun listPersonalContactPubkeys(): List<String> {
@@ -30,7 +30,7 @@ class ContactListProvider(
             personalPubkey = pubkeyProvider.getPubkey()
             personalContactListState = contactDao.listContactPubkeysFlow(personalPubkey)
                 .stateIn(
-                    scope, SharingStarted.Eagerly, listOf()
+                    scope, SharingStarted.Eagerly, emptyList()
                 )
         }
         Log.i(TAG, "Return ${personalContactListState.value.size} pubkeys")

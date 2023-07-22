@@ -32,8 +32,8 @@ class InteractionStatsProvider(
             emit(
                 InteractionStats(
                     numOfRepliesPerPost = mapOf(),
-                    likedByMe = listOf(),
-                    repostedByMe = listOf(),
+                    likedByMe = emptyList(),
+                    repostedByMe = emptyList(),
                 )
             )
         }
@@ -49,7 +49,6 @@ class InteractionStatsProvider(
                 likedByMe = likedByMe,
                 repostedByMe = repostedByMe
             )
-        }.distinctUntilChanged()
-            .debounce(100)
+        }
     }
 }

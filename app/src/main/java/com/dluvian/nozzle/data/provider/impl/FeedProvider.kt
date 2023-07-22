@@ -18,8 +18,11 @@ import com.dluvian.nozzle.model.PostWithMeta
 import com.dluvian.nozzle.model.RelaySelection
 import com.dluvian.nozzle.model.SingleAuthor
 import com.dluvian.nozzle.model.UserSpecific
+import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flow
 
 private const val TAG = "FeedProvider"
@@ -31,6 +34,7 @@ class FeedProvider(
     private val contactListProvider: IContactListProvider,
 ) : IFeedProvider {
 
+    @OptIn(FlowPreview::class)
     override suspend fun getFeedFlow(
         feedSettings: FeedSettings,
         limit: Int,
@@ -43,10 +47,10 @@ class FeedProvider(
         nostrSubscriber.unsubscribeAdditionalPostsData()
         val authorPubkeys = listPubkeys(authorSelection = feedSettings.authorSelection)
         subscribeToFeed(
-            authorPubkeys = authorPubkeys,
             isReplies = feedSettings.isReplies,
             limit = limit,
             until = until,
+            authorPubkeys = authorPubkeys,
             relaySelection = feedSettings.relaySelection
         )
 
@@ -61,8 +65,10 @@ class FeedProvider(
             limit = limit,
         )
 
-        return if (posts.isEmpty()) flow { emit(listOf()) }
+        return if (posts.isEmpty()) flow { emit(emptyList()) }
         else postMapper.mapToPostsWithMetaFlow(posts)
+            .distinctUntilChanged()
+            .debounce(100)
     }
 
     private fun subscribeToFeed(
@@ -131,7 +137,7 @@ class FeedProvider(
         until: Long,
         limit: Int,
     ): List<PostEntity> {
-        if (!isPosts && !isReplies) return listOf()
+        if (!isPosts && !isReplies) return emptyList()
 
         return if (authorPubkeys == null && relays == null) {
             Log.d(TAG, "Get global feed")
@@ -143,7 +149,7 @@ class FeedProvider(
             )
         } else if (authorPubkeys == null && relays != null) {
             Log.d(TAG, "Get global feed by relays $relays")
-            if (relays.isEmpty()) listOf()
+            if (relays.isEmpty()) emptyList()
             else postDao.getGlobalFeedByRelays(
                 isPosts = isPosts,
                 isReplies = isReplies,
@@ -153,7 +159,7 @@ class FeedProvider(
             )
         } else if (authorPubkeys != null && relays == null) {
             Log.d(TAG, "Get authored feed")
-            if (authorPubkeys.isEmpty()) listOf()
+            if (authorPubkeys.isEmpty()) emptyList()
             else postDao.getAuthoredFeed(
                 isPosts = isPosts,
                 isReplies = isReplies,
@@ -163,7 +169,7 @@ class FeedProvider(
             )
         } else if (authorPubkeys != null && relays != null) {
             Log.d(TAG, "Get authored feed by relays")
-            if (authorPubkeys.isEmpty() || relays.isEmpty()) listOf()
+            if (authorPubkeys.isEmpty() || relays.isEmpty()) emptyList()
             else postDao.getAuthoredFeedByRelays(
                 isPosts = isPosts,
                 isReplies = isReplies,
@@ -174,7 +180,7 @@ class FeedProvider(
             )
         } else {
             Log.w(TAG, "Could not find correct db call. Default to empty list")
-            listOf()
+            emptyList()
         }
     }
 }

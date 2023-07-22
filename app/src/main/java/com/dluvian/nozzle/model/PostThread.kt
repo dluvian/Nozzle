@@ -21,7 +21,7 @@ data class PostThread(
 
     companion object {
         fun createEmpty(): PostThread {
-            return PostThread(current = null, previous = listOf(), replies = listOf())
+            return PostThread(current = null, previous = emptyList(), replies = emptyList())
         }
     }
 }

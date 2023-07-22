@@ -29,7 +29,7 @@ private const val TAG = "PostViewModel"
 data class PostViewModelState(
     val content: String = "",
     val pubkey: String = "",
-    val relayStatuses: List<RelayActive> = listOf(),
+    val relayStatuses: List<RelayActive> = emptyList(),
     val isSendable: Boolean = false,
 )
 

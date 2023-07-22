@@ -65,14 +65,14 @@ class ProfileViewModel(
             metadata = Metadata(),
             numOfFollowing = 0,
             numOfFollowers = 0,
-            relays = listOf(),
+            relays = emptyList(),
             isOneself = false,
             isFollowedByMe = false,
             trustScore = null,
         )
     )
 
-    var feedState: StateFlow<List<PostWithMeta>> = MutableStateFlow(listOf())
+    var feedState: StateFlow<List<PostWithMeta>> = MutableStateFlow(emptyList())
 
     init {
         Log.i(TAG, "Initialize ProfileViewModel")
@@ -86,16 +86,13 @@ class ProfileViewModel(
 
     val onSetPubkey: (String?) -> Unit = { pubkey ->
         viewModelScope.launch(context = Dispatchers.IO) {
+            val nonNullPubkey = pubkey ?: pubkeyProvider.getPubkey()
             if (pubkey == null) {
                 Log.w(TAG, "Tried to set empty pubkey for UI")
-                refreshProfileAndPostState(
-                    pubkey = pubkeyProvider.getPubkey(),
-                    dbBatchSize = DB_BATCH_SIZE
-                )
             } else {
                 Log.i(TAG, "Set UI for $pubkey")
-                refreshProfileAndPostState(pubkey = pubkey, dbBatchSize = DB_BATCH_SIZE)
             }
+            refreshProfileAndPostState(pubkey = nonNullPubkey, dbBatchSize = DB_BATCH_SIZE)
         }
     }
 
@@ -204,7 +201,7 @@ class ProfileViewModel(
         ).stateIn(
             viewModelScope,
             SharingStarted.WhileSubscribed(),
-            if (pubkey == profileState.value.pubkey) feedState.value else listOf(),
+            if (pubkey == profileState.value.pubkey) feedState.value else emptyList(),
         )
         forceRecomposition.update { it + 1 }
         renewAdditionalDataSubscription()

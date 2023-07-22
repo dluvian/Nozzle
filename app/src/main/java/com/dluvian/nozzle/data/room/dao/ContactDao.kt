@@ -149,8 +149,7 @@ interface ContactDao {
                     numOfFollowing = divider,
                     rawTrustScore = rawTrustScore
                 )
-            }.distinctUntilChanged()
-            .debounce(100)
+            }
     }
 
     @OptIn(FlowPreview::class)
@@ -175,8 +174,7 @@ interface ContactDao {
                         rawTrustScore = it.value
                     )
                 }
-            }.distinctUntilChanged()
-            .debounce(100)
+            }
     }
 
     private fun getPercentage(numOfFollowing: Int, rawTrustScore: Int): Float {

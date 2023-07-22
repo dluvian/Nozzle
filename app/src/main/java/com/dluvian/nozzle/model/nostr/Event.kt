@@ -83,7 +83,7 @@ class Event(
         fun createMetadataEvent(metadata: Metadata, keys: Keys): Event {
             return create(
                 kind = Kind.METADATA,
-                tags = listOf(),
+                tags = emptyList(),
                 content = gson.toJson(metadata),
                 keys = keys
             )

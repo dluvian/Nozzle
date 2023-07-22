@@ -32,7 +32,7 @@ data class ReplyViewModelState(
     val reply: String = "",
     val isSendable: Boolean = false,
     val pubkey: String = "",
-    val relaySelection: List<RelayActive> = listOf(),
+    val relaySelection: List<RelayActive> = emptyList(),
 )
 
 class ReplyViewModel(

@@ -71,7 +71,7 @@ class NostrSubscriber(
         relays: Collection<String>?,
     ): List<String> {
         Log.i(TAG, "Subscribe to additional posts data")
-        if (posts.isEmpty()) return listOf()
+        if (posts.isEmpty()) return emptyList()
 
         val postIds = posts.map { it.id }
         val followedAuthorPubkeys = posts.filter { it.isFollowedByMe }.map { it.pubkey }.distinct()
@@ -169,7 +169,7 @@ class NostrSubscriber(
     ): List<String> {
         Log.i(TAG, "Subscribe to ${pubkeys.size} profiles")
 
-        if (pubkeys.isEmpty()) return listOf()
+        if (pubkeys.isEmpty()) return emptyList()
 
         val profileFilter = Filter.createProfileFilter(pubkeys = pubkeys.toList())
 
@@ -187,7 +187,7 @@ class NostrSubscriber(
     override fun subscribeNip65(pubkeys: Collection<String>): List<String> {
         Log.i(TAG, "Subscribe to ${pubkeys.size} nip65s")
 
-        if (pubkeys.isEmpty()) return listOf()
+        if (pubkeys.isEmpty()) return emptyList()
 
         val nip65Filter = Filter.createNip65Filter(pubkeys = pubkeys.toList())
 

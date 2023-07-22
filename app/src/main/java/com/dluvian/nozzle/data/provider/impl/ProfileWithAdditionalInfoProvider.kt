@@ -39,7 +39,7 @@ class ProfileWithAdditionalInfoProvider(
         val npub = hexToNpub(pubkey)
         val profileFlow = profileDao.getProfileFlow(pubkey)
             .distinctUntilChanged()
-            .debounce(300)
+            .debounce(100)
         val relaysFlow = eventRelayDao.listUsedRelaysFlow(pubkey)
             .distinctUntilChanged()
             .debounce(300)
@@ -86,7 +86,7 @@ class ProfileWithAdditionalInfoProvider(
             )
         }
 
-        val notChangingMuch = combine(
+        val baseFlow = combine(
             mainFlow,
             profileFlow,
             relaysFlow,
@@ -101,7 +101,7 @@ class ProfileWithAdditionalInfoProvider(
         }.distinctUntilChanged().debounce(100)
 
         return combine(
-            notChangingMuch,
+            baseFlow,
             trustScoreFlow,
             isFollowedByMeFlow,
             numOfFollowersFlow,
@@ -112,7 +112,7 @@ class ProfileWithAdditionalInfoProvider(
                 isFollowedByMe = isFollowedByMe,
                 numOfFollowers = numOfFollowers
             )
-        }.distinctUntilChanged().debounce(100)
+        }
     }
 
     private fun isOneself(pubkey: String) = pubkey == pubkeyProvider.getPubkey()

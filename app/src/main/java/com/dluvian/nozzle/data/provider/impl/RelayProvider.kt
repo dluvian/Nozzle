@@ -10,7 +10,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.stateIn
-import java.util.*
+import java.util.Collections
 
 
 class RelayProvider(
@@ -26,7 +26,7 @@ class RelayProvider(
     private var personalPubkey = pubkeyProvider.getPubkey()
     private var personalNip65State = nip65Dao.getRelaysOfPubkeyFlow(personalPubkey)
         .stateIn(
-            scope, SharingStarted.Eagerly, listOf()
+            scope, SharingStarted.Eagerly, emptyList()
         )
 
     init {
@@ -65,7 +65,7 @@ class RelayProvider(
             personalPubkey = pubkeyProvider.getPubkey()
             personalNip65State = nip65Dao.getRelaysOfPubkeyFlow(personalPubkey)
                 .stateIn(
-                    scope, SharingStarted.Eagerly, listOf()
+                    scope, SharingStarted.Eagerly, emptyList()
                 )
         }
     }

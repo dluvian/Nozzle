@@ -30,7 +30,7 @@ data class FeedViewModelState(
         authorSelection = Contacts,
         relaySelection = UserSpecific(mapOf()),
     ),
-    val relayStatuses: List<RelayActive> = listOf(),
+    val relayStatuses: List<RelayActive> = emptyList(),
 )
 
 class FeedViewModel(
@@ -51,7 +51,7 @@ class FeedViewModel(
         viewModelScope, SharingStarted.Lazily, null
     )
 
-    var feedState: StateFlow<List<PostWithMeta>> = MutableStateFlow(listOf())
+    var feedState: StateFlow<List<PostWithMeta>> = MutableStateFlow(emptyList())
 
     // TODO: Figure out how to do it without this hack
     private val forceRecomposition = MutableStateFlow(0)
@@ -133,7 +133,7 @@ class FeedViewModel(
                         authorSelection = newValue,
                         // Autopilot is not allowed for global feed.
                         // Relays are set in onRefreshOnMenuDismiss.
-                        relaySelection = if (newValue is Everyone) MultipleRelays(listOf())
+                        relaySelection = if (newValue is Everyone) MultipleRelays(emptyList())
                         else it.feedSettings.relaySelection
                     )
                 )
@@ -171,7 +171,7 @@ class FeedViewModel(
             viewModelState.value.feedSettings.relaySelection.let { oldValue ->
                 // No need to set input. It will be updated in onRefreshOnMenuDismiss
                 val newValue = if (oldValue is UserSpecific) {
-                    MultipleRelays(relays = listOf())
+                    MultipleRelays(relays = emptyList())
                 } else UserSpecific(pubkeysPerRelay = lastAutopilotResult)
                 viewModelState.update {
                     it.copy(feedSettings = it.feedSettings.copy(relaySelection = newValue))

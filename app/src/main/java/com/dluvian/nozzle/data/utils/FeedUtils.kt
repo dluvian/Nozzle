@@ -3,7 +3,7 @@ package com.dluvian.nozzle.data.utils
 import com.dluvian.nozzle.model.PostWithMeta
 
 fun listReferencedPubkeys(posts: Collection<PostWithMeta>): List<String> {
-    if (posts.isEmpty()) return listOf()
+    if (posts.isEmpty()) return emptyList()
 
     val referencedPubkeys = mutableListOf<String>()
     for (post in posts) {
@@ -16,7 +16,7 @@ fun listReferencedPubkeys(posts: Collection<PostWithMeta>): List<String> {
 }
 
 fun listReferencedPostIds(posts: Collection<PostWithMeta>): List<String> {
-    if (posts.isEmpty()) return listOf()
+    if (posts.isEmpty()) return emptyList()
 
     val referencedPostIds = mutableListOf<String>()
     for (post in posts) {

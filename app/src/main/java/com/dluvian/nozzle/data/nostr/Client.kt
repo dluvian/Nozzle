@@ -71,7 +71,7 @@ class Client {
         relays: Collection<String>? = null
     ): List<String> {
         if (filters.isEmpty()) {
-            return listOf()
+            return emptyList()
         }
         val ids = mutableListOf<String>()
         relays?.let { addRelays(relays) }

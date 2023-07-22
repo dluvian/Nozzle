@@ -12,7 +12,7 @@ private val urlPattern = Regex(
 )
 
 fun extractUrls(url: String?): List<String> {
-    url ?: return listOf()
+    url ?: return emptyList()
 
     val result = mutableListOf<String>()
     urlPattern.findAll(url).forEach { match ->

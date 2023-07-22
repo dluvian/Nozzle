@@ -7,8 +7,11 @@ import com.dluvian.nozzle.data.room.dao.PostDao
 import com.dluvian.nozzle.data.room.entity.PostEntity
 import com.dluvian.nozzle.model.PostThread
 import com.dluvian.nozzle.model.PostWithMeta
+import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 
@@ -58,7 +61,7 @@ class ThreadProvider(
     }
 
     private suspend fun listPrevious(current: PostEntity): List<PostEntity> {
-        if (current.replyToId == null) return listOf()
+        if (current.replyToId == null) return emptyList()
 
         val previous = mutableListOf(current)
         while (previous.last().replyToId != null) {
@@ -73,23 +76,27 @@ class ThreadProvider(
         return previous
     }
 
+    @OptIn(FlowPreview::class)
     private suspend fun getMappedThreadFlow(
         current: PostEntity,
         previous: List<PostEntity>,
         replies: List<PostEntity>
     ): Flow<PostThread> {
         val relevantPosts = listOf(listOf(current), previous, replies).flatten()
-        return postMapper.mapToPostsWithMetaFlow(relevantPosts).map {
-            PostThread(
-                current = it.first(),
-                previous = if (previous.isNotEmpty()) it.subList(1, previous.size + 1)
-                else listOf(),
-                replies = sortReplies(
-                    replies = it.takeLast(replies.size),
-                    originalAuthor = it.first().pubkey
+        return postMapper.mapToPostsWithMetaFlow(relevantPosts)
+            .distinctUntilChanged()
+            .debounce(100)
+            .map {
+                PostThread(
+                    current = it.first(),
+                    previous = if (previous.isNotEmpty()) it.subList(1, previous.size + 1)
+                    else emptyList(),
+                    replies = sortReplies(
+                        replies = it.takeLast(replies.size),
+                        originalAuthor = it.first().pubkey
+                    )
                 )
-            )
-        }
+            }
     }
 
     private fun sortReplies(
