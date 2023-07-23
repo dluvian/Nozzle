@@ -19,7 +19,6 @@ import com.dluvian.nozzle.data.provider.IPubkeyProvider
 import com.dluvian.nozzle.data.provider.IRelayProvider
 import com.dluvian.nozzle.data.room.dao.Nip65Dao
 import com.dluvian.nozzle.model.*
-import com.dluvian.nozzle.model.nostr.Metadata
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.*
@@ -41,35 +40,16 @@ class ProfileViewModel(
     context: Context,
     clip: ClipboardManager,
 ) : ViewModel() {
-    private val isRefreshing = MutableStateFlow(false)
-    val isRefreshingState = isRefreshing
+    private val isRefreshingFlow = MutableStateFlow(false)
+    val isRefreshingState = isRefreshingFlow
         .stateIn(
             viewModelScope,
             SharingStarted.Eagerly,
             false
         )
 
-    // TODO: Figure out how to do it without this hack
-    private val forceRecomposition = MutableStateFlow(0)
-    val forceRecompositionState = forceRecomposition
-        .stateIn(
-            viewModelScope,
-            SharingStarted.Eagerly,
-            0
-        )
-
     var profileState: StateFlow<ProfileWithAdditionalInfo> = MutableStateFlow(
-        ProfileWithAdditionalInfo(
-            pubkey = "",
-            npub = "",
-            metadata = Metadata(),
-            numOfFollowing = 0,
-            numOfFollowers = 0,
-            relays = emptyList(),
-            isOneself = false,
-            isFollowedByMe = false,
-            trustScore = null,
-        )
+        ProfileWithAdditionalInfo.createEmpty()
     )
 
     var feedState: StateFlow<List<PostWithMeta>> = MutableStateFlow(emptyList())
@@ -77,35 +57,40 @@ class ProfileViewModel(
     init {
         Log.i(TAG, "Initialize ProfileViewModel")
         viewModelScope.launch(context = Dispatchers.IO) {
-            refreshProfileAndPostState(
+            setProfileAndFeed(
                 pubkey = pubkeyProvider.getPubkey(),
                 dbBatchSize = DB_BATCH_SIZE
             )
         }
     }
 
+    private val isSettingPubkey = AtomicBoolean(false)
     val onSetPubkey: (String?) -> Unit = { pubkey ->
-        viewModelScope.launch(context = Dispatchers.IO) {
+        if (!isSettingPubkey.get()) {
+            isSettingPubkey.set(true)
             val nonNullPubkey = pubkey ?: pubkeyProvider.getPubkey()
-            if (pubkey == null) {
-                Log.w(TAG, "Tried to set empty pubkey for UI")
-            } else {
-                Log.i(TAG, "Set UI for $pubkey")
+            if (pubkey == null) Log.w(TAG, "Tried to set empty pubkey for UI")
+            else Log.i(TAG, "Set UI for $pubkey")
+
+            viewModelScope.launch(context = Dispatchers.IO) {
+                setProfileAndFeed(pubkey = nonNullPubkey, dbBatchSize = DB_BATCH_SIZE)
+                delay(1000)
+            }.invokeOnCompletion {
+                isSettingPubkey.set(false)
             }
-            refreshProfileAndPostState(pubkey = nonNullPubkey, dbBatchSize = DB_BATCH_SIZE)
         }
     }
 
     val onRefreshProfileView: () -> Unit = {
         viewModelScope.launch(context = Dispatchers.IO) {
             Log.i(TAG, "Refresh profile view")
-            setUIRefresh(true)
-            refreshPostState(
+            isRefreshingFlow.update { true }
+            setFeed(
                 pubkey = profileState.value.pubkey,
                 dbBatchSize = DB_BATCH_SIZE
             )
             delay(1000)
-            setUIRefresh(false)
+            isRefreshingFlow.update { false }
         }
     }
 
@@ -113,7 +98,6 @@ class ProfileViewModel(
         viewModelScope.launch(context = Dispatchers.IO) {
             Log.i(TAG, "Load more")
             appendFeed(
-                currentFeed = feedState.value,
                 feedSettings = getCurrentFeedSettings(),
                 dbBatchSize = DB_BATCH_SIZE,
             )
@@ -154,8 +138,7 @@ class ProfileViewModel(
         }
     }
 
-    private var isInFollowProcess = AtomicBoolean(false)
-
+    private val isInFollowProcess = AtomicBoolean(false)
     val onFollow: (String) -> Unit = { pubkeyToFollow ->
         if (!isInFollowProcess.get() && !profileState.value.isFollowedByMe) {
             isInFollowProcess.set(true)
@@ -182,69 +165,63 @@ class ProfileViewModel(
         }
     }
 
-    private suspend fun refreshProfileAndPostState(pubkey: String, dbBatchSize: Int) {
-        Log.i(TAG, "Refresh profile and posts of $pubkey")
+    private suspend fun setProfileAndFeed(pubkey: String, dbBatchSize: Int) {
+        Log.i(TAG, "Set profile of $pubkey")
         profileState = profileProvider.getProfileFlow(pubkey)
             .stateIn(
                 viewModelScope,
-                SharingStarted.WhileSubscribed(),
-                profileState.value,
+                SharingStarted.WhileSubscribed(replayExpirationMillis = 0),
+                ProfileWithAdditionalInfo.createEmpty(),
             )
-        refreshPostState(pubkey = pubkey, dbBatchSize = dbBatchSize)
+        setFeed(pubkey = pubkey, dbBatchSize = dbBatchSize)
     }
 
-    private suspend fun refreshPostState(pubkey: String, dbBatchSize: Int) {
-        Log.i(TAG, "Refresh posts of $pubkey")
+    private suspend fun setFeed(pubkey: String, dbBatchSize: Int) {
+        Log.i(TAG, "Set feed of $pubkey")
         feedState = feedProvider.getFeedFlow(
             feedSettings = getCurrentFeedSettings(),
             limit = dbBatchSize
         ).stateIn(
             viewModelScope,
             SharingStarted.WhileSubscribed(),
-            if (pubkey == profileState.value.pubkey) feedState.value else emptyList(),
+            emptyList(),
         )
-        forceRecomposition.update { it + 1 }
         renewAdditionalDataSubscription()
     }
 
     private val isAppending = AtomicBoolean(false)
 
     private suspend fun appendFeed(
-        currentFeed: List<PostWithMeta>,
         feedSettings: FeedSettings,
         dbBatchSize: Int,
     ) {
         if (isAppending.get()) return
 
-        Log.i(TAG, "Append feed")
-        currentFeed.lastOrNull()?.let { last ->
+        feedState.value.lastOrNull()?.let { last ->
+            Log.i(TAG, "Append feed")
             isAppending.set(true)
             feedState = feedProvider.getFeedFlow(
                 feedSettings = feedSettings,
                 limit = dbBatchSize,
                 until = last.createdAt
-            ).map { toAppend -> currentFeed + toAppend }
+            ).map { toAppend -> feedState.value + toAppend }
                 .stateIn(
                     viewModelScope,
                     SharingStarted.WhileSubscribed(),
-                    currentFeed,
+                    feedState.value,
                 )
             isAppending.set(false)
-            forceRecomposition.update { it + 1 }
+            renewAdditionalDataSubscription()
         }
-        renewAdditionalDataSubscription()
     }
 
+    // TODO: Handle sub in FeedProvider
     private suspend fun renewAdditionalDataSubscription() {
         nostrSubscriber.unsubscribeAdditionalPostsData()
         nostrSubscriber.subscribeToAdditionalPostsData(
             posts = feedState.value.takeLast(DB_BATCH_SIZE),
             relays = getRelays()
         )
-    }
-
-    private fun setUIRefresh(value: Boolean) {
-        isRefreshing.update { value }
     }
 
     private suspend fun getCurrentFeedSettings(): FeedSettings {

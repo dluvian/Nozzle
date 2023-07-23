@@ -12,4 +12,18 @@ data class ProfileWithAdditionalInfo(
     val isOneself: Boolean,
     val isFollowedByMe: Boolean,
     val trustScore: Float?,
-)
+) {
+    companion object {
+        fun createEmpty() = ProfileWithAdditionalInfo(
+            pubkey = "",
+            npub = "",
+            metadata = Metadata(),
+            numOfFollowing = 0,
+            numOfFollowers = 0,
+            relays = emptyList(),
+            isOneself = false,
+            isFollowedByMe = false,
+            trustScore = null,
+        )
+    }
+}

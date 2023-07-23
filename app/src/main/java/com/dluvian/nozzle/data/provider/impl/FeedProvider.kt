@@ -21,8 +21,6 @@ import com.dluvian.nozzle.model.UserSpecific
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.debounce
-import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flow
 
 private const val TAG = "FeedProvider"
@@ -54,6 +52,7 @@ class FeedProvider(
             relaySelection = feedSettings.relaySelection
         )
 
+        // TODO: Use channel
         waitForSubscription?.let { delay(it) }
 
         val posts = listPosts(
@@ -67,8 +66,6 @@ class FeedProvider(
 
         return if (posts.isEmpty()) flow { emit(emptyList()) }
         else postMapper.mapToPostsWithMetaFlow(posts)
-            .distinctUntilChanged()
-            .debounce(100)
     }
 
     private fun subscribeToFeed(
