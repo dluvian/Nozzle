@@ -18,7 +18,6 @@ import com.dluvian.nozzle.model.PostWithMeta
 import com.dluvian.nozzle.model.RelaySelection
 import com.dluvian.nozzle.model.SingleAuthor
 import com.dluvian.nozzle.model.UserSpecific
-import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
@@ -32,7 +31,6 @@ class FeedProvider(
     private val contactListProvider: IContactListProvider,
 ) : IFeedProvider {
 
-    @OptIn(FlowPreview::class)
     override suspend fun getFeedFlow(
         feedSettings: FeedSettings,
         limit: Int,
@@ -91,6 +89,7 @@ class FeedProvider(
                     relays = relaySelection.getSelectedRelays()
                 )
             }
+
             is UserSpecific -> {
                 if (authorPubkeys == null) {
                     nostrSubscriber.subscribeToFeed(
@@ -145,7 +144,7 @@ class FeedProvider(
                 limit = limit,
             )
         } else if (authorPubkeys == null && relays != null) {
-            Log.d(TAG, "Get global feed by relays $relays")
+            Log.d(TAG, "Get global feed by ${relays.size} relays $relays")
             if (relays.isEmpty()) emptyList()
             else postDao.getGlobalFeedByRelays(
                 isPosts = isPosts,
@@ -155,7 +154,7 @@ class FeedProvider(
                 limit = limit,
             )
         } else if (authorPubkeys != null && relays == null) {
-            Log.d(TAG, "Get authored feed")
+            Log.d(TAG, "Get ${authorPubkeys.size} authored feed")
             if (authorPubkeys.isEmpty()) emptyList()
             else postDao.getAuthoredFeed(
                 isPosts = isPosts,
@@ -165,7 +164,7 @@ class FeedProvider(
                 limit = limit,
             )
         } else if (authorPubkeys != null && relays != null) {
-            Log.d(TAG, "Get authored feed by relays")
+            Log.d(TAG, "Get ${authorPubkeys.size} authored feed by ${relays.size} relays")
             if (authorPubkeys.isEmpty() || relays.isEmpty()) emptyList()
             else postDao.getAuthoredFeedByRelays(
                 isPosts = isPosts,

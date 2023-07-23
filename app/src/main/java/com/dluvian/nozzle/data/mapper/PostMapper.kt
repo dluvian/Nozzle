@@ -24,7 +24,9 @@ class PostMapper(
     private val eventRelayDao: EventRelayDao,
     private val contactDao: ContactDao,
 ) : IPostMapper {
+    private val DEBOUNCE_MILLIS = 300L
     // TODO: Optimize debounce
+    // TODO: TrustScore last. first not debounced
 
     @OptIn(FlowPreview::class)
     override suspend fun mapToPostsWithMetaFlow(posts: List<PostEntity>): Flow<List<PostWithMeta>> {
@@ -35,29 +37,29 @@ class PostMapper(
 
         val statsFlow = interactionStatsProvider.getStatsFlow(postIds)
             .distinctUntilChanged()
-            .debounce(200)
+            .debounce(DEBOUNCE_MILLIS)
         val repostsFlow = postDao.getRepostsPreviewMapFlow(posts.mapNotNull { it.repostedId })
             .distinctUntilChanged()
-            .debounce(200)
+            .debounce(DEBOUNCE_MILLIS)
         val namesAndPicturesFlow = profileDao.getNamesAndPicturesMapFlow(pubkeys)
             .distinctUntilChanged()
-            .debounce(200)
+            .debounce(DEBOUNCE_MILLIS)
         val replyRecipientsFlow = profileDao.getAuthorNamesAndPubkeysMapFlow(
             postIds = posts.mapNotNull { it.replyToId }
         ).distinctUntilChanged()
-            .debounce(200)
+            .debounce(DEBOUNCE_MILLIS)
         val relaysFlow = eventRelayDao.getRelaysPerEventIdMapFlow(postIds)
             .distinctUntilChanged()
-            .debounce(200)
+            .debounce(DEBOUNCE_MILLIS)
         val contactPubkeysFlow = contactDao.listContactPubkeysFlow(
             pubkey = pubkeyProvider.getPubkey(),
         ).distinctUntilChanged()
-            .debounce(200)
+            .debounce(DEBOUNCE_MILLIS)
         val trustScorePerPubkeyFlow = contactDao.getTrustScorePerPubkeyFlow(
             pubkey = pubkeyProvider.getPubkey(),
             contactPubkeys = pubkeys
         ).distinctUntilChanged()
-            .debounce(300)
+            .debounce(DEBOUNCE_MILLIS)
 
         val mainFlow = flow {
             emit(posts.map {

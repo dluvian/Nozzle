@@ -98,8 +98,9 @@ class ProfileViewModel(
     val onLoadMore: () -> Unit = {
         viewModelScope.launch(context = Dispatchers.IO) {
             Log.i(TAG, "Load more")
+            val pubkey = profileState.value.pubkey
             appendFeed(
-                feedSettings = getCurrentFeedSettings(),
+                feedSettings = getCurrentFeedSettings(pubkey = pubkey, relays = getRelays(pubkey)),
                 dbBatchSize = DB_BATCH_SIZE,
             )
         }
@@ -183,15 +184,15 @@ class ProfileViewModel(
     private suspend fun setFeed(pubkey: String, dbBatchSize: Int) {
         Log.i(TAG, "Set feed of $pubkey")
         feedState = feedProvider.getFeedFlow(
-            feedSettings = getCurrentFeedSettings(),
+            feedSettings = getCurrentFeedSettings(pubkey = pubkey, relays = getRelays(pubkey)),
             limit = dbBatchSize
-        ).debounce(300L)
+        ).debounce(100L)
             .stateIn(
                 viewModelScope,
                 SharingStarted.WhileSubscribed(),
                 emptyList(),
             )
-        renewAdditionalDataSubscription()
+        renewAdditionalDataSubscription(pubkey)
     }
 
     private val isAppending = AtomicBoolean(false)
@@ -216,35 +217,35 @@ class ProfileViewModel(
                     feedState.value,
                 )
             isAppending.set(false)
-            renewAdditionalDataSubscription()
+            renewAdditionalDataSubscription(pubkey = profileState.value.pubkey)
         }
     }
 
     // TODO: Handle sub in FeedProvider
-    private suspend fun renewAdditionalDataSubscription() {
+    private suspend fun renewAdditionalDataSubscription(pubkey: String) {
         nostrSubscriber.unsubscribeAdditionalPostsData()
         nostrSubscriber.subscribeToAdditionalPostsData(
             posts = feedState.value.takeLast(DB_BATCH_SIZE),
-            relays = getRelays()
+            relays = getRelays(pubkey)
         )
     }
 
-    private suspend fun getCurrentFeedSettings(): FeedSettings {
+    private fun getCurrentFeedSettings(pubkey: String, relays: List<String>): FeedSettings {
         return FeedSettings(
             isPosts = true,
             isReplies = true,
-            authorSelection = SingleAuthor(profileState.value.pubkey),
-            relaySelection = MultipleRelays(relays = getRelays())
+            authorSelection = SingleAuthor(pubkey = pubkey),
+            relaySelection = MultipleRelays(relays = relays)
         )
     }
 
-    private suspend fun getRelays(): List<String> {
-        return nip65Dao.getWriteRelaysOfPubkey(profileState.value.pubkey)
+    private suspend fun getRelays(pubkey: String): List<String> {
+        return nip65Dao.getWriteRelaysOfPubkey(pubkey)
             .ifEmpty {
-                profileState.value
-                    .relays
-                    .ifEmpty { getDefaultRelays() }
-            }.shuffled()
+                if (profileState.value.pubkey == pubkey) profileState.value.relays
+                else getDefaultRelays()
+            }
+            .shuffled()
             .take(5)  // Don't ask more than 5 relays
     }
 
