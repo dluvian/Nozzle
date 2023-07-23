@@ -5,10 +5,10 @@ import com.dluvian.nozzle.data.provider.IPubkeyProvider
 import com.dluvian.nozzle.data.room.dao.PostDao
 import com.dluvian.nozzle.data.room.dao.ReactionDao
 import com.dluvian.nozzle.model.InteractionStats
-import kotlinx.coroutines.FlowPreview
+import com.dluvian.nozzle.model.NORMAL_DEBOUNCE
+import com.dluvian.nozzle.model.firstThenDebounce
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flow
 
@@ -17,12 +17,9 @@ class InteractionStatsProvider(
     private val reactionDao: ReactionDao,
     private val postDao: PostDao,
 ) : IInteractionStatsProvider {
-    @OptIn(FlowPreview::class)
     override fun getStatsFlow(postIds: List<String>): Flow<InteractionStats> {
-        // TODO: Optimize debounce
         val numOfRepliesFlow = postDao.getNumOfRepliesPerPostFlow(postIds)
             .distinctUntilChanged()
-            .debounce(300)
         val likedByMeFlow = reactionDao.listLikedByFlow(pubkeyProvider.getPubkey(), postIds)
             .distinctUntilChanged()
         val repostedByMeFlow = postDao.listRepostedByPubkeyFlow(pubkeyProvider.getPubkey(), postIds)
@@ -31,7 +28,7 @@ class InteractionStatsProvider(
         val mainFlow = flow {
             emit(
                 InteractionStats(
-                    numOfRepliesPerPost = mapOf(),
+                    numOfRepliesPerPost = emptyMap(),
                     likedByMe = emptyList(),
                     repostedByMe = emptyList(),
                 )
@@ -40,9 +37,9 @@ class InteractionStatsProvider(
 
         return combine(
             mainFlow,
-            numOfRepliesFlow,
-            likedByMeFlow,
-            repostedByMeFlow
+            numOfRepliesFlow.firstThenDebounce(millis = NORMAL_DEBOUNCE),
+            likedByMeFlow.firstThenDebounce(millis = NORMAL_DEBOUNCE),
+            repostedByMeFlow.firstThenDebounce(millis = NORMAL_DEBOUNCE)
         ) { main, numOfReplies, likedByMe, repostedByMe ->
             main.copy(
                 numOfRepliesPerPost = numOfReplies,

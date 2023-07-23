@@ -171,7 +171,7 @@ class ProfileViewModel(
     private suspend fun setProfileAndFeed(pubkey: String, dbBatchSize: Int) {
         Log.i(TAG, "Set profile of $pubkey")
         profileState = profileProvider.getProfileFlow(pubkey)
-            .debounce(100)
+            .firstThenDebounce(SHORT_DEBOUNCE)
             .stateIn(
                 viewModelScope,
                 SharingStarted.WhileSubscribed(replayExpirationMillis = 0),
@@ -186,7 +186,7 @@ class ProfileViewModel(
         feedState = feedProvider.getFeedFlow(
             feedSettings = getCurrentFeedSettings(pubkey = pubkey, relays = getRelays(pubkey)),
             limit = dbBatchSize
-        ).debounce(100L)
+        ).firstThenDebounce(SHORT_DEBOUNCE)
             .stateIn(
                 viewModelScope,
                 SharingStarted.WhileSubscribed(),

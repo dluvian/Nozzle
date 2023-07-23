@@ -3,7 +3,11 @@ package com.dluvian.nozzle.data.preferences
 import android.content.Context
 import android.util.Log
 import com.dluvian.nozzle.data.PreferenceFileNames
-import com.dluvian.nozzle.model.*
+import com.dluvian.nozzle.model.AllRelays
+import com.dluvian.nozzle.model.Contacts
+import com.dluvian.nozzle.model.Everyone
+import com.dluvian.nozzle.model.FeedSettings
+import com.dluvian.nozzle.model.UserSpecific
 
 private const val TAG: String = "NozzlePreferences"
 
@@ -27,7 +31,7 @@ class NozzlePreferences(context: Context) : IFeedSettingsPreferences {
             isPosts = isPosts,
             isReplies = isReplies,
             authorSelection = if (isContactsOnly) Contacts else Everyone,
-            relaySelection = if (isContactsOnly) UserSpecific(mapOf()) else AllRelays
+            relaySelection = if (isContactsOnly) UserSpecific(emptyMap()) else AllRelays
         )
     }
 

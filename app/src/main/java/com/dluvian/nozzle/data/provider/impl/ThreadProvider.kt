@@ -5,12 +5,12 @@ import com.dluvian.nozzle.data.nostr.INostrSubscriber
 import com.dluvian.nozzle.data.provider.IThreadProvider
 import com.dluvian.nozzle.data.room.dao.PostDao
 import com.dluvian.nozzle.data.room.entity.PostEntity
+import com.dluvian.nozzle.model.NORMAL_DEBOUNCE
 import com.dluvian.nozzle.model.PostThread
 import com.dluvian.nozzle.model.PostWithMeta
-import kotlinx.coroutines.FlowPreview
+import com.dluvian.nozzle.model.firstThenDebounce
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
@@ -76,7 +76,6 @@ class ThreadProvider(
         return previous
     }
 
-    @OptIn(FlowPreview::class)
     private suspend fun getMappedThreadFlow(
         current: PostEntity,
         previous: List<PostEntity>,
@@ -85,7 +84,7 @@ class ThreadProvider(
         val relevantPosts = listOf(listOf(current), previous, replies).flatten()
         return postMapper.mapToPostsWithMetaFlow(relevantPosts)
             .distinctUntilChanged()
-            .debounce(100)
+            .firstThenDebounce(NORMAL_DEBOUNCE)
             .map {
                 PostThread(
                     current = it.first(),

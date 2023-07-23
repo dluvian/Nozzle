@@ -17,7 +17,7 @@ class AutopilotProvider(
 
     override suspend fun getAutopilotRelays(pubkeys: Set<String>): Map<String, Set<String>> {
         Log.i(TAG, "Get autopilot relays of ${pubkeys.size} pubkeys")
-        if (pubkeys.isEmpty()) return mapOf()
+        if (pubkeys.isEmpty()) return emptyMap()
 
         val result = mutableListOf<Pair<String, Set<String>>>()
         val processedPubkeys = mutableSetOf<String>()

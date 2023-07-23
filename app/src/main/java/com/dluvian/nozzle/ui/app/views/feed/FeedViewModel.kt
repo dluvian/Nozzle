@@ -28,7 +28,7 @@ data class FeedViewModelState(
         isPosts = true,
         isReplies = true,
         authorSelection = Contacts,
-        relaySelection = UserSpecific(mapOf()),
+        relaySelection = UserSpecific(emptyMap()),
     ),
     val relayStatuses: List<RelayActive> = emptyList(),
 )
@@ -250,11 +250,13 @@ class FeedViewModel(
             feedSettings = viewModelState.value.feedSettings,
             limit = DB_BATCH_SIZE,
             waitForSubscription = WAIT_TIME,
-        ).stateIn(
-            viewModelScope,
-            SharingStarted.WhileSubscribed(),
-            feedState.value,
-        )
+        ).distinctUntilChanged()
+            .firstThenDebounce(SHORT_DEBOUNCE)
+            .stateIn(
+                viewModelScope,
+                SharingStarted.WhileSubscribed(),
+                feedState.value,
+            )
         delay(WAIT_TIME)
         renewAdditionalDataSubscription()
     }
@@ -321,12 +323,14 @@ class FeedViewModel(
                     AllRelays
                 }
             }
+
             is MultipleRelays -> {
                 val selectedRelays = (newRelayStatuses ?: viewModelState.value.relayStatuses)
                     .filter { it.isActive }
                     .map { it.relayUrl }
                 MultipleRelays(relays = selectedRelays)
             }
+
             is AllRelays -> AllRelays
         }
         val newStatuses = newRelayStatuses ?: listRelayStatuses(

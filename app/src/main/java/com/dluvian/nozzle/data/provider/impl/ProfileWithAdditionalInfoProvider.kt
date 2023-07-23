@@ -11,15 +11,15 @@ import com.dluvian.nozzle.data.room.dao.Nip65Dao
 import com.dluvian.nozzle.data.room.dao.ProfileDao
 import com.dluvian.nozzle.data.room.entity.ProfileEntity
 import com.dluvian.nozzle.data.utils.hexToNpub
+import com.dluvian.nozzle.model.NORMAL_DEBOUNCE
 import com.dluvian.nozzle.model.ProfileWithAdditionalInfo
+import com.dluvian.nozzle.model.emitThenDebounce
+import com.dluvian.nozzle.model.firstThenDebounce
 import com.dluvian.nozzle.model.nostr.Metadata
-import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.flow
 
@@ -33,9 +33,6 @@ class ProfileWithAdditionalInfoProvider(
     private val eventRelayDao: EventRelayDao,
     private val nip65Dao: Nip65Dao,
 ) : IProfileWithAdditionalInfoProvider {
-    private val DEBOUNCE_MILLIS = 300L
-    private val DOUBLE_DEBOUNCE_MILLIS = 2 * DEBOUNCE_MILLIS
-    // TODO: Optimize debounce
 
     override fun getProfileFlow(pubkey: String): Flow<ProfileWithAdditionalInfo> {
         Log.i(TAG, "Get profile $pubkey")
@@ -72,34 +69,17 @@ class ProfileWithAdditionalInfoProvider(
 
     private fun isOneself(pubkey: String) = pubkey == pubkeyProvider.getPubkey()
 
-    @OptIn(FlowPreview::class)
     private fun getFinalFlow(
         mainFlow: Flow<ProfileWithAdditionalInfo>,
         trustScoreFlow: Flow<Float>,
         isFollowedByMeFlow: Flow<Boolean>,
         numOfFollowersFlow: Flow<Int>,
     ): Flow<ProfileWithAdditionalInfo> {
-        var firstFinalEmit = true
         return combine(
-            mainFlow.debounce {
-                if (firstFinalEmit) {
-                    firstFinalEmit = false
-                    0
-                } else DOUBLE_DEBOUNCE_MILLIS
-            },
-            flow {
-                emit(0f)
-                emitAll(trustScoreFlow.debounce(DOUBLE_DEBOUNCE_MILLIS))
-            },
-            flow {
-                // Follow and Unfollow should be immediate
-                emit(false)
-                emitAll(isFollowedByMeFlow)
-            },
-            flow {
-                emit(0)
-                emitAll(numOfFollowersFlow)
-            },
+            mainFlow.firstThenDebounce(NORMAL_DEBOUNCE),
+            trustScoreFlow.emitThenDebounce(toEmit = 0f, millis = NORMAL_DEBOUNCE),
+            isFollowedByMeFlow,
+            numOfFollowersFlow,
         ) { main, trustScore, isFollowedByMe, numOfFollowers ->
             Log.d(TAG, "Combining profile final flow")
             main.copy(
@@ -110,30 +90,17 @@ class ProfileWithAdditionalInfoProvider(
         }
     }
 
-    @OptIn(FlowPreview::class)
     private fun getMainFlow(
         baseFlow: Flow<ProfileWithAdditionalInfo>,
         relaysFlow: Flow<List<String>>,
         profileFlow: Flow<ProfileEntity?>,
         numOfFollowingFlow: Flow<Int>
     ): Flow<ProfileWithAdditionalInfo> {
-        var firstMainEmit = true
         return combine(
             baseFlow,
-            profileFlow.debounce {
-                if (firstMainEmit) {
-                    firstMainEmit = false
-                    0
-                } else DEBOUNCE_MILLIS
-            },
-            flow {
-                emit(emptyList<String>())
-                emitAll(relaysFlow.debounce(DEBOUNCE_MILLIS))
-            },
-            flow {
-                emit(0)
-                emitAll(numOfFollowingFlow.debounce(DEBOUNCE_MILLIS))
-            },
+            profileFlow.firstThenDebounce(NORMAL_DEBOUNCE),
+            relaysFlow.firstThenDebounce(NORMAL_DEBOUNCE),
+            numOfFollowingFlow.firstThenDebounce(NORMAL_DEBOUNCE),
         ) { base, profile, relays, numOfFollowing ->
             Log.d(TAG, "Combining profile main flow")
             base.copy(
