@@ -20,6 +20,7 @@ import com.dluvian.nozzle.data.provider.IRelayProvider
 import com.dluvian.nozzle.data.room.dao.Nip65Dao
 import com.dluvian.nozzle.model.*
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
@@ -165,9 +166,11 @@ class ProfileViewModel(
         }
     }
 
+    @OptIn(FlowPreview::class)
     private suspend fun setProfileAndFeed(pubkey: String, dbBatchSize: Int) {
         Log.i(TAG, "Set profile of $pubkey")
         profileState = profileProvider.getProfileFlow(pubkey)
+            .debounce(300)
             .stateIn(
                 viewModelScope,
                 SharingStarted.WhileSubscribed(replayExpirationMillis = 0),
@@ -176,16 +179,18 @@ class ProfileViewModel(
         setFeed(pubkey = pubkey, dbBatchSize = dbBatchSize)
     }
 
+    @OptIn(FlowPreview::class)
     private suspend fun setFeed(pubkey: String, dbBatchSize: Int) {
         Log.i(TAG, "Set feed of $pubkey")
         feedState = feedProvider.getFeedFlow(
             feedSettings = getCurrentFeedSettings(),
             limit = dbBatchSize
-        ).stateIn(
-            viewModelScope,
-            SharingStarted.WhileSubscribed(),
-            emptyList(),
-        )
+        ).debounce(300L)
+            .stateIn(
+                viewModelScope,
+                SharingStarted.WhileSubscribed(),
+                emptyList(),
+            )
         renewAdditionalDataSubscription()
     }
 

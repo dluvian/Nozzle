@@ -34,6 +34,7 @@ class ProfileWithAdditionalInfoProvider(
     private val nip65Dao: Nip65Dao,
 ) : IProfileWithAdditionalInfoProvider {
     private val DEBOUNCE_MILLIS = 300L
+    private val FINAL_DEBOUNCE_MILLIS = 2 * DEBOUNCE_MILLIS
     // TODO: Optimize debounce
 
     @OptIn(FlowPreview::class)
@@ -85,19 +86,19 @@ class ProfileWithAdditionalInfoProvider(
                 if (firstFinalEmit) {
                     firstFinalEmit = false
                     0
-                } else 300
+                } else FINAL_DEBOUNCE_MILLIS
             },
             flow {
                 emit(0f)
-                emitAll(trustScoreFlow.debounce(DEBOUNCE_MILLIS))
+                emitAll(trustScoreFlow.debounce(FINAL_DEBOUNCE_MILLIS))
             },
             flow {
                 emit(false)
-                emitAll(isFollowedByMeFlow.debounce(DEBOUNCE_MILLIS))
+                emitAll(isFollowedByMeFlow.debounce(FINAL_DEBOUNCE_MILLIS))
             },
             flow {
                 emit(0)
-                emitAll(numOfFollowersFlow.debounce(DEBOUNCE_MILLIS))
+                emitAll(numOfFollowersFlow.debounce(FINAL_DEBOUNCE_MILLIS))
             },
         ) { main, trustScore, isFollowedByMe, numOfFollowers ->
             Log.d(TAG, "Combining profile final flow")
@@ -123,7 +124,7 @@ class ProfileWithAdditionalInfoProvider(
                 if (firstMainEmit) {
                     firstMainEmit = false
                     0
-                } else 300
+                } else DEBOUNCE_MILLIS
             },
             flow {
                 emit(emptyList<String>())
