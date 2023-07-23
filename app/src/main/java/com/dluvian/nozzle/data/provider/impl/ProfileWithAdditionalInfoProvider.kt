@@ -155,7 +155,7 @@ class ProfileWithAdditionalInfoProvider(
                 relays = emptyList(),
                 isOneself = isOneself(pubkey = pubkey),
                 isFollowedByMe = false,
-                trustScore = if (isOneself(pubkey = pubkey)) null else 0f,
+                trustScore = if (isOneself(pubkey = pubkey)) null else 0.001f,
             )
         )
         nostrSubscriber.unsubscribeNip65()

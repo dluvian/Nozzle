@@ -190,7 +190,7 @@ class ProfileViewModel(
             .stateIn(
                 viewModelScope,
                 SharingStarted.WhileSubscribed(),
-                emptyList(),
+                if (profileState.value.pubkey == pubkey) feedState.value else emptyList(),
             )
         renewAdditionalDataSubscription(pubkey)
     }
