@@ -34,10 +34,9 @@ class ProfileWithAdditionalInfoProvider(
     private val nip65Dao: Nip65Dao,
 ) : IProfileWithAdditionalInfoProvider {
     private val DEBOUNCE_MILLIS = 300L
-    private val FINAL_DEBOUNCE_MILLIS = 2 * DEBOUNCE_MILLIS
+    private val DOUBLE_DEBOUNCE_MILLIS = 2 * DEBOUNCE_MILLIS
     // TODO: Optimize debounce
 
-    @OptIn(FlowPreview::class)
     override fun getProfileFlow(pubkey: String): Flow<ProfileWithAdditionalInfo> {
         Log.i(TAG, "Get profile $pubkey")
         val npub = hexToNpub(pubkey)
@@ -86,19 +85,20 @@ class ProfileWithAdditionalInfoProvider(
                 if (firstFinalEmit) {
                     firstFinalEmit = false
                     0
-                } else FINAL_DEBOUNCE_MILLIS
+                } else DOUBLE_DEBOUNCE_MILLIS
             },
             flow {
                 emit(0f)
-                emitAll(trustScoreFlow.debounce(FINAL_DEBOUNCE_MILLIS))
+                emitAll(trustScoreFlow.debounce(DOUBLE_DEBOUNCE_MILLIS))
             },
             flow {
+                // Follow and Unfollow should be immediate
                 emit(false)
-                emitAll(isFollowedByMeFlow.debounce(FINAL_DEBOUNCE_MILLIS))
+                emitAll(isFollowedByMeFlow)
             },
             flow {
                 emit(0)
-                emitAll(numOfFollowersFlow.debounce(FINAL_DEBOUNCE_MILLIS))
+                emitAll(numOfFollowersFlow)
             },
         ) { main, trustScore, isFollowedByMe, numOfFollowers ->
             Log.d(TAG, "Combining profile final flow")
