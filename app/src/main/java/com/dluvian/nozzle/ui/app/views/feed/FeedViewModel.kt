@@ -250,8 +250,8 @@ class FeedViewModel(
             feedSettings = viewModelState.value.feedSettings,
             limit = DB_BATCH_SIZE,
             waitForSubscription = WAIT_TIME,
-        ).distinctUntilChanged()
-            .firstThenDebounce(SHORT_DEBOUNCE)
+        ).firstThenDebounce(NORMAL_DEBOUNCE)
+            .distinctUntilChanged()
             .stateIn(
                 viewModelScope,
                 SharingStarted.WhileSubscribed(),

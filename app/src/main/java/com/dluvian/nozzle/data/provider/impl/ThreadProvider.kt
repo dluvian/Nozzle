@@ -5,10 +5,10 @@ import com.dluvian.nozzle.data.nostr.INostrSubscriber
 import com.dluvian.nozzle.data.provider.IThreadProvider
 import com.dluvian.nozzle.data.room.dao.PostDao
 import com.dluvian.nozzle.data.room.entity.PostEntity
-import com.dluvian.nozzle.model.NORMAL_DEBOUNCE
+import com.dluvian.nozzle.data.utils.NORMAL_DEBOUNCE
+import com.dluvian.nozzle.data.utils.firstThenDebounce
 import com.dluvian.nozzle.model.PostThread
 import com.dluvian.nozzle.model.PostWithMeta
-import com.dluvian.nozzle.model.firstThenDebounce
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -83,8 +83,8 @@ class ThreadProvider(
     ): Flow<PostThread> {
         val relevantPosts = listOf(listOf(current), previous, replies).flatten()
         return postMapper.mapToPostsWithMetaFlow(relevantPosts)
-            .distinctUntilChanged()
             .firstThenDebounce(NORMAL_DEBOUNCE)
+            .distinctUntilChanged()
             .map {
                 PostThread(
                     current = it.first(),

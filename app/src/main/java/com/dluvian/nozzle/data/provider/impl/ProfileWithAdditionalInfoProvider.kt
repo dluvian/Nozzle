@@ -10,11 +10,11 @@ import com.dluvian.nozzle.data.room.dao.EventRelayDao
 import com.dluvian.nozzle.data.room.dao.Nip65Dao
 import com.dluvian.nozzle.data.room.dao.ProfileDao
 import com.dluvian.nozzle.data.room.entity.ProfileEntity
+import com.dluvian.nozzle.data.utils.NORMAL_DEBOUNCE
+import com.dluvian.nozzle.data.utils.emitThenDebounce
+import com.dluvian.nozzle.data.utils.firstThenDebounce
 import com.dluvian.nozzle.data.utils.hexToNpub
-import com.dluvian.nozzle.model.NORMAL_DEBOUNCE
 import com.dluvian.nozzle.model.ProfileWithAdditionalInfo
-import com.dluvian.nozzle.model.emitThenDebounce
-import com.dluvian.nozzle.model.firstThenDebounce
 import com.dluvian.nozzle.model.nostr.Metadata
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
@@ -37,18 +37,28 @@ class ProfileWithAdditionalInfoProvider(
     override fun getProfileFlow(pubkey: String): Flow<ProfileWithAdditionalInfo> {
         Log.i(TAG, "Get profile $pubkey")
         val npub = hexToNpub(pubkey)
-        val profileFlow = profileDao.getProfileFlow(pubkey).distinctUntilChanged()
-        val relaysFlow = eventRelayDao.listUsedRelaysFlow(pubkey).distinctUntilChanged()
-        val numOfFollowingFlow = contactDao.countFollowingFlow(pubkey).distinctUntilChanged()
-        val numOfFollowersFlow = contactDao.countFollowersFlow(pubkey).distinctUntilChanged()
+        val profileFlow = profileDao.getProfileFlow(pubkey)
+            .firstThenDebounce(NORMAL_DEBOUNCE)
+            .distinctUntilChanged()
+        val relaysFlow = eventRelayDao.listUsedRelaysFlow(pubkey)
+            .firstThenDebounce(NORMAL_DEBOUNCE)
+            .distinctUntilChanged()
+        val numOfFollowingFlow = contactDao.countFollowingFlow(pubkey)
+            .firstThenDebounce(NORMAL_DEBOUNCE)
+            .distinctUntilChanged()
+        // No debounce because of immediate user interaction response
         val isFollowedByMeFlow = contactDao.isFollowedFlow(
             pubkey = pubkeyProvider.getPubkey(),
             contactPubkey = pubkey
         ).distinctUntilChanged()
+        // No debounce because of immediate user interaction response
+        val numOfFollowersFlow = contactDao.countFollowersFlow(pubkey)
+            .distinctUntilChanged()
         val trustScoreFlow = contactDao.getTrustScoreFlow(
             pubkey = pubkeyProvider.getPubkey(),
             contactPubkey = pubkey
-        ).distinctUntilChanged()
+        ).emitThenDebounce(toEmit = 0f, millis = NORMAL_DEBOUNCE)
+            .distinctUntilChanged()
 
         val baseFlow = getBaseFlow(pubkey = pubkey, npub = npub, relaysFlow = relaysFlow)
 
@@ -57,7 +67,8 @@ class ProfileWithAdditionalInfoProvider(
             relaysFlow = relaysFlow,
             profileFlow = profileFlow,
             numOfFollowingFlow = numOfFollowingFlow
-        ).distinctUntilChanged()
+        ).firstThenDebounce(NORMAL_DEBOUNCE)
+            .distinctUntilChanged()
 
         return getFinalFlow(
             mainFlow = mainFlow,
@@ -76,8 +87,8 @@ class ProfileWithAdditionalInfoProvider(
         numOfFollowersFlow: Flow<Int>,
     ): Flow<ProfileWithAdditionalInfo> {
         return combine(
-            mainFlow.firstThenDebounce(NORMAL_DEBOUNCE),
-            trustScoreFlow.emitThenDebounce(toEmit = 0f, millis = NORMAL_DEBOUNCE),
+            mainFlow,
+            trustScoreFlow,
             isFollowedByMeFlow,
             numOfFollowersFlow,
         ) { main, trustScore, isFollowedByMe, numOfFollowers ->
@@ -98,9 +109,9 @@ class ProfileWithAdditionalInfoProvider(
     ): Flow<ProfileWithAdditionalInfo> {
         return combine(
             baseFlow,
-            profileFlow.firstThenDebounce(NORMAL_DEBOUNCE),
-            relaysFlow.firstThenDebounce(NORMAL_DEBOUNCE),
-            numOfFollowingFlow.firstThenDebounce(NORMAL_DEBOUNCE),
+            profileFlow,
+            relaysFlow,
+            numOfFollowingFlow,
         ) { base, profile, relays, numOfFollowing ->
             Log.d(TAG, "Combining profile main flow")
             base.copy(

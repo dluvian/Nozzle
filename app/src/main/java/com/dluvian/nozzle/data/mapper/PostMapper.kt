@@ -7,16 +7,15 @@ import com.dluvian.nozzle.data.room.dao.EventRelayDao
 import com.dluvian.nozzle.data.room.dao.PostDao
 import com.dluvian.nozzle.data.room.dao.ProfileDao
 import com.dluvian.nozzle.data.room.entity.PostEntity
-import com.dluvian.nozzle.model.NORMAL_DEBOUNCE
+import com.dluvian.nozzle.data.utils.NORMAL_DEBOUNCE
+import com.dluvian.nozzle.data.utils.SHORT_DEBOUNCE
+import com.dluvian.nozzle.data.utils.emitThenDebounce
+import com.dluvian.nozzle.data.utils.firstThenDebounce
 import com.dluvian.nozzle.model.PostWithMeta
 import com.dluvian.nozzle.model.RepostPreview
-import com.dluvian.nozzle.model.SHORT_DEBOUNCE
-import com.dluvian.nozzle.model.emitThenDebounce
-import com.dluvian.nozzle.model.firstThenDebounce
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flow
 
@@ -37,24 +36,30 @@ class PostMapper(
         val pubkeys = posts.map { it.pubkey }
 
         val statsFlow = interactionStatsProvider.getStatsFlow(postIds)
-            .distinctUntilChanged()
-        val repostsFlow = postDao.getRepostsPreviewMapFlow(posts.mapNotNull { it.repostedId })
+            .firstThenDebounce(NORMAL_DEBOUNCE)
             .distinctUntilChanged()
         val namesAndPicturesFlow = profileDao.getNamesAndPicturesMapFlow(pubkeys)
+            .firstThenDebounce(NORMAL_DEBOUNCE)
             .distinctUntilChanged()
         val replyRecipientsFlow = profileDao.getAuthorNamesAndPubkeysMapFlow(
             postIds = posts.mapNotNull { it.replyToId }
-        ).distinctUntilChanged()
-        val relaysFlow = eventRelayDao.getRelaysPerEventIdMapFlow(postIds)
+        ).firstThenDebounce(NORMAL_DEBOUNCE)
+            .distinctUntilChanged()
+        val repostsFlow = postDao.getRepostsPreviewMapFlow(posts.mapNotNull { it.repostedId })
+            .emitThenDebounce(toEmit = emptyMap(), millis = NORMAL_DEBOUNCE)
             .distinctUntilChanged()
         // TODO: Use contactlistProvider
-        val contactPubkeysFlow = contactDao.listContactPubkeysFlow(
-            pubkey = pubkeyProvider.getPubkey(),
-        ).distinctUntilChanged()
+        val contactPubkeysFlow = contactDao.listContactPubkeysFlow(pubkeyProvider.getPubkey())
+            .firstThenDebounce(NORMAL_DEBOUNCE)
+            .distinctUntilChanged()
+        val relaysFlow = eventRelayDao.getRelaysPerEventIdMapFlow(postIds)
+            .firstThenDebounce(NORMAL_DEBOUNCE)
+            .distinctUntilChanged()
         val trustScorePerPubkeyFlow = contactDao.getTrustScorePerPubkeyFlow(
             pubkey = pubkeyProvider.getPubkey(),
             contactPubkeys = pubkeys
-        ).distinctUntilChanged()
+        ).emitThenDebounce(toEmit = emptyMap(), millis = NORMAL_DEBOUNCE)
+            .distinctUntilChanged()
 
         val mainFlow = flow {
             emit(posts.map {
@@ -93,10 +98,10 @@ class PostMapper(
 
         val baseFlow = combine(
             mainFlow,
-            statsFlow.firstThenDebounce(NORMAL_DEBOUNCE),
-            namesAndPicturesFlow.firstThenDebounce(NORMAL_DEBOUNCE),
-            contactPubkeysFlow.firstThenDebounce(NORMAL_DEBOUNCE),
-            replyRecipientsFlow.firstThenDebounce(NORMAL_DEBOUNCE)
+            statsFlow,
+            namesAndPicturesFlow,
+            contactPubkeysFlow,
+            replyRecipientsFlow
         ) { main, stats, namesAndPics, contacts, replyRecipients ->
             main.map {
                 it.copy(
@@ -111,14 +116,14 @@ class PostMapper(
                     else contacts.contains(it.pubkey),
                 )
             }
-        }.distinctUntilChanged()
-            .debounce(SHORT_DEBOUNCE)
+        }.firstThenDebounce(SHORT_DEBOUNCE)
+            .distinctUntilChanged()
 
         return combine(
             baseFlow,
-            repostsFlow.emitThenDebounce(toEmit = emptyMap(), millis = NORMAL_DEBOUNCE),
-            relaysFlow.firstThenDebounce(NORMAL_DEBOUNCE),
-            trustScorePerPubkeyFlow.emitThenDebounce(toEmit = emptyMap(), millis = NORMAL_DEBOUNCE)
+            repostsFlow,
+            relaysFlow,
+            trustScorePerPubkeyFlow
         ) { base, reposts, relays, trustScore ->
             base.map {
                 it.copy(

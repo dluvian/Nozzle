@@ -4,13 +4,12 @@ import com.dluvian.nozzle.data.provider.IInteractionStatsProvider
 import com.dluvian.nozzle.data.provider.IPubkeyProvider
 import com.dluvian.nozzle.data.room.dao.PostDao
 import com.dluvian.nozzle.data.room.dao.ReactionDao
+import com.dluvian.nozzle.data.utils.NORMAL_DEBOUNCE
+import com.dluvian.nozzle.data.utils.firstThenDebounce
 import com.dluvian.nozzle.model.InteractionStats
-import com.dluvian.nozzle.model.NORMAL_DEBOUNCE
-import com.dluvian.nozzle.model.firstThenDebounce
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.flow
 
 class InteractionStatsProvider(
     private val pubkeyProvider: IPubkeyProvider,
@@ -19,32 +18,24 @@ class InteractionStatsProvider(
 ) : IInteractionStatsProvider {
     override fun getStatsFlow(postIds: List<String>): Flow<InteractionStats> {
         val numOfRepliesFlow = postDao.getNumOfRepliesPerPostFlow(postIds)
+            .firstThenDebounce(millis = NORMAL_DEBOUNCE)
             .distinctUntilChanged()
         val likedByMeFlow = reactionDao.listLikedByFlow(pubkeyProvider.getPubkey(), postIds)
+            .firstThenDebounce(millis = NORMAL_DEBOUNCE)
             .distinctUntilChanged()
         val repostedByMeFlow = postDao.listRepostedByPubkeyFlow(pubkeyProvider.getPubkey(), postIds)
+            .firstThenDebounce(millis = NORMAL_DEBOUNCE)
             .distinctUntilChanged()
 
-        val mainFlow = flow {
-            emit(
-                InteractionStats(
-                    numOfRepliesPerPost = emptyMap(),
-                    likedByMe = emptyList(),
-                    repostedByMe = emptyList(),
-                )
-            )
-        }
-
         return combine(
-            mainFlow,
-            numOfRepliesFlow.firstThenDebounce(millis = NORMAL_DEBOUNCE),
-            likedByMeFlow.firstThenDebounce(millis = NORMAL_DEBOUNCE),
-            repostedByMeFlow.firstThenDebounce(millis = NORMAL_DEBOUNCE)
-        ) { main, numOfReplies, likedByMe, repostedByMe ->
-            main.copy(
+            numOfRepliesFlow,
+            likedByMeFlow,
+            repostedByMeFlow
+        ) { numOfReplies, likedByMe, repostedByMe ->
+            InteractionStats(
                 numOfRepliesPerPost = numOfReplies,
                 likedByMe = likedByMe,
-                repostedByMe = repostedByMe
+                repostedByMe = repostedByMe,
             )
         }
     }

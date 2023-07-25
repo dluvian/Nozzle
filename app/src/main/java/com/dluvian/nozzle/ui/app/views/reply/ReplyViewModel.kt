@@ -12,6 +12,8 @@ import com.dluvian.nozzle.data.provider.IPersonalProfileProvider
 import com.dluvian.nozzle.data.provider.IRelayProvider
 import com.dluvian.nozzle.data.room.dao.PostDao
 import com.dluvian.nozzle.data.room.entity.PostEntity
+import com.dluvian.nozzle.data.utils.NORMAL_DEBOUNCE
+import com.dluvian.nozzle.data.utils.firstThenDebounce
 import com.dluvian.nozzle.data.utils.listRelayStatuses
 import com.dluvian.nozzle.data.utils.toggleRelay
 import com.dluvian.nozzle.model.AllRelays
@@ -47,6 +49,7 @@ class ReplyViewModel(
     private var postToReplyTo: PostWithMeta? = null
 
     var metadataState = personalProfileProvider.getMetadata()
+        .firstThenDebounce(NORMAL_DEBOUNCE)
         .stateIn(
             viewModelScope,
             SharingStarted.Eagerly,
@@ -66,6 +69,7 @@ class ReplyViewModel(
 
     val onPrepareReply: (PostWithMeta) -> Unit = { post ->
         metadataState = personalProfileProvider.getMetadata()
+            .firstThenDebounce(NORMAL_DEBOUNCE)
             .stateIn(
                 viewModelScope,
                 SharingStarted.Eagerly,

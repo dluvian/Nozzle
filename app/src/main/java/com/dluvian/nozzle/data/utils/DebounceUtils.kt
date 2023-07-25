@@ -1,4 +1,4 @@
-package com.dluvian.nozzle.model
+package com.dluvian.nozzle.data.utils
 
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.Flow

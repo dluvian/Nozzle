@@ -18,6 +18,8 @@ import com.dluvian.nozzle.data.provider.IProfileWithAdditionalInfoProvider
 import com.dluvian.nozzle.data.provider.IPubkeyProvider
 import com.dluvian.nozzle.data.provider.IRelayProvider
 import com.dluvian.nozzle.data.room.dao.Nip65Dao
+import com.dluvian.nozzle.data.utils.NORMAL_DEBOUNCE
+import com.dluvian.nozzle.data.utils.firstThenDebounce
 import com.dluvian.nozzle.model.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.FlowPreview
@@ -167,11 +169,10 @@ class ProfileViewModel(
         }
     }
 
-    @OptIn(FlowPreview::class)
     private suspend fun setProfileAndFeed(pubkey: String, dbBatchSize: Int) {
         Log.i(TAG, "Set profile of $pubkey")
         profileState = profileProvider.getProfileFlow(pubkey)
-            .firstThenDebounce(SHORT_DEBOUNCE)
+            .firstThenDebounce(NORMAL_DEBOUNCE)
             .stateIn(
                 viewModelScope,
                 SharingStarted.WhileSubscribed(replayExpirationMillis = 0),
@@ -186,7 +187,7 @@ class ProfileViewModel(
         feedState = feedProvider.getFeedFlow(
             feedSettings = getCurrentFeedSettings(pubkey = pubkey, relays = getRelays(pubkey)),
             limit = dbBatchSize
-        ).firstThenDebounce(SHORT_DEBOUNCE)
+        ).firstThenDebounce(NORMAL_DEBOUNCE)
             .stateIn(
                 viewModelScope,
                 SharingStarted.WhileSubscribed(),
@@ -210,7 +211,9 @@ class ProfileViewModel(
                 feedSettings = feedSettings,
                 limit = dbBatchSize,
                 until = last.createdAt
-            ).map { toAppend -> feedState.value + toAppend }
+            ).firstThenDebounce(NORMAL_DEBOUNCE)
+                .distinctUntilChanged()
+                .map { toAppend -> feedState.value + toAppend }
                 .stateIn(
                     viewModelScope,
                     SharingStarted.WhileSubscribed(),

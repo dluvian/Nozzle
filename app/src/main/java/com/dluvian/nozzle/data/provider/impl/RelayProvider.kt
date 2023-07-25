@@ -6,6 +6,8 @@ import com.dluvian.nozzle.data.provider.IContactListProvider
 import com.dluvian.nozzle.data.provider.IPubkeyProvider
 import com.dluvian.nozzle.data.provider.IRelayProvider
 import com.dluvian.nozzle.data.room.dao.Nip65Dao
+import com.dluvian.nozzle.data.utils.NORMAL_DEBOUNCE
+import com.dluvian.nozzle.data.utils.firstThenDebounce
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.SharingStarted
@@ -64,6 +66,7 @@ class RelayProvider(
         if (personalPubkey != pubkeyProvider.getPubkey()) {
             personalPubkey = pubkeyProvider.getPubkey()
             personalNip65State = nip65Dao.getRelaysOfPubkeyFlow(personalPubkey)
+                .firstThenDebounce(NORMAL_DEBOUNCE)
                 .stateIn(
                     scope, SharingStarted.Eagerly, emptyList()
                 )
