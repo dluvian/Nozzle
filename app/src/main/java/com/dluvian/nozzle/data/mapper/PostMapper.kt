@@ -11,9 +11,11 @@ import com.dluvian.nozzle.data.utils.NORMAL_DEBOUNCE
 import com.dluvian.nozzle.data.utils.SHORT_DEBOUNCE
 import com.dluvian.nozzle.data.utils.emitThenDebounce
 import com.dluvian.nozzle.data.utils.firstThenDebounce
+import com.dluvian.nozzle.model.InteractionStats
+import com.dluvian.nozzle.model.NameAndPicture
+import com.dluvian.nozzle.model.NameAndPubkey
 import com.dluvian.nozzle.model.PostWithMeta
 import com.dluvian.nozzle.model.RepostPreview
-import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -28,7 +30,6 @@ class PostMapper(
     private val contactDao: ContactDao,
 ) : IPostMapper {
 
-    @OptIn(FlowPreview::class)
     override suspend fun mapToPostsWithMetaFlow(posts: List<PostEntity>): Flow<List<PostWithMeta>> {
         if (posts.isEmpty()) return flow { emit(emptyList()) }
 
@@ -61,20 +62,59 @@ class PostMapper(
         ).emitThenDebounce(toEmit = emptyMap(), millis = NORMAL_DEBOUNCE)
             .distinctUntilChanged()
 
-        val mainFlow = flow {
-            emit(posts.map {
+        val baseFlow = getBaseFlow(
+            posts = posts,
+            statsFlow = statsFlow,
+            namesAndPicturesFlow = namesAndPicturesFlow,
+            contactPubkeysFlow = contactPubkeysFlow,
+            replyRecipientsFlow = replyRecipientsFlow,
+            relaysFlow = relaysFlow
+        ).firstThenDebounce(SHORT_DEBOUNCE)
+            .distinctUntilChanged()
+
+        return combine(
+            baseFlow,
+            repostsFlow,
+            trustScorePerPubkeyFlow
+        ) { base, reposts, trustScore ->
+            base.map {
+                it.copy(
+                    repost = it.repost?.id.let { repostedId -> reposts[repostedId] },
+                    trustScore = if (isOneself(it.pubkey)) null
+                    else trustScore[it.pubkey]
+                )
+            }
+        }
+    }
+
+    private fun getBaseFlow(
+        posts: List<PostEntity>,
+        statsFlow: Flow<InteractionStats>,
+        namesAndPicturesFlow: Flow<Map<String, NameAndPicture>>,
+        contactPubkeysFlow: Flow<List<String>>,
+        replyRecipientsFlow: Flow<Map<String, NameAndPubkey>>,
+        relaysFlow: Flow<Map<String, List<String>>>
+    ): Flow<List<PostWithMeta>> {
+        return combine(
+            statsFlow,
+            namesAndPicturesFlow,
+            contactPubkeysFlow,
+            replyRecipientsFlow,
+            relaysFlow
+        ) { stats, namesAndPics, contacts, replyRecipients, relays ->
+            posts.map {
                 PostWithMeta(
                     id = it.id,
                     replyToId = it.replyToId,
                     replyToRootId = it.replyToRootId,
-                    replyToName = "",
-                    replyToPubkey = "",
+                    replyToName = replyRecipients[it.replyToId]?.name,
+                    replyToPubkey = replyRecipients[it.replyToId]?.pubkey,
                     replyRelayHint = it.replyRelayHint,
                     pubkey = it.pubkey,
                     createdAt = it.createdAt,
                     content = it.content,
-                    name = "",
-                    pictureUrl = "",
+                    name = namesAndPics[it.pubkey]?.name.orEmpty(),
+                    pictureUrl = namesAndPics[it.pubkey]?.picture.orEmpty(),
                     repost = it.repostedId?.let { repostedId ->
                         RepostPreview(
                             id = repostedId,
@@ -85,52 +125,14 @@ class PostMapper(
                             createdAt = 0,
                         )
                     },
-                    isLikedByMe = false,
-                    isRepostedByMe = false,
-                    isFollowedByMe = false,
-                    isOneself = isOneself(it.pubkey),
-                    trustScore = if (isOneself(it.pubkey)) null else 0f,
-                    numOfReplies = 0,
-                    relays = emptyList(),
-                )
-            })
-        }
-
-        val baseFlow = combine(
-            mainFlow,
-            statsFlow,
-            namesAndPicturesFlow,
-            contactPubkeysFlow,
-            replyRecipientsFlow
-        ) { main, stats, namesAndPics, contacts, replyRecipients ->
-            main.map {
-                it.copy(
                     isLikedByMe = stats.isLikedByMe(it.id),
                     isRepostedByMe = stats.isRepostedByMe(it.id),
-                    numOfReplies = stats.getNumOfReplies(it.id),
-                    pictureUrl = namesAndPics[it.pubkey]?.picture.orEmpty(),
-                    name = namesAndPics[it.pubkey]?.name.orEmpty(),
-                    replyToName = replyRecipients[it.replyToId]?.name,
-                    replyToPubkey = replyRecipients[it.replyToId]?.pubkey,
                     isFollowedByMe = if (isOneself(it.pubkey)) false
                     else contacts.contains(it.pubkey),
-                )
-            }
-        }.firstThenDebounce(SHORT_DEBOUNCE)
-            .distinctUntilChanged()
-
-        return combine(
-            baseFlow,
-            repostsFlow,
-            relaysFlow,
-            trustScorePerPubkeyFlow
-        ) { base, reposts, relays, trustScore ->
-            base.map {
-                it.copy(
-                    repost = it.repost?.id.let { repostedId -> reposts[repostedId] },
+                    isOneself = isOneself(it.pubkey),
+                    trustScore = if (isOneself(it.pubkey)) null else 0f,
+                    numOfReplies = stats.getNumOfReplies(it.id),
                     relays = relays[it.id].orEmpty(),
-                    trustScore = if (isOneself(it.pubkey)) null
-                    else trustScore[it.pubkey]
                 )
             }
         }
