@@ -1,13 +1,10 @@
 package com.dluvian.nozzle.ui.app.views.feed
 
-import android.util.Log
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import com.dluvian.nozzle.model.PostWithMeta
 import com.dluvian.nozzle.model.RelaySelection
-
-private const val TAG = "FeedRoute"
 
 @Composable
 fun FeedRoute(
@@ -24,8 +21,6 @@ fun FeedRoute(
     val uiState by feedViewModel.uiState.collectAsState()
     val metadataState by feedViewModel.metadataState.collectAsState()
     val feedState by feedViewModel.feedState.collectAsState()
-    val forceRecomposition by feedViewModel.forceRecompositionState.collectAsState()
-    Log.d(TAG, "Recompose $forceRecomposition")
 
     FeedScreen(
         uiState = uiState,

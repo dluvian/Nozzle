@@ -53,15 +53,6 @@ class FeedViewModel(
 
     var feedState: StateFlow<List<PostWithMeta>> = MutableStateFlow(emptyList())
 
-    // TODO: Figure out how to do it without this hack
-    private val forceRecomposition = MutableStateFlow(0)
-    val forceRecompositionState = forceRecomposition
-        .stateIn(
-            viewModelScope,
-            SharingStarted.Eagerly,
-            0
-        )
-
     private val lastAutopilotResult: MutableMap<String, Set<String>> =
         Collections.synchronizedMap(mutableMapOf<String, Set<String>>())
 
@@ -89,7 +80,6 @@ class FeedViewModel(
         viewModelScope.launch(context = IO) {
             Log.i(TAG, "Load more")
             appendFeed(currentFeed = feedState.value)
-            forceRecomposition.update { it + 1 }
         }
     }
 
@@ -237,6 +227,7 @@ class FeedViewModel(
     private suspend fun handleRefresh() {
         setUIRefresh(true)
         subscribeToNip65()
+        // TODO: Update screen with latest. Freeze post ids once loading indicator is gone
         delay(WAIT_TIME)
         subscribeToPersonalProfile()
         updateScreen()
@@ -273,7 +264,9 @@ class FeedViewModel(
                 feedSettings = viewModelState.value.feedSettings,
                 limit = DB_BATCH_SIZE,
                 until = last.createdAt,
-            ).map { toAppend -> currentFeed + toAppend }
+            ).firstThenDebounce(NORMAL_DEBOUNCE)
+                .distinctUntilChanged()
+                .map { toAppend -> currentFeed + toAppend }
                 .stateIn(
                     viewModelScope,
                     SharingStarted.Eagerly,
