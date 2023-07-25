@@ -1,6 +1,6 @@
 <resources>
     <string name="app_name" translatable="false">Nozzle</string>
-    <string name="nozzle_version" translatable="false">v0.6.1-alpha</string>
+    <string name="nozzle_version" translatable="false">v0.6.2-alpha</string>
     <string name="profile">Profile</string>
     <string name="feed">Feed</string>
     <string name="search">Search</string>
@@ -61,7 +61,7 @@
     <string name="your_reply_is_empty">Your reply is empty</string>
     <string name="update">Update</string>
     <string name="nip05_identifier">nip-05 identifier</string>
-    <string name="enter_nip05">e.g. user@nozzle.chat</string>
+    <string name="enter_nip05">e.g. user@nozzle.social</string>
     <string name="post_your_thoughts">Post your thoughts</string>
     <string name="add">Add</string>
     <string name="invalid_npub_or_note">Invalid npub or note ID</string>
