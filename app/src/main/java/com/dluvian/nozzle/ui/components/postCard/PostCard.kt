@@ -367,7 +367,7 @@ private fun ReplyAction(
     Row(modifier = modifier, verticalAlignment = Alignment.CenterVertically) {
         ReplyIcon(modifier = Modifier
             .size(sizing.smallIcon)
-            .clip(CircleShape)
+            .clip(RoundedCornerShape(spacing.medium))
             .clickable {
                 onPrepareReply(postToReplyTo)
                 onNavigateToReply()
@@ -394,7 +394,7 @@ private fun RepostAction(
     ) {
         val iconModifier = Modifier
             .size(sizing.smallIcon)
-            .clip(CircleShape)
+            .clip(RoundedCornerShape(spacing.medium))
         RepostIcon(
             modifier = if (isRepostedByMe) iconModifier.clickable { }
             else iconModifier.clickable {
@@ -419,7 +419,7 @@ private fun LikeAction(
     ) {
         val iconModifier = Modifier
             .size(sizing.smallIcon)
-            .clip(CircleShape)
+            .clip(RoundedCornerShape(spacing.medium))
         LikeIcon(
             modifier = if (isLikedByMe) iconModifier.clickable { }
             else iconModifier.clickable {
