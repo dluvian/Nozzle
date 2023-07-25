@@ -17,9 +17,9 @@ import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.withStyle
+import com.dluvian.nozzle.R
 import com.dluvian.nozzle.ui.components.dialog.RelaysDialog
 import com.dluvian.nozzle.ui.theme.*
-import com.dluvian.nozzle.R
 
 @Composable
 fun InRelays(relays: List<String>) {
@@ -30,7 +30,10 @@ fun InRelays(relays: List<String>) {
     if (relays.isNotEmpty()) {
         Row(modifier = Modifier
             .clip(Shapes.small)
-            .clickable { openDialog.value = true }
+            .let {
+                if (relays.size > 1) it.clickable { openDialog.value = true }
+                else it
+            }
         ) {
             InRelay(
                 modifier = Modifier.weight(weight = 0.65f, fill = false),
