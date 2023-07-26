@@ -68,18 +68,7 @@ class EventProcessor(
         idCache.add(event.id)
 
         scope.launch {
-            postDao.insertIfNotPresent(
-                PostEntity(
-                    id = event.id,
-                    pubkey = event.pubkey,
-                    replyToId = event.getReplyId(),
-                    replyToRootId = event.getRootReplyId(),
-                    replyRelayHint = event.getReplyRelayHint(),
-                    repostedId = event.getRepostedId(),
-                    content = event.content,
-                    createdAt = event.createdAt,
-                )
-            )
+            postDao.insertIfNotPresent(PostEntity.fromEvent(event))
         }
     }
 

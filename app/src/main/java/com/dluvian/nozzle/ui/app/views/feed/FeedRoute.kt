@@ -27,7 +27,7 @@ fun FeedRoute(
         feedState = feedState,
         metadataState = metadataState,
         onLike = feedViewModel.onLike,
-        onRepost = feedViewModel.onRepost,
+        onRepost = feedViewModel.onQuote,
         onPrepareReply = onPrepareReply,
         onPreparePost = onPreparePost,
         onToggleContactsOnly = feedViewModel.onToggleContactsOnly,

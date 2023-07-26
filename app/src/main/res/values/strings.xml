@@ -51,7 +51,6 @@
     <string name="thread">Thread</string>
     <string name="post_not_found">Post not found</string>
     <string name="reply">Reply</string>
-    <string name="repost">Repost</string>
     <string name="like">Like</string>
     <string name="follow">Follow</string>
     <string name="close">Close</string>
@@ -93,6 +92,7 @@
     <string name="replies">Replies</string>
     <string name="home">Home</string>
     <string name="autopilot">Autopilot</string>
+    <string name="quote">Quote post</string>
     <plurals name="other_relays">
         <item quantity="one">other</item>
         <item quantity="other">others</item>

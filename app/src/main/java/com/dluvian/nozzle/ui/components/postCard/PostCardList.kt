@@ -18,7 +18,7 @@ fun PostCardList(
     isRefreshing: Boolean,
     onRefresh: () -> Unit,
     onLike: (String) -> Unit,
-    onRepost: (String) -> Unit,
+    onQuote: (String) -> Unit,
     onPrepareReply: (PostWithMeta) -> Unit,
     onLoadMore: () -> Unit,
     onNavigateToThread: (PostIds) -> Unit,
@@ -34,7 +34,7 @@ fun PostCardList(
                 PostCard(
                     post = post,
                     onLike = onLike,
-                    onRepost = onRepost,
+                    onQuote = onQuote,
                     onOpenProfile = onOpenProfile,
                     onPrepareReply = onPrepareReply,
                     onNavigateToThread = onNavigateToThread,

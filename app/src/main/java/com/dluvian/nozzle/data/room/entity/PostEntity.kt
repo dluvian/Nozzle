@@ -11,20 +11,23 @@ data class PostEntity(
     val replyToId: String?,
     val replyToRootId: String?,
     val replyRelayHint: String?,
-    val repostedId: String?,
+    val mentionedPostIds: List<String>,
+    val mediaUrls: List<String>,
     val content: String,
     val createdAt: Long,
 ) {
     companion object {
         fun fromEvent(event: Event): PostEntity {
+            val contentContext = event.parseContent()
             return PostEntity(
                 id = event.id,
                 pubkey = event.pubkey,
                 replyToId = event.getReplyId(),
                 replyToRootId = event.getRootReplyId(),
                 replyRelayHint = event.getReplyRelayHint(),
-                repostedId = event.getRepostedId(),
-                content = event.content,
+                mentionedPostIds = contentContext.mentionedPostIds,
+                mediaUrls = contentContext.mediaUrls,
+                content = contentContext.cleanContent,
                 createdAt = event.createdAt,
             )
         }

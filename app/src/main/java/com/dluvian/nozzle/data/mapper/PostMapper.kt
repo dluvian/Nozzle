@@ -9,13 +9,12 @@ import com.dluvian.nozzle.data.room.dao.ProfileDao
 import com.dluvian.nozzle.data.room.entity.PostEntity
 import com.dluvian.nozzle.data.utils.NORMAL_DEBOUNCE
 import com.dluvian.nozzle.data.utils.SHORT_DEBOUNCE
-import com.dluvian.nozzle.data.utils.emitThenDebounce
 import com.dluvian.nozzle.data.utils.firstThenDebounce
 import com.dluvian.nozzle.model.InteractionStats
+import com.dluvian.nozzle.model.MentionedPost
 import com.dluvian.nozzle.model.NameAndPicture
 import com.dluvian.nozzle.model.NameAndPubkey
 import com.dluvian.nozzle.model.PostWithMeta
-import com.dluvian.nozzle.model.RepostPreview
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -46,9 +45,7 @@ class PostMapper(
             postIds = posts.mapNotNull { it.replyToId }
         ).firstThenDebounce(NORMAL_DEBOUNCE)
             .distinctUntilChanged()
-        val repostsFlow = postDao.getRepostsPreviewMapFlow(posts.mapNotNull { it.repostedId })
-            .emitThenDebounce(toEmit = emptyMap(), millis = NORMAL_DEBOUNCE)
-            .distinctUntilChanged()
+        val mentionedPostsFlow: Flow<Map<String, MentionedPost>> = TODO("getMentionedPosts")
         // TODO: Use contactlistProvider
         val contactPubkeysFlow = contactDao.listContactPubkeysFlow(pubkeyProvider.getPubkey())
             .firstThenDebounce(NORMAL_DEBOUNCE)
@@ -74,12 +71,16 @@ class PostMapper(
 
         return combine(
             baseFlow,
-            repostsFlow,
+            mentionedPostsFlow,
             trustScorePerPubkeyFlow
-        ) { base, reposts, trustScore ->
+        ) { base, mentionedPosts, trustScore ->
             base.map {
                 it.copy(
-                    repost = it.repost?.id.let { repostedId -> reposts[repostedId] },
+                    mentionedPosts = it.mentionedPosts.map { it.id }
+                        .let { mentionedIds ->
+                            mentionedPosts.filter { mentionedIds.contains(it.key) }.values
+                        }
+                        .toList(),
                     trustScore = if (isOneself(it.pubkey)) null
                     else trustScore[it.pubkey]
                 )
@@ -115,9 +116,17 @@ class PostMapper(
                     content = it.content,
                     name = namesAndPics[it.pubkey]?.name.orEmpty(),
                     pictureUrl = namesAndPics[it.pubkey]?.picture.orEmpty(),
-                    repost = it.repostedId?.let { repostedId ->
-                        RepostPreview(
-                            id = repostedId,
+                    isLikedByMe = stats.isLikedByMe(it.id),
+                    isFollowedByMe = if (isOneself(it.pubkey)) false
+                    else contacts.contains(it.pubkey),
+                    isOneself = isOneself(it.pubkey),
+                    trustScore = if (isOneself(it.pubkey)) null else 0f,
+                    numOfReplies = stats.getNumOfReplies(it.id),
+                    relays = relays[it.id].orEmpty(),
+                    mediaUrls = it.mediaUrls,
+                    mentionedPosts = it.mentionedPostIds.map { mentionedId ->
+                        MentionedPost(
+                            id = mentionedId,
                             pubkey = "",
                             content = "",
                             name = "",
@@ -125,14 +134,6 @@ class PostMapper(
                             createdAt = 0,
                         )
                     },
-                    isLikedByMe = stats.isLikedByMe(it.id),
-                    isRepostedByMe = stats.isRepostedByMe(it.id),
-                    isFollowedByMe = if (isOneself(it.pubkey)) false
-                    else contacts.contains(it.pubkey),
-                    isOneself = isOneself(it.pubkey),
-                    trustScore = if (isOneself(it.pubkey)) null else 0f,
-                    numOfReplies = stats.getNumOfReplies(it.id),
-                    relays = relays[it.id].orEmpty(),
                 )
             }
         }

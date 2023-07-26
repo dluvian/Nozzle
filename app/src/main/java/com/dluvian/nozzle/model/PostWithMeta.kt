@@ -13,13 +13,13 @@ data class PostWithMeta(
     val name: String,
     val pictureUrl: String,
     val isLikedByMe: Boolean,
-    val isRepostedByMe: Boolean,
     val isFollowedByMe: Boolean,
     val isOneself: Boolean,
     val trustScore: Float?,
     val numOfReplies: Int,
-    val repost: RepostPreview?,
     val relays: List<String>,
+    val mentionedPosts: List<MentionedPost>,
+    val mediaUrls: List<String>,
 ) {
     fun getPostIds(): PostIds {
         return PostIds(id = id, replyToId = replyToId, replyToRootId = replyToRootId)

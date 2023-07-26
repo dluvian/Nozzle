@@ -2,7 +2,6 @@ package com.dluvian.nozzle.data.room.dao
 
 import androidx.room.*
 import com.dluvian.nozzle.data.room.entity.PostEntity
-import com.dluvian.nozzle.model.RepostPreview
 import kotlinx.coroutines.flow.Flow
 
 
@@ -109,15 +108,6 @@ interface PostDao {
     )
     suspend fun getThreadEnd(currentPostId: String, replyToId: String?): List<PostEntity>
 
-    @MapInfo(keyColumn = "id")
-    @Query(
-        "SELECT id, post.pubkey, content, name, picture, post.createdAt " +
-                "FROM post " +
-                "JOIN profile ON post.pubkey = profile.pubkey " +
-                "WHERE id IN (:postIds) "
-    )
-    fun getRepostsPreviewMapFlow(postIds: Collection<String>): Flow<Map<String, RepostPreview>>
-
     @MapInfo(keyColumn = "replyToId", valueColumn = "replyCount")
     @Query(
         "SELECT replyToId, COUNT(*) AS replyCount " +
@@ -126,14 +116,6 @@ interface PostDao {
                 "GROUP BY replyToId"
     )
     fun getNumOfRepliesPerPostFlow(postIds: Collection<String>): Flow<Map<String, Int>>
-
-    @Query(
-        "SELECT repostedId " +
-                "FROM post " +
-                "WHERE pubkey = :pubkey " +
-                "AND repostedId IN (:postIds)"
-    )
-    fun listRepostedByPubkeyFlow(pubkey: String, postIds: Collection<String>): Flow<List<String>>
 
     @Query(
         "SELECT pubkey " +

@@ -85,16 +85,11 @@ class ThreadViewModel(
         }
     }
 
-    val onRepost: (String) -> Unit = { postId ->
-        val toRepost = getCurrentPost(postId = postId)
-        toRepost?.let {
+    val onQuote: (String) -> Unit = { postId ->
+        val toQuote = getCurrentPost(postId = postId)
+        toQuote?.let {
             viewModelScope.launch(context = Dispatchers.IO) {
-                postCardInteractor.repost(
-                    postId = postId,
-                    postPubkey = it.pubkey,
-                    originUrl = it.relays.firstOrNull().orEmpty(),
-                    relays = relayProvider.getWriteRelays()
-                )
+                TODO()
             }
         }
     }

@@ -93,7 +93,6 @@ class AppContainer(context: Context) {
     val postCardInteractor: IPostCardInteractor = PostCardInteractor(
         nostrService = nostrService,
         reactionDao = roomDb.reactionDao(),
-        postDao = roomDb.postDao()
     )
 
     val profileFollower: IProfileFollower = ProfileFollower(

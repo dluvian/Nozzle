@@ -7,7 +7,13 @@ import androidx.compose.material.LocalContentAlpha
 import androidx.compose.material.LocalContentColor
 import androidx.compose.material.MaterialTheme.colors
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.ContentCopy
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.FavoriteBorder
+import androidx.compose.material.icons.filled.FormatQuote
+import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material.icons.outlined.Chat
 import androidx.compose.material.icons.rounded.Search
 import androidx.compose.runtime.Composable
@@ -15,7 +21,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import com.dluvian.nozzle.R
-import com.dluvian.nozzle.ui.theme.Green21
 import com.dluvian.nozzle.ui.theme.Red21
 import com.dluvian.nozzle.ui.theme.sizing
 
@@ -72,18 +77,14 @@ fun ReplyIcon(
 }
 
 @Composable
-fun RepostIcon(
-    isReposted: Boolean,
+fun QuoteIcon(
     modifier: Modifier = Modifier,
-    description: String? = stringResource(id = R.string.repost),
-    activeTint: Color = Green21,
-    inactiveTint: Color = colors.onBackground,
+    description: String? = stringResource(id = R.string.quote),
 ) {
     Icon(
         modifier = modifier,
-        imageVector = Icons.Default.Repeat,
+        imageVector = Icons.Default.FormatQuote,
         contentDescription = description,
-        tint = if (isReposted) activeTint else inactiveTint,
     )
 }
 

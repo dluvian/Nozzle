@@ -23,19 +23,14 @@ class InteractionStatsProvider(
         val likedByMeFlow = reactionDao.listLikedByFlow(pubkeyProvider.getPubkey(), postIds)
             .firstThenDebounce(millis = NORMAL_DEBOUNCE)
             .distinctUntilChanged()
-        val repostedByMeFlow = postDao.listRepostedByPubkeyFlow(pubkeyProvider.getPubkey(), postIds)
-            .firstThenDebounce(millis = NORMAL_DEBOUNCE)
-            .distinctUntilChanged()
 
         return combine(
             numOfRepliesFlow,
             likedByMeFlow,
-            repostedByMeFlow
-        ) { numOfReplies, likedByMe, repostedByMe ->
+        ) { numOfReplies, likedByMe ->
             InteractionStats(
                 numOfRepliesPerPost = numOfReplies,
                 likedByMe = likedByMe,
-                repostedByMe = repostedByMe,
             )
         }
     }

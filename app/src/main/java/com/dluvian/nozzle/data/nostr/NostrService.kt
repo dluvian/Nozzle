@@ -10,7 +10,6 @@ import com.dluvian.nozzle.model.nostr.Filter
 import com.dluvian.nozzle.model.nostr.Metadata
 import com.dluvian.nozzle.model.nostr.Post
 import com.dluvian.nozzle.model.nostr.ReplyTo
-import com.dluvian.nozzle.model.nostr.RepostId
 import java.util.Collections
 
 private const val TAG = "NostrService"
@@ -84,30 +83,6 @@ class NostrService(
         Log.i(TAG, "Send post '${content.take(50)}'")
         val event = Event.createTextNoteEvent(
             post = Post(msg = content),
-            keys = keyManager.getKeys(),
-        )
-        client.publishToRelays(event = event, relays = relays)
-
-        return event
-    }
-
-    override fun sendRepost(
-        postId: String,
-        postPubkey: String,
-        quote: String,
-        originUrl: String,
-        relays: Collection<String>?
-    ): Event {
-        Log.i(TAG, "Send repost of $postId")
-        val event = Event.createTextNoteEvent(
-            post = Post(
-                repostId = RepostId(
-                    repostId = postId,
-                    relayUrl = originUrl
-                ),
-                mentions = listOf(postPubkey),
-                msg = quote,
-            ),
             keys = keyManager.getKeys(),
         )
         client.publishToRelays(event = event, relays = relays)

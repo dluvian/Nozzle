@@ -1,6 +1,6 @@
 package com.dluvian.nozzle.model
 
-data class RepostPreview(
+data class MentionedPost(
     val id: String,
     val pubkey: String,
     val content: String,

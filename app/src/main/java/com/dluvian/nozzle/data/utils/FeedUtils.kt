@@ -9,7 +9,7 @@ fun listReferencedPubkeys(posts: Collection<PostWithMeta>): List<String> {
     for (post in posts) {
         referencedPubkeys.add(post.pubkey)
         post.replyToPubkey?.let { referencedPubkeys.add(it) }
-        post.repost?.pubkey?.let { referencedPubkeys.add(it) }
+        referencedPubkeys.addAll(post.mentionedPosts.map { it.pubkey })
     }
 
     return referencedPubkeys.distinct()
@@ -21,13 +21,15 @@ fun listReferencedPostIds(posts: Collection<PostWithMeta>): List<String> {
     val referencedPostIds = mutableListOf<String>()
     for (post in posts) {
         post.replyToId?.let { referencedPostIds.add(it) }
-        post.repost?.id?.let { referencedPostIds.add(it) }
+        referencedPostIds.addAll(post.mentionedPosts.map { it.id })
     }
 
     return referencedPostIds.distinct()
 }
 
 fun getIdsPerRelayHintMap(posts: Collection<PostWithMeta>): Map<String, List<String>> {
+    if (posts.isEmpty()) return emptyMap()
+
     val result = mutableMapOf<String, MutableList<String>>()
 
     posts.forEach { post ->

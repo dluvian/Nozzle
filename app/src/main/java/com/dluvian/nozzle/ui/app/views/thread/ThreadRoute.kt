@@ -22,7 +22,7 @@ fun ThreadRoute(
         onPrepareReply = onPrepareReply,
         onRefreshThreadView = threadViewModel.onRefreshThreadView,
         onLike = threadViewModel.onLike,
-        onRepost = threadViewModel.onRepost,
+        onQuote = threadViewModel.onQuote,
         onOpenThread = threadViewModel.onOpenThread,
         onNavigateToProfile = onNavigateToProfile,
         onNavigateToReply = onNavigateToReply,

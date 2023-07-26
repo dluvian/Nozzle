@@ -211,16 +211,11 @@ class FeedViewModel(
         }
     }
 
-    val onRepost: (String) -> Unit = { id ->
+    val onQuote: (String) -> Unit = { id ->
         uiState.value.let { _ ->
             feedState.value.find { it.id == id }?.let {
                 viewModelScope.launch(context = IO) {
-                    postCardInteractor.repost(
-                        postId = id,
-                        postPubkey = it.pubkey,
-                        originUrl = it.relays.firstOrNull().orEmpty(),
-                        relays = relayProvider.getWriteRelays()
-                    )
+                    TODO()
                 }
             }
         }

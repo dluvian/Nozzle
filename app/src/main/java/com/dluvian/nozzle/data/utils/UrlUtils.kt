@@ -3,32 +3,29 @@ package com.dluvian.nozzle.data.utils
 import android.net.Uri
 
 
-// TODO: Find a good regex. This is sloppy
-private val urlPattern = Regex(
-    pattern = "(?:^|[\\W])((http)(s?):\\/\\/|www\\.)"
-            + "(([\\w\\-]+\\.){1,}?([\\w\\-.~]+\\/?)*"
-            + "[\\p{Alnum}.,%_=?&#\\-+()\\[\\]\\*$~@!:/{};']*)",
-    options = setOf(RegexOption.IGNORE_CASE, RegexOption.MULTILINE, RegexOption.DOT_MATCHES_ALL)
-)
+object UrlUtils {
+    private val urlPattern = Regex(
+        pattern = "(?:^|[\\W])((http)(s?):\\/\\/|www\\.)"
+                + "(([\\w\\-]+\\.){1,}?([\\w\\-.~]+\\/?)*"
+                + "[\\p{Alnum}.,%_=?&#\\-+()\\[\\]\\*$~@!:/{};']*)",
+        options = setOf(RegexOption.IGNORE_CASE, RegexOption.MULTILINE, RegexOption.DOT_MATCHES_ALL)
+    )
+    val mediaSuffixes = listOf(".jpg", ".jpeg", ".png", ".gif")
 
-fun extractUrls(url: String?): List<String> {
-    url ?: return emptyList()
-
-    val result = mutableListOf<String>()
-    urlPattern.findAll(url).forEach { match ->
-        result.add(match.value)
+    fun extractUrls(url: String?): List<String> {
+        return url?.let { urlPattern.findAll(it).map { match -> match.value }.toList() }
+            ?: emptyList()
     }
 
-    return result
+    fun fixUrl(url: String): String {
+        val trimmed = url.trim()
+        return if (!trimmed.startsWith("http://")
+            && !trimmed.startsWith("https://")
+        ) {
+            Uri.parse("http://$trimmed")
+        } else {
+            Uri.parse(trimmed)
+        }.toString()
+    }
 }
 
-fun fixUrl(url: String): String {
-    val trimmed = url.trim()
-    return if (!trimmed.startsWith("http://")
-        && !trimmed.startsWith("https://")
-    ) {
-        Uri.parse("http://$trimmed")
-    } else {
-        Uri.parse(trimmed)
-    }.toString()
-}

@@ -11,8 +11,7 @@ import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
-import com.dluvian.nozzle.data.utils.extractUrls
-import com.dluvian.nozzle.data.utils.fixUrl
+import com.dluvian.nozzle.data.utils.UrlUtils
 import com.dluvian.nozzle.ui.theme.HyperlinkBlue
 import com.dluvian.nozzle.ui.theme.Typography
 
@@ -39,7 +38,7 @@ fun HyperlinkedText(
                     .getStringAnnotations(URL_TAG, it, it)
                     .firstOrNull()
                 if (url != null) {
-                    uriHandler.openUri(fixUrl(url.item))
+                    uriHandler.openUri(UrlUtils.fixUrl(url.item))
                 } else {
                     onClickNonLink()
                 }
@@ -51,7 +50,7 @@ fun HyperlinkedText(
 private fun buildAnnotatedString(text: String, textColor: Color): AnnotatedString {
     return buildAnnotatedString {
         append(text)
-        extractUrls(text).forEach { url ->
+        UrlUtils.extractUrls(text).forEach { url ->
             val startIndex = text.indexOf(url)
             val endIndex = startIndex + url.length
             addStyle(

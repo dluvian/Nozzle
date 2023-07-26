@@ -1,12 +1,19 @@
 package com.dluvian.nozzle.model.nostr
 
+import android.util.Log
 import com.dluvian.nozzle.data.utils.JsonUtils.gson
+import com.dluvian.nozzle.data.utils.NostrUtils
 import com.dluvian.nozzle.data.utils.SchnorrUtils
 import com.dluvian.nozzle.data.utils.SchnorrUtils.secp256k1
 import com.dluvian.nozzle.data.utils.Sha256Utils.sha256
+import com.dluvian.nozzle.data.utils.UrlUtils
+import com.dluvian.nozzle.data.utils.noteIdToHex
+import com.dluvian.nozzle.model.ContentContext
 import com.google.gson.JsonElement
 import com.google.gson.annotations.SerializedName
 import fr.acinq.secp256k1.Hex
+
+private const val TAG = "Event"
 
 typealias Tag = List<String>
 
@@ -105,7 +112,6 @@ class Event(
                 replyTo.replyToRoot?.let { tags.add(listOf("e", it, replyTo.relayUrl, "root")) }
             }
             post.replyTo?.let { tags.add(listOf("e", it.replyTo, it.relayUrl, "reply")) }
-            post.repostId?.let { tags.add(listOf("e", it.repostId, it.relayUrl, "mention")) }
 
             if (post.mentions.isNotEmpty()) {
                 val mentionTag = mutableListOf("p")
@@ -215,15 +221,6 @@ class Event(
         return null
     }
 
-    fun getRepostedId(): String? {
-        val astralCompliant = tags.find {
-            it.size == 4
-                    && it[0] == "e"
-                    && it[3] == "mention"
-        }
-        return astralCompliant?.get(1)
-    }
-
     fun getReactedToId(): String? {
         return tags.find { it.getOrNull(0) == "e" }?.getOrNull(1)
     }
@@ -243,6 +240,55 @@ class Event(
             )
         }
     }
+
+    fun parseContent(): ContentContext {
+        val extractedNostrUris = NostrUtils.extractNostrUris(content).filter {
+            it.startsWith("nostr:note1")  // TODO: Support nevent
+        }
+        val extractedMediaUrls = UrlUtils.extractUrls(content).filter {
+            UrlUtils.mediaSuffixes.any { suffix -> it.endsWith(suffix) }
+        }
+
+        return getContentContext(
+            content = content,
+            tokens = extractedNostrUris + extractedMediaUrls
+        )
+    }
+
+    private fun getContentContext(content: String, tokens: List<String>): ContentContext {
+        var cleanContent = content.trim()
+        if (tokens.isEmpty()) return ContentContext(cleanContent = cleanContent)
+
+        val mentionedPostIds = mutableListOf<String>()
+        val mediaUrls = mutableListOf<String>()
+
+        var checkAgain = true
+        while (checkAgain) {
+            checkAgain = false
+            for (token in tokens) {
+                if (cleanContent.endsWith(token)) {
+                    if (token.startsWith("nostr:note1")) {
+                        noteIdToHex(token.removePrefix("nostr:"))
+                            .onFailure {
+                                Log.w(TAG, "Failed to convert $token to hex")
+                            }.onSuccess { hex ->
+                                mentionedPostIds.add(hex)
+                            }
+                    } else mediaUrls.add(token)
+                    cleanContent = cleanContent.removeSuffix(token).trimEnd()
+                    checkAgain = true
+                    break
+                }
+            }
+        }
+
+        return ContentContext(
+            cleanContent = cleanContent,
+            mentionedPostIds = mentionedPostIds,
+            mediaUrls = mediaUrls
+        )
+    }
+
 
     fun isReaction() = this.kind == Kind.REACTION
     fun isPost() = this.kind == Kind.TEXT_NOTE

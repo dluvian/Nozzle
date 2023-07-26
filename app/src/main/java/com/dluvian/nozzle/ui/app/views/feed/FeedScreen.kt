@@ -105,7 +105,7 @@ fun FeedScreen(
                 isRefreshing = uiState.isRefreshing,
                 onRefresh = onRefreshFeedView,
                 onLike = onLike,
-                onRepost = onRepost,
+                onQuote = onRepost,
                 onPrepareReply = onPrepareReply,
                 onLoadMore = onLoadMore,
                 onNavigateToThread = onNavigateToThread,

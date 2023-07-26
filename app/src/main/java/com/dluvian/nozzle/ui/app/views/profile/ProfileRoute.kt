@@ -23,7 +23,7 @@ fun ProfileRoute(
         feed = feed,
         onPrepareReply = onPrepareReply,
         onLike = profileViewModel.onLike,
-        onRepost = profileViewModel.onRepost,
+        onQuote = profileViewModel.onQuote,
         onFollow = profileViewModel.onFollow,
         onUnfollow = profileViewModel.onUnfollow,
         onRefreshProfileView = profileViewModel.onRefreshProfileView,

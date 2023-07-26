@@ -26,10 +26,10 @@ import androidx.compose.ui.text.style.TextAlign
 import com.dluvian.nozzle.R
 import com.dluvian.nozzle.data.utils.getShortenedNpubFromPubkey
 import com.dluvian.nozzle.data.utils.hexToNote
+import com.dluvian.nozzle.model.MentionedPost
 import com.dluvian.nozzle.model.Oneself
 import com.dluvian.nozzle.model.PostIds
 import com.dluvian.nozzle.model.PostWithMeta
-import com.dluvian.nozzle.model.RepostPreview
 import com.dluvian.nozzle.model.ThreadPosition
 import com.dluvian.nozzle.model.TrustType
 import com.dluvian.nozzle.ui.components.*
@@ -41,7 +41,7 @@ import com.dluvian.nozzle.ui.theme.*
 fun PostCard(
     post: PostWithMeta,
     onLike: (String) -> Unit,
-    onRepost: (String) -> Unit,
+    onQuote: (String) -> Unit,
     onPrepareReply: (PostWithMeta) -> Unit,
     modifier: Modifier = Modifier,
     onNavigateToThread: (PostIds) -> Unit,
@@ -142,8 +142,8 @@ fun PostCard(
                 }
             )
             Spacer(Modifier.height(spacing.medium))
-            RepostCardContent(
-                post = post.repost,
+            MentionedCardContent(
+                post = post.mentionedPosts.lastOrNull(), // TODO: Support multiple
                 onOpenProfile = onOpenProfile,
                 onNavigateToThread = onNavigateToThread,
             )
@@ -152,7 +152,7 @@ fun PostCard(
                 numOfReplies = post.numOfReplies,
                 post = post,
                 onLike = { onLike(post.id) },
-                onRepost = { onRepost(post.id) },
+                onQuote = { onQuote(post.id) },
                 onPrepareReply = onPrepareReply,
                 onNavigateToReply = onNavigateToReply,
             )
@@ -192,20 +192,21 @@ private fun PostCardHeaderAndContent(
 }
 
 @Composable
-private fun RepostCardContent(
-    post: RepostPreview?,
+private fun MentionedCardContent(
+    post: MentionedPost?,
     onOpenProfile: ((String) -> Unit)?,
     onNavigateToThread: (PostIds) -> Unit,
 ) {
     post?.let {
-        Column(modifier = Modifier
-            .fillMaxWidth()
-            .border(
-                width = spacing.tiny,
-                color = LightGray21,
-                shape = RoundedCornerShape(spacing.large)
-            )
-            .clickable { onNavigateToThread(it.toPostIds()) }
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .border(
+                    width = spacing.tiny,
+                    color = LightGray21,
+                    shape = RoundedCornerShape(spacing.large)
+                )
+                .clickable { onNavigateToThread(it.toPostIds()) }
         ) {
             Column(modifier = Modifier.padding(spacing.large)) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
@@ -321,7 +322,7 @@ private fun PostCardActions(
     numOfReplies: Int,
     post: PostWithMeta,
     onLike: () -> Unit,
-    onRepost: () -> Unit,
+    onQuote: () -> Unit,
     onPrepareReply: (PostWithMeta) -> Unit,
     onNavigateToReply: () -> Unit,
 ) {
@@ -339,12 +340,11 @@ private fun PostCardActions(
             onPrepareReply = onPrepareReply,
             onNavigateToReply = onNavigateToReply
         )
-        RepostAction(
+        QuoteAction(
             modifier = Modifier
                 .fillMaxWidth()
                 .weight(1f),
-            isRepostedByMe = post.isRepostedByMe,
-            onRepost = onRepost
+            onQuote = onQuote
         )
         LikeAction(
             modifier = Modifier
@@ -381,9 +381,8 @@ private fun ReplyAction(
 }
 
 @Composable
-private fun RepostAction(
-    isRepostedByMe: Boolean,
-    onRepost: () -> Unit,
+private fun QuoteAction(
+    onQuote: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val isClicked = remember { mutableStateOf(false) }
@@ -392,15 +391,14 @@ private fun RepostAction(
         horizontalArrangement = Arrangement.Center,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        val iconModifier = Modifier
-            .size(sizing.smallIcon)
-            .clip(RoundedCornerShape(spacing.medium))
-        RepostIcon(
-            modifier = if (isRepostedByMe) iconModifier.clickable { }
-            else iconModifier.clickable {
-                onRepost()
-                isClicked.value = true
-            }, isReposted = isRepostedByMe || isClicked.value
+        QuoteIcon(
+            modifier = Modifier
+                .size(sizing.smallIcon)
+                .clip(RoundedCornerShape(spacing.medium))
+                .clickable {
+                    onQuote()
+                    isClicked.value = true
+                }
         )
     }
 }
