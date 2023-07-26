@@ -14,6 +14,7 @@ import androidx.compose.material.MaterialTheme.colors
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Help
 import androidx.compose.material.icons.filled.Stars
+import androidx.compose.material.icons.filled.Verified
 import androidx.compose.material.icons.filled.VerifiedUser
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -105,7 +106,7 @@ private fun PictureIndicator(
             modifier = modifier,
             color = Color.Green,
             imageVector = if (trustType.isVerified) Icons.Filled.Stars
-            else Icons.Filled.VerifiedUser,
+            else Icons.Filled.Verified,
             trustScore = null
         )
 
