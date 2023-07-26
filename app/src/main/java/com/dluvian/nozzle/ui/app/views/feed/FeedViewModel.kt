@@ -47,9 +47,11 @@ class FeedViewModel(
         viewModelScope, SharingStarted.Eagerly, viewModelState.value
     )
 
-    var metadataState = personalProfileProvider.getMetadata().stateIn(
-        viewModelScope, SharingStarted.Lazily, null
-    )
+    var metadataState = personalProfileProvider.getMetadata()
+        .firstThenDebounce(NORMAL_DEBOUNCE)
+        .stateIn(
+            viewModelScope, SharingStarted.Lazily, null
+        )
 
     var feedState: StateFlow<List<PostWithMeta>> = MutableStateFlow(emptyList())
 
@@ -241,7 +243,7 @@ class FeedViewModel(
             feedSettings = viewModelState.value.feedSettings,
             limit = DB_BATCH_SIZE,
             waitForSubscription = WAIT_TIME,
-        ).firstThenDebounce(NORMAL_DEBOUNCE)
+        ).firstThenDebounce(SHORT_DEBOUNCE)
             .distinctUntilChanged()
             .stateIn(
                 viewModelScope,
@@ -264,7 +266,7 @@ class FeedViewModel(
                 feedSettings = viewModelState.value.feedSettings,
                 limit = DB_BATCH_SIZE,
                 until = last.createdAt,
-            ).firstThenDebounce(NORMAL_DEBOUNCE)
+            ).firstThenDebounce(SHORT_DEBOUNCE)
                 .distinctUntilChanged()
                 .map { toAppend -> currentFeed + toAppend }
                 .stateIn(

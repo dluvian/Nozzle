@@ -59,7 +59,7 @@ class PostMapper(
         val trustScorePerPubkeyFlow = contactDao.getTrustScorePerPubkeyFlow(
             pubkey = pubkeyProvider.getPubkey(),
             contactPubkeys = pubkeys
-        ).emitThenDebounce(toEmit = emptyMap(), millis = NORMAL_DEBOUNCE)
+        ).firstThenDebounce(NORMAL_DEBOUNCE)
             .distinctUntilChanged()
 
         val baseFlow = getBaseFlow(

@@ -19,10 +19,10 @@ import com.dluvian.nozzle.data.provider.IPubkeyProvider
 import com.dluvian.nozzle.data.provider.IRelayProvider
 import com.dluvian.nozzle.data.room.dao.Nip65Dao
 import com.dluvian.nozzle.data.utils.NORMAL_DEBOUNCE
+import com.dluvian.nozzle.data.utils.SHORT_DEBOUNCE
 import com.dluvian.nozzle.data.utils.firstThenDebounce
 import com.dluvian.nozzle.model.*
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
@@ -181,13 +181,12 @@ class ProfileViewModel(
         setFeed(pubkey = pubkey, dbBatchSize = dbBatchSize)
     }
 
-    @OptIn(FlowPreview::class)
     private suspend fun setFeed(pubkey: String, dbBatchSize: Int) {
         Log.i(TAG, "Set feed of $pubkey")
         feedState = feedProvider.getFeedFlow(
             feedSettings = getCurrentFeedSettings(pubkey = pubkey, relays = getRelays(pubkey)),
             limit = dbBatchSize
-        ).firstThenDebounce(NORMAL_DEBOUNCE)
+        ).firstThenDebounce(SHORT_DEBOUNCE)
             .stateIn(
                 viewModelScope,
                 SharingStarted.WhileSubscribed(),
@@ -198,6 +197,7 @@ class ProfileViewModel(
 
     private val isAppending = AtomicBoolean(false)
 
+    // TODO: Append in FeedProvider to reduce duplicate code in ProvileVM and FeedVM
     private suspend fun appendFeed(
         feedSettings: FeedSettings,
         dbBatchSize: Int,
@@ -211,7 +211,7 @@ class ProfileViewModel(
                 feedSettings = feedSettings,
                 limit = dbBatchSize,
                 until = last.createdAt
-            ).firstThenDebounce(NORMAL_DEBOUNCE)
+            ).firstThenDebounce(SHORT_DEBOUNCE)
                 .distinctUntilChanged()
                 .map { toAppend -> feedState.value + toAppend }
                 .stateIn(

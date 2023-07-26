@@ -27,6 +27,7 @@ class RelayProvider(
     // TODO: Determine current pubkey by db table. PubkeyProvider should not be needed
     private var personalPubkey = pubkeyProvider.getPubkey()
     private var personalNip65State = nip65Dao.getRelaysOfPubkeyFlow(personalPubkey)
+        .firstThenDebounce(NORMAL_DEBOUNCE)
         .stateIn(
             scope, SharingStarted.Eagerly, emptyList()
         )

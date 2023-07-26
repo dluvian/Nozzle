@@ -11,7 +11,7 @@ import com.dluvian.nozzle.data.room.dao.Nip65Dao
 import com.dluvian.nozzle.data.room.dao.ProfileDao
 import com.dluvian.nozzle.data.room.entity.ProfileEntity
 import com.dluvian.nozzle.data.utils.NORMAL_DEBOUNCE
-import com.dluvian.nozzle.data.utils.emitThenDebounce
+import com.dluvian.nozzle.data.utils.SHORT_DEBOUNCE
 import com.dluvian.nozzle.data.utils.firstThenDebounce
 import com.dluvian.nozzle.data.utils.hexToNpub
 import com.dluvian.nozzle.model.ProfileWithAdditionalInfo
@@ -57,7 +57,7 @@ class ProfileWithAdditionalInfoProvider(
         val trustScoreFlow = contactDao.getTrustScoreFlow(
             pubkey = pubkeyProvider.getPubkey(),
             contactPubkey = pubkey
-        ).emitThenDebounce(toEmit = 0f, millis = NORMAL_DEBOUNCE)
+        ).firstThenDebounce(NORMAL_DEBOUNCE)
             .distinctUntilChanged()
 
         val baseFlow = getBaseFlow(pubkey = pubkey, npub = npub, relaysFlow = relaysFlow)
@@ -67,7 +67,7 @@ class ProfileWithAdditionalInfoProvider(
             relaysFlow = relaysFlow,
             profileFlow = profileFlow,
             numOfFollowingFlow = numOfFollowingFlow
-        ).firstThenDebounce(NORMAL_DEBOUNCE)
+        ).firstThenDebounce(SHORT_DEBOUNCE)
             .distinctUntilChanged()
 
         return getFinalFlow(
