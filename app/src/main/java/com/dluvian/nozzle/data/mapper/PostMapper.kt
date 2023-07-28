@@ -37,27 +37,28 @@ class PostMapper(
         val pubkeys = posts.map { it.pubkey }
 
         val statsFlow = interactionStatsProvider.getStatsFlow(postIds)
-            .firstThenDebounce(NORMAL_DEBOUNCE)
             .distinctUntilChanged()
+            .firstThenDebounce(NORMAL_DEBOUNCE)
         val namesAndPicturesFlow = profileDao.getNamesAndPicturesMapFlow(pubkeys)
-            .firstThenDebounce(NORMAL_DEBOUNCE)
             .distinctUntilChanged()
+            .firstThenDebounce(NORMAL_DEBOUNCE)
         val replyRecipientsFlow = profileDao.getAuthorNamesAndPubkeysMapFlow(
             postIds = posts.mapNotNull { it.replyToId }
-        ).firstThenDebounce(NORMAL_DEBOUNCE)
-            .distinctUntilChanged()
+        ).distinctUntilChanged()
+            .firstThenDebounce(NORMAL_DEBOUNCE)
+
         // TODO: Use contactlistProvider
         val contactPubkeysFlow = contactDao.listContactPubkeysFlow(pubkeyProvider.getPubkey())
-            .firstThenDebounce(NORMAL_DEBOUNCE)
             .distinctUntilChanged()
+            .firstThenDebounce(NORMAL_DEBOUNCE)
         val relaysFlow = eventRelayDao.getRelaysPerEventIdMapFlow(postIds)
-            .firstThenDebounce(NORMAL_DEBOUNCE)
             .distinctUntilChanged()
+            .firstThenDebounce(NORMAL_DEBOUNCE)
         val trustScorePerPubkeyFlow = contactDao.getTrustScorePerPubkeyFlow(
             pubkey = pubkeyProvider.getPubkey(),
             contactPubkeys = pubkeys
-        ).firstThenDebounce(NORMAL_DEBOUNCE)
-            .distinctUntilChanged()
+        ).distinctUntilChanged()
+            .firstThenDebounce(NORMAL_DEBOUNCE)
 
         val mentionedPostIds = posts.mapNotNull { it.mentionedPostId }
         val mentionedPostsFlow = if (mentionedPostIds.isEmpty()) emptyFlow()
@@ -72,8 +73,8 @@ class PostMapper(
             contactPubkeysFlow = contactPubkeysFlow,
             replyRecipientsFlow = replyRecipientsFlow,
             relaysFlow = relaysFlow
-        ).firstThenDebounce(SHORT_DEBOUNCE)
-            .distinctUntilChanged()
+        ).distinctUntilChanged()
+            .firstThenDebounce(SHORT_DEBOUNCE)
 
         return combine(
             baseFlow,
@@ -143,5 +144,6 @@ class PostMapper(
         }
     }
 
+    // Move to pubkey provider
     private fun isOneself(pubkey: String) = pubkey == pubkeyProvider.getPubkey()
 }

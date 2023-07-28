@@ -48,6 +48,7 @@ class FeedViewModel(
     )
 
     var metadataState = personalProfileProvider.getMetadata()
+        .distinctUntilChanged()
         .firstThenDebounce(NORMAL_DEBOUNCE)
         .stateIn(
             viewModelScope, SharingStarted.Lazily, null
@@ -189,9 +190,12 @@ class FeedViewModel(
     // TODO: This should be handled with a flow, not manually
     val onResetProfileIconUiState: () -> Unit = {
         Log.i(TAG, "Reset profile icon")
-        metadataState = personalProfileProvider.getMetadata().stateIn(
-            viewModelScope, SharingStarted.Lazily, null
-        )
+        metadataState = personalProfileProvider.getMetadata()
+            .distinctUntilChanged()
+            .firstThenDebounce(NORMAL_DEBOUNCE)
+            .stateIn(
+                viewModelScope, SharingStarted.Lazily, null
+            )
         viewModelState.update {
             it.copy(pubkey = personalProfileProvider.getPubkey())
         }
@@ -238,8 +242,8 @@ class FeedViewModel(
             feedSettings = viewModelState.value.feedSettings,
             limit = DB_BATCH_SIZE,
             waitForSubscription = WAIT_TIME,
-        ).firstThenDebounce(SHORT_DEBOUNCE)
-            .distinctUntilChanged()
+        ).distinctUntilChanged()
+            .firstThenDebounce(SHORT_DEBOUNCE)
             .stateIn(
                 viewModelScope,
                 SharingStarted.WhileSubscribed(),
@@ -261,8 +265,8 @@ class FeedViewModel(
                 feedSettings = viewModelState.value.feedSettings,
                 limit = DB_BATCH_SIZE,
                 until = last.createdAt,
-            ).firstThenDebounce(SHORT_DEBOUNCE)
-                .distinctUntilChanged()
+            ).distinctUntilChanged()
+                .firstThenDebounce(SHORT_DEBOUNCE)
                 .map { toAppend -> currentFeed + toAppend }
                 .stateIn(
                     viewModelScope,

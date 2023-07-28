@@ -104,7 +104,8 @@ class ThreadViewModel(
             replyToId = postIds.replyToId,
             waitForSubscription = waitForSubscription,
             relays = getRelays(thread = initValue)
-        ).firstThenDebounce(NORMAL_DEBOUNCE)
+        ).distinctUntilChanged()
+            .firstThenDebounce(NORMAL_DEBOUNCE)
             .stateIn(
                 viewModelScope,
                 SharingStarted.WhileSubscribed(),

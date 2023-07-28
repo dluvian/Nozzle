@@ -12,6 +12,8 @@ import com.dluvian.nozzle.data.provider.IPersonalProfileProvider
 import com.dluvian.nozzle.data.provider.IRelayProvider
 import com.dluvian.nozzle.data.room.dao.PostDao
 import com.dluvian.nozzle.data.room.entity.PostEntity
+import com.dluvian.nozzle.data.utils.SHORT_DEBOUNCE
+import com.dluvian.nozzle.data.utils.firstThenDebounce
 import com.dluvian.nozzle.data.utils.listRelayStatuses
 import com.dluvian.nozzle.data.utils.toggleRelay
 import com.dluvian.nozzle.model.AllRelays
@@ -20,6 +22,7 @@ import com.dluvian.nozzle.model.RelaySelection
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -43,6 +46,8 @@ class PostViewModel(
     private val viewModelState = MutableStateFlow(PostViewModelState())
 
     var metadataState = personalProfileProvider.getMetadata()
+        .distinctUntilChanged()
+        .firstThenDebounce(SHORT_DEBOUNCE)
         .stateIn(
             viewModelScope,
             SharingStarted.Eagerly,
@@ -62,6 +67,8 @@ class PostViewModel(
 
     val onPreparePost: (RelaySelection) -> Unit = { relaySelection ->
         metadataState = personalProfileProvider.getMetadata()
+            .distinctUntilChanged()
+            .firstThenDebounce(SHORT_DEBOUNCE)
             .stateIn(
                 viewModelScope,
                 SharingStarted.Lazily,

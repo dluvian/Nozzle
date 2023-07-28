@@ -23,6 +23,7 @@ import com.dluvian.nozzle.model.nostr.ReplyTo
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -49,6 +50,7 @@ class ReplyViewModel(
     private var postToReplyTo: PostWithMeta? = null
 
     var metadataState = personalProfileProvider.getMetadata()
+        .distinctUntilChanged()
         .firstThenDebounce(NORMAL_DEBOUNCE)
         .stateIn(
             viewModelScope,
@@ -69,6 +71,7 @@ class ReplyViewModel(
 
     val onPrepareReply: (PostWithMeta) -> Unit = { post ->
         metadataState = personalProfileProvider.getMetadata()
+            .distinctUntilChanged()
             .firstThenDebounce(NORMAL_DEBOUNCE)
             .stateIn(
                 viewModelScope,

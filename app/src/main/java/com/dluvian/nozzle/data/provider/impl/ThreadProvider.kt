@@ -83,8 +83,8 @@ class ThreadProvider(
     ): Flow<PostThread> {
         val relevantPosts = listOf(listOf(current), previous, replies).flatten()
         return postMapper.mapToPostsWithMetaFlow(relevantPosts)
-            .firstThenDebounce(SHORT_DEBOUNCE)
             .distinctUntilChanged()
+            .firstThenDebounce(SHORT_DEBOUNCE)
             .map {
                 PostThread(
                     current = it.first(),

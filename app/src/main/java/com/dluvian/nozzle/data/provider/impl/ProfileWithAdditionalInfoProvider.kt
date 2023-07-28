@@ -38,14 +38,14 @@ class ProfileWithAdditionalInfoProvider(
         Log.i(TAG, "Get profile $pubkey")
         val npub = hexToNpub(pubkey)
         val profileFlow = profileDao.getProfileFlow(pubkey)
-            .firstThenDebounce(NORMAL_DEBOUNCE)
             .distinctUntilChanged()
+            .firstThenDebounce(NORMAL_DEBOUNCE)
         val relaysFlow = eventRelayDao.listUsedRelaysFlow(pubkey)
-            .firstThenDebounce(NORMAL_DEBOUNCE)
             .distinctUntilChanged()
+            .firstThenDebounce(NORMAL_DEBOUNCE)
         val numOfFollowingFlow = contactDao.countFollowingFlow(pubkey)
-            .firstThenDebounce(NORMAL_DEBOUNCE)
             .distinctUntilChanged()
+            .firstThenDebounce(NORMAL_DEBOUNCE)
         // No debounce because of immediate user interaction response
         val isFollowedByMeFlow = contactDao.isFollowedFlow(
             pubkey = pubkeyProvider.getPubkey(),
@@ -57,8 +57,8 @@ class ProfileWithAdditionalInfoProvider(
         val trustScoreFlow = contactDao.getTrustScoreFlow(
             pubkey = pubkeyProvider.getPubkey(),
             contactPubkey = pubkey
-        ).firstThenDebounce(NORMAL_DEBOUNCE)
-            .distinctUntilChanged()
+        ).distinctUntilChanged()
+            .firstThenDebounce(NORMAL_DEBOUNCE)
 
         val baseFlow = getBaseFlow(pubkey = pubkey, npub = npub, relaysFlow = relaysFlow)
 
@@ -67,8 +67,8 @@ class ProfileWithAdditionalInfoProvider(
             relaysFlow = relaysFlow,
             profileFlow = profileFlow,
             numOfFollowingFlow = numOfFollowingFlow
-        ).firstThenDebounce(SHORT_DEBOUNCE)
-            .distinctUntilChanged()
+        ).distinctUntilChanged()
+            .firstThenDebounce(SHORT_DEBOUNCE)
 
         return getFinalFlow(
             mainFlow = mainFlow,
@@ -78,6 +78,7 @@ class ProfileWithAdditionalInfoProvider(
         )
     }
 
+    // TODO: Move to pubkey provider
     private fun isOneself(pubkey: String) = pubkey == pubkeyProvider.getPubkey()
 
     private fun getFinalFlow(
@@ -143,9 +144,9 @@ class ProfileWithAdditionalInfoProvider(
         nostrSubscriber.subscribeToProfileMetadataAndContactList(
             pubkeys = listOf(pubkey),
             relays = nip65Dao.getWriteRelaysOfPubkey(pubkey = pubkey)
-                .ifEmpty {
-                    relaysFlow.firstOrNull().orEmpty().ifEmpty { getDefaultRelays() }
-                }.shuffled()
+                .ifEmpty { relaysFlow.firstOrNull().orEmpty() }
+                .ifEmpty { getDefaultRelays() }
+                .shuffled()
                 .take(5)  // Don't ask more than 5 relays
         )
     }

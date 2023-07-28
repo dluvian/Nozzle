@@ -18,11 +18,11 @@ class InteractionStatsProvider(
 ) : IInteractionStatsProvider {
     override fun getStatsFlow(postIds: List<String>): Flow<InteractionStats> {
         val numOfRepliesFlow = postDao.getNumOfRepliesPerPostFlow(postIds)
-            .firstThenDebounce(millis = NORMAL_DEBOUNCE)
             .distinctUntilChanged()
+            .firstThenDebounce(millis = NORMAL_DEBOUNCE)
         val likedByMeFlow = reactionDao.listLikedByFlow(pubkeyProvider.getPubkey(), postIds)
-            .firstThenDebounce(millis = NORMAL_DEBOUNCE)
             .distinctUntilChanged()
+            .firstThenDebounce(millis = NORMAL_DEBOUNCE)
 
         return combine(
             numOfRepliesFlow,
