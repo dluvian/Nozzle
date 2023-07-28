@@ -241,8 +241,9 @@ class ProfileViewModel(
         return nip65Dao.getWriteRelaysOfPubkey(pubkey)
             .ifEmpty {
                 if (profileState.value.pubkey == pubkey) profileState.value.relays
-                else getDefaultRelays()
+                else emptyList()
             }
+            .ifEmpty { getDefaultRelays() }
             .shuffled()
             .take(5)  // Don't ask more than 5 relays
     }
