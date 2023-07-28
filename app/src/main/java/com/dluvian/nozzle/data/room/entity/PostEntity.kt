@@ -8,11 +8,12 @@ import com.dluvian.nozzle.model.nostr.Event
 data class PostEntity(
     @PrimaryKey(autoGenerate = false) val id: String,
     val pubkey: String,
+    // TODO: Use @Embedded for composition
     val replyToId: String?,
     val replyToRootId: String?,
     val replyRelayHint: String?,
-    val mentionedPostIds: List<String>,
-    val mediaUrls: List<String>,
+    val mentionedPostId: String?, // TODO: Multiple posts
+    val mediaUrl: String?, // TODO: Multiple pictures
     val content: String,
     val createdAt: Long,
 ) {
@@ -25,8 +26,8 @@ data class PostEntity(
                 replyToId = event.getReplyId(),
                 replyToRootId = event.getRootReplyId(),
                 replyRelayHint = event.getReplyRelayHint(),
-                mentionedPostIds = contentContext.mentionedPostIds,
-                mediaUrls = contentContext.mediaUrls,
+                mentionedPostId = contentContext.mentionedPostId,
+                mediaUrl = contentContext.mediaUrl,
                 content = contentContext.cleanContent,
                 createdAt = event.createdAt,
             )

@@ -143,7 +143,7 @@ fun PostCard(
             )
             Spacer(Modifier.height(spacing.medium))
             MentionedCardContent(
-                post = post.mentionedPosts.lastOrNull(), // TODO: Support multiple
+                post = post.mentionedPost,
                 onOpenProfile = onOpenProfile,
                 onNavigateToThread = onNavigateToThread,
             )

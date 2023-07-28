@@ -9,7 +9,7 @@ fun listReferencedPubkeys(posts: Collection<PostWithMeta>): List<String> {
     for (post in posts) {
         referencedPubkeys.add(post.pubkey)
         post.replyToPubkey?.let { referencedPubkeys.add(it) }
-        referencedPubkeys.addAll(post.mentionedPosts.map { it.pubkey })
+        post.mentionedPost?.pubkey?.let { referencedPubkeys.add(it) }
     }
 
     return referencedPubkeys.distinct()
@@ -21,7 +21,7 @@ fun listReferencedPostIds(posts: Collection<PostWithMeta>): List<String> {
     val referencedPostIds = mutableListOf<String>()
     for (post in posts) {
         post.replyToId?.let { referencedPostIds.add(it) }
-        referencedPostIds.addAll(post.mentionedPosts.map { it.id })
+        post.mentionedPost?.id?.let { referencedPostIds.add(it) }
     }
 
     return referencedPostIds.distinct()

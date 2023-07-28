@@ -18,6 +18,7 @@ import com.dluvian.nozzle.model.PostWithMeta
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.flow
 
 class PostMapper(
@@ -45,7 +46,6 @@ class PostMapper(
             postIds = posts.mapNotNull { it.replyToId }
         ).firstThenDebounce(NORMAL_DEBOUNCE)
             .distinctUntilChanged()
-        val mentionedPostsFlow: Flow<Map<String, MentionedPost>> = TODO("getMentionedPosts")
         // TODO: Use contactlistProvider
         val contactPubkeysFlow = contactDao.listContactPubkeysFlow(pubkeyProvider.getPubkey())
             .firstThenDebounce(NORMAL_DEBOUNCE)
@@ -58,6 +58,12 @@ class PostMapper(
             contactPubkeys = pubkeys
         ).firstThenDebounce(NORMAL_DEBOUNCE)
             .distinctUntilChanged()
+
+        val mentionedPostIds = posts.mapNotNull { it.mentionedPostId }
+        val mentionedPostsFlow = if (mentionedPostIds.isEmpty()) emptyFlow()
+        else postDao.getMentionedPostsMapFlow(postIds = mentionedPostIds)
+            .distinctUntilChanged()
+            .firstThenDebounce(NORMAL_DEBOUNCE)
 
         val baseFlow = getBaseFlow(
             posts = posts,
@@ -76,11 +82,9 @@ class PostMapper(
         ) { base, mentionedPosts, trustScore ->
             base.map {
                 it.copy(
-                    mentionedPosts = it.mentionedPosts.map { it.id }
-                        .let { mentionedIds ->
-                            mentionedPosts.filter { mentionedIds.contains(it.key) }.values
-                        }
-                        .toList(),
+                    mentionedPost = it.mentionedPost?.id?.let { mentionedPostId ->
+                        mentionedPosts[mentionedPostId]
+                    },
                     trustScore = if (isOneself(it.pubkey)) null
                     else trustScore[it.pubkey]
                 )
@@ -123,8 +127,8 @@ class PostMapper(
                     trustScore = if (isOneself(it.pubkey)) null else 0f,
                     numOfReplies = stats.getNumOfReplies(it.id),
                     relays = relays[it.id].orEmpty(),
-                    mediaUrls = it.mediaUrls,
-                    mentionedPosts = it.mentionedPostIds.map { mentionedId ->
+                    mediaUrl = it.mediaUrl,
+                    mentionedPost = it.mentionedPostId?.let { mentionedId ->
                         MentionedPost(
                             id = mentionedId,
                             pubkey = "",

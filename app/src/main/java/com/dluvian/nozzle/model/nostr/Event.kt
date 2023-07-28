@@ -242,50 +242,40 @@ class Event(
     }
 
     fun parseContent(): ContentContext {
-        val extractedNostrUris = NostrUtils.extractNostrUris(content).filter {
-            it.startsWith("nostr:note1")  // TODO: Support nevent
-        }
-        val extractedMediaUrls = UrlUtils.extractUrls(content).filter {
-            UrlUtils.mediaSuffixes.any { suffix -> it.endsWith(suffix) }
-        }
-
-        return getContentContext(
-            content = content,
-            tokens = extractedNostrUris + extractedMediaUrls
-        )
-    }
-
-    private fun getContentContext(content: String, tokens: List<String>): ContentContext {
         var cleanContent = content.trim()
-        if (tokens.isEmpty()) return ContentContext(cleanContent = cleanContent)
+        var mentionedPostId: String? = null
+        var mediaUrl: String? = null
 
-        val mentionedPostIds = mutableListOf<String>()
-        val mediaUrls = mutableListOf<String>()
-
-        var checkAgain = true
-        while (checkAgain) {
-            checkAgain = false
-            for (token in tokens) {
-                if (cleanContent.endsWith(token)) {
-                    if (token.startsWith("nostr:note1")) {
-                        noteIdToHex(token.removePrefix("nostr:"))
-                            .onFailure {
-                                Log.w(TAG, "Failed to convert $token to hex")
-                            }.onSuccess { hex ->
-                                mentionedPostIds.add(hex)
-                            }
-                    } else mediaUrls.add(token)
-                    cleanContent = cleanContent.removeSuffix(token).trimEnd()
-                    checkAgain = true
-                    break
+        while (true) {
+            var hasChanged = false
+            if (mentionedPostId == null) {
+                NostrUtils.getAppendedNostrNote1(cleanContent)?.let { raw ->
+                    val hexResult = noteIdToHex(raw.removePrefix("nostr:"))
+                    hexResult.onFailure {
+                        Log.w(TAG, "Failed to convert '$raw' to hex")
+                    }.onSuccess { hex ->
+                        cleanContent = cleanContent.removeSuffix(raw).trimEnd()
+                        mentionedPostId = hex
+                        hasChanged = true
+                        Log.d(TAG, "Parsed $hex from $raw")
+                    }
                 }
             }
+            if (mediaUrl == null) {
+                mediaUrl = UrlUtils.getAppendedMediaUrl(cleanContent)
+                mediaUrl?.let {
+                    cleanContent = cleanContent.removeSuffix(mediaUrl).trimEnd()
+                    Log.d(TAG, "Found url '$mediaUrl'")
+                    hasChanged = true
+                }
+            }
+            if (!hasChanged) break
         }
 
         return ContentContext(
             cleanContent = cleanContent,
-            mentionedPostIds = mentionedPostIds,
-            mediaUrls = mediaUrls
+            mentionedPostId = mentionedPostId,
+            mediaUrl = mediaUrl
         )
     }
 

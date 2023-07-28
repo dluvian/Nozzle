@@ -2,6 +2,7 @@ package com.dluvian.nozzle.data.room.dao
 
 import androidx.room.*
 import com.dluvian.nozzle.data.room.entity.PostEntity
+import com.dluvian.nozzle.model.MentionedPost
 import kotlinx.coroutines.flow.Flow
 
 
@@ -123,4 +124,13 @@ interface PostDao {
                 "WHERE id IN (:postIds) "
     )
     suspend fun listAuthorPubkeys(postIds: Collection<String>): List<String>
+
+    @MapInfo(keyColumn = "id")
+    @Query(
+        "SELECT id, post.pubkey, content, name, picture, post.createdAt " +
+                "FROM post " +
+                "JOIN profile ON post.pubkey = profile.pubkey " +
+                "WHERE id IN (:postIds) "
+    )
+    fun getMentionedPostsMapFlow(postIds: Collection<String>): Flow<Map<String, MentionedPost>>
 }

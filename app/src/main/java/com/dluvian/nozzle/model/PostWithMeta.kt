@@ -18,8 +18,8 @@ data class PostWithMeta(
     val trustScore: Float?,
     val numOfReplies: Int,
     val relays: List<String>,
-    val mentionedPosts: List<MentionedPost>,
-    val mediaUrls: List<String>,
+    val mentionedPost: MentionedPost?,
+    val mediaUrl: String?,
 ) {
     fun getPostIds(): PostIds {
         return PostIds(id = id, replyToId = replyToId, replyToRootId = replyToRootId)
