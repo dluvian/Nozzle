@@ -43,6 +43,8 @@ class ThreadViewModel(
         Log.i(TAG, "Initialize ThreadViewModel")
     }
 
+    // TODO: Why is this called when returning to feed? Prevent that
+    // TODO: Does not work when clicking on post from profile feed from new profile
     private var job: Job? = null
     val onOpenThread: (PostIds) -> Unit = { postIds ->
         Log.i(TAG, "Open thread of post ${postIds.id}")

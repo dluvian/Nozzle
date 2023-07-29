@@ -9,7 +9,6 @@ import com.dluvian.nozzle.data.room.dao.ProfileDao
 import com.dluvian.nozzle.data.room.entity.PostEntity
 import com.dluvian.nozzle.data.utils.NORMAL_DEBOUNCE
 import com.dluvian.nozzle.data.utils.SHORT_DEBOUNCE
-import com.dluvian.nozzle.data.utils.emitThenDebounce
 import com.dluvian.nozzle.data.utils.firstThenDebounce
 import com.dluvian.nozzle.model.InteractionStats
 import com.dluvian.nozzle.model.MentionedPost
@@ -19,7 +18,6 @@ import com.dluvian.nozzle.model.PostWithMeta
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.flow
 
 class PostMapper(
@@ -64,11 +62,11 @@ class PostMapper(
 
         val mentionedPostIds = posts.mapNotNull { it.mentionedPostId }
         val mentionedPostsFlow = (
-                if (mentionedPostIds.isEmpty()) emptyFlow()
+                if (mentionedPostIds.isEmpty()) flow { emit(emptyMap()) }
                 else postDao.getMentionedPostsMapFlow(postIds = mentionedPostIds)
                 )
             .distinctUntilChanged()
-            .emitThenDebounce(toEmit = emptyMap(), millis = NORMAL_DEBOUNCE)
+            .firstThenDebounce(NORMAL_DEBOUNCE)
 
         val baseFlow = getBaseFlow(
             posts = posts,
