@@ -7,12 +7,11 @@ import com.dluvian.nozzle.data.provider.IPubkeyProvider
 import com.dluvian.nozzle.data.provider.IRelayProvider
 import com.dluvian.nozzle.data.room.dao.Nip65Dao
 import com.dluvian.nozzle.data.utils.NORMAL_DEBOUNCE
-import com.dluvian.nozzle.data.utils.firstThenDebounce
+import com.dluvian.nozzle.data.utils.firstThenDistinctDebounce
 import com.dluvian.nozzle.model.PostWithMeta
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.stateIn
 import java.util.Collections
 
@@ -29,8 +28,7 @@ class RelayProvider(
     // TODO: Determine current pubkey by db table. PubkeyProvider should not be needed
     private var personalPubkey = pubkeyProvider.getPubkey()
     private var personalNip65State = nip65Dao.getRelaysOfPubkeyFlow(personalPubkey)
-        .distinctUntilChanged()
-        .firstThenDebounce(NORMAL_DEBOUNCE)
+        .firstThenDistinctDebounce(NORMAL_DEBOUNCE)
         .stateIn(
             scope, SharingStarted.Eagerly, emptyList()
         )
@@ -80,8 +78,7 @@ class RelayProvider(
         if (personalPubkey != pubkeyProvider.getPubkey()) {
             personalPubkey = pubkeyProvider.getPubkey()
             personalNip65State = nip65Dao.getRelaysOfPubkeyFlow(personalPubkey)
-                .distinctUntilChanged()
-                .firstThenDebounce(NORMAL_DEBOUNCE)
+                .firstThenDistinctDebounce(NORMAL_DEBOUNCE)
                 .stateIn(
                     scope, SharingStarted.Eagerly, emptyList()
                 )

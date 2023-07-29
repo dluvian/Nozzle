@@ -3,10 +3,9 @@ package com.dluvian.nozzle.data.room.dao
 import androidx.room.*
 import com.dluvian.nozzle.data.room.entity.ContactEntity
 import com.dluvian.nozzle.data.utils.NORMAL_DEBOUNCE
-import com.dluvian.nozzle.data.utils.firstThenDebounce
+import com.dluvian.nozzle.data.utils.firstThenDistinctDebounce
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.distinctUntilChanged
 
 
 @Dao
@@ -134,13 +133,11 @@ interface ContactDao {
         contactPubkey: String
     ): Flow<Float> {
         val trustScoreDividerFlow = getTrustScoreDividerFlow(pubkey)
-            .firstThenDebounce(NORMAL_DEBOUNCE)
-            .distinctUntilChanged()
+            .firstThenDistinctDebounce(NORMAL_DEBOUNCE)
         val rawTrustScoreFlow = getRawTrustScoreFlow(
             pubkey = pubkey,
             contactPubkey = contactPubkey
-        ).firstThenDebounce(NORMAL_DEBOUNCE)
-            .distinctUntilChanged()
+        ).firstThenDistinctDebounce(NORMAL_DEBOUNCE)
         return trustScoreDividerFlow
             .combine(rawTrustScoreFlow) { divider, rawTrustScore ->
                 getPercentage(
@@ -155,13 +152,11 @@ interface ContactDao {
         contactPubkeys: List<String>
     ): Flow<Map<String, Float>> {
         val trustScoreDividerFlow = getTrustScoreDividerFlow(pubkey)
-            .firstThenDebounce(NORMAL_DEBOUNCE)
-            .distinctUntilChanged()
+            .firstThenDistinctDebounce(NORMAL_DEBOUNCE)
         val rawTrustScorePerPubkeyFlow = getRawTrustScorePerPubkeyFlow(
             pubkey = pubkey,
             contactPubkeys = contactPubkeys
-        ).firstThenDebounce(NORMAL_DEBOUNCE)
-            .distinctUntilChanged()
+        ).firstThenDistinctDebounce(NORMAL_DEBOUNCE)
         return trustScoreDividerFlow
             .combine(rawTrustScorePerPubkeyFlow) { divider, rawTrustScorePerPubkey ->
                 rawTrustScorePerPubkey.mapValues {

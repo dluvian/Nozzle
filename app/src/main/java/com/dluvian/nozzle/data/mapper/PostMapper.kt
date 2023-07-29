@@ -9,7 +9,7 @@ import com.dluvian.nozzle.data.room.dao.ProfileDao
 import com.dluvian.nozzle.data.room.entity.PostEntity
 import com.dluvian.nozzle.data.utils.NORMAL_DEBOUNCE
 import com.dluvian.nozzle.data.utils.SHORT_DEBOUNCE
-import com.dluvian.nozzle.data.utils.firstThenDebounce
+import com.dluvian.nozzle.data.utils.firstThenDistinctDebounce
 import com.dluvian.nozzle.model.InteractionStats
 import com.dluvian.nozzle.model.MentionedPost
 import com.dluvian.nozzle.model.NameAndPicture
@@ -17,7 +17,6 @@ import com.dluvian.nozzle.model.NameAndPubkey
 import com.dluvian.nozzle.model.PostWithMeta
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flow
 
 class PostMapper(
@@ -36,37 +35,28 @@ class PostMapper(
         val pubkeys = posts.map { it.pubkey }
 
         val statsFlow = interactionStatsProvider.getStatsFlow(postIds)
-            .distinctUntilChanged()
-            .firstThenDebounce(NORMAL_DEBOUNCE)
         val namesAndPicturesFlow = profileDao.getNamesAndPicturesMapFlow(pubkeys)
-            .distinctUntilChanged()
-            .firstThenDebounce(NORMAL_DEBOUNCE)
+            .firstThenDistinctDebounce(NORMAL_DEBOUNCE)
         val replyRecipientsFlow = profileDao.getAuthorNamesAndPubkeysMapFlow(
             postIds = posts.mapNotNull { it.replyToId }
-        ).distinctUntilChanged()
-            .firstThenDebounce(NORMAL_DEBOUNCE)
+        ).firstThenDistinctDebounce(NORMAL_DEBOUNCE)
 
         // TODO: Use contactlistProvider
         val contactPubkeysFlow = contactDao.listContactPubkeysFlow(pubkeyProvider.getPubkey())
-            .distinctUntilChanged()
-            .firstThenDebounce(NORMAL_DEBOUNCE)
+            .firstThenDistinctDebounce(NORMAL_DEBOUNCE)
 
         val relaysFlow = eventRelayDao.getRelaysPerEventIdMapFlow(postIds)
-            .distinctUntilChanged()
-            .firstThenDebounce(NORMAL_DEBOUNCE)
+            .firstThenDistinctDebounce(NORMAL_DEBOUNCE)
         val trustScorePerPubkeyFlow = contactDao.getTrustScorePerPubkeyFlow(
             pubkey = pubkeyProvider.getPubkey(),
             contactPubkeys = pubkeys
-        ).distinctUntilChanged()
-            .firstThenDebounce(NORMAL_DEBOUNCE)
+        ).firstThenDistinctDebounce(NORMAL_DEBOUNCE)
 
         val mentionedPostIds = posts.mapNotNull { it.mentionedPostId }
-        val mentionedPostsFlow = (
-                if (mentionedPostIds.isEmpty()) flow { emit(emptyMap()) }
-                else postDao.getMentionedPostsMapFlow(postIds = mentionedPostIds)
-                )
-            .distinctUntilChanged()
-            .firstThenDebounce(NORMAL_DEBOUNCE)
+        val mentionedPostsFlow =
+            if (mentionedPostIds.isEmpty()) flow { emit(emptyMap()) }
+            else postDao.getMentionedPostsMapFlow(postIds = mentionedPostIds)
+                .firstThenDistinctDebounce(NORMAL_DEBOUNCE)
 
         val baseFlow = getBaseFlow(
             posts = posts,
@@ -75,8 +65,7 @@ class PostMapper(
             contactPubkeysFlow = contactPubkeysFlow,
             replyRecipientsFlow = replyRecipientsFlow,
             relaysFlow = relaysFlow
-        ).distinctUntilChanged()
-            .firstThenDebounce(SHORT_DEBOUNCE)
+        ).firstThenDistinctDebounce(SHORT_DEBOUNCE)
 
         return combine(
             baseFlow,
@@ -92,7 +81,7 @@ class PostMapper(
                     else trustScore[it.pubkey]
                 )
             }
-        }
+        }.firstThenDistinctDebounce(SHORT_DEBOUNCE)
     }
 
     private fun getBaseFlow(

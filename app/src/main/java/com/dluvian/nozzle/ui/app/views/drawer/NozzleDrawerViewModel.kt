@@ -6,12 +6,9 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.dluvian.nozzle.data.provider.IPersonalProfileProvider
-import com.dluvian.nozzle.data.utils.NORMAL_DEBOUNCE
-import com.dluvian.nozzle.data.utils.firstThenDebounce
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -29,8 +26,6 @@ class NozzleDrawerViewModel(
     private val drawerViewModelState = MutableStateFlow(DrawerViewModelState())
 
     var metadataState = personalProfileProvider.getMetadata()
-        .distinctUntilChanged()
-        .firstThenDebounce(NORMAL_DEBOUNCE)
         .stateIn(
             viewModelScope,
             SharingStarted.Eagerly,
@@ -54,8 +49,6 @@ class NozzleDrawerViewModel(
     val onResetUiState: () -> Unit = {
         Log.i(TAG, "Reset UI")
         metadataState = personalProfileProvider.getMetadata()
-            .distinctUntilChanged()
-            .firstThenDebounce(NORMAL_DEBOUNCE)
             .stateIn(
                 viewModelScope,
                 SharingStarted.Eagerly,

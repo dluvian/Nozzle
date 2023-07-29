@@ -5,11 +5,10 @@ import com.dluvian.nozzle.data.provider.IContactListProvider
 import com.dluvian.nozzle.data.provider.IPubkeyProvider
 import com.dluvian.nozzle.data.room.dao.ContactDao
 import com.dluvian.nozzle.data.utils.NORMAL_DEBOUNCE
-import com.dluvian.nozzle.data.utils.firstThenDebounce
+import com.dluvian.nozzle.data.utils.firstThenDistinctDebounce
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.stateIn
 
 private const val TAG = "ContactListProvider"
@@ -23,8 +22,7 @@ class ContactListProvider(
     // TODO: Determine current pubkey by db table. PubkeyProvider should not be needed
     private var personalPubkey = pubkeyProvider.getPubkey()
     private var personalContactListState = contactDao.listContactPubkeysFlow(personalPubkey)
-        .distinctUntilChanged()
-        .firstThenDebounce(NORMAL_DEBOUNCE)
+        .firstThenDistinctDebounce(NORMAL_DEBOUNCE)
         .stateIn(
             scope, SharingStarted.Eagerly, emptyList()
         )
@@ -34,8 +32,7 @@ class ContactListProvider(
         if (personalPubkey != pubkeyProvider.getPubkey()) {
             personalPubkey = pubkeyProvider.getPubkey()
             personalContactListState = contactDao.listContactPubkeysFlow(personalPubkey)
-                .distinctUntilChanged()
-                .firstThenDebounce(NORMAL_DEBOUNCE)
+                .firstThenDistinctDebounce(NORMAL_DEBOUNCE)
                 .stateIn(
                     scope, SharingStarted.Eagerly, emptyList()
                 )

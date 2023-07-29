@@ -48,8 +48,6 @@ class FeedViewModel(
     )
 
     var metadataState = personalProfileProvider.getMetadata()
-        .distinctUntilChanged()
-        .firstThenDebounce(NORMAL_DEBOUNCE)
         .stateIn(
             viewModelScope, SharingStarted.Lazily, null
         )
@@ -191,8 +189,6 @@ class FeedViewModel(
     val onResetProfileIconUiState: () -> Unit = {
         Log.i(TAG, "Reset profile icon")
         metadataState = personalProfileProvider.getMetadata()
-            .distinctUntilChanged()
-            .firstThenDebounce(NORMAL_DEBOUNCE)
             .stateIn(
                 viewModelScope, SharingStarted.Lazily, null
             )
@@ -242,13 +238,11 @@ class FeedViewModel(
             feedSettings = viewModelState.value.feedSettings,
             limit = DB_BATCH_SIZE,
             waitForSubscription = WAIT_TIME,
-        ).distinctUntilChanged()
-            .firstThenDebounce(SHORT_DEBOUNCE)
-            .stateIn(
-                viewModelScope,
-                SharingStarted.WhileSubscribed(),
-                feedState.value,
-            )
+        ).stateIn(
+            viewModelScope,
+            SharingStarted.WhileSubscribed(),
+            feedState.value,
+        )
         delay(WAIT_TIME)
         renewAdditionalDataSubscription()
     }
@@ -265,9 +259,7 @@ class FeedViewModel(
                 feedSettings = viewModelState.value.feedSettings,
                 limit = DB_BATCH_SIZE,
                 until = last.createdAt,
-            ).distinctUntilChanged()
-                .firstThenDebounce(SHORT_DEBOUNCE)
-                .map { toAppend -> currentFeed + toAppend }
+            ).map { toAppend -> currentFeed + toAppend }
                 .stateIn(
                     viewModelScope,
                     SharingStarted.Eagerly,

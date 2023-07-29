@@ -5,11 +5,11 @@ import com.dluvian.nozzle.data.provider.IPubkeyProvider
 import com.dluvian.nozzle.data.room.dao.PostDao
 import com.dluvian.nozzle.data.room.dao.ReactionDao
 import com.dluvian.nozzle.data.utils.NORMAL_DEBOUNCE
-import com.dluvian.nozzle.data.utils.firstThenDebounce
+import com.dluvian.nozzle.data.utils.SHORT_DEBOUNCE
+import com.dluvian.nozzle.data.utils.firstThenDistinctDebounce
 import com.dluvian.nozzle.model.InteractionStats
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.distinctUntilChanged
 
 class InteractionStatsProvider(
     private val pubkeyProvider: IPubkeyProvider,
@@ -18,11 +18,9 @@ class InteractionStatsProvider(
 ) : IInteractionStatsProvider {
     override fun getStatsFlow(postIds: List<String>): Flow<InteractionStats> {
         val numOfRepliesFlow = postDao.getNumOfRepliesPerPostFlow(postIds)
-            .distinctUntilChanged()
-            .firstThenDebounce(millis = NORMAL_DEBOUNCE)
+            .firstThenDistinctDebounce(NORMAL_DEBOUNCE)
         val likedByMeFlow = reactionDao.listLikedByFlow(pubkeyProvider.getPubkey(), postIds)
-            .distinctUntilChanged()
-            .firstThenDebounce(millis = NORMAL_DEBOUNCE)
+            .firstThenDistinctDebounce(NORMAL_DEBOUNCE)
 
         return combine(
             numOfRepliesFlow,
@@ -32,6 +30,6 @@ class InteractionStatsProvider(
                 numOfRepliesPerPost = numOfReplies,
                 likedByMe = likedByMe,
             )
-        }
+        }.firstThenDistinctDebounce(SHORT_DEBOUNCE)
     }
 }

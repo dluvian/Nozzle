@@ -18,9 +18,6 @@ import com.dluvian.nozzle.data.provider.IProfileWithAdditionalInfoProvider
 import com.dluvian.nozzle.data.provider.IPubkeyProvider
 import com.dluvian.nozzle.data.provider.IRelayProvider
 import com.dluvian.nozzle.data.room.dao.Nip65Dao
-import com.dluvian.nozzle.data.utils.NORMAL_DEBOUNCE
-import com.dluvian.nozzle.data.utils.SHORT_DEBOUNCE
-import com.dluvian.nozzle.data.utils.firstThenDebounce
 import com.dluvian.nozzle.model.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -165,8 +162,6 @@ class ProfileViewModel(
     private suspend fun setProfileAndFeed(pubkey: String, dbBatchSize: Int) {
         Log.i(TAG, "Set profile of $pubkey")
         profileState = profileProvider.getProfileFlow(pubkey)
-            .distinctUntilChanged()
-            .firstThenDebounce(NORMAL_DEBOUNCE)
             .stateIn(
                 viewModelScope,
                 SharingStarted.WhileSubscribed(replayExpirationMillis = 0),
@@ -180,13 +175,11 @@ class ProfileViewModel(
         feedState = feedProvider.getFeedFlow(
             feedSettings = getCurrentFeedSettings(pubkey = pubkey, relays = getRelays(pubkey)),
             limit = dbBatchSize
-        ).distinctUntilChanged()
-            .firstThenDebounce(SHORT_DEBOUNCE)
-            .stateIn(
-                viewModelScope,
-                SharingStarted.WhileSubscribed(),
-                if (profileState.value.pubkey == pubkey) feedState.value else emptyList(),
-            )
+        ).stateIn(
+            viewModelScope,
+            SharingStarted.WhileSubscribed(),
+            if (profileState.value.pubkey == pubkey) feedState.value else emptyList(),
+        )
         renewAdditionalDataSubscription(pubkey)
     }
 
@@ -206,9 +199,7 @@ class ProfileViewModel(
                 feedSettings = feedSettings,
                 limit = dbBatchSize,
                 until = last.createdAt
-            ).distinctUntilChanged()
-                .firstThenDebounce(SHORT_DEBOUNCE)
-                .map { toAppend -> feedState.value + toAppend }
+            ).map { toAppend -> feedState.value + toAppend }
                 .stateIn(
                     viewModelScope,
                     SharingStarted.WhileSubscribed(),

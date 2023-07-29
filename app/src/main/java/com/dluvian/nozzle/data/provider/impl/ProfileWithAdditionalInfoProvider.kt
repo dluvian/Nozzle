@@ -12,7 +12,7 @@ import com.dluvian.nozzle.data.room.dao.ProfileDao
 import com.dluvian.nozzle.data.room.entity.ProfileEntity
 import com.dluvian.nozzle.data.utils.NORMAL_DEBOUNCE
 import com.dluvian.nozzle.data.utils.SHORT_DEBOUNCE
-import com.dluvian.nozzle.data.utils.firstThenDebounce
+import com.dluvian.nozzle.data.utils.firstThenDistinctDebounce
 import com.dluvian.nozzle.data.utils.hexToNpub
 import com.dluvian.nozzle.model.ProfileWithAdditionalInfo
 import com.dluvian.nozzle.model.nostr.Metadata
@@ -38,27 +38,26 @@ class ProfileWithAdditionalInfoProvider(
         Log.i(TAG, "Get profile $pubkey")
         val npub = hexToNpub(pubkey)
         val profileFlow = profileDao.getProfileFlow(pubkey)
-            .distinctUntilChanged()
-            .firstThenDebounce(NORMAL_DEBOUNCE)
+            .firstThenDistinctDebounce(NORMAL_DEBOUNCE)
         val relaysFlow = eventRelayDao.listUsedRelaysFlow(pubkey)
-            .distinctUntilChanged()
-            .firstThenDebounce(NORMAL_DEBOUNCE)
+            .firstThenDistinctDebounce(NORMAL_DEBOUNCE)
         val numOfFollowingFlow = contactDao.countFollowingFlow(pubkey)
-            .distinctUntilChanged()
-            .firstThenDebounce(NORMAL_DEBOUNCE)
+            .firstThenDistinctDebounce(NORMAL_DEBOUNCE)
+
         // No debounce because of immediate user interaction response
         val isFollowedByMeFlow = contactDao.isFollowedFlow(
             pubkey = pubkeyProvider.getPubkey(),
             contactPubkey = pubkey
         ).distinctUntilChanged()
+
         // No debounce because of immediate user interaction response
         val numOfFollowersFlow = contactDao.countFollowersFlow(pubkey)
             .distinctUntilChanged()
+
         val trustScoreFlow = contactDao.getTrustScoreFlow(
             pubkey = pubkeyProvider.getPubkey(),
             contactPubkey = pubkey
-        ).distinctUntilChanged()
-            .firstThenDebounce(NORMAL_DEBOUNCE)
+        ).firstThenDistinctDebounce(NORMAL_DEBOUNCE)
 
         val baseFlow = getBaseFlow(pubkey = pubkey, npub = npub, relaysFlow = relaysFlow)
 
@@ -67,15 +66,14 @@ class ProfileWithAdditionalInfoProvider(
             relaysFlow = relaysFlow,
             profileFlow = profileFlow,
             numOfFollowingFlow = numOfFollowingFlow
-        ).distinctUntilChanged()
-            .firstThenDebounce(SHORT_DEBOUNCE)
+        ).firstThenDistinctDebounce(SHORT_DEBOUNCE)
 
         return getFinalFlow(
             mainFlow = mainFlow,
             trustScoreFlow = trustScoreFlow,
             isFollowedByMeFlow = isFollowedByMeFlow,
             numOfFollowersFlow = numOfFollowersFlow
-        )
+        ).firstThenDistinctDebounce(SHORT_DEBOUNCE)
     }
 
     // TODO: Move to pubkey provider
