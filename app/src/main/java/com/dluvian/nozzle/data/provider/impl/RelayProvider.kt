@@ -8,6 +8,7 @@ import com.dluvian.nozzle.data.provider.IRelayProvider
 import com.dluvian.nozzle.data.room.dao.Nip65Dao
 import com.dluvian.nozzle.data.utils.NORMAL_DEBOUNCE
 import com.dluvian.nozzle.data.utils.firstThenDebounce
+import com.dluvian.nozzle.model.PostWithMeta
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.SharingStarted
@@ -52,6 +53,16 @@ class RelayProvider(
             .filter { it.isWrite }
             .map { it.url }
             .ifEmpty { getDefaultRelays() }
+    }
+
+    override fun getPostRelays(posts: List<PostWithMeta>): List<String> {
+        val result = mutableSetOf<String>().apply {
+            addAll(getReadRelays())
+            addAll(posts.flatMap { it.relays })
+            addAll(posts.mapNotNull { it.replyRelayHint })
+        }
+
+        return result.toList()
     }
 
     override suspend fun getAutopilotRelays(): Map<String, Set<String>> {

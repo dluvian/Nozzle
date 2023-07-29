@@ -63,8 +63,10 @@ class PostMapper(
             .firstThenDebounce(NORMAL_DEBOUNCE)
 
         val mentionedPostIds = posts.mapNotNull { it.mentionedPostId }
-        val mentionedPostsFlow = if (mentionedPostIds.isEmpty()) emptyFlow()
-        else postDao.getMentionedPostsMapFlow(postIds = mentionedPostIds)
+        val mentionedPostsFlow = (
+                if (mentionedPostIds.isEmpty()) emptyFlow()
+                else postDao.getMentionedPostsMapFlow(postIds = mentionedPostIds)
+                )
             .distinctUntilChanged()
             .emitThenDebounce(toEmit = emptyMap(), millis = NORMAL_DEBOUNCE)
 
@@ -145,6 +147,6 @@ class PostMapper(
         }
     }
 
-    // Move to pubkey provider
+    // TODO: Move to pubkey provider
     private fun isOneself(pubkey: String) = pubkey == pubkeyProvider.getPubkey()
 }
