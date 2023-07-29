@@ -23,7 +23,6 @@ interface INostrSubscriber {
     fun subscribeThread(
         currentPostId: String,
         replyToId: String? = null,
-        replyToRootId: String? = null,
         relays: Collection<String>? = null,
     ): List<String>
 

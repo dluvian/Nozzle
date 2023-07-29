@@ -1,6 +1,5 @@
 package com.dluvian.nozzle.data.nostr
 
-import com.dluvian.nozzle.model.nostr.ContactListEntry
 import com.dluvian.nozzle.model.nostr.Event
 import com.dluvian.nozzle.model.nostr.Filter
 import com.dluvian.nozzle.model.nostr.Metadata
@@ -20,7 +19,7 @@ interface INostrService {
         relays: Collection<String>?
     ): Event
 
-    fun updateContactList(contacts: List<ContactListEntry>): Event
+    fun updateContactList(contacts: List<String>): Event
 
     fun subscribe(
         filters: List<Filter>,

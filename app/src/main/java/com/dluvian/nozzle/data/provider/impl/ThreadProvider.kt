@@ -55,7 +55,6 @@ class ThreadProvider(
         nostrSubscriber.subscribeThread(
             currentPostId = currentPostId,
             replyToId = replyToId,
-            replyToRootId = replyToId, // TODO: Remove rootId?
             relays = relays
         )
     }

@@ -9,6 +9,6 @@ data class MentionedPost(
     val createdAt: Long,
 ) {
     fun toPostIds(): PostIds {
-        return PostIds(id = id, replyToId = null, replyToRootId = null)
+        return PostIds(id = id, replyToId = null)
     }
 }

@@ -118,7 +118,6 @@ class ThreadViewModel(
             currentPostIds = PostIds(
                 id = it.id,
                 replyToId = it.replyToId,
-                replyToRootId = it.replyToRootId
             )
         }
     }

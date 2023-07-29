@@ -10,7 +10,6 @@ data class PostEntity(
     val pubkey: String,
     // TODO: Use @Embedded for composition
     val replyToId: String?,
-    val replyToRootId: String?,
     val replyRelayHint: String?,
     val mentionedPostId: String?, // TODO: Multiple posts
     val mediaUrl: String?, // TODO: Multiple pictures
@@ -24,7 +23,6 @@ data class PostEntity(
                 id = event.id,
                 pubkey = event.pubkey,
                 replyToId = event.getReplyId(),
-                replyToRootId = event.getRootReplyId(),
                 replyRelayHint = event.getReplyRelayHint(),
                 mentionedPostId = contentContext.mentionedPostId,
                 mediaUrl = contentContext.mediaUrl,

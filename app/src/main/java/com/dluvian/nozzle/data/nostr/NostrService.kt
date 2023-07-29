@@ -4,7 +4,6 @@ import android.util.Log
 import com.dluvian.nozzle.data.eventProcessor.IEventProcessor
 import com.dluvian.nozzle.data.manager.IKeyManager
 import com.dluvian.nozzle.data.provider.IRelayProvider
-import com.dluvian.nozzle.model.nostr.ContactListEntry
 import com.dluvian.nozzle.model.nostr.Event
 import com.dluvian.nozzle.model.nostr.Filter
 import com.dluvian.nozzle.model.nostr.Metadata
@@ -91,11 +90,10 @@ class NostrService(
     }
 
     override fun sendLike(postId: String, postPubkey: String, relays: Collection<String>?): Event {
-        Log.i(TAG, "Send like reaction to $postId")
+        Log.i(TAG, "Send like reaction for $postId")
         val event = Event.createReactionEvent(
             eventId = postId,
             eventPubkey = postPubkey,
-            isPositive = true,
             keys = keyManager.getKeys(),
         )
         client.publishToRelays(event = event, relays = relays)
@@ -119,7 +117,7 @@ class NostrService(
         return event
     }
 
-    override fun updateContactList(contacts: List<ContactListEntry>): Event {
+    override fun updateContactList(contacts: List<String>): Event {
         Log.i(TAG, "Update contact list with ${contacts.size} contacts")
         val event = Event.createContactListEvent(
             contacts = contacts,

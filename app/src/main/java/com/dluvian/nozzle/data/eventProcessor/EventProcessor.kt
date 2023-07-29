@@ -79,11 +79,10 @@ class EventProcessor(
         idCache.add(event.id)
 
         scope.launch {
-            val contacts = getContactPubkeysAndRelayUrls(event.tags).map {
+            val contacts = getContactPubkeys(event.tags).map { contactPubkey ->
                 ContactEntity(
                     pubkey = event.pubkey,
-                    contactPubkey = it.first,
-                    relayUrl = it.second,
+                    contactPubkey = contactPubkey,
                     createdAt = event.createdAt
                 )
             }
@@ -180,14 +179,10 @@ class EventProcessor(
         return null
     }
 
-    private fun getContactPubkeysAndRelayUrls(tags: List<Tag>): List<Pair<String, String>> {
-        val result = mutableListOf<Pair<String, String>>()
-        for (tag in tags) {
-            if (tag.size >= 2 && tag[0] == "p") {
-                result.add(Pair(tag[1], tag.getOrNull(2).orEmpty()))
-            }
-        }
-        return result
+    private fun getContactPubkeys(tags: List<Tag>): List<String> {
+        return tags
+            .filter { tag -> tag.size >= 2 && tag[0] == "p" }
+            .map { tag -> tag[1] }
     }
 
     private fun insertEventRelay(eventId: String, relayUrl: String?) {

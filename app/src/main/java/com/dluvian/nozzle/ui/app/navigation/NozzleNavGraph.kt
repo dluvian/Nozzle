@@ -116,7 +116,6 @@ fun NozzleNavGraph(
                 PostIds(
                     id = backStackEntry.arguments?.getString("postId").orEmpty(),
                     replyToId = backStackEntry.arguments?.getString("replyToId"),
-                    replyToRootId = null,
                 )
             )
             ThreadRoute(

@@ -124,7 +124,6 @@ class ReplyViewModel(
                 postToReplyTo?.let { parentPost ->
                     Log.i(TAG, "Send reply to ${state.recipientName} ${state.pubkey}")
                     val replyTo = ReplyTo(
-                        replyToRoot = parentPost.replyToRootId,
                         replyTo = parentPost.id,
                         relayUrl = parentPost.relays.firstOrNull().orEmpty(),
                     )

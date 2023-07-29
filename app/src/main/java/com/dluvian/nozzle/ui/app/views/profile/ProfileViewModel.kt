@@ -142,10 +142,8 @@ class ProfileViewModel(
         if (!isInFollowProcess.get() && !profileState.value.isFollowedByMe) {
             isInFollowProcess.set(true)
             viewModelScope.launch(context = Dispatchers.IO) {
-                // TODO: Set best relayUrl, not random
                 profileFollower.follow(
-                    pubkeyToFollow = pubkeyToFollow,
-                    relayUrl = profileState.value.relays.randomOrNull().orEmpty()
+                    pubkeyToFollow = pubkeyToFollow
                 )
             }.invokeOnCompletion {
                 isInFollowProcess.set(false)

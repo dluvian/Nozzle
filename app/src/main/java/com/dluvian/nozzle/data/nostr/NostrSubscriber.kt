@@ -140,14 +140,12 @@ class NostrSubscriber(
     override fun subscribeThread(
         currentPostId: String,
         replyToId: String?,
-        replyToRootId: String?,
         relays: Collection<String>?,
     ): List<String> {
         Log.i(TAG, "Subscribe to thread")
 
         val postIds = mutableListOf(currentPostId)
         replyToId?.let { postIds.add(it) }
-        replyToRootId?.let { postIds.add(it) }
 
         val filters = mutableListOf<Filter>()
         filters.add(Filter.createPostFilter(e = postIds))

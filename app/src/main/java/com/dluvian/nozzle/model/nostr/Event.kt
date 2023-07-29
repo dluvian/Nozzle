@@ -96,10 +96,11 @@ class Event(
             )
         }
 
-        fun createContactListEvent(contacts: List<ContactListEntry>, keys: Keys): Event {
+        fun createContactListEvent(contacts: List<String>, keys: Keys): Event {
             return create(
                 kind = Kind.CONTACT_LIST,
-                tags = contacts.map { listOf("p", it.pubkey, it.relayUrl, "") }, // Empty petname
+                // No relayUrl and petname. No one uses it
+                tags = contacts.map { listOf("p", it) },
                 content = "",
                 keys = keys
             )
@@ -108,9 +109,6 @@ class Event(
         fun createTextNoteEvent(post: Post, keys: Keys): Event {
             val tags = mutableListOf<List<String>>()
 
-            post.replyTo?.let { replyTo ->
-                replyTo.replyToRoot?.let { tags.add(listOf("e", it, replyTo.relayUrl, "root")) }
-            }
             post.replyTo?.let { tags.add(listOf("e", it.replyTo, it.relayUrl, "reply")) }
 
             if (post.mentions.isNotEmpty()) {
@@ -130,13 +128,12 @@ class Event(
         fun createReactionEvent(
             eventId: String, // Must be last e tag
             eventPubkey: String, // Must be last p tag
-            isPositive: Boolean,
             keys: Keys
         ): Event {
             return create(
                 kind = Kind.REACTION,
                 tags = listOf(listOf("e", eventId), listOf("p", eventPubkey)),
-                content = if (isPositive) "+" else "-",
+                content = "+",
                 keys = keys
             )
         }
@@ -178,21 +175,6 @@ class Event(
             1 -> eventTags[0][1]
             else -> eventTags[1][1]
         }
-    }
-
-    fun getRootReplyId(): String? {
-        val eventTags = tags.filter {
-            it.size in 2..4
-                    && it[0] == "e"
-                    && (it.getNip10Marker() == "root" || it.getNip10Marker() == null)
-        }
-        if (eventTags.isEmpty()) return null
-
-        val nip10Marked = eventTags.find { it.getNip10Marker() == "root" }
-        if (nip10Marked != null) return nip10Marked[1]
-
-        // nip10 relational (deprecated)
-        return eventTags[0][1]
     }
 
     fun getReplyRelayHint(): String? {

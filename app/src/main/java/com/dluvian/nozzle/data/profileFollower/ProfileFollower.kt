@@ -15,13 +15,12 @@ class ProfileFollower(
     private val contactDao: ContactDao,
 ) : IProfileFollower {
 
-    override suspend fun follow(pubkeyToFollow: String, relayUrl: String) {
+    override suspend fun follow(pubkeyToFollow: String) {
         Log.i(TAG, "Follow $pubkeyToFollow")
         contactDao.insertOrIgnore(
             ContactEntity(
                 pubkey = pubkeyProvider.getPubkey(),
                 contactPubkey = pubkeyToFollow,
-                relayUrl = relayUrl,
                 createdAt = 0
             )
         )
@@ -41,10 +40,10 @@ class ProfileFollower(
         contactDao.updateTime(pubkey = pubkeyProvider.getPubkey(), createdAt = event.createdAt)
     }
 
+    // TODO: Only strings needed. ContactEntity is too much
     private fun updateContactListViaNostr(contactEntities: List<ContactEntity>): Event {
         return nostrService.updateContactList(
-            contacts = contactEntities.map { it.toContactListEntry() }
+            contacts = contactEntities.map { it.contactPubkey }
         )
     }
-
 }

@@ -3,7 +3,6 @@ package com.dluvian.nozzle.model
 data class PostWithMeta(
     val id: String,
     val replyToId: String?,
-    val replyToRootId: String?,
     val replyToName: String?,
     val replyToPubkey: String?,
     val replyRelayHint: String?,
@@ -22,6 +21,6 @@ data class PostWithMeta(
     val mediaUrl: String?,
 ) {
     fun getPostIds(): PostIds {
-        return PostIds(id = id, replyToId = replyToId, replyToRootId = replyToRootId)
+        return PostIds(id = id, replyToId = replyToId)
     }
 }

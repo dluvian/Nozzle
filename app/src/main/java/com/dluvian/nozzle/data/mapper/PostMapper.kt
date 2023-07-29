@@ -9,6 +9,7 @@ import com.dluvian.nozzle.data.room.dao.ProfileDao
 import com.dluvian.nozzle.data.room.entity.PostEntity
 import com.dluvian.nozzle.data.utils.NORMAL_DEBOUNCE
 import com.dluvian.nozzle.data.utils.SHORT_DEBOUNCE
+import com.dluvian.nozzle.data.utils.emitThenDebounce
 import com.dluvian.nozzle.data.utils.firstThenDebounce
 import com.dluvian.nozzle.model.InteractionStats
 import com.dluvian.nozzle.model.MentionedPost
@@ -51,6 +52,7 @@ class PostMapper(
         val contactPubkeysFlow = contactDao.listContactPubkeysFlow(pubkeyProvider.getPubkey())
             .distinctUntilChanged()
             .firstThenDebounce(NORMAL_DEBOUNCE)
+
         val relaysFlow = eventRelayDao.getRelaysPerEventIdMapFlow(postIds)
             .distinctUntilChanged()
             .firstThenDebounce(NORMAL_DEBOUNCE)
@@ -64,7 +66,7 @@ class PostMapper(
         val mentionedPostsFlow = if (mentionedPostIds.isEmpty()) emptyFlow()
         else postDao.getMentionedPostsMapFlow(postIds = mentionedPostIds)
             .distinctUntilChanged()
-            .firstThenDebounce(NORMAL_DEBOUNCE)
+            .emitThenDebounce(toEmit = emptyMap(), millis = NORMAL_DEBOUNCE)
 
         val baseFlow = getBaseFlow(
             posts = posts,
@@ -112,7 +114,6 @@ class PostMapper(
                 PostWithMeta(
                     id = it.id,
                     replyToId = it.replyToId,
-                    replyToRootId = it.replyToRootId,
                     replyToName = replyRecipients[it.replyToId]?.name,
                     replyToPubkey = replyRecipients[it.replyToId]?.pubkey,
                     replyRelayHint = it.replyRelayHint,
