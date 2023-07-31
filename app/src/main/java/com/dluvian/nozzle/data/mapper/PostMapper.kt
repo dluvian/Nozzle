@@ -1,5 +1,6 @@
 package com.dluvian.nozzle.data.mapper
 
+import android.util.Log
 import com.dluvian.nozzle.data.provider.IInteractionStatsProvider
 import com.dluvian.nozzle.data.provider.IPubkeyProvider
 import com.dluvian.nozzle.data.room.dao.ContactDao
@@ -27,6 +28,8 @@ class PostMapper(
     private val eventRelayDao: EventRelayDao,
     private val contactDao: ContactDao,
 ) : IPostMapper {
+
+    // TODO: Simplify with SQL joins
 
     override suspend fun mapToPostsWithMetaFlow(posts: List<PostEntity>): Flow<List<PostWithMeta>> {
         if (posts.isEmpty()) return flow { emit(emptyList()) }
@@ -57,6 +60,8 @@ class PostMapper(
             if (mentionedPostIds.isEmpty()) flow { emit(emptyMap()) }
             else postDao.getMentionedPostsMapFlow(postIds = mentionedPostIds)
                 .firstThenDistinctDebounce(NORMAL_DEBOUNCE)
+        // TODO: Fix mentions
+        Log.i("LOLOL", "mentioned ${mentionedPostIds}")
 
         val baseFlow = getBaseFlow(
             posts = posts,
@@ -73,6 +78,9 @@ class PostMapper(
             trustScorePerPubkeyFlow
         ) { base, mentionedPosts, trustScore ->
             base.map {
+                Log.i("LOLOL", "in base ${it.mentionedPost?.id}")
+                Log.i("LOLOL", "map ${mentionedPosts.values}")
+
                 it.copy(
                     mentionedPost = it.mentionedPost?.id?.let { mentionedPostId ->
                         mentionedPosts[mentionedPostId]
@@ -118,7 +126,6 @@ class PostMapper(
                     trustScore = if (isOneself(it.pubkey)) null else 0f,
                     numOfReplies = stats.getNumOfReplies(it.id),
                     relays = relays[it.id].orEmpty(),
-                    mediaUrl = it.mediaUrl,
                     mentionedPost = it.mentionedPostId?.let { mentionedId ->
                         MentionedPost(
                             id = mentionedId,

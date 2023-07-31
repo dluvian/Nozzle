@@ -24,7 +24,7 @@ import com.dluvian.nozzle.data.room.entity.ReactionEntity
         ProfileEntity::class,
         ReactionEntity::class,
     ],
-    version = 10
+    version = 11
 )
 abstract class AppDatabase : RoomDatabase() {
     abstract fun contactDao(): ContactDao

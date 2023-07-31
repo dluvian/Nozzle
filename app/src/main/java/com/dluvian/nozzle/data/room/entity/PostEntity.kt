@@ -12,7 +12,6 @@ data class PostEntity(
     val replyToId: String?,
     val replyRelayHint: String?,
     val mentionedPostId: String?, // TODO: Multiple posts
-    val mediaUrl: String?, // TODO: Multiple pictures
     val content: String,
     val createdAt: Long,
 ) {
@@ -25,7 +24,6 @@ data class PostEntity(
                 replyToId = event.getReplyId(),
                 replyRelayHint = event.getReplyRelayHint(),
                 mentionedPostId = contentContext.mentionedPostId,
-                mediaUrl = contentContext.mediaUrl,
                 content = contentContext.cleanContent,
                 createdAt = event.createdAt,
             )

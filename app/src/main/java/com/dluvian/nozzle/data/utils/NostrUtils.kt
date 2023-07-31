@@ -12,4 +12,9 @@ object NostrUtils {
         val lastWord = content.split(whitespacePattern).lastOrNull()
         return lastWord?.let { if (it.startsWith("nostr:note1")) it else null }
     }
+
+    fun getHexFromNostrNote1(nostrNote1: String): String? {
+        return noteIdToHex(nostrNote1.removePrefix("nostr:"))
+            .getOrNull()
+    }
 }

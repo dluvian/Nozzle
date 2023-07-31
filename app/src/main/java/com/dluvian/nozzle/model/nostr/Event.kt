@@ -3,11 +3,10 @@ package com.dluvian.nozzle.model.nostr
 import android.util.Log
 import com.dluvian.nozzle.data.utils.JsonUtils.gson
 import com.dluvian.nozzle.data.utils.NostrUtils
+import com.dluvian.nozzle.data.utils.NostrUtils.getHexFromNostrNote1
 import com.dluvian.nozzle.data.utils.SchnorrUtils
 import com.dluvian.nozzle.data.utils.SchnorrUtils.secp256k1
 import com.dluvian.nozzle.data.utils.Sha256Utils.sha256
-import com.dluvian.nozzle.data.utils.UrlUtils
-import com.dluvian.nozzle.data.utils.noteIdToHex
 import com.dluvian.nozzle.model.ContentContext
 import com.google.gson.JsonElement
 import com.google.gson.annotations.SerializedName
@@ -225,39 +224,24 @@ class Event(
 
     fun parseContent(): ContentContext {
         var cleanContent = content.trim()
+        val nostrNote1 = NostrUtils.getAppendedNostrNote1(cleanContent)
         var mentionedPostId: String? = null
-        var mediaUrl: String? = null
 
-        while (true) {
-            var hasChanged = false
-            if (mentionedPostId == null) {
-                NostrUtils.getAppendedNostrNote1(cleanContent)?.let { raw ->
-                    val hexResult = noteIdToHex(raw.removePrefix("nostr:"))
-                    hexResult.onFailure {
-                        Log.w(TAG, "Failed to convert '$raw' to hex")
-                    }.onSuccess { hex ->
-                        cleanContent = cleanContent.removeSuffix(raw).trimEnd()
-                        mentionedPostId = hex
-                        hasChanged = true
-                        Log.d(TAG, "Parsed $hex from $raw")
-                    }
-                }
+        if (nostrNote1 != null) {
+            val hex = getHexFromNostrNote1(nostrNote1)
+            if (hex == null) {
+                Log.w(TAG, "Failed to convert '$nostrNote1' to hex")
+            } else {
+                cleanContent = cleanContent.removeSuffix(nostrNote1).trimEnd()
+                mentionedPostId = hex
+                Log.d(TAG, "Parsed $hex from $nostrNote1")
             }
-            if (mediaUrl == null) {
-                mediaUrl = UrlUtils.getAppendedMediaUrl(cleanContent)
-                mediaUrl?.let {
-                    cleanContent = cleanContent.removeSuffix(mediaUrl).trimEnd()
-                    Log.d(TAG, "Found url '$mediaUrl'")
-                    hasChanged = true
-                }
-            }
-            if (!hasChanged) break
+
         }
 
         return ContentContext(
             cleanContent = cleanContent,
             mentionedPostId = mentionedPostId,
-            mediaUrl = mediaUrl
         )
     }
 

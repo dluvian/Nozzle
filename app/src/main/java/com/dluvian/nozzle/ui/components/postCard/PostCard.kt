@@ -24,6 +24,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.style.TextAlign
 import com.dluvian.nozzle.R
+import com.dluvian.nozzle.data.utils.UrlUtils
 import com.dluvian.nozzle.data.utils.getShortenedNpubFromPubkey
 import com.dluvian.nozzle.data.utils.hexToNote
 import com.dluvian.nozzle.model.MentionedPost
@@ -141,12 +142,18 @@ fun PostCard(
                     }
                 }
             )
+            post.mentionedPost?.let { mentionedPost ->
+                Spacer(Modifier.height(spacing.medium))
+                MentionedCardContent(
+                    post = mentionedPost,
+                    onOpenProfile = onOpenProfile,
+                    onNavigateToThread = onNavigateToThread,
+                )
+            }
+
             Spacer(Modifier.height(spacing.medium))
-            MentionedCardContent(
-                post = post.mentionedPost,
-                onOpenProfile = onOpenProfile,
-                onNavigateToThread = onNavigateToThread,
-            )
+            MediaCard(content = post.content)
+
             Spacer(Modifier.height(spacing.medium))
             PostCardActions(
                 numOfReplies = post.numOfReplies,
@@ -193,49 +200,65 @@ private fun PostCardHeaderAndContent(
 
 @Composable
 private fun MentionedCardContent(
-    post: MentionedPost?,
+    post: MentionedPost,
     onOpenProfile: ((String) -> Unit)?,
     onNavigateToThread: (PostIds) -> Unit,
 ) {
-    post?.let {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .border(
-                    width = spacing.tiny,
-                    color = LightGray21,
-                    shape = RoundedCornerShape(spacing.large)
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .border(
+                width = spacing.tiny,
+                color = LightGray21,
+                shape = RoundedCornerShape(spacing.large)
+            )
+            .clickable { onNavigateToThread(post.toPostIds()) }
+    ) {
+        Column(modifier = Modifier.padding(spacing.large)) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                PostCardProfilePicture(
+                    modifier = Modifier
+                        .size(sizing.smallProfilePicture)
+                        .clip(CircleShape),
+                    pictureUrl = post.picture,
+                    pubkey = post.pubkey,
+                    trustType = Oneself, // TODO: Find correct trust type
+                    onOpenProfile = onOpenProfile,
                 )
-                .clickable { onNavigateToThread(it.toPostIds()) }
-        ) {
-            Column(modifier = Modifier.padding(spacing.large)) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    PostCardProfilePicture(
-                        modifier = Modifier
-                            .size(sizing.smallProfilePicture)
-                            .clip(CircleShape),
-                        pictureUrl = it.picture,
-                        pubkey = it.pubkey,
-                        trustType = Oneself, // TODO: Find correct trust type
-                        onOpenProfile = onOpenProfile,
-                    )
-                    Spacer(modifier = Modifier.width(spacing.medium))
-                    PostCardHeader(
-                        name = it.name,
-                        pubkey = it.pubkey,
-                        createdAt = it.createdAt,
-                        onOpenProfile = onOpenProfile
-                    )
-                }
-                PostCardContentBase(
-                    replyToName = null,
-                    relays = null,
-                    content = it.content,
-                    isCurrent = false,
-                ) {
-                    onNavigateToThread(it.toPostIds())
-                }
+                Spacer(modifier = Modifier.width(spacing.medium))
+                PostCardHeader(
+                    name = post.name,
+                    pubkey = post.pubkey,
+                    createdAt = post.createdAt,
+                    onOpenProfile = onOpenProfile
+                )
             }
+            PostCardContentBase(
+                replyToName = null,
+                relays = null,
+                content = post.content,
+                isCurrent = false,
+                onNavigateToThread = { onNavigateToThread(post.toPostIds()) }
+            )
+        }
+    }
+}
+
+@Composable
+private fun MediaCard(content: String) {
+    // TODO: Before PostCardHeaderAndContent
+    val cleanedContent = remember(content) {
+        val mediaUrl = UrlUtils.getAppendedMediaUrl(content)
+        if (mediaUrl == null) {
+            content
+        } else {
+            content.removeSuffix(mediaUrl).trimEnd()
+        }
+    }
+    if (cleanedContent != content) {
+        Column {
+            Text(text = "-----------TODO-------------")
+            Text(text = content.removePrefix(cleanedContent).trim())
         }
     }
 }
