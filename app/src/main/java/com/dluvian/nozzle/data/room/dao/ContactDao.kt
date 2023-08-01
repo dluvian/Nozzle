@@ -1,6 +1,7 @@
 package com.dluvian.nozzle.data.room.dao
 
 import androidx.room.*
+import com.dluvian.nozzle.data.TRUST_SCORE_BOOST
 import com.dluvian.nozzle.data.room.entity.ContactEntity
 import com.dluvian.nozzle.data.utils.NORMAL_DEBOUNCE
 import com.dluvian.nozzle.data.utils.firstThenDistinctDebounce
@@ -140,7 +141,7 @@ interface ContactDao {
         ).firstThenDistinctDebounce(NORMAL_DEBOUNCE)
         return trustScoreDividerFlow
             .combine(rawTrustScoreFlow) { divider, rawTrustScore ->
-                getPercentage(
+                getTrustScorePercentage(
                     numOfFollowing = divider,
                     rawTrustScore = rawTrustScore
                 )
@@ -160,7 +161,7 @@ interface ContactDao {
         return trustScoreDividerFlow
             .combine(rawTrustScorePerPubkeyFlow) { divider, rawTrustScorePerPubkey ->
                 rawTrustScorePerPubkey.mapValues {
-                    getPercentage(
+                    getTrustScorePercentage(
                         numOfFollowing = divider,
                         rawTrustScore = it.value
                     )
@@ -168,10 +169,11 @@ interface ContactDao {
             }
     }
 
-    private fun getPercentage(numOfFollowing: Int, rawTrustScore: Int): Float {
-        return if (numOfFollowing <= 0) 0f else {
+    private fun getTrustScorePercentage(numOfFollowing: Int, rawTrustScore: Int): Float {
+        val percentage = if (numOfFollowing <= 0) 0f else {
             val percentage = rawTrustScore.toFloat() / numOfFollowing
             if (percentage > 1f) 1f else percentage
         }
+        return minOf(percentage * TRUST_SCORE_BOOST, 1f)
     }
 }
