@@ -190,6 +190,7 @@ private fun PostCardHeaderAndContent(
                     }
                     .ifEmpty { "???" }
             } else null,
+            replyRelayHint = post.replyRelayHint,
             relays = post.relays,
             content = post.content,
             isCurrent = isCurrent,
@@ -235,6 +236,7 @@ private fun MentionedCardContent(
             }
             PostCardContentBase(
                 replyToName = null,
+                replyRelayHint = null,
                 relays = null,
                 content = post.content,
                 isCurrent = false,
@@ -266,12 +268,13 @@ private fun MediaCard(content: String) {
 @Composable
 private fun PostCardContentBase(
     replyToName: String?,
+    replyRelayHint: String?,
     relays: List<String>?,
     content: String,
     isCurrent: Boolean,
     onNavigateToThread: () -> Unit,
 ) {
-    replyToName?.let { ReplyingTo(name = it) }
+    replyToName?.let { ReplyingTo(name = it, replyRelayHint = replyRelayHint) }
     relays?.let { InRelays(relays = it) }
     Spacer(Modifier.height(spacing.medium))
     HyperlinkedText(

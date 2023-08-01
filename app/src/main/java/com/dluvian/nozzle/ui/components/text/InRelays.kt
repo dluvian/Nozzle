@@ -1,12 +1,11 @@
 package com.dluvian.nozzle.ui.components.text
 
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Row
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
@@ -19,7 +18,8 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.withStyle
 import com.dluvian.nozzle.R
 import com.dluvian.nozzle.ui.components.dialog.RelaysDialog
-import com.dluvian.nozzle.ui.theme.*
+import com.dluvian.nozzle.ui.theme.LightGray21
+import com.dluvian.nozzle.ui.theme.Shapes
 
 @Composable
 fun InRelays(relays: List<String>) {
@@ -59,6 +59,7 @@ private fun InRelay(relay: String, modifier: Modifier = Modifier, color: Color =
                 append(" ")
             }
             withStyle(style = SpanStyle(fontWeight = FontWeight.Bold, color = color)) {
+                // TODO: Util function for removing ws prefix
                 append(relay.removePrefix("wss://"))
             }
         },
@@ -67,7 +68,6 @@ private fun InRelay(relay: String, modifier: Modifier = Modifier, color: Color =
     )
 }
 
-@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 private fun AndOthers(
     otherRelaysCount: Int,

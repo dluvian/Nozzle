@@ -33,7 +33,8 @@ fun ReplyScreen(
         )
         ReplyingTo(
             modifier = Modifier.padding(top = spacing.medium, start = spacing.screenEdge),
-            name = uiState.recipientName
+            name = uiState.recipientName,
+            replyRelayHint = null
         )
         InputBox(
             picture = metadataState?.picture.orEmpty(),
