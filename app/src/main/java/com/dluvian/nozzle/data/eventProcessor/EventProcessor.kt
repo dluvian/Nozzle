@@ -11,6 +11,7 @@ import com.dluvian.nozzle.data.room.entity.ContactEntity
 import com.dluvian.nozzle.data.room.entity.Nip65Entity
 import com.dluvian.nozzle.data.room.entity.PostEntity
 import com.dluvian.nozzle.data.room.entity.ProfileEntity
+import com.dluvian.nozzle.data.utils.UrlUtils
 import com.dluvian.nozzle.data.utils.hexToNpub
 import com.dluvian.nozzle.model.nostr.Event
 import com.dluvian.nozzle.model.nostr.Metadata
@@ -62,7 +63,7 @@ class EventProcessor(
 
     private fun processPost(event: Event, relayUrl: String?) {
         if (!verify(event)) return
-        insertEventRelay(eventId = event.id, relayUrl = relayUrl)
+        insertEventRelay(eventId = event.id, relayUrl = UrlUtils.cleanUrl(relayUrl))
 
         if (idCache.contains(event.id)) return
         idCache.add(event.id)

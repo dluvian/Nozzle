@@ -6,9 +6,9 @@ import android.net.Uri
 object UrlUtils {
     private val urlPattern by lazy {
         Regex(
-            pattern = "(?:^|[\\W])((http)(s?):\\/\\/|www\\.)"
-                    + "(([\\w\\-]+\\.){1,}?([\\w\\-.~]+\\/?)*"
-                    + "[\\p{Alnum}.,%_=?&#\\-+()\\[\\]\\*$~@!:/{};']*)",
+            pattern = "(?:^|[\\W])((http)(s?)://|www\\.)"
+                    + "(([\\w\\-]+\\.){1,}?([\\w\\-.~]+/?)*"
+                    + "[\\p{Alnum}.,%_=?&#\\-+()\\[\\]*$~@!:/{};']*)",
             options = setOf(
                 RegexOption.IGNORE_CASE,
                 RegexOption.DOT_MATCHES_ALL
@@ -22,6 +22,8 @@ object UrlUtils {
         return url?.let { urlPattern.findAll(it).map { match -> match.value }.toList() }
             ?: emptyList()
     }
+
+    fun cleanUrl(url: String?) = url?.trim()?.dropLastWhile { lastChar -> lastChar == '/' }
 
     fun fixUrl(url: String): String {
         val trimmed = url.trim()
