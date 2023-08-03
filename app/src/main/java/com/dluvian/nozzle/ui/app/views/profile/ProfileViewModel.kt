@@ -164,7 +164,7 @@ class ProfileViewModel(
         profileState = profileProvider.getProfileFlow(pubkey)
             .stateIn(
                 viewModelScope,
-                SharingStarted.WhileSubscribed(replayExpirationMillis = 0),
+                SharingStarted.WhileSubscribed(),
                 ProfileWithAdditionalInfo.createEmpty(),
             )
         setFeed(pubkey = pubkey, dbBatchSize = dbBatchSize)

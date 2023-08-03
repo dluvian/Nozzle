@@ -54,10 +54,11 @@ class ProfileWithAdditionalInfoProvider(
         val numOfFollowersFlow = contactDao.countFollowersFlow(pubkey)
             .distinctUntilChanged()
 
+        // No debounce because of immediate user interaction response
         val trustScoreFlow = contactDao.getTrustScoreFlow(
             pubkey = pubkeyProvider.getPubkey(),
             contactPubkey = pubkey
-        ).firstThenDistinctDebounce(NORMAL_DEBOUNCE)
+        ).distinctUntilChanged()
 
         val baseFlow = getBaseFlow(pubkey = pubkey, npub = npub, relaysFlow = relaysFlow)
 
@@ -73,7 +74,7 @@ class ProfileWithAdditionalInfoProvider(
             trustScoreFlow = trustScoreFlow,
             isFollowedByMeFlow = isFollowedByMeFlow,
             numOfFollowersFlow = numOfFollowersFlow
-        ).firstThenDistinctDebounce(SHORT_DEBOUNCE)
+        ).distinctUntilChanged()
     }
 
     // TODO: Move to pubkey provider

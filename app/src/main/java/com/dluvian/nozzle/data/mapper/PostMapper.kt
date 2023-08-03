@@ -1,6 +1,7 @@
 package com.dluvian.nozzle.data.mapper
 
 import android.util.Log
+import com.dluvian.nozzle.data.provider.IContactListProvider
 import com.dluvian.nozzle.data.provider.IInteractionStatsProvider
 import com.dluvian.nozzle.data.provider.IPubkeyProvider
 import com.dluvian.nozzle.data.room.dao.ContactDao
@@ -23,6 +24,7 @@ import kotlinx.coroutines.flow.flow
 class PostMapper(
     private val interactionStatsProvider: IInteractionStatsProvider,
     private val pubkeyProvider: IPubkeyProvider,
+    private val contactListProvider: IContactListProvider,
     private val postDao: PostDao,
     private val profileDao: ProfileDao,
     private val eventRelayDao: EventRelayDao,
@@ -44,16 +46,17 @@ class PostMapper(
             postIds = posts.mapNotNull { it.replyToId }
         ).firstThenDistinctDebounce(NORMAL_DEBOUNCE)
 
-        // TODO: Use contactlistProvider
-        val contactPubkeysFlow = contactDao.listContactPubkeysFlow(pubkeyProvider.getPubkey())
+        val contactPubkeysFlow = contactListProvider.getPersonalContactPubkeysFlow()
             .firstThenDistinctDebounce(NORMAL_DEBOUNCE)
 
         val relaysFlow = eventRelayDao.getRelaysPerEventIdMapFlow(postIds)
             .firstThenDistinctDebounce(NORMAL_DEBOUNCE)
+
+        // Short debounce because of immediate user interaction
         val trustScorePerPubkeyFlow = contactDao.getTrustScorePerPubkeyFlow(
             pubkey = pubkeyProvider.getPubkey(),
             contactPubkeys = pubkeys
-        ).firstThenDistinctDebounce(NORMAL_DEBOUNCE)
+        ).firstThenDistinctDebounce(SHORT_DEBOUNCE)
 
         val mentionedPostIds = posts.mapNotNull { it.mentionedPostId }
         val mentionedPostsFlow =
