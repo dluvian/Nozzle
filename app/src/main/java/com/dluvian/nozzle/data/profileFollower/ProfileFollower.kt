@@ -5,7 +5,6 @@ import com.dluvian.nozzle.data.nostr.INostrService
 import com.dluvian.nozzle.data.provider.IPubkeyProvider
 import com.dluvian.nozzle.data.room.dao.ContactDao
 import com.dluvian.nozzle.data.room.entity.ContactEntity
-import com.dluvian.nozzle.model.nostr.Event
 
 private const val TAG = "ProfileFollower"
 
@@ -24,9 +23,7 @@ class ProfileFollower(
                 createdAt = 0
             )
         )
-        val contacts = contactDao.listContacts(pubkey = pubkeyProvider.getPubkey())
-        val event = updateContactListViaNostr(contacts)
-        contactDao.updateTime(pubkey = pubkeyProvider.getPubkey(), createdAt = event.createdAt)
+        updateContactList(personalPubkey = pubkeyProvider.getPubkey())
     }
 
     override suspend fun unfollow(pubkeyToUnfollow: String) {
@@ -35,15 +32,12 @@ class ProfileFollower(
             pubkey = pubkeyProvider.getPubkey(),
             contactPubkey = pubkeyToUnfollow
         )
-        val contacts = contactDao.listContacts(pubkey = pubkeyProvider.getPubkey())
-        val event = updateContactListViaNostr(contacts)
-        contactDao.updateTime(pubkey = pubkeyProvider.getPubkey(), createdAt = event.createdAt)
+        updateContactList(personalPubkey = pubkeyProvider.getPubkey())
     }
 
-    // TODO: Only strings needed. ContactEntity is too much
-    private fun updateContactListViaNostr(contactEntities: List<ContactEntity>): Event {
-        return nostrService.updateContactList(
-            contacts = contactEntities.map { it.contactPubkey }
-        )
+    private suspend fun updateContactList(personalPubkey: String) {
+        val contactPubkeys = contactDao.listContactPubkeys(pubkey = personalPubkey)
+        val event = nostrService.updateContactList(contactPubkeys)
+        contactDao.updateTime(pubkey = event.pubkey, createdAt = event.createdAt)
     }
 }

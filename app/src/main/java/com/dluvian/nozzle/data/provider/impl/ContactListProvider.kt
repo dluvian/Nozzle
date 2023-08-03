@@ -19,25 +19,25 @@ class ContactListProvider(
 ) : IContactListProvider {
     private val scope = CoroutineScope(context = Dispatchers.Default)
 
-    // TODO: Determine current pubkey by db table. PubkeyProvider should not be needed
     private var personalPubkey = pubkeyProvider.getPubkey()
     private var personalContactListState = contactDao.listContactPubkeysFlow(personalPubkey)
         .firstThenDistinctDebounce(NORMAL_DEBOUNCE)
-        .stateIn(
-            scope, SharingStarted.Eagerly, emptyList()
-        )
+        .stateIn(scope, SharingStarted.Eagerly, emptyList())
 
-    override fun listPersonalContactPubkeys(): List<String> {
-        // TODO: Obsolete this check. See TODO above
-        if (personalPubkey != pubkeyProvider.getPubkey()) {
-            personalPubkey = pubkeyProvider.getPubkey()
-            personalContactListState = contactDao.listContactPubkeysFlow(personalPubkey)
-                .firstThenDistinctDebounce(NORMAL_DEBOUNCE)
-                .stateIn(
-                    scope, SharingStarted.Eagerly, emptyList()
-                )
+    override suspend fun listPersonalContactPubkeys(): List<String> {
+        return if (personalPubkey != pubkeyProvider.getPubkey()) {
+            Log.i(TAG, "Pubkey changed. Update contact list flow")
+            updatePubkeyAndContactListFlow(newPubkey = pubkeyProvider.getPubkey())
+            contactDao.listContactPubkeys(pubkey = pubkeyProvider.getPubkey())
+        } else {
+            personalContactListState.value
         }
-        Log.i(TAG, "Return ${personalContactListState.value.size} pubkeys")
-        return personalContactListState.value
+    }
+
+    private fun updatePubkeyAndContactListFlow(newPubkey: String) {
+        personalPubkey = newPubkey
+        personalContactListState = contactDao.listContactPubkeysFlow(personalPubkey)
+            .firstThenDistinctDebounce(NORMAL_DEBOUNCE)
+            .stateIn(scope, SharingStarted.Eagerly, emptyList())
     }
 }

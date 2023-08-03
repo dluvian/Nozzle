@@ -17,14 +17,14 @@ interface ContactDao {
                 "FROM contact " +
                 "WHERE pubkey = :pubkey"
     )
-    fun listContactPubkeysFlow(pubkey: String): Flow<List<String>>
+    suspend fun listContactPubkeys(pubkey: String): List<String>
 
     @Query(
-        "SELECT * " +
+        "SELECT contactPubkey " +
                 "FROM contact " +
                 "WHERE pubkey = :pubkey"
     )
-    suspend fun listContacts(pubkey: String): List<ContactEntity>
+    fun listContactPubkeysFlow(pubkey: String): Flow<List<String>>
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insertOrIgnore(vararg contacts: ContactEntity)

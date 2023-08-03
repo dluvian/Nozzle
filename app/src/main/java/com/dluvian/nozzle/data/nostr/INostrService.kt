@@ -19,7 +19,7 @@ interface INostrService {
         relays: Collection<String>?
     ): Event
 
-    fun updateContactList(contacts: List<String>): Event
+    fun updateContactList(contactPubkeys: List<String>): Event
 
     fun subscribe(
         filters: List<Filter>,

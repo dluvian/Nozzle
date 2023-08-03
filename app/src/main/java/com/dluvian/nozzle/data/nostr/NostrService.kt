@@ -117,10 +117,10 @@ class NostrService(
         return event
     }
 
-    override fun updateContactList(contacts: List<String>): Event {
-        Log.i(TAG, "Update contact list with ${contacts.size} contacts")
+    override fun updateContactList(contactPubkeys: List<String>): Event {
+        Log.i(TAG, "Update contact list with ${contactPubkeys.size} contacts")
         val event = Event.createContactListEvent(
-            contacts = contacts,
+            contacts = contactPubkeys,
             keys = keyManager.getKeys(),
         )
         client.publishToRelays(event = event)
