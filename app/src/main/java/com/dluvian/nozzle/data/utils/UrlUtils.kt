@@ -23,7 +23,7 @@ object UrlUtils {
             ?: emptyList()
     }
 
-    fun cleanUrl(url: String?) = url?.trim()?.dropLastWhile { lastChar -> lastChar == '/' }
+    fun cleanUrl(url: String) = url.trim().dropLastWhile { lastChar -> lastChar == '/' }
 
     fun fixUrl(url: String): String {
         val trimmed = url.trim()

@@ -18,7 +18,7 @@ private const val TAG = "Event"
 typealias Tag = List<String>
 
 fun Tag.getNip10Marker() = this.getOrNull(3)
-fun Tag.getNip10RelayHint() = UrlUtils.cleanUrl(this.getOrNull(2))
+fun Tag.getNip10RelayHint() = this.getOrNull(2)?.let { UrlUtils.cleanUrl(it) }
 
 class Event(
     val id: String,
@@ -216,7 +216,7 @@ class Event(
         }.map {
             val restriction = it.getOrNull(2)
             Nip65Entry(
-                url = UrlUtils.cleanUrl(it[1]).orEmpty(),
+                url = UrlUtils.cleanUrl(it[1]),
                 isRead = restriction == null || restriction == "read",
                 isWrite = restriction == null || restriction == "write",
             )

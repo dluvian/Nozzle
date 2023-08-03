@@ -70,9 +70,8 @@ class Client {
         filters: List<Filter>,
         relays: Collection<String>? = null
     ): List<String> {
-        if (filters.isEmpty()) {
-            return emptyList()
-        }
+        if (filters.isEmpty()) return emptyList()
+
         val ids = mutableListOf<String>()
         relays?.let { addRelays(relays) }
         val filteredSockets = sockets.entries

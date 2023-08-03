@@ -36,7 +36,6 @@ class EventProcessor(
     private val scope = CoroutineScope(Dispatchers.IO)
     private val gson: Gson = GsonBuilder().disableHtmlEscaping().create()
     private val idCache = Collections.synchronizedSet(mutableSetOf<String>())
-    private val idRelayCache = Collections.synchronizedSet(mutableSetOf<String>())
 
     override fun process(event: Event, relayUrl: String?) {
         if (event.isPost()) {
@@ -63,10 +62,10 @@ class EventProcessor(
 
     private fun processPost(event: Event, relayUrl: String?) {
         if (!verify(event)) return
-        insertEventRelay(eventId = event.id, relayUrl = UrlUtils.cleanUrl(relayUrl))
+        insertEventRelay(eventId = event.id, relayUrl = relayUrl?.let { UrlUtils.cleanUrl(it) })
 
-        if (idCache.contains(event.id)) return
-        idCache.add(event.id)
+        val wasNew = idCache.add(event.id)
+        if (!wasNew) return
 
         scope.launch {
             postDao.insertIfNotPresent(PostEntity.fromEvent(event))
@@ -80,6 +79,7 @@ class EventProcessor(
         idCache.add(event.id)
 
         scope.launch {
+            // TODO: Without ContactEntity mapping
             val contacts = getContactPubkeys(event.tags).map { contactPubkey ->
                 ContactEntity(
                     pubkey = event.pubkey,
@@ -189,9 +189,8 @@ class EventProcessor(
     private fun insertEventRelay(eventId: String, relayUrl: String?) {
         if (relayUrl == null) return
 
-        val id = eventId + relayUrl
-        if (idRelayCache.contains(id)) return
-        idRelayCache.add(id)
+        val wasNew = idCache.add(eventId + relayUrl)
+        if (!wasNew) return
 
         scope.launch {
             eventRelayDao.insertOrIgnore(eventId = eventId, relayUrl = relayUrl)
