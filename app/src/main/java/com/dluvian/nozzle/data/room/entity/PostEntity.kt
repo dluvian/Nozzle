@@ -11,7 +11,7 @@ data class PostEntity(
     // TODO: Use @Embedded for composition
     val replyToId: String?,
     val replyRelayHint: String?,
-    val mentionedPostId: String?, // TODO: Multiple posts
+    val mentionedPostId: String?,
     val content: String,
     val createdAt: Long,
 ) {

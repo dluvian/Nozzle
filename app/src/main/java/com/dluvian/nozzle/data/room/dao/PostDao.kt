@@ -3,6 +3,7 @@ package com.dluvian.nozzle.data.room.dao
 import androidx.room.*
 import com.dluvian.nozzle.data.room.entity.PostEntity
 import com.dluvian.nozzle.model.MentionedPost
+import com.dluvian.nozzle.model.PostEntityExtended
 import kotlinx.coroutines.flow.Flow
 
 
@@ -97,6 +98,48 @@ interface PostDao {
     )
     suspend fun getPost(id: String): PostEntity?
 
+    @Query(
+        // SELECT PostEntity
+        "SELECT post1.*, " +
+                // SELECT likedByMe
+                "reaction.pubkey IS NOT NULL AS isLikedByMe, " +
+                // SELECT name
+                "profile1.name, " +
+                // SELECT pictureUrl
+                "profile1.picture AS pictureUrl, " +
+                // SELECT numOfReplies
+                "(SELECT COUNT(*) FROM post AS post2 WHERE post2.replyToId = post1.id) " +
+                "AS numOfReplies, " +
+                // SELECT replyToPubkey
+                "(SELECT profile2.pubkey " +
+                "FROM profile AS profile2 " +
+                "JOIN post AS post3 " +
+                "ON (profile2.pubkey = post3.pubkey AND post3.id = post1.replyToId)) " +
+                "AS replyToPubkey, " +
+                // SELECT replyToName
+                "(SELECT profile3.name " +
+                "FROM profile AS profile3 " +
+                "JOIN post AS post4 " +
+                "ON (profile3.pubkey = post4.pubkey AND post4.id = post1.replyToId)) " +
+                "AS replyToName " +
+                // PostEntity
+                "FROM post AS post1 " +
+                // Join my own reaction
+                "LEFT JOIN reaction " +
+                "ON (post1.id = reaction.eventId AND post1.pubkey = :personalPubkey) " +
+                // Join author
+                "LEFT JOIN profile AS profile1 " +
+                "ON post1.pubkey = profile1.pubkey " +
+                // Conditioned by ids
+                "WHERE post1.id IN (:postIds) " +
+                "ORDER BY createdAt DESC "
+    )
+    fun listExtendedPostsFlow(
+        postIds: Collection<String>,
+        personalPubkey: String
+    ): Flow<List<PostEntityExtended>>
+
+
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insertIfNotPresent(vararg post: PostEntity)
 
@@ -108,15 +151,6 @@ interface PostDao {
                 "OR (:replyToId IS NOT NULL AND id = :replyToId) " // Direct parent
     )
     suspend fun getThreadEnd(currentPostId: String, replyToId: String?): List<PostEntity>
-
-    @MapInfo(keyColumn = "replyToId", valueColumn = "replyCount")
-    @Query(
-        "SELECT replyToId, COUNT(*) AS replyCount " +
-                "FROM post " +
-                "WHERE replyToId IN (:postIds) " +
-                "GROUP BY replyToId"
-    )
-    fun getNumOfRepliesPerPostFlow(postIds: Collection<String>): Flow<Map<String, Int>>
 
     @Query(
         "SELECT pubkey " +

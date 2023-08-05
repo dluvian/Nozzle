@@ -23,14 +23,12 @@ import com.dluvian.nozzle.data.profileFollower.ProfileFollower
 import com.dluvian.nozzle.data.provider.IAutopilotProvider
 import com.dluvian.nozzle.data.provider.IContactListProvider
 import com.dluvian.nozzle.data.provider.IFeedProvider
-import com.dluvian.nozzle.data.provider.IInteractionStatsProvider
 import com.dluvian.nozzle.data.provider.IProfileWithAdditionalInfoProvider
 import com.dluvian.nozzle.data.provider.IRelayProvider
 import com.dluvian.nozzle.data.provider.IThreadProvider
 import com.dluvian.nozzle.data.provider.impl.AutopilotProvider
 import com.dluvian.nozzle.data.provider.impl.ContactListProvider
 import com.dluvian.nozzle.data.provider.impl.FeedProvider
-import com.dluvian.nozzle.data.provider.impl.InteractionStatsProvider
 import com.dluvian.nozzle.data.provider.impl.ProfileWithAdditionalInfoProvider
 import com.dluvian.nozzle.data.provider.impl.RelayProvider
 import com.dluvian.nozzle.data.provider.impl.ThreadProvider
@@ -101,18 +99,10 @@ class AppContainer(context: Context) {
         contactDao = roomDb.contactDao()
     )
 
-    private val interactionStatsProvider: IInteractionStatsProvider = InteractionStatsProvider(
-        pubkeyProvider = keyManager,
-        reactionDao = roomDb.reactionDao(),
-        postDao = roomDb.postDao()
-    )
-
     private val postMapper: IPostMapper = PostMapper(
-        interactionStatsProvider = interactionStatsProvider,
         pubkeyProvider = keyManager,
         contactListProvider = contactListProvider,
         postDao = roomDb.postDao(),
-        profileDao = roomDb.profileDao(),
         eventRelayDao = roomDb.eventRelayDao(),
         contactDao = roomDb.contactDao()
     )
