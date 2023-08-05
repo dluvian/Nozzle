@@ -8,7 +8,6 @@ import com.dluvian.nozzle.model.nostr.Event
 data class PostEntity(
     @PrimaryKey(autoGenerate = false) val id: String,
     val pubkey: String,
-    // TODO: Use @Embedded for composition
     val replyToId: String?,
     val replyRelayHint: String?,
     val mentionedPostId: String?,

@@ -240,7 +240,7 @@ class FeedViewModel(
             waitForSubscription = WAIT_TIME,
         ).stateIn(
             viewModelScope,
-            SharingStarted.WhileSubscribed(),
+            SharingStarted.Eagerly,
             feedState.value,
         )
         delay(WAIT_TIME)

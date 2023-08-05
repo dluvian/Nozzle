@@ -73,6 +73,10 @@ class NostrSubscriber(
         Log.i(TAG, "Subscribe to additional posts data")
         if (posts.isEmpty()) return emptyList()
 
+        // TODO: First referenced posts, then referenced authors.
+        // At the same time does not make sense bc we don't know which pubkeys to sub yet
+        // TODO: Show shortened npub after referenced post is found
+
         val postIds = posts.map { it.id }
         val followedAuthorPubkeys = posts.filter { it.isFollowedByMe }.map { it.pubkey }.distinct()
         val referencedPostIds = listReferencedPostIds(posts)

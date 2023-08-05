@@ -23,6 +23,7 @@ class PostMapper(
 ) : IPostMapper {
 
     // TODO: Simplify with SQL joins
+    // TODO: Id input instead of post entities
 
     override suspend fun mapToPostsWithMetaFlow(posts: List<PostEntity>): Flow<List<PostWithMeta>> {
         if (posts.isEmpty()) return flow { emit(emptyList()) }
@@ -37,6 +38,7 @@ class PostMapper(
 
         val contactPubkeysFlow = contactListProvider.getPersonalContactPubkeysFlow()
 
+        // TODO: In initial SQL query possible?
         val relaysFlow = eventRelayDao.getRelaysPerEventIdMapFlow(postIds)
 
 

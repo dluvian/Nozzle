@@ -9,8 +9,8 @@ data class PostWithMeta(
     val pubkey: String,
     val createdAt: Long,
     val content: String,
-    val name: String, // TODO: Nullable
-    val pictureUrl: String, // TODO: Nullable
+    val name: String,
+    val pictureUrl: String,
     val isLikedByMe: Boolean,
     val isFollowedByMe: Boolean,
     val isOneself: Boolean,

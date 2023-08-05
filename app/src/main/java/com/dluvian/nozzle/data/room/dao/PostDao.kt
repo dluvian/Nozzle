@@ -102,7 +102,10 @@ interface PostDao {
         // SELECT PostEntity
         "SELECT post1.*, " +
                 // SELECT likedByMe
-                "reaction.pubkey IS NOT NULL AS isLikedByMe, " +
+                "(SELECT eventId IS NOT NULL " +
+                "FROM reaction " +
+                "WHERE eventId = post1.id AND pubkey = :personalPubkey) " +
+                "AS isLikedByMe, " +
                 // SELECT name
                 "profile1.name, " +
                 // SELECT pictureUrl
@@ -116,7 +119,7 @@ interface PostDao {
                 "JOIN post AS post3 " +
                 "ON (profile2.pubkey = post3.pubkey AND post3.id = post1.replyToId)) " +
                 "AS replyToPubkey, " +
-                // SELECT replyToName
+                // SELECT replyToName // TODO: replyToPubkey + replyToName as embedded ?
                 "(SELECT profile3.name " +
                 "FROM profile AS profile3 " +
                 "JOIN post AS post4 " +
@@ -124,9 +127,6 @@ interface PostDao {
                 "AS replyToName " +
                 // PostEntity
                 "FROM post AS post1 " +
-                // Join my own reaction
-                "LEFT JOIN reaction " +
-                "ON (post1.id = reaction.eventId AND post1.pubkey = :personalPubkey) " +
                 // Join author
                 "LEFT JOIN profile AS profile1 " +
                 "ON post1.pubkey = profile1.pubkey " +
