@@ -78,11 +78,9 @@ class NostrSubscriber(
         // TODO: Show shortened npub after referenced post is found
 
         val postIds = posts.map { it.id }
-        val followedAuthorPubkeys = posts.filter { it.isFollowedByMe }.map { it.pubkey }.distinct()
         val referencedPostIds = listReferencedPostIds(posts)
         val referencedPubkeys = mutableSetOf<String>()
         referencedPubkeys.addAll(listReferencedPubkeys(posts))
-        referencedPubkeys.addAll(postDao.listAuthorPubkeys(referencedPostIds))
 
         val filters = mutableListOf<Filter>()
         filters.add(
@@ -93,12 +91,14 @@ class NostrSubscriber(
         )
         filters.add(Filter.createPostFilter(e = postIds))
         if (referencedPostIds.isNotEmpty()) {
+            referencedPubkeys.addAll(postDao.listAuthorPubkeys(referencedPostIds))
             filters.add(Filter.createPostFilter(ids = referencedPostIds))
         }
         if (referencedPubkeys.isNotEmpty()) {
             filters.add(Filter.createProfileFilter(pubkeys = referencedPubkeys.toList()))
         }
-        // TODO: Do not resub same contact lists all the time
+
+        val followedAuthorPubkeys = posts.filter { it.isFollowedByMe }.map { it.pubkey }.distinct()
         if (followedAuthorPubkeys.isNotEmpty()) {
             filters.add(Filter.createContactListFilter(pubkeys = followedAuthorPubkeys))
         }

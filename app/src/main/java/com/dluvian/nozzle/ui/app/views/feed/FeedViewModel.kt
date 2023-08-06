@@ -288,11 +288,29 @@ class FeedViewModel(
     }
 
     private suspend fun renewAdditionalDataSubscription() {
+        val postsBefore = feedState.value.takeLast(DB_BATCH_SIZE)
         nostrSubscriber.unsubscribeAdditionalPostsData()
         nostrSubscriber.subscribeToAdditionalPostsData(
-            posts = feedState.value.takeLast(DB_BATCH_SIZE),
+            posts = postsBefore,
             relays = getSelectedRelays()
         )
+
+        // TODO: Retryer that resubs unknown stuff. Use here, profile page and thread view
+        delay(2 * WAIT_TIME)
+        val postsWithUnknowns = postsBefore.filter {
+            (it.name.isEmpty() && it.pictureUrl.isEmpty()) ||
+                    (it.replyToPubkey?.isEmpty() ?: false) ||
+                    ((it.mentionedPost != null) && it.mentionedPost.pubkey.isEmpty())
+        }
+        if (postsWithUnknowns.isNotEmpty()) {
+            Log.i(TAG, "Resubscribe missing posts and profiles of ${postsWithUnknowns.size} posts")
+            nostrSubscriber.unsubscribeAdditionalPostsData()
+            nostrSubscriber.subscribeToAdditionalPostsData(
+                posts = postsWithUnknowns,
+                relays = null
+            )
+        }
+
     }
 
     private fun setUIRefresh(value: Boolean) {
