@@ -1,6 +1,5 @@
 package com.dluvian.nozzle.data.mapper
 
-import android.util.Log
 import com.dluvian.nozzle.data.provider.IContactListProvider
 import com.dluvian.nozzle.data.provider.IPubkeyProvider
 import com.dluvian.nozzle.data.room.dao.ContactDao
@@ -66,8 +65,6 @@ class PostMapper(
             mentionedPostsFlow,
             trustScorePerPubkeyFlow,
         ) { base, mentionedPosts, trustScore ->
-            Log.i("LOLOL", "2")
-
             base.map {
                 it.copy(
                     mentionedPost = it.mentionedPost?.id?.let { mentionedPostId ->
@@ -91,7 +88,6 @@ class PostMapper(
             contactPubkeysFlow,
             relaysFlow
         ) { extended, contacts, relays ->
-            Log.i("LOLOL", "1")
             posts.map {
                 val extendedPost = extended.find { ext -> ext.postEntity.id == it.id }
                 PostWithMeta(

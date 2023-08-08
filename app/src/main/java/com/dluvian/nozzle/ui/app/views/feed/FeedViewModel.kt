@@ -288,20 +288,22 @@ class FeedViewModel(
     }
 
     private suspend fun renewAdditionalDataSubscription() {
-        val postsBefore = feedState.value.takeLast(DB_BATCH_SIZE)
         nostrSubscriber.unsubscribeAdditionalPostsData()
         nostrSubscriber.subscribeToAdditionalPostsData(
-            posts = postsBefore,
+            posts = feedState.value.takeLast(DB_BATCH_SIZE),
             relays = getSelectedRelays()
         )
 
         // TODO: Retryer that resubs unknown stuff. Use here, profile page and thread view
+        // TODO: Resub only what does not exist. Reduce unnecessary data traffic
+        // TODO: Filter conditions as helper functions
         delay(2 * WAIT_TIME)
-        val postsWithUnknowns = postsBefore.filter {
-            (it.name.isEmpty() && it.pictureUrl.isEmpty()) ||
-                    (it.replyToPubkey?.isEmpty() ?: false) ||
-                    ((it.mentionedPost != null) && it.mentionedPost.pubkey.isEmpty())
-        }
+        val postsWithUnknowns = feedState.value
+            .takeLast(2 * DB_BATCH_SIZE)
+            .filter {
+                (it.replyToId != null && (it.replyToPubkey.isNullOrEmpty() || it.replyToName.isNullOrEmpty())) ||
+                        (it.mentionedPost?.pubkey?.isEmpty() ?: false)
+            }
         if (postsWithUnknowns.isNotEmpty()) {
             Log.i(TAG, "Resubscribe missing posts and profiles of ${postsWithUnknowns.size} posts")
             nostrSubscriber.unsubscribeAdditionalPostsData()
