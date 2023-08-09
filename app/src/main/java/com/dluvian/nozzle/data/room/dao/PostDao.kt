@@ -2,6 +2,7 @@ package com.dluvian.nozzle.data.room.dao
 
 import androidx.room.*
 import com.dluvian.nozzle.data.room.entity.PostEntity
+import com.dluvian.nozzle.data.room.helper.IdAndPubkey
 import com.dluvian.nozzle.model.MentionedPost
 import com.dluvian.nozzle.model.PostEntityExtended
 import kotlinx.coroutines.flow.Flow
@@ -14,7 +15,7 @@ interface PostDao {
      * Sorted from newest to oldest
      */
     @Query(
-        "SELECT * " +
+        "SELECT post.id, post.pubkey " +
                 "FROM post " +
                 "WHERE ((:isReplies AND replyToId IS NOT NULL) OR (:isPosts AND replyToId IS NULL)) " +
                 "AND pubkey IN (:authorPubkeys) " +
@@ -23,20 +24,20 @@ interface PostDao {
                 "ORDER BY createdAt DESC " +
                 "LIMIT :limit"
     )
-    suspend fun getAuthoredFeedByRelays(
+    suspend fun getAuthoredFeedIdsByRelays(
         isPosts: Boolean,
         isReplies: Boolean,
         authorPubkeys: Collection<String>,
         relays: Collection<String>,
         until: Long,
         limit: Int,
-    ): List<PostEntity>
+    ): List<IdAndPubkey>
 
     /**
      * Sorted from newest to oldest
      */
     @Query(
-        "SELECT * " +
+        "SELECT post.id, post.pubkey " +
                 "FROM post " +
                 "WHERE ((:isReplies AND replyToId IS NOT NULL) OR (:isPosts AND replyToId IS NULL)) " +
                 "AND pubkey IN (:authorPubkeys) " +
@@ -44,19 +45,19 @@ interface PostDao {
                 "ORDER BY createdAt DESC " +
                 "LIMIT :limit"
     )
-    suspend fun getAuthoredFeed(
+    suspend fun getAuthoredFeedIds(
         isPosts: Boolean,
         isReplies: Boolean,
         authorPubkeys: Collection<String>,
         until: Long,
         limit: Int,
-    ): List<PostEntity>
+    ): List<IdAndPubkey>
 
     /**
      * Sorted from newest to oldest
      */
     @Query(
-        "SELECT * " +
+        "SELECT post.id, post.pubkey " +
                 "FROM post " +
                 "WHERE ((:isReplies AND replyToId IS NOT NULL) OR (:isPosts AND replyToId IS NULL)) " +
                 "AND id IN (SELECT DISTINCT eventId FROM eventRelay WHERE relayUrl IN (:relays)) " +
@@ -64,31 +65,31 @@ interface PostDao {
                 "ORDER BY createdAt DESC " +
                 "LIMIT :limit"
     )
-    suspend fun getGlobalFeedByRelays(
+    suspend fun getGlobalFeedIdsByRelays(
         isPosts: Boolean,
         isReplies: Boolean,
         relays: Collection<String>,
         until: Long,
         limit: Int,
-    ): List<PostEntity>
+    ): List<IdAndPubkey>
 
     /**
      * Sorted from newest to oldest
      */
     @Query(
-        "SELECT * " +
+        "SELECT post.id, post.pubkey " +
                 "FROM post " +
                 "WHERE ((:isReplies AND replyToId IS NOT NULL) OR (:isPosts AND replyToId IS NULL)) " +
                 "AND createdAt < :until " +
                 "ORDER BY createdAt DESC " +
                 "LIMIT :limit"
     )
-    suspend fun getGlobalFeed(
+    suspend fun getGlobalFeedIds(
         isPosts: Boolean,
         isReplies: Boolean,
         until: Long,
         limit: Int,
-    ): List<PostEntity>
+    ): List<IdAndPubkey>
 
 
     @Query(
@@ -100,38 +101,49 @@ interface PostDao {
 
     @Query(
         // SELECT PostEntity
-        "SELECT post1.*, " +
+        "SELECT mainPost.*, " +
+                // SELECT mentioned post
+                "mentionedPost.pubkey AS mentionedPostPubkey, " +
+                "mentionedPost.content AS mentionedPostContent, " +
+                "mentionedPost.createdAt AS mentionedPostCreatedAt, " +
+                "mentionedProfile.name AS mentionedPostName, " +
+                "mentionedProfile.picture AS mentionedPostPicture, " +
                 // SELECT likedByMe
                 "(SELECT eventId IS NOT NULL " +
                 "FROM reaction " +
-                "WHERE eventId = post1.id AND pubkey = :personalPubkey) " +
+                "WHERE eventId = mainPost.id AND pubkey = :personalPubkey) " +
                 "AS isLikedByMe, " +
-                // SELECT name
-                "profile1.name, " +
-                // SELECT pictureUrl
-                "profile1.picture AS pictureUrl, " +
+                // SELECT name and picture
+                "mainProfile.name, " +
+                "mainProfile.picture AS pictureUrl, " +
                 // SELECT numOfReplies
-                "(SELECT COUNT(*) FROM post AS post2 WHERE post2.replyToId = post1.id) " +
+                "(SELECT COUNT(*) FROM post WHERE post.replyToId = mainPost.id) " +
                 "AS numOfReplies, " +
                 // SELECT replyToPubkey
-                "(SELECT profile2.pubkey " +
-                "FROM profile AS profile2 " +
-                "JOIN post AS post3 " +
-                "ON (profile2.pubkey = post3.pubkey AND post3.id = post1.replyToId)) " +
+                "(SELECT profile.pubkey " +
+                "FROM profile " +
+                "JOIN post " +
+                "ON (profile.pubkey = post.pubkey AND post.id = mainPost.replyToId)) " +
                 "AS replyToPubkey, " +
                 // SELECT replyToName // TODO: replyToPubkey + replyToName as embedded ?
-                "(SELECT profile3.name " +
-                "FROM profile AS profile3 " +
-                "JOIN post AS post4 " +
-                "ON (profile3.pubkey = post4.pubkey AND post4.id = post1.replyToId)) " +
+                "(SELECT profile.name " +
+                "FROM profile " +
+                "JOIN post " +
+                "ON (profile.pubkey = post.pubkey AND post.id = mainPost.replyToId)) " +
                 "AS replyToName " +
                 // PostEntity
-                "FROM post AS post1 " +
+                "FROM post AS mainPost " +
                 // Join author
-                "LEFT JOIN profile AS profile1 " +
-                "ON post1.pubkey = profile1.pubkey " +
+                "LEFT JOIN profile AS mainProfile " +
+                "ON mainPost.pubkey = mainProfile.pubkey " +
+                // Join mentioned post
+                "LEFT JOIN post AS mentionedPost " +
+                "ON mainPost.mentionedPostId = mentionedPost.id " +
+                // Join profile of mentioned post author
+                "LEFT JOIN profile AS mentionedProfile " +
+                "ON mentionedPost.pubkey = mentionedProfile.pubkey " +
                 // Conditioned by ids
-                "WHERE post1.id IN (:postIds) " +
+                "WHERE mainPost.id IN (:postIds) " +
                 "ORDER BY createdAt DESC "
     )
     fun listExtendedPostsFlow(

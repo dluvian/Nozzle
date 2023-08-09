@@ -7,6 +7,8 @@ import com.dluvian.nozzle.data.utils.NORMAL_DEBOUNCE
 import com.dluvian.nozzle.data.utils.firstThenDistinctDebounce
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.flow
 
 
 @Dao
@@ -118,7 +120,7 @@ interface ContactDao {
     )
     fun getRawTrustScorePerPubkeyFlow(
         pubkey: String,
-        contactPubkeys: List<String>
+        contactPubkeys: Collection<String>
     ): Flow<Map<String, Int>>
 
     @Query(
@@ -150,14 +152,15 @@ interface ContactDao {
 
     fun getTrustScorePerPubkeyFlow(
         pubkey: String,
-        contactPubkeys: List<String>
+        contactPubkeys: Collection<String>
     ): Flow<Map<String, Float>> {
-        val trustScoreDividerFlow = getTrustScoreDividerFlow(pubkey)
-            .firstThenDistinctDebounce(NORMAL_DEBOUNCE)
+        if (contactPubkeys.isEmpty()) return flow { emit(emptyMap()) }
+
+        val trustScoreDividerFlow = getTrustScoreDividerFlow(pubkey).distinctUntilChanged()
         val rawTrustScorePerPubkeyFlow = getRawTrustScorePerPubkeyFlow(
             pubkey = pubkey,
             contactPubkeys = contactPubkeys
-        ).firstThenDistinctDebounce(NORMAL_DEBOUNCE)
+        ).distinctUntilChanged()
         return trustScoreDividerFlow
             .combine(rawTrustScorePerPubkeyFlow) { divider, rawTrustScorePerPubkey ->
                 rawTrustScorePerPubkey.mapValues {
@@ -166,7 +169,7 @@ interface ContactDao {
                         rawTrustScore = it.value
                     )
                 }
-            }
+            }.distinctUntilChanged()
     }
 
     private fun getTrustScorePercentage(numOfFollowing: Int, rawTrustScore: Int): Float {

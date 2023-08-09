@@ -72,21 +72,30 @@ class ThreadProvider(
         return previous
     }
 
+    // TODO: Input IDs instead of Entities
     private suspend fun getMappedThreadFlow(
         current: PostEntity,
         previous: List<PostEntity>,
         replies: List<PostEntity>
     ): Flow<PostThread> {
         val relevantPosts = listOf(listOf(current), previous, replies).flatten()
-        return postMapper.mapToPostsWithMetaFlow(relevantPosts)
-            .map {
+        return postMapper.mapToPostsWithMetaFlow(
+            postIds = relevantPosts.map { it.id },
+            authorPubkeys = relevantPosts.map { it.pubkey }.distinct()
+        )
+            .map { unsortedPosts ->
                 PostThread(
-                    current = it.first(),
-                    previous = if (previous.isNotEmpty()) it.subList(1, previous.size + 1)
-                    else emptyList(),
+                    current = unsortedPosts.find {
+                        it.id == current.id
+                    },
+                    previous = unsortedPosts.filter { unsorted ->
+                        previous.any { it.id == unsorted.id }
+                    },
                     replies = sortReplies(
-                        replies = it.takeLast(replies.size),
-                        originalAuthor = it.first().pubkey
+                        replies = unsortedPosts.filter { unsorted ->
+                            replies.any { it.id == unsorted.id }
+                        },
+                        originalAuthor = current.pubkey
                     )
                 )
             }

@@ -5,12 +5,14 @@ import com.dluvian.nozzle.data.provider.IPubkeyProvider
 import com.dluvian.nozzle.data.room.dao.ContactDao
 import com.dluvian.nozzle.data.room.dao.EventRelayDao
 import com.dluvian.nozzle.data.room.dao.PostDao
-import com.dluvian.nozzle.data.room.entity.PostEntity
+import com.dluvian.nozzle.data.utils.NORMAL_DEBOUNCE
+import com.dluvian.nozzle.data.utils.firstThenDistinctDebounce
 import com.dluvian.nozzle.model.MentionedPost
 import com.dluvian.nozzle.model.PostEntityExtended
 import com.dluvian.nozzle.model.PostWithMeta
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flow
 
 class PostMapper(
@@ -20,109 +22,85 @@ class PostMapper(
     private val eventRelayDao: EventRelayDao,
     private val contactDao: ContactDao,
 ) : IPostMapper {
+    override suspend fun mapToPostsWithMetaFlow(
+        postIds: Collection<String>,
+        authorPubkeys: Collection<String>,
+    ): Flow<List<PostWithMeta>> {
+        if (postIds.isEmpty()) return flow { emit(emptyList()) }
 
-    // TODO: Simplify with SQL joins
-    // TODO: Id input instead of post entities
+        val extendedPosts = postDao
+            .listExtendedPostsFlow(postIds = postIds, personalPubkey = pubkeyProvider.getPubkey())
+            .distinctUntilChanged()
 
-    override suspend fun mapToPostsWithMetaFlow(posts: List<PostEntity>): Flow<List<PostWithMeta>> {
-        if (posts.isEmpty()) return flow { emit(emptyList()) }
-
-        val postIds = posts.map { it.id }
-        val pubkeys = posts.map { it.pubkey }
-
-        val extendedPosts = postDao.listExtendedPostsFlow(
-            postIds = postIds,
-            personalPubkey = pubkeyProvider.getPubkey()
-        )
-
-        val contactPubkeysFlow = contactListProvider.getPersonalContactPubkeysFlow()
+        val contactPubkeysFlow = contactListProvider
+            .getPersonalContactPubkeysFlow()
+            .distinctUntilChanged()
 
         // TODO: In initial SQL query possible?
-        val relaysFlow = eventRelayDao.getRelaysPerEventIdMapFlow(postIds)
+        val relaysFlow = eventRelayDao
+            .getRelaysPerEventIdMapFlow(postIds)
+            .firstThenDistinctDebounce(NORMAL_DEBOUNCE)
 
+        // No debounce because of immediate user interaction
+        val trustScorePerPubkeyFlow = contactDao
+            .getTrustScorePerPubkeyFlow(
+                pubkey = pubkeyProvider.getPubkey(),
+                contactPubkeys = authorPubkeys
+            )
+            .distinctUntilChanged()
 
-        // Short debounce because of immediate user interaction
-        val trustScorePerPubkeyFlow = contactDao.getTrustScorePerPubkeyFlow(
-            pubkey = pubkeyProvider.getPubkey(),
-            contactPubkeys = pubkeys
-        )
-
-        // TODO: In intitial SQL Query
-        val mentionedPostIds = posts.mapNotNull { it.mentionedPostId }
-        val mentionedPostsFlow =
-            if (mentionedPostIds.isEmpty()) flow { emit(emptyMap()) }
-            else postDao.getMentionedPostsMapFlow(postIds = mentionedPostIds)
-
-        val baseFlow = getBaseFlow(
-            posts = posts,
+        return getFinalFlow(
             extendedPostsFlow = extendedPosts,
             contactPubkeysFlow = contactPubkeysFlow,
-            relaysFlow = relaysFlow
-        )
-
-        return combine(
-            baseFlow,
-            mentionedPostsFlow,
-            trustScorePerPubkeyFlow,
-        ) { base, mentionedPosts, trustScore ->
-            base.map {
-                it.copy(
-                    mentionedPost = it.mentionedPost?.id?.let { mentionedPostId ->
-                        mentionedPosts[mentionedPostId]
-                    },
-                    trustScore = if (isOneself(it.pubkey)) null
-                    else trustScore[it.pubkey]
-                )
-            }
-        }
+            relaysFlow = relaysFlow,
+            trustScorePerPubkeyFlow = trustScorePerPubkeyFlow,
+        ).distinctUntilChanged()
     }
 
-    private fun getBaseFlow(
-        posts: List<PostEntity>,
+    private fun getFinalFlow(
         extendedPostsFlow: Flow<List<PostEntityExtended>>,
         contactPubkeysFlow: Flow<List<String>>,
-        relaysFlow: Flow<Map<String, List<String>>>
+        relaysFlow: Flow<Map<String, List<String>>>,
+        trustScorePerPubkeyFlow: Flow<Map<String, Float>>
     ): Flow<List<PostWithMeta>> {
         return combine(
             extendedPostsFlow,
             contactPubkeysFlow,
-            relaysFlow
-        ) { extended, contacts, relays ->
-            posts.map {
-                val extendedPost = extended.find { ext -> ext.postEntity.id == it.id }
+            relaysFlow,
+            trustScorePerPubkeyFlow
+        ) { extended, contacts, relays, trustScore ->
+            extended.map {
+                val pubkey = it.postEntity.pubkey
+                val isOneself = pubkeyProvider.isOneself(pubkey)
                 PostWithMeta(
-                    id = it.id,
-                    replyToId = it.replyToId,
-                    replyToName = extendedPost?.replyToName,
-                    replyToPubkey = extendedPost?.replyToPubkey,
-                    replyRelayHint = it.replyRelayHint,
-                    pubkey = it.pubkey,
-                    createdAt = it.createdAt,
-                    content = it.content,
-                    name = extendedPost?.name.orEmpty(),
-                    pictureUrl = extendedPost?.pictureUrl.orEmpty(),
-                    isLikedByMe = extendedPost?.isLikedByMe ?: false,
-                    isFollowedByMe = if (isOneself(it.pubkey)) false
-                    else contacts.contains(it.pubkey),
-                    isOneself = isOneself(it.pubkey),
-                    trustScore = if (isOneself(it.pubkey)) null else 0f,
-                    numOfReplies = extendedPost?.numOfReplies ?: 0,
-                    relays = relays[it.id].orEmpty(),
-                    mentionedPost = it.mentionedPostId?.let { mentionedId ->
+                    id = it.postEntity.id,
+                    pubkey = pubkey,
+                    createdAt = it.postEntity.createdAt,
+                    content = it.postEntity.content,
+                    name = it.name.orEmpty(),
+                    pictureUrl = it.pictureUrl.orEmpty(),
+                    replyToId = it.postEntity.replyToId,
+                    replyToName = it.replyToName,
+                    replyToPubkey = it.replyToPubkey,
+                    replyRelayHint = it.postEntity.replyRelayHint,
+                    isLikedByMe = it.isLikedByMe,
+                    numOfReplies = it.numOfReplies,
+                    relays = relays[it.postEntity.id].orEmpty(),
+                    isOneself = isOneself,
+                    isFollowedByMe = if (isOneself) false else contacts.contains(pubkey),
+                    trustScore = if (isOneself) null else trustScore[pubkey],
+                    mentionedPost = it.postEntity.mentionedPostId?.let { mentionedPostId ->
                         MentionedPost(
-                            id = mentionedId,
-                            pubkey = "",
-                            content = "",
-                            name = "",
-                            picture = "",
-                            createdAt = 0,
+                            id = mentionedPostId,
+                            pubkey = it.mentionedPostPubkey.orEmpty(),
+                            content = it.mentionedPostContent.orEmpty(),
+                            name = it.mentionedPostName.orEmpty(),
+                            picture = it.mentionedPostPicture.orEmpty(),
+                            createdAt = it.mentionedPostCreatedAt ?: 0L,
                         )
-                    },
+                    }
                 )
             }
         }
     }
-
-    // TODO: Move to pubkey provider
-    private fun isOneself(pubkey: String) = pubkey == pubkeyProvider.getPubkey()
 }
