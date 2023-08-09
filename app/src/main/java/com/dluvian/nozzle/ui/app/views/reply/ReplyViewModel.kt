@@ -118,7 +118,11 @@ class ReplyViewModel(
                     Log.i(TAG, "Send reply to ${state.recipientName} ${state.pubkey}")
                     val replyTo = ReplyTo(
                         replyTo = parentPost.id,
-                        relayUrl = parentPost.relays.randomOrNull().orEmpty(),
+                        relayUrl = parentPost.relays
+                            .filter { relayProvider.getWriteRelays().contains(it) }
+                            .randomOrNull()
+                            ?: parentPost.relays.randomOrNull()
+                            ?: "",
                     )
                     val selectedRelays = state.relaySelection
                         .filter { it.isActive }

@@ -86,7 +86,7 @@ class ThreadProvider(
             .map { unsortedPosts ->
                 PostThread(
                     current = unsortedPosts.find {
-                        it.id == current.id
+                        current.id == it.id
                     },
                     previous = unsortedPosts.filter { unsorted ->
                         previous.any { it.id == unsorted.id }
