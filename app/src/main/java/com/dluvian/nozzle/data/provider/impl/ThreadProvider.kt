@@ -1,16 +1,19 @@
 package com.dluvian.nozzle.data.provider.impl
 
+import android.util.Log
 import com.dluvian.nozzle.data.mapper.IPostMapper
 import com.dluvian.nozzle.data.nostr.INostrSubscriber
 import com.dluvian.nozzle.data.provider.IThreadProvider
 import com.dluvian.nozzle.data.room.dao.PostDao
-import com.dluvian.nozzle.data.room.entity.PostEntity
+import com.dluvian.nozzle.data.room.helper.IdAndReplyToId
 import com.dluvian.nozzle.model.PostThread
 import com.dluvian.nozzle.model.PostWithMeta
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
+
+private const val TAG = "ThreadProvider"
 
 class ThreadProvider(
     private val postMapper: IPostMapper,
@@ -31,16 +34,18 @@ class ThreadProvider(
         // TODO: Use a channel
         waitForSubscription?.let { delay(it) }
 
-        val threadEnd = postDao.getThreadEnd(
-            currentPostId = currentPostId,
-            replyToId = replyToId,
-        )
-        val current = threadEnd.find { it.id == currentPostId }
+        val replyContextList = postDao.listReplyContext(currentPostId = currentPostId)
+        val current = replyContextList.find { it.id == currentPostId }
             ?: return flow { emit(PostThread.createEmpty()) }
-        val replies = threadEnd.filter { it.replyToId == current.id }
-        val previous = listPrevious(current)
+        val replies = replyContextList.filter { it.replyToId == current.id }
+        val previous = listPrevious(currentId = current.id, replyToId = current.replyToId)
 
-        return getMappedThreadFlow(current, previous, replies)
+        return getMappedThreadFlow(
+            currentId = current.id,
+            previousIds = previous,
+            replyIds = replies.map { it.id },
+            authorPubkeys = replyContextList.map { it.pubkey }.distinct()
+        )
     }
 
     private fun renewThreadSubscription(
@@ -56,60 +61,68 @@ class ThreadProvider(
         )
     }
 
-    private suspend fun listPrevious(current: PostEntity): List<PostEntity> {
-        if (current.replyToId == null) return emptyList()
+    private suspend fun listPrevious(currentId: String, replyToId: String?): List<String> {
+        if (replyToId == null) return emptyList()
 
-        val previous = mutableListOf(current)
+        val first = IdAndReplyToId(id = currentId, replyToId = replyToId)
+        val previous = mutableListOf(first)
         while (previous.last().replyToId != null) {
-            val replyToId = previous.last().replyToId ?: break
-            val previousPost = postDao.getPost(replyToId) ?: break
-            previous.add(previousPost)
+            val currentReplyToId = previous.last().replyToId ?: break
+            val previousReplyToId = postDao.getReplyToId(id = currentReplyToId)
+            val mapped = IdAndReplyToId(id = currentReplyToId, replyToId = previousReplyToId)
+            previous.add(mapped)
         }
 
         previous.reverse() // Root first
         previous.removeLast() // Removing 'current'
 
-        return previous
+        return previous.map { it.id }
     }
 
-    // TODO: Input IDs instead of Entities
     private suspend fun getMappedThreadFlow(
-        current: PostEntity,
-        previous: List<PostEntity>,
-        replies: List<PostEntity>
+        currentId: String,
+        previousIds: List<String>, // Order is important
+        replyIds: List<String>,
+        authorPubkeys: Collection<String>,
     ): Flow<PostThread> {
-        val relevantPosts = listOf(listOf(current), previous, replies).flatten()
+        val relevantPostIds = listOf(listOf(currentId), previousIds, replyIds).flatten()
         return postMapper.mapToPostsWithMetaFlow(
-            postIds = relevantPosts.map { it.id },
-            authorPubkeys = relevantPosts.map { it.pubkey }.distinct()
+            postIds = relevantPostIds,
+            authorPubkeys = authorPubkeys
         )
             .map { unsortedPosts ->
+                val currentPost = unsortedPosts.find { currentId == it.id }
                 PostThread(
-                    current = unsortedPosts.find {
-                        current.id == it.id
-                    },
-                    previous = unsortedPosts.filter { unsorted ->
-                        previous.any { it.id == unsorted.id }
-                    },
+                    current = currentPost,
+                    previous = unsortedPosts
+                        .filter { unsorted -> previousIds.any { it == unsorted.id } }
+                        .sortedBy { unsorted ->
+                            previousIds.indexOfFirst { previousId ->
+                                unsorted.id == previousId
+                            }
+                        },
                     replies = sortReplies(
                         replies = unsortedPosts.filter { unsorted ->
-                            replies.any { it.id == unsorted.id }
+                            replyIds.any { replyId -> replyId == unsorted.id }
                         },
-                        originalAuthor = current.pubkey
+                        originalAuthor = currentPost?.pubkey.orEmpty().ifEmpty {
+                            Log.w(TAG, "Failed to find current post in thread")
+                            ""
+                        }
                     )
                 )
             }
     }
 
     private fun sortReplies(
-        replies: List<PostWithMeta>,
+        replies: Collection<PostWithMeta>,
         originalAuthor: String
     ): List<PostWithMeta> {
-        return replies.sortedByDescending { reply ->
-            if (reply.pubkey == originalAuthor) 4
-            else if (reply.isFollowedByMe || reply.isOneself) 3
-            else if ((reply.trustScore ?: 0f) > 0f) 2
-            else 1
+        return replies.sortedBy { reply ->
+            if (reply.pubkey == originalAuthor) 1
+            else if (reply.isFollowedByMe || reply.isOneself) 2
+            else if ((reply.trustScore ?: 0f) > 0f) 3
+            else 4
         }
     }
 }

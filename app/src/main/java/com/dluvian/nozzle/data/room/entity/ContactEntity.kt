@@ -8,3 +8,4 @@ data class ContactEntity(
     val contactPubkey: String,
     val createdAt: Long,
 )
+// TODO: Add relayUrl again. Autopilot could use hint from contactlist when no event relay found

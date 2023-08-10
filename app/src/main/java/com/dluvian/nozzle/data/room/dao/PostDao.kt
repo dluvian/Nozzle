@@ -3,6 +3,7 @@ package com.dluvian.nozzle.data.room.dao
 import androidx.room.*
 import com.dluvian.nozzle.data.room.entity.PostEntity
 import com.dluvian.nozzle.data.room.helper.IdAndPubkey
+import com.dluvian.nozzle.data.room.helper.ReplyContext
 import com.dluvian.nozzle.model.MentionedPost
 import com.dluvian.nozzle.model.PostEntityExtended
 import kotlinx.coroutines.flow.Flow
@@ -93,11 +94,11 @@ interface PostDao {
 
 
     @Query(
-        "SELECT * " +
+        "SELECT post.replyToId " +
                 "FROM post " +
                 "WHERE id = :id "
     )
-    suspend fun getPost(id: String): PostEntity?
+    suspend fun getReplyToId(id: String): String?
 
     @Query(
         // SELECT PostEntity
@@ -156,13 +157,12 @@ interface PostDao {
     suspend fun insertIfNotPresent(vararg post: PostEntity)
 
     @Query(
-        "SELECT * " +
+        "SELECT post.id, post.replyToId, post.pubkey " +
                 "FROM post " +
                 "WHERE replyToId = :currentPostId " + // All replies to current post
-                "OR id = :currentPostId " + // Current post
-                "OR (:replyToId IS NOT NULL AND id = :replyToId) " // Direct parent
+                "OR id = :currentPostId" // Current post
     )
-    suspend fun getThreadEnd(currentPostId: String, replyToId: String?): List<PostEntity>
+    suspend fun listReplyContext(currentPostId: String): List<ReplyContext>
 
     @Query(
         "SELECT pubkey " +
