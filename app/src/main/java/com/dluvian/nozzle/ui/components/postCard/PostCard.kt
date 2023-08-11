@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.MaterialTheme.shapes
+import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
@@ -18,11 +19,14 @@ import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.DrawScope
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.style.TextAlign
+import coil.compose.AsyncImage
+import coil.request.ImageRequest
 import com.dluvian.nozzle.R
 import com.dluvian.nozzle.data.utils.UrlUtils
 import com.dluvian.nozzle.data.utils.getShortenedNpubFromPubkey
@@ -36,6 +40,9 @@ import com.dluvian.nozzle.model.TrustType
 import com.dluvian.nozzle.ui.components.*
 import com.dluvian.nozzle.ui.components.text.*
 import com.dluvian.nozzle.ui.theme.*
+
+
+// TODO: Split file into multiple
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -132,8 +139,15 @@ fun PostCard(
         )
         Spacer(Modifier.width(spacing.large))
         Column {
+            // TODO: Move this to postMapper
+            val cleanedContentAndMediaUrl = remember(post.content) {
+                val mediaUrl = UrlUtils.getAppendedMediaUrl(post.content)
+                if (mediaUrl == null) Pair(post.content, null)
+                else Pair(post.content.removeSuffix(mediaUrl).trimEnd(), mediaUrl)
+            }
             PostCardHeaderAndContent(
                 post = post,
+                cleanedContent = cleanedContentAndMediaUrl.first,
                 isCurrent = isCurrent,
                 onOpenProfile = onOpenProfile,
                 onNavigateToThread = {
@@ -142,6 +156,12 @@ fun PostCard(
                     }
                 }
             )
+
+            cleanedContentAndMediaUrl.second?.let { mediaUrl ->
+                Spacer(Modifier.height(spacing.medium))
+                MediaDecisionCard(mediaUrl = mediaUrl)
+            }
+
             post.mentionedPost?.let { mentionedPost ->
                 Spacer(Modifier.height(spacing.medium))
                 MentionedCardContent(
@@ -150,9 +170,6 @@ fun PostCard(
                     onNavigateToThread = onNavigateToThread,
                 )
             }
-
-            Spacer(Modifier.height(spacing.medium))
-            MediaCard(content = post.content)
 
             Spacer(Modifier.height(spacing.medium))
             PostCardActions(
@@ -170,6 +187,7 @@ fun PostCard(
 @Composable
 private fun PostCardHeaderAndContent(
     post: PostWithMeta,
+    cleanedContent: String,
     isCurrent: Boolean,
     onOpenProfile: ((String) -> Unit)?,
     onNavigateToThread: () -> Unit,
@@ -192,10 +210,23 @@ private fun PostCardHeaderAndContent(
             } else null,
             replyRelayHint = post.replyRelayHint,
             relays = post.relays,
-            content = post.content,
+            content = cleanedContent,
             isCurrent = isCurrent,
             onNavigateToThread = onNavigateToThread,
         )
+    }
+}
+
+@Composable
+private fun BorderedCard(modifier: Modifier = Modifier, content: @Composable () -> Unit) {
+    Surface(
+        modifier = modifier.border(
+            width = spacing.tiny,
+            color = Color.LightGray,
+            shape = RoundedCornerShape(spacing.large)
+        )
+    ) {
+        content()
     }
 }
 
@@ -205,16 +236,11 @@ private fun MentionedCardContent(
     onOpenProfile: ((String) -> Unit)?,
     onNavigateToThread: (PostIds) -> Unit,
 ) {
-    Column(
+    BorderedCard(
         modifier = Modifier
             .fillMaxWidth()
-            .border(
-                width = spacing.tiny,
-                color = LightGray21,
-                shape = RoundedCornerShape(spacing.large)
-            )
-            .clickable { onNavigateToThread(post.toPostIds()) }
-    ) {
+            .clickable { onNavigateToThread(post.toPostIds()) })
+    {
         Column(modifier = Modifier.padding(spacing.large)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 PostCardProfilePicture(
@@ -247,20 +273,51 @@ private fun MentionedCardContent(
 }
 
 @Composable
-private fun MediaCard(content: String) {
-    // TODO: Before PostCardHeaderAndContent
-    val cleanedContent = remember(content) {
-        val mediaUrl = UrlUtils.getAppendedMediaUrl(content)
-        if (mediaUrl == null) {
-            content
-        } else {
-            content.removeSuffix(mediaUrl).trimEnd()
-        }
+private fun MediaDecisionCard(mediaUrl: String) {
+    // TODO: Remember shown media with MediaProvider
+    val showMedia = remember { mutableStateOf(false) }
+    if (!showMedia.value) {
+        ShowMediaCard(onClick = { showMedia.value = true })
+    } else {
+        LoadedMedia(
+            modifier = Modifier
+                .fillMaxWidth()
+                .border(width = spacing.tiny, color = Color.LightGray),
+            mediaUrl = mediaUrl
+        )
     }
-    if (cleanedContent != content) {
-        Column {
-            Text(text = "-----------TODO-------------")
-            Text(text = content.removePrefix(cleanedContent).trim())
+}
+
+@Composable
+private fun LoadedMedia(mediaUrl: String, modifier: Modifier = Modifier) {
+    AsyncImage(
+        modifier = modifier,
+        model = ImageRequest.Builder(LocalContext.current)
+            .data(mediaUrl)
+            .crossfade(true)
+            .build(),
+        contentScale = ContentScale.FillWidth,
+        contentDescription = stringResource(id = R.string.loaded_media)
+    )
+}
+
+@Composable
+private fun ShowMediaCard(onClick: () -> Unit) {
+    BorderedCard(
+        modifier = Modifier
+            .fillMaxWidth()
+            .aspectRatio(5f)
+            .clickable(onClick = onClick)
+    ) {
+        Row(
+            modifier = Modifier.fillMaxSize(),
+            horizontalArrangement = Arrangement.Center,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                modifier = Modifier.clickable(onClick = onClick),
+                text = stringResource(id = R.string.click_to_show_media),
+            )
         }
     }
 }
@@ -329,8 +386,8 @@ fun PostNotFound() {
             .padding(horizontal = spacing.screenEdge)
             .padding(top = spacing.screenEdge)
             .clip(shapes.medium)
-            .border(width = spacing.tiny, color = DarkGray21, shape = shapes.medium)
-            .background(LightGray21)
+            .border(width = spacing.tiny, color = Color.DarkGray, shape = shapes.medium)
+            .background(Color.LightGray)
     ) {
         Text(
             modifier = Modifier
@@ -338,7 +395,7 @@ fun PostNotFound() {
                 .padding(spacing.screenEdge),
             text = stringResource(id = R.string.post_not_found),
             textAlign = TextAlign.Center,
-            color = DarkGray21
+            color = Color.DarkGray
         )
     }
 }
@@ -462,18 +519,18 @@ fun NoPostsHint() {
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier.fillMaxSize()
     ) {
-        SearchIcon(modifier = Modifier.fillMaxSize(0.1f), tint = LightGray21)
+        SearchIcon(modifier = Modifier.fillMaxSize(0.1f), tint = Color.LightGray)
         Text(
             text = stringResource(id = R.string.no_posts_found),
             textAlign = TextAlign.Center,
-            color = LightGray21
+            color = Color.LightGray
         )
     }
 }
 
 private fun drawThread(scope: DrawScope, x: Float, yStart: Float, yEnd: Float, width: Float) {
     scope.drawLine(
-        color = LightGray21,
+        color = Color.LightGray,
         start = Offset(x = x, y = yStart),
         end = Offset(x = x, y = yEnd),
         strokeWidth = width

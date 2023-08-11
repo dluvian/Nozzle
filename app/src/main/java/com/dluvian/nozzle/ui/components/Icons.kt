@@ -21,7 +21,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import com.dluvian.nozzle.R
-import com.dluvian.nozzle.ui.theme.Red21
 import com.dluvian.nozzle.ui.theme.sizing
 
 @Composable
@@ -93,7 +92,7 @@ fun LikeIcon(
     isLiked: Boolean,
     modifier: Modifier = Modifier,
     description: String? = stringResource(id = R.string.like),
-    activeTint: Color = Red21,
+    activeTint: Color = Color.Red,
     inactiveTint: Color = colors.onBackground,
 ) {
     Icon(

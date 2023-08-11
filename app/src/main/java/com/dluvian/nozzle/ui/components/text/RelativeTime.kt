@@ -6,10 +6,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextOverflow
 import com.dluvian.nozzle.data.utils.getRelativeTimeSpanString
-import com.dluvian.nozzle.ui.theme.LightGray21
 
 @Composable
-fun RelativeTime(from: Long, color: Color = LightGray21) {
+fun RelativeTime(from: Long, color: Color = Color.LightGray) {
     Text(
         text = getRelativeTimeSpanString(
             context = LocalContext.current,

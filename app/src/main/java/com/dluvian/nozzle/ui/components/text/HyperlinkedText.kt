@@ -12,7 +12,6 @@ import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
 import com.dluvian.nozzle.data.utils.UrlUtils
-import com.dluvian.nozzle.ui.theme.HyperlinkBlue
 import com.dluvian.nozzle.ui.theme.Typography
 
 private const val URL_TAG = "URL"
@@ -55,7 +54,7 @@ private fun buildAnnotatedString(text: String, textColor: Color): AnnotatedStrin
             val endIndex = startIndex + url.length
             addStyle(
                 style = SpanStyle(
-                    color = HyperlinkBlue,
+                    color = Color.Blue,
                     textDecoration = TextDecoration.Underline
                 ),
                 start = startIndex,

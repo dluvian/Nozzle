@@ -18,7 +18,6 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.withStyle
 import com.dluvian.nozzle.R
 import com.dluvian.nozzle.ui.components.dialog.RelaysDialog
-import com.dluvian.nozzle.ui.theme.LightGray21
 import com.dluvian.nozzle.ui.theme.Shapes
 
 @Composable
@@ -50,7 +49,7 @@ fun InRelays(relays: List<String>) {
 }
 
 @Composable
-private fun InRelay(relay: String, modifier: Modifier = Modifier, color: Color = LightGray21) {
+private fun InRelay(relay: String, modifier: Modifier = Modifier, color: Color = Color.LightGray) {
     Text(
         modifier = modifier,
         text = buildAnnotatedString {
@@ -72,7 +71,7 @@ private fun InRelay(relay: String, modifier: Modifier = Modifier, color: Color =
 private fun AndOthers(
     otherRelaysCount: Int,
     modifier: Modifier = Modifier,
-    color: Color = LightGray21
+    color: Color = Color.LightGray
 ) {
     Text(
         modifier = modifier,

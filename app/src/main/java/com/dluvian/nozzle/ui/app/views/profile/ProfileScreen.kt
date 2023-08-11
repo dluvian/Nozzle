@@ -20,6 +20,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import com.dluvian.nozzle.R
@@ -37,7 +38,6 @@ import com.dluvian.nozzle.ui.components.postCard.NoPostsHint
 import com.dluvian.nozzle.ui.components.postCard.PostCardList
 import com.dluvian.nozzle.ui.components.text.HyperlinkedText
 import com.dluvian.nozzle.ui.components.text.NumberedCategory
-import com.dluvian.nozzle.ui.theme.LightGray21
 import com.dluvian.nozzle.ui.theme.Shapes
 import com.dluvian.nozzle.ui.theme.sizing
 import com.dluvian.nozzle.ui.theme.spacing
@@ -267,13 +267,13 @@ private fun CopyableNpub(
         CopyIcon(
             modifier = Modifier.size(sizing.smallIcon),
             description = stringResource(id = R.string.copy_pubkey),
-            tint = LightGray21
+            tint = Color.LightGray
         )
         Text(
             text = npub,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
-            color = LightGray21,
+            color = Color.LightGray,
             style = MaterialTheme.typography.body2,
         )
     }

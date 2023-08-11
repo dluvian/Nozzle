@@ -22,6 +22,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -40,7 +41,6 @@ import com.dluvian.nozzle.ui.components.FeedSettingsButton
 import com.dluvian.nozzle.ui.components.ProfilePicture
 import com.dluvian.nozzle.ui.components.postCard.NoPostsHint
 import com.dluvian.nozzle.ui.components.postCard.PostCardList
-import com.dluvian.nozzle.ui.theme.White21
 import com.dluvian.nozzle.ui.theme.sizing
 import com.dluvian.nozzle.ui.theme.spacing
 import kotlinx.coroutines.launch
@@ -202,14 +202,14 @@ private fun Headline(
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
             style = typography.h6,
-            color = White21,
+            color = Color.White,
         )
     }
 }
 
 @Composable
 private fun FeedFab(onPrepareNewPost: () -> Unit) {
-    FloatingActionButton(onClick = { onPrepareNewPost() }, contentColor = White21) {
+    FloatingActionButton(onClick = { onPrepareNewPost() }, contentColor = Color.White) {
         AddIcon()
     }
 }

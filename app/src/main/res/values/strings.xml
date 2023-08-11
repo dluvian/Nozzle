@@ -93,6 +93,8 @@
     <string name="home">Home</string>
     <string name="autopilot">Autopilot</string>
     <string name="quote">Quote post</string>
+    <string name="click_to_show_media">Click to show media</string>
+    <string name="loaded_media">Loaded media</string>
     <plurals name="other_relays">
         <item quantity="one">other</item>
         <item quantity="other">others</item>
