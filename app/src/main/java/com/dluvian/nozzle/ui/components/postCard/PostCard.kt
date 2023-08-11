@@ -275,7 +275,7 @@ private fun MentionedCardContent(
 @Composable
 private fun MediaDecisionCard(mediaUrl: String) {
     // TODO: Remember shown media with MediaProvider
-    val showMedia = remember { mutableStateOf(false) }
+    val showMedia = remember(mediaUrl) { mutableStateOf(false) }
     if (!showMedia.value) {
         ShowMediaCard(onClick = { showMedia.value = true })
     } else {
@@ -290,8 +290,10 @@ private fun MediaDecisionCard(mediaUrl: String) {
 
 @Composable
 private fun LoadedMedia(mediaUrl: String, modifier: Modifier = Modifier) {
+    // TODO: Show error when failed to load
+    // TODO: Show loading indicator
     AsyncImage(
-        modifier = modifier,
+        modifier = modifier.clickable { /* Prevents opening post card */ },
         model = ImageRequest.Builder(LocalContext.current)
             .data(mediaUrl)
             .crossfade(true)
@@ -306,7 +308,7 @@ private fun ShowMediaCard(onClick: () -> Unit) {
     BorderedCard(
         modifier = Modifier
             .fillMaxWidth()
-            .aspectRatio(5f)
+            .aspectRatio(6f)
             .clickable(onClick = onClick)
     ) {
         Row(
