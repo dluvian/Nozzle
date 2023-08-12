@@ -9,6 +9,9 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.dluvian.nozzle.R
+import com.dluvian.nozzle.data.DB_APPEND_BATCH_SIZE
+import com.dluvian.nozzle.data.DB_BATCH_SIZE
+import com.dluvian.nozzle.data.WAIT_TIME
 import com.dluvian.nozzle.data.cache.IClickedMediaUrlCache
 import com.dluvian.nozzle.data.getDefaultRelays
 import com.dluvian.nozzle.data.nostr.INostrSubscriber
@@ -27,7 +30,6 @@ import kotlinx.coroutines.launch
 import java.util.concurrent.atomic.AtomicBoolean
 
 private const val TAG = "ProfileViewModel"
-private const val DB_BATCH_SIZE = 25
 
 class ProfileViewModel(
     private val feedProvider: IFeedProvider,
@@ -76,7 +78,7 @@ class ProfileViewModel(
 
             viewModelScope.launch(context = Dispatchers.IO) {
                 setProfileAndFeed(pubkey = nonNullPubkey, dbBatchSize = DB_BATCH_SIZE)
-                delay(1000)
+                delay(WAIT_TIME)
             }.invokeOnCompletion {
                 isSettingPubkey.set(false)
             }
@@ -96,14 +98,22 @@ class ProfileViewModel(
         }
     }
 
+    private val isAppending = AtomicBoolean(false)
     val onLoadMore: () -> Unit = {
-        viewModelScope.launch(context = Dispatchers.IO) {
-            Log.i(TAG, "Load more")
-            val pubkey = profileState.value.pubkey
-            appendFeed(
-                feedSettings = getCurrentFeedSettings(pubkey = pubkey, relays = getRelays(pubkey)),
-                dbBatchSize = DB_BATCH_SIZE,
-            )
+        if (!isAppending.get()) {
+            isAppending.set(true)
+            viewModelScope.launch(context = Dispatchers.IO) {
+                Log.i(TAG, "Load more")
+                val pubkey = profileState.value.pubkey
+                appendFeed(
+                    feedSettings = getCurrentFeedSettings(
+                        pubkey = pubkey,
+                        relays = getRelays(pubkey)
+                    ),
+                    dbBatchSize = DB_APPEND_BATCH_SIZE,
+                )
+                isAppending.set(false)
+            }
         }
     }
 
@@ -116,6 +126,7 @@ class ProfileViewModel(
         }
     }
 
+    // TODO: Refactor: Same in other ViewModels
     val onLike: (String) -> Unit = { id ->
         feedState.value.find { it.id == id }?.let {
             viewModelScope.launch(context = Dispatchers.IO) {
@@ -128,6 +139,7 @@ class ProfileViewModel(
         }
     }
 
+    // TODO: Refactor: Same in other ViewModels
     val onQuote: (String) -> Unit = { id ->
         feedState.value.find { it.id == id }?.let {
             viewModelScope.launch(context = Dispatchers.IO) {
@@ -136,10 +148,12 @@ class ProfileViewModel(
         }
     }
 
+    // TODO: Refactor: Same in other ViewModels
     val onShowMedia: (String) -> Unit = { mediaUrl ->
         clickedMediaUrlCache.insert(mediaUrl = mediaUrl)
     }
 
+    // TODO: Refactor: Same in other ViewModels
     val onShouldShowMedia: (String) -> Boolean = { mediaUrl ->
         clickedMediaUrlCache.contains(mediaUrl = mediaUrl)
     }
@@ -193,18 +207,13 @@ class ProfileViewModel(
         renewAdditionalDataSubscription(pubkey)
     }
 
-    private val isAppending = AtomicBoolean(false)
-
     // TODO: Append in FeedProvider to reduce duplicate code in ProvileVM and FeedVM
     private suspend fun appendFeed(
         feedSettings: FeedSettings,
         dbBatchSize: Int,
     ) {
-        if (isAppending.get()) return
-
         feedState.value.lastOrNull()?.let { last ->
             Log.i(TAG, "Append feed")
-            isAppending.set(true)
             feedState = feedProvider.getFeedFlow(
                 feedSettings = feedSettings,
                 limit = dbBatchSize,
@@ -215,7 +224,6 @@ class ProfileViewModel(
                     SharingStarted.WhileSubscribed(),
                     feedState.value,
                 )
-            isAppending.set(false)
             renewAdditionalDataSubscription(pubkey = profileState.value.pubkey)
         }
     }

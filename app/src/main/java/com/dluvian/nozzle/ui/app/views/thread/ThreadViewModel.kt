@@ -79,6 +79,7 @@ class ThreadViewModel(
         }
     }
 
+    // TODO: Refactor: Same in other ViewModels
     val onLike: (String) -> Unit = { postId ->
         val toLike = getCurrentPost(postId = postId)
         toLike?.let {
@@ -92,6 +93,7 @@ class ThreadViewModel(
         }
     }
 
+    // TODO: Refactor: Same in other ViewModels
     val onQuote: (String) -> Unit = { postId ->
         val toQuote = getCurrentPost(postId = postId)
         toQuote?.let {
@@ -101,10 +103,12 @@ class ThreadViewModel(
         }
     }
 
+    // TODO: Refactor: Same in other ViewModels
     val onShowMedia: (String) -> Unit = { mediaUrl ->
         clickedMediaUrlCache.insert(mediaUrl = mediaUrl)
     }
 
+    // TODO: Refactor: Same in other ViewModels
     val onShouldShowMedia: (String) -> Boolean = { mediaUrl ->
         clickedMediaUrlCache.contains(mediaUrl = mediaUrl)
     }

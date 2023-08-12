@@ -63,7 +63,7 @@ class KeysViewModel(
         uiState.value.let { state ->
             val isValid = isValidPrivkey(state.privkeyInput)
             if (!isValid) {
-                Log.i(TAG, "New privkey $state.privkeyInput is invalid")
+                Log.i(TAG, "New privkey ${state.privkeyInput} is invalid")
                 viewModelState.update {
                     state.copy(isInvalid = true)
                 }

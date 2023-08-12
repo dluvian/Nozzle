@@ -4,6 +4,10 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import com.dluvian.nozzle.data.DB_APPEND_BATCH_SIZE
+import com.dluvian.nozzle.data.DB_BATCH_SIZE
+import com.dluvian.nozzle.data.MAX_FEED_LENGTH
+import com.dluvian.nozzle.data.WAIT_TIME
 import com.dluvian.nozzle.data.cache.IClickedMediaUrlCache
 import com.dluvian.nozzle.data.nostr.INostrSubscriber
 import com.dluvian.nozzle.data.postCardInteractor.IPostCardInteractor
@@ -19,8 +23,6 @@ import java.util.*
 import java.util.concurrent.atomic.AtomicBoolean
 
 private const val TAG = "FeedViewModel"
-private const val DB_BATCH_SIZE = 30
-private const val WAIT_TIME = 1300L
 
 data class FeedViewModelState(
     val isRefreshing: Boolean = false,
@@ -79,10 +81,17 @@ class FeedViewModel(
         }
     }
 
+    private val isAppending = AtomicBoolean(false)
     val onLoadMore: () -> Unit = {
-        viewModelScope.launch(context = IO) {
-            Log.i(TAG, "Load more")
-            appendFeed(currentFeed = feedState.value)
+        if (!isAppending.get()) {
+            isAppending.set(true)
+            viewModelScope.launch(context = IO) {
+                Log.i(TAG, "Load more")
+                appendFeed(currentFeed = feedState.value)
+                delay(WAIT_TIME)
+                renewAdditionalDataSubscription()
+                isAppending.set(false)
+            }
         }
     }
 
@@ -199,6 +208,7 @@ class FeedViewModel(
         }
     }
 
+    // TODO: Refactor: Same in other ViewModels
     val onLike: (String) -> Unit = { id ->
         uiState.value.let { _ ->
             feedState.value.find { it.id == id }?.let {
@@ -213,6 +223,7 @@ class FeedViewModel(
         }
     }
 
+    // TODO: Refactor: Same in other ViewModels
     val onQuote: (String) -> Unit = { id ->
         uiState.value.let { _ ->
             feedState.value.find { it.id == id }?.let {
@@ -223,10 +234,12 @@ class FeedViewModel(
         }
     }
 
+    // TODO: Refactor: Same in other ViewModels
     val onShowMedia: (String) -> Unit = { mediaUrl ->
         clickedMediaUrlCache.insert(mediaUrl = mediaUrl)
     }
 
+    // TODO: Refactor: Same in other ViewModels
     val onShouldShowMedia: (String) -> Boolean = { mediaUrl ->
         clickedMediaUrlCache.contains(mediaUrl = mediaUrl)
     }
@@ -257,29 +270,27 @@ class FeedViewModel(
         renewAdditionalDataSubscription()
     }
 
-    private val isAppending = AtomicBoolean(false)
-
+    // TODO: This is too slow and sucks. Same in ProfileViewModel. Use pagination
     private suspend fun appendFeed(currentFeed: List<PostWithMeta>) {
-        if (isAppending.get()) return
-
         currentFeed.lastOrNull()?.let { last ->
-            Log.i(TAG, "Append feed")
-            isAppending.set(true)
             feedState = feedProvider.getFeedFlow(
                 feedSettings = viewModelState.value.feedSettings,
-                limit = DB_BATCH_SIZE,
+                limit = DB_APPEND_BATCH_SIZE,
                 until = last.createdAt,
-            ).map { toAppend -> currentFeed + toAppend }
+            ).distinctUntilChanged()
+                .map { toAppend -> currentFeed.takeLast(MAX_FEED_LENGTH) + toAppend }
+                .onFirstEmit(action = {
+                    Log.i(
+                        TAG,
+                        "New feed length ${feedState.value.size}, last post from ${feedState.value.lastOrNull()?.name}"
+                    )
+                })
                 .stateIn(
                     viewModelScope,
                     SharingStarted.Eagerly,
                     currentFeed,
                 )
-            Log.i(TAG, "New feed length ${feedState.value.size}")
-            isAppending.set(false)
         }
-        delay(WAIT_TIME)
-        renewAdditionalDataSubscription()
     }
 
     private fun subscribeToPersonalProfile() {
@@ -308,6 +319,7 @@ class FeedViewModel(
         // TODO: Resub only what does not exist. Reduce unnecessary data traffic
         // TODO: Filter conditions as helper functions
         delay(2 * WAIT_TIME)
+        if (isAppending.get()) return
         val postsWithUnknowns = feedState.value
             .takeLast(2 * DB_BATCH_SIZE)
             .filter {
