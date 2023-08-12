@@ -28,7 +28,6 @@ import androidx.compose.ui.text.style.TextAlign
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.dluvian.nozzle.R
-import com.dluvian.nozzle.data.utils.UrlUtils
 import com.dluvian.nozzle.data.utils.getShortenedNpubFromPubkey
 import com.dluvian.nozzle.data.utils.hexToNote
 import com.dluvian.nozzle.model.MentionedPost
@@ -54,6 +53,8 @@ fun PostCard(
     modifier: Modifier = Modifier,
     onNavigateToThread: (PostIds) -> Unit,
     onNavigateToReply: () -> Unit,
+    onShowMedia: (String) -> Unit,
+    onShouldShowMedia: (String) -> Boolean,
     isCurrent: Boolean = false,
     threadPosition: ThreadPosition = ThreadPosition.SINGLE,
     onOpenProfile: ((String) -> Unit)? = null,
@@ -139,15 +140,8 @@ fun PostCard(
         )
         Spacer(Modifier.width(spacing.large))
         Column {
-            // TODO: Move this to postMapper
-            val cleanedContentAndMediaUrl = remember(post.content) {
-                val mediaUrl = UrlUtils.getAppendedMediaUrl(post.content)
-                if (mediaUrl == null) Pair(post.content, null)
-                else Pair(post.content.removeSuffix(mediaUrl).trimEnd(), mediaUrl)
-            }
             PostCardHeaderAndContent(
                 post = post,
-                cleanedContent = cleanedContentAndMediaUrl.first,
                 isCurrent = isCurrent,
                 onOpenProfile = onOpenProfile,
                 onNavigateToThread = {
@@ -157,9 +151,13 @@ fun PostCard(
                 }
             )
 
-            cleanedContentAndMediaUrl.second?.let { mediaUrl ->
+            post.mediaUrl?.let { mediaUrl ->
                 Spacer(Modifier.height(spacing.medium))
-                MediaDecisionCard(mediaUrl = mediaUrl)
+                MediaDecisionCard(
+                    mediaUrl = mediaUrl,
+                    onShowMedia = onShowMedia,
+                    onShouldShowMedia = onShouldShowMedia,
+                )
             }
 
             post.mentionedPost?.let { mentionedPost ->
@@ -187,7 +185,6 @@ fun PostCard(
 @Composable
 private fun PostCardHeaderAndContent(
     post: PostWithMeta,
-    cleanedContent: String,
     isCurrent: Boolean,
     onOpenProfile: ((String) -> Unit)?,
     onNavigateToThread: () -> Unit,
@@ -210,7 +207,7 @@ private fun PostCardHeaderAndContent(
             } else null,
             replyRelayHint = post.replyRelayHint,
             relays = post.relays,
-            content = cleanedContent,
+            content = post.content,
             isCurrent = isCurrent,
             onNavigateToThread = onNavigateToThread,
         )
@@ -273,11 +270,19 @@ private fun MentionedCardContent(
 }
 
 @Composable
-private fun MediaDecisionCard(mediaUrl: String) {
-    // TODO: Remember shown media with MediaProvider
-    val showMedia = remember(mediaUrl) { mutableStateOf(false) }
+private fun MediaDecisionCard(
+    mediaUrl: String,
+    onShowMedia: (String) -> Unit,
+    onShouldShowMedia: (String) -> Boolean
+) {
+    // showMedia is not in PostWithMeta because the posts before infinite scroll activates are cold
+    // to save resources
+    val showMedia = remember(mediaUrl) { mutableStateOf(onShouldShowMedia(mediaUrl)) }
     if (!showMedia.value) {
-        ShowMediaCard(onClick = { showMedia.value = true })
+        ShowMediaCard(onClick = {
+            onShowMedia(mediaUrl)
+            showMedia.value = true
+        })
     } else {
         LoadedMedia(
             modifier = Modifier

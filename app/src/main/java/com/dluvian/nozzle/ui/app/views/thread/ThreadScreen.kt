@@ -36,6 +36,8 @@ fun ThreadScreen(
     onQuote: (String) -> Unit,
     onRefreshThreadView: () -> Unit,
     onOpenThread: (PostIds) -> Unit,
+    onShowMedia: (String) -> Unit,
+    onShouldShowMedia: (String) -> Boolean,
     onGoBack: () -> Unit,
     onNavigateToProfile: (String) -> Unit,
     onNavigateToReply: () -> Unit,
@@ -51,6 +53,8 @@ fun ThreadScreen(
                 onLike = onLike,
                 onQuote = onQuote,
                 onOpenThread = onOpenThread,
+                onShowMedia = onShowMedia,
+                onShouldShowMedia = onShouldShowMedia,
                 onNavigateToProfile = onNavigateToProfile,
                 onNavigateToReply = onNavigateToReply,
             )
@@ -68,6 +72,8 @@ private fun ThreadedPosts(
     onQuote: (String) -> Unit,
     onNavigateToProfile: (String) -> Unit,
     onOpenThread: (PostIds) -> Unit,
+    onShowMedia: (String) -> Unit,
+    onShouldShowMedia: (String) -> Boolean,
     onNavigateToReply: () -> Unit,
 ) {
     val lazyListState = rememberLazyListState(initialFirstVisibleItemIndex = thread.previous.size)
@@ -98,6 +104,8 @@ private fun ThreadedPosts(
                         onNavigateToThread = onOpenThread,
                         onNavigateToReply = onNavigateToReply,
                         onOpenProfile = onNavigateToProfile,
+                        onShowMedia = onShowMedia,
+                        onShouldShowMedia = onShouldShowMedia,
                     )
                 }
                 item {
@@ -111,6 +119,8 @@ private fun ThreadedPosts(
                         onLike = onLike,
                         isCurrent = true,
                         onQuote = onQuote,
+                        onShowMedia = onShowMedia,
+                        onShouldShowMedia = onShouldShowMedia,
                         onPrepareReply = onPrepareReply,
                         onNavigateToThread = onOpenThread,
                         onNavigateToReply = onNavigateToReply,
@@ -125,6 +135,8 @@ private fun ThreadedPosts(
                         post = post,
                         onLike = onLike,
                         onQuote = onQuote,
+                        onShowMedia = onShowMedia,
+                        onShouldShowMedia = onShouldShowMedia,
                         onPrepareReply = onPrepareReply,
                         onNavigateToThread = onOpenThread,
                         onNavigateToReply = onNavigateToReply,

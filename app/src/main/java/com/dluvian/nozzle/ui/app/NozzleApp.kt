@@ -62,6 +62,7 @@ fun NozzleApp(appContainer: AppContainer) {
                         relayProvider = appContainer.relayProvider,
                         profileFollower = appContainer.profileFollower,
                         pubkeyProvider = appContainer.keyManager,
+                        clickedMediaUrlCache = appContainer.clickedMediaUrlCache,
                         nostrSubscriber = appContainer.nostrSubscriber,
                         nip65Dao = appContainer.roomDb.nip65Dao(),
                         context = LocalContext.current,
@@ -83,6 +84,7 @@ fun NozzleApp(appContainer: AppContainer) {
                         feedProvider = appContainer.feedProvider,
                         relayProvider = appContainer.relayProvider,
                         contactListProvider = appContainer.contactListProvider,
+                        clickedMediaUrlCache = appContainer.clickedMediaUrlCache,
                         postCardInteractor = appContainer.postCardInteractor,
                         nostrSubscriber = appContainer.nostrSubscriber,
                         feedSettingsPreferences = appContainer.feedSettingsPreferences,
@@ -92,6 +94,7 @@ fun NozzleApp(appContainer: AppContainer) {
                     factory = ThreadViewModel.provideFactory(
                         threadProvider = appContainer.threadProvider,
                         relayProvider = appContainer.relayProvider,
+                        clickedMediaUrlCache = appContainer.clickedMediaUrlCache,
                         postCardInteractor = appContainer.postCardInteractor,
                         nostrSubscriber = appContainer.nostrSubscriber,
                     )

@@ -2,6 +2,8 @@ package com.dluvian.nozzle
 
 import android.content.Context
 import androidx.room.Room
+import com.dluvian.nozzle.data.cache.ClickedMediaUrlCache
+import com.dluvian.nozzle.data.cache.IClickedMediaUrlCache
 import com.dluvian.nozzle.data.eventProcessor.EventProcessor
 import com.dluvian.nozzle.data.eventProcessor.IEventProcessor
 import com.dluvian.nozzle.data.manager.IKeyManager
@@ -98,6 +100,8 @@ class AppContainer(context: Context) {
         pubkeyProvider = keyManager,
         contactDao = roomDb.contactDao()
     )
+
+    val clickedMediaUrlCache: IClickedMediaUrlCache = ClickedMediaUrlCache()
 
     private val postMapper: IPostMapper = PostMapper(
         pubkeyProvider = keyManager,

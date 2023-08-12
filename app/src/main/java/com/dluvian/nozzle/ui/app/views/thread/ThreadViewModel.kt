@@ -4,6 +4,7 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import com.dluvian.nozzle.data.cache.IClickedMediaUrlCache
 import com.dluvian.nozzle.data.nostr.INostrSubscriber
 import com.dluvian.nozzle.data.postCardInteractor.IPostCardInteractor
 import com.dluvian.nozzle.data.provider.IRelayProvider
@@ -25,6 +26,7 @@ class ThreadViewModel(
     private val threadProvider: IThreadProvider,
     private val relayProvider: IRelayProvider,
     private val postCardInteractor: IPostCardInteractor,
+    private val clickedMediaUrlCache: IClickedMediaUrlCache,
     private val nostrSubscriber: INostrSubscriber,
 ) : ViewModel() {
     var threadState: StateFlow<PostThread> = MutableStateFlow(PostThread.createEmpty())
@@ -99,6 +101,14 @@ class ThreadViewModel(
         }
     }
 
+    val onShowMedia: (String) -> Unit = { mediaUrl ->
+        clickedMediaUrlCache.insert(mediaUrl = mediaUrl)
+    }
+
+    val onShouldShowMedia: (String) -> Boolean = { mediaUrl ->
+        clickedMediaUrlCache.contains(mediaUrl = mediaUrl)
+    }
+
     private suspend fun updateScreen(
         postIds: PostIds,
         waitForSubscription: Long? = null,
@@ -152,6 +162,7 @@ class ThreadViewModel(
             threadProvider: IThreadProvider,
             relayProvider: IRelayProvider,
             postCardInteractor: IPostCardInteractor,
+            clickedMediaUrlCache: IClickedMediaUrlCache,
             nostrSubscriber: INostrSubscriber
         ): ViewModelProvider.Factory = object : ViewModelProvider.Factory {
             @Suppress("UNCHECKED_CAST")
@@ -161,6 +172,7 @@ class ThreadViewModel(
                     relayProvider = relayProvider,
                     postCardInteractor = postCardInteractor,
                     nostrSubscriber = nostrSubscriber,
+                    clickedMediaUrlCache = clickedMediaUrlCache
                 ) as T
             }
         }

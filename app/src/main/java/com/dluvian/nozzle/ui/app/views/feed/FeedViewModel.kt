@@ -4,6 +4,7 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import com.dluvian.nozzle.data.cache.IClickedMediaUrlCache
 import com.dluvian.nozzle.data.nostr.INostrSubscriber
 import com.dluvian.nozzle.data.postCardInteractor.IPostCardInteractor
 import com.dluvian.nozzle.data.preferences.IFeedSettingsPreferences
@@ -38,6 +39,7 @@ class FeedViewModel(
     private val feedProvider: IFeedProvider,
     private val relayProvider: IRelayProvider,
     private val contactListProvider: IContactListProvider,
+    private val clickedMediaUrlCache: IClickedMediaUrlCache,
     private val postCardInteractor: IPostCardInteractor,
     private val nostrSubscriber: INostrSubscriber,
     private val feedSettingsPreferences: IFeedSettingsPreferences,
@@ -221,6 +223,14 @@ class FeedViewModel(
         }
     }
 
+    val onShowMedia: (String) -> Unit = { mediaUrl ->
+        clickedMediaUrlCache.insert(mediaUrl = mediaUrl)
+    }
+
+    val onShouldShowMedia: (String) -> Boolean = { mediaUrl ->
+        clickedMediaUrlCache.contains(mediaUrl = mediaUrl)
+    }
+
     private suspend fun handleRefresh() {
         setUIRefresh(true)
         subscribeToNip65()
@@ -370,6 +380,7 @@ class FeedViewModel(
             feedProvider: IFeedProvider,
             relayProvider: IRelayProvider,
             contactListProvider: IContactListProvider,
+            clickedMediaUrlCache: IClickedMediaUrlCache,
             postCardInteractor: IPostCardInteractor,
             nostrSubscriber: INostrSubscriber,
             feedSettingsPreferences: IFeedSettingsPreferences,
@@ -381,6 +392,7 @@ class FeedViewModel(
                     feedProvider = feedProvider,
                     relayProvider = relayProvider,
                     contactListProvider = contactListProvider,
+                    clickedMediaUrlCache = clickedMediaUrlCache,
                     postCardInteractor = postCardInteractor,
                     nostrSubscriber = nostrSubscriber,
                     feedSettingsPreferences = feedSettingsPreferences,

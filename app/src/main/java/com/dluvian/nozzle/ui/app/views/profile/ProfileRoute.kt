@@ -26,6 +26,8 @@ fun ProfileRoute(
         onQuote = profileViewModel.onQuote,
         onFollow = profileViewModel.onFollow,
         onUnfollow = profileViewModel.onUnfollow,
+        onShowMedia = profileViewModel.onShowMedia,
+        onShouldShowMedia = profileViewModel.onShouldShowMedia,
         onRefreshProfileView = profileViewModel.onRefreshProfileView,
         onCopyNpub = profileViewModel.onCopyNpub,
         onLoadMore = profileViewModel.onLoadMore,

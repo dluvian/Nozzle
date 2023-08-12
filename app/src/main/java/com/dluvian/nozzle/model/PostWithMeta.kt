@@ -9,6 +9,7 @@ data class PostWithMeta(
     val pubkey: String,
     val createdAt: Long,
     val content: String,
+    val mediaUrl: String?,
     val name: String,
     val pictureUrl: String,
     val isLikedByMe: Boolean,

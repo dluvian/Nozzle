@@ -9,6 +9,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.dluvian.nozzle.R
+import com.dluvian.nozzle.data.cache.IClickedMediaUrlCache
 import com.dluvian.nozzle.data.getDefaultRelays
 import com.dluvian.nozzle.data.nostr.INostrSubscriber
 import com.dluvian.nozzle.data.postCardInteractor.IPostCardInteractor
@@ -35,6 +36,7 @@ class ProfileViewModel(
     private val profileFollower: IProfileFollower,
     private val postCardInteractor: IPostCardInteractor,
     private val pubkeyProvider: IPubkeyProvider,
+    private val clickedMediaUrlCache: IClickedMediaUrlCache,
     private val nostrSubscriber: INostrSubscriber,
     private val nip65Dao: Nip65Dao,
     context: Context,
@@ -132,6 +134,14 @@ class ProfileViewModel(
                 TODO()
             }
         }
+    }
+
+    val onShowMedia: (String) -> Unit = { mediaUrl ->
+        clickedMediaUrlCache.insert(mediaUrl = mediaUrl)
+    }
+
+    val onShouldShowMedia: (String) -> Boolean = { mediaUrl ->
+        clickedMediaUrlCache.contains(mediaUrl = mediaUrl)
     }
 
     private val isInFollowProcess = AtomicBoolean(false)
@@ -247,6 +257,7 @@ class ProfileViewModel(
             relayProvider: IRelayProvider,
             profileProvider: IProfileWithAdditionalInfoProvider,
             pubkeyProvider: IPubkeyProvider,
+            clickedMediaUrlCache: IClickedMediaUrlCache,
             nostrSubscriber: INostrSubscriber,
             nip65Dao: Nip65Dao,
             context: Context,
@@ -262,6 +273,7 @@ class ProfileViewModel(
                         profileProvider = profileProvider,
                         pubkeyProvider = pubkeyProvider,
                         relayProvider = relayProvider,
+                        clickedMediaUrlCache = clickedMediaUrlCache,
                         nostrSubscriber = nostrSubscriber,
                         nip65Dao = nip65Dao,
                         context = context,
