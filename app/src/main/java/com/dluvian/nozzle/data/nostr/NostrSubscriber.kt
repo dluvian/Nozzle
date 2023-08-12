@@ -49,7 +49,7 @@ class NostrSubscriber(
         until: Long?,
         relays: Collection<String>?
     ): List<String> {
-        Log.i(TAG, "Subscribe to feed of ${authorPubkeys?.size} pubkeys in ${relays?.size} relays")
+        Log.d(TAG, "Subscribe to feed of ${authorPubkeys?.size} pubkeys in ${relays?.size} relays")
         val postFilter = Filter.createPostFilter(
             pubkeys = authorPubkeys,
             until = until ?: getCurrentTimeInSeconds(),
@@ -204,27 +204,32 @@ class NostrSubscriber(
     }
 
     override fun unsubscribeFeeds() {
-        nostrService.unsubscribe(feedSubscriptions)
-        feedSubscriptions.clear()
+        val snapshot = feedSubscriptions.toList()
+        nostrService.unsubscribe(snapshot)
+        feedSubscriptions.removeAll(snapshot)
     }
 
     override fun unsubscribeAdditionalPostsData() {
-        nostrService.unsubscribe(additionalFeedDataSubscriptions)
-        additionalFeedDataSubscriptions.clear()
+        val snapshot = additionalFeedDataSubscriptions.toList()
+        nostrService.unsubscribe(snapshot)
+        additionalFeedDataSubscriptions.removeAll(snapshot)
     }
 
     override fun unsubscribeThread() {
-        nostrService.unsubscribe(threadSubscriptions)
-        threadSubscriptions.clear()
+        val snapshot = threadSubscriptions.toList()
+        nostrService.unsubscribe(snapshot)
+        threadSubscriptions.removeAll(snapshot)
     }
 
     override fun unsubscribeProfiles() {
-        nostrService.unsubscribe(profileSubscriptions)
-        profileSubscriptions.clear()
+        val snapshot = profileSubscriptions.toList()
+        nostrService.unsubscribe(snapshot)
+        profileSubscriptions.removeAll(snapshot)
     }
 
     override fun unsubscribeNip65() {
-        nostrService.unsubscribe(nip65Subscriptions)
-        nip65Subscriptions.clear()
+        val snapshot = nip65Subscriptions.toList()
+        nostrService.unsubscribe(snapshot)
+        nip65Subscriptions.removeAll(snapshot)
     }
 }
