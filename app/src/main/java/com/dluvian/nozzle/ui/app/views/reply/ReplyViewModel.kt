@@ -49,14 +49,14 @@ class ReplyViewModel(
     var metadataState = personalProfileProvider.getMetadata()
         .stateIn(
             viewModelScope,
-            SharingStarted.Eagerly,
+            SharingStarted.WhileSubscribed(),
             null
         )
 
     val uiState = viewModelState
         .stateIn(
             viewModelScope,
-            SharingStarted.Eagerly,
+            SharingStarted.WhileSubscribed(),
             viewModelState.value
         )
 
@@ -68,7 +68,7 @@ class ReplyViewModel(
         metadataState = personalProfileProvider.getMetadata()
             .stateIn(
                 viewModelScope,
-                SharingStarted.Eagerly,
+                SharingStarted.WhileSubscribed(),
                 null
             )
 

@@ -41,7 +41,7 @@ class KeysViewModel(
     val uiState = viewModelState
         .stateIn(
             viewModelScope,
-            SharingStarted.Eagerly,
+            SharingStarted.WhileSubscribed(),
             viewModelState.value
         )
 

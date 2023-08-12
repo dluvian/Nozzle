@@ -4,6 +4,7 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import com.dluvian.nozzle.data.SCOPE_TIMEOUT
 import com.dluvian.nozzle.data.cache.IClickedMediaUrlCache
 import com.dluvian.nozzle.data.nostr.INostrSubscriber
 import com.dluvian.nozzle.data.postCardInteractor.IPostCardInteractor
@@ -35,7 +36,7 @@ class ThreadViewModel(
     val isRefreshingState = isRefreshingFlow
         .stateIn(
             viewModelScope,
-            SharingStarted.Lazily,
+            SharingStarted.WhileSubscribed(),
             isRefreshingFlow.value
         )
 
@@ -127,7 +128,7 @@ class ThreadViewModel(
         )
             .stateIn(
                 viewModelScope,
-                SharingStarted.Lazily,
+                SharingStarted.WhileSubscribed(stopTimeoutMillis = SCOPE_TIMEOUT),
                 initValue,
             )
     }

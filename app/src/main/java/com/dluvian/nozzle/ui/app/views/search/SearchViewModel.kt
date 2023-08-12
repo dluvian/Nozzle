@@ -25,7 +25,7 @@ class SearchViewModel : ViewModel() {
     val uiState = viewModelState
         .stateIn(
             viewModelScope,
-            SharingStarted.Eagerly,
+            SharingStarted.WhileSubscribed(),
             viewModelState.value
         )
 

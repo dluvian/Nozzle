@@ -11,6 +11,7 @@ import androidx.lifecycle.viewModelScope
 import com.dluvian.nozzle.R
 import com.dluvian.nozzle.data.DB_APPEND_BATCH_SIZE
 import com.dluvian.nozzle.data.DB_BATCH_SIZE
+import com.dluvian.nozzle.data.SCOPE_TIMEOUT
 import com.dluvian.nozzle.data.WAIT_TIME
 import com.dluvian.nozzle.data.cache.IClickedMediaUrlCache
 import com.dluvian.nozzle.data.getDefaultRelays
@@ -48,7 +49,7 @@ class ProfileViewModel(
     val isRefreshingState = isRefreshingFlow
         .stateIn(
             viewModelScope,
-            SharingStarted.Eagerly,
+            SharingStarted.WhileSubscribed(),
             false
         )
 
@@ -188,7 +189,7 @@ class ProfileViewModel(
         profileState = profileProvider.getProfileFlow(pubkey)
             .stateIn(
                 viewModelScope,
-                SharingStarted.WhileSubscribed(),
+                SharingStarted.WhileSubscribed(stopTimeoutMillis = SCOPE_TIMEOUT),
                 ProfileWithAdditionalInfo.createEmpty(),
             )
         setFeed(pubkey = pubkey, dbBatchSize = dbBatchSize)
@@ -201,7 +202,7 @@ class ProfileViewModel(
             limit = dbBatchSize
         ).stateIn(
             viewModelScope,
-            SharingStarted.WhileSubscribed(),
+            SharingStarted.WhileSubscribed(stopTimeoutMillis = SCOPE_TIMEOUT),
             if (profileState.value.pubkey == pubkey) feedState.value else emptyList(),
         )
         renewAdditionalDataSubscription(pubkey)
@@ -221,7 +222,7 @@ class ProfileViewModel(
             ).map { toAppend -> feedState.value + toAppend }
                 .stateIn(
                     viewModelScope,
-                    SharingStarted.WhileSubscribed(),
+                    SharingStarted.WhileSubscribed(stopTimeoutMillis = SCOPE_TIMEOUT),
                     feedState.value,
                 )
             renewAdditionalDataSubscription(pubkey = profileState.value.pubkey)

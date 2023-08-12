@@ -7,4 +7,6 @@ const val TRUST_SCORE_BOOST = 1.1f
 const val DB_BATCH_SIZE = 50
 const val DB_APPEND_BATCH_SIZE = 20
 const val MAX_FEED_LENGTH = 100
+
+const val SCOPE_TIMEOUT = 7_000L
 const val WAIT_TIME = 1300L

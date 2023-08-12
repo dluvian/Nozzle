@@ -45,14 +45,14 @@ class PostViewModel(
     var metadataState = personalProfileProvider.getMetadata()
         .stateIn(
             viewModelScope,
-            SharingStarted.Eagerly,
+            SharingStarted.WhileSubscribed(),
             null
         )
 
     val uiState = viewModelState
         .stateIn(
             viewModelScope,
-            SharingStarted.Eagerly,
+            SharingStarted.WhileSubscribed(),
             viewModelState.value
         )
 
@@ -64,7 +64,7 @@ class PostViewModel(
         metadataState = personalProfileProvider.getMetadata()
             .stateIn(
                 viewModelScope,
-                SharingStarted.Lazily,
+                SharingStarted.WhileSubscribed(),
                 null
             )
 

@@ -53,7 +53,9 @@ class FeedViewModel(
 
     var metadataState = personalProfileProvider.getMetadata()
         .stateIn(
-            viewModelScope, SharingStarted.Lazily, null
+            viewModelScope,
+            SharingStarted.Eagerly,
+            null
         )
 
     var feedState: StateFlow<List<PostWithMeta>> = MutableStateFlow(emptyList())
@@ -201,7 +203,9 @@ class FeedViewModel(
         Log.i(TAG, "Reset profile icon")
         metadataState = personalProfileProvider.getMetadata()
             .stateIn(
-                viewModelScope, SharingStarted.Lazily, null
+                viewModelScope,
+                SharingStarted.Eagerly,
+                null
             )
         viewModelState.update {
             it.copy(pubkey = personalProfileProvider.getPubkey())
