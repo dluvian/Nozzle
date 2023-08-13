@@ -44,7 +44,7 @@ class EditProfileViewModel(
     val uiState = viewModelState
         .stateIn(
             viewModelScope,
-            SharingStarted.WhileSubscribed(),
+            SharingStarted.Eagerly,
             viewModelState.value
         )
 

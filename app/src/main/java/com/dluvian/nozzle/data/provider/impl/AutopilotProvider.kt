@@ -107,6 +107,7 @@ class AutopilotProvider(
     ) {
         Log.d(TAG, "Default to your read relays for ${pubkeys.size} pubkeys")
 
+        // We don't use relayProvider here because it depends on AutopilotProvider
         nip65Dao.getReadRelaysOfPubkey(pubkey = pubkeyProvider.getPubkey())
             .ifEmpty { getDefaultRelays() }
             .randomOrNull()

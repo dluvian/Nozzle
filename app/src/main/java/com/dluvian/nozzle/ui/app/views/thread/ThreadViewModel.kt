@@ -88,7 +88,7 @@ class ThreadViewModel(
                 postCardInteractor.like(
                     postId = postId,
                     postPubkey = it.pubkey,
-                    relays = (relayProvider.getWriteRelays() + it.relays).distinct()
+                    relays = relayProvider.getWriteRelays()
                 )
             }
         }
