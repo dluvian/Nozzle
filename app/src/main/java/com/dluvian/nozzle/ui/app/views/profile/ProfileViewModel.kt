@@ -11,10 +11,10 @@ import androidx.lifecycle.viewModelScope
 import com.dluvian.nozzle.R
 import com.dluvian.nozzle.data.DB_APPEND_BATCH_SIZE
 import com.dluvian.nozzle.data.DB_BATCH_SIZE
+import com.dluvian.nozzle.data.MAX_RELAY_REQUESTS
 import com.dluvian.nozzle.data.SCOPE_TIMEOUT
 import com.dluvian.nozzle.data.WAIT_TIME
 import com.dluvian.nozzle.data.cache.IClickedMediaUrlCache
-import com.dluvian.nozzle.data.getDefaultRelays
 import com.dluvian.nozzle.data.nostr.INostrSubscriber
 import com.dluvian.nozzle.data.postCardInteractor.IPostCardInteractor
 import com.dluvian.nozzle.data.profileFollower.IProfileFollower
@@ -253,9 +253,9 @@ class ProfileViewModel(
                 if (profileState.value.pubkey == pubkey) profileState.value.relays
                 else emptyList()
             }
-            .ifEmpty { getDefaultRelays() }
+            .ifEmpty { relayProvider.getReadRelays() }
             .shuffled()
-            .take(5)  // Don't ask more than 5 relays
+            .take(MAX_RELAY_REQUESTS)
     }
 
     companion object {

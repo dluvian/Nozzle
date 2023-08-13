@@ -10,3 +10,6 @@ const val MAX_FEED_LENGTH = 100
 
 const val SCOPE_TIMEOUT = 7_000L
 const val WAIT_TIME = 1300L
+
+// Don't ask more than 5 relays
+const val MAX_RELAY_REQUESTS = 5

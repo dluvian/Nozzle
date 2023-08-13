@@ -1,10 +1,12 @@
 package com.dluvian.nozzle.data.provider.impl
 
 import android.util.Log
-import com.dluvian.nozzle.data.getDefaultRelays
+import com.dluvian.nozzle.data.MAX_RELAY_REQUESTS
+import com.dluvian.nozzle.data.WAIT_TIME
 import com.dluvian.nozzle.data.nostr.INostrSubscriber
 import com.dluvian.nozzle.data.provider.IProfileWithAdditionalInfoProvider
 import com.dluvian.nozzle.data.provider.IPubkeyProvider
+import com.dluvian.nozzle.data.provider.IRelayProvider
 import com.dluvian.nozzle.data.room.dao.ContactDao
 import com.dluvian.nozzle.data.room.dao.EventRelayDao
 import com.dluvian.nozzle.data.room.dao.Nip65Dao
@@ -28,6 +30,7 @@ private const val TAG = "ProfileWithAdditionalInfoProvider"
 class ProfileWithAdditionalInfoProvider(
     private val pubkeyProvider: IPubkeyProvider,
     private val nostrSubscriber: INostrSubscriber,
+    private val relayProvider: IRelayProvider,
     private val profileDao: ProfileDao,
     private val contactDao: ContactDao,
     private val eventRelayDao: EventRelayDao,
@@ -39,18 +42,24 @@ class ProfileWithAdditionalInfoProvider(
         val npub = hexToNpub(pubkey)
         val profileFlow = profileDao.getProfileFlow(pubkey)
             .firstThenDistinctDebounce(NORMAL_DEBOUNCE)
+
+        // TODO: SQL join (?)
         val relaysFlow = eventRelayDao.listUsedRelaysFlow(pubkey)
             .firstThenDistinctDebounce(NORMAL_DEBOUNCE)
+
+        // TODO: SQL join
         val numOfFollowingFlow = contactDao.countFollowingFlow(pubkey)
             .firstThenDistinctDebounce(NORMAL_DEBOUNCE)
 
         // No debounce because of immediate user interaction response
+        // TODO: SQL join
         val isFollowedByMeFlow = contactDao.isFollowedFlow(
             pubkey = pubkeyProvider.getPubkey(),
             contactPubkey = pubkey
         ).distinctUntilChanged()
 
         // No debounce because of immediate user interaction response
+        // TODO: SQL join
         val numOfFollowersFlow = contactDao.countFollowersFlow(pubkey)
             .distinctUntilChanged()
 
@@ -76,9 +85,6 @@ class ProfileWithAdditionalInfoProvider(
             numOfFollowersFlow = numOfFollowersFlow
         ).distinctUntilChanged()
     }
-
-    // TODO: Move to pubkey provider
-    private fun isOneself(pubkey: String) = pubkey == pubkeyProvider.getPubkey()
 
     private fun getFinalFlow(
         mainFlow: Flow<ProfileWithAdditionalInfo>,
@@ -123,6 +129,7 @@ class ProfileWithAdditionalInfoProvider(
     }
 
     private fun getBaseFlow(pubkey: String, npub: String, relaysFlow: Flow<List<String>>) = flow {
+        val isOneself = pubkeyProvider.isOneself(pubkey = pubkey)
         emit(
             ProfileWithAdditionalInfo(
                 pubkey = pubkey,
@@ -131,22 +138,22 @@ class ProfileWithAdditionalInfoProvider(
                 numOfFollowing = 0,
                 numOfFollowers = 0,
                 relays = emptyList(),
-                isOneself = isOneself(pubkey = pubkey),
+                isOneself = isOneself,
                 isFollowedByMe = false,
-                trustScore = if (isOneself(pubkey = pubkey)) null else 0.001f,
+                trustScore = if (isOneself) null else 0.001f,
             )
         )
         nostrSubscriber.unsubscribeNip65()
         nostrSubscriber.unsubscribeProfiles()
         nostrSubscriber.subscribeNip65(listOf(pubkey))
-        delay(1000)
+        delay(WAIT_TIME)
         nostrSubscriber.subscribeToProfileMetadataAndContactList(
             pubkeys = listOf(pubkey),
             relays = nip65Dao.getWriteRelaysOfPubkey(pubkey = pubkey)
                 .ifEmpty { relaysFlow.firstOrNull().orEmpty() }
-                .ifEmpty { getDefaultRelays() }
+                .ifEmpty { relayProvider.getReadRelays() }
                 .shuffled()
-                .take(5)  // Don't ask more than 5 relays
+                .take(MAX_RELAY_REQUESTS)
         )
     }
 }
