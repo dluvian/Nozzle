@@ -7,7 +7,6 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import com.dluvian.nozzle.data.DB_APPEND_BATCH_SIZE
 import com.dluvian.nozzle.model.PostIds
 import com.dluvian.nozzle.model.PostWithMeta
 import com.dluvian.nozzle.ui.components.PullRefreshBox
@@ -44,9 +43,7 @@ fun PostCardList(
                     onNavigateToThread = onNavigateToThread,
                     onNavigateToReply = onNavigateToReply,
                 )
-                // Append the next batch when half of the appended posts are left to be shown
-                if (index == (posts.size - (0.5 * DB_APPEND_BATCH_SIZE)).toInt()
-                ) {
+                if (index == posts.size - 7 || index == posts.size - 1) {
                     onLoadMore()
                 }
             }
