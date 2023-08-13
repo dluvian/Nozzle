@@ -11,6 +11,7 @@ import androidx.lifecycle.viewModelScope
 import com.dluvian.nozzle.R
 import com.dluvian.nozzle.data.DB_APPEND_BATCH_SIZE
 import com.dluvian.nozzle.data.DB_BATCH_SIZE
+import com.dluvian.nozzle.data.MAX_RELAY_REQUESTS
 import com.dluvian.nozzle.data.SCOPE_TIMEOUT
 import com.dluvian.nozzle.data.WAIT_TIME
 import com.dluvian.nozzle.data.cache.IClickedMediaUrlCache
@@ -252,7 +253,10 @@ class ProfileViewModel(
                 if (profileState.value.pubkey == pubkey) profileState.value.relays
                 else emptyList()
             }
-            .ifEmpty { relayProvider.getLimitedReadRelays() }
+            // TODO: Take random n instead of shuffling whole list
+            .let { if (it.size > MAX_RELAY_REQUESTS) it.shuffled() else it }
+            .take(MAX_RELAY_REQUESTS)
+            .ifEmpty { relayProvider.getReadRelays() }
     }
 
     companion object {
