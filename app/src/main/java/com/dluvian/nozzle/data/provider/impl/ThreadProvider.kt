@@ -5,9 +5,10 @@ import com.dluvian.nozzle.data.mapper.IPostMapper
 import com.dluvian.nozzle.data.nostr.INostrSubscriber
 import com.dluvian.nozzle.data.provider.IThreadProvider
 import com.dluvian.nozzle.data.room.dao.PostDao
-import com.dluvian.nozzle.data.room.helper.IdAndReplyToId
+import com.dluvian.nozzle.data.room.helper.ReplyContext
 import com.dluvian.nozzle.model.PostThread
 import com.dluvian.nozzle.model.PostWithMeta
+import com.dluvian.nozzle.model.helper.IdsAndPubkeys
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
@@ -42,9 +43,9 @@ class ThreadProvider(
 
         return getMappedThreadFlow(
             currentId = current.id,
-            previousIds = previous,
+            previousIds = previous.ids,
             replyIds = replies.map { it.id },
-            authorPubkeys = replyContextList.map { it.pubkey }.distinct()
+            authorPubkeys = replyContextList.map { it.pubkey }.toSet() + previous.pubkeys
         )
     }
 
@@ -61,22 +62,28 @@ class ThreadProvider(
         )
     }
 
-    private suspend fun listPrevious(currentId: String, replyToId: String?): List<String> {
-        if (replyToId == null) return emptyList()
+    private suspend fun listPrevious(currentId: String, replyToId: String?): IdsAndPubkeys {
+        if (replyToId == null) return IdsAndPubkeys()
 
-        val first = IdAndReplyToId(id = currentId, replyToId = replyToId)
+        val first = ReplyContext(id = currentId, replyToId = replyToId, pubkey = "")
         val previous = mutableListOf(first)
         while (previous.last().replyToId != null) {
             val currentReplyToId = previous.last().replyToId ?: break
-            val previousReplyToId = postDao.getReplyToId(id = currentReplyToId)
-            val mapped = IdAndReplyToId(id = currentReplyToId, replyToId = previousReplyToId)
+            val previousReplyToIdAndPubkey = postDao.getReplyToIdAndPubkey(id = currentReplyToId)
+            val mapped = ReplyContext(
+                id = currentReplyToId,
+                replyToId = previousReplyToIdAndPubkey?.replyToId,
+                pubkey = previousReplyToIdAndPubkey?.pubkey.orEmpty()
+            )
             previous.add(mapped)
         }
 
         previous.reverse() // Root first
         previous.removeLast() // Removing 'current'
 
-        return previous.map { it.id }
+        return IdsAndPubkeys(
+            ids = previous.map { it.id },
+            pubkeys = previous.filter { it.pubkey.isNotEmpty() }.map { it.pubkey })
     }
 
     private suspend fun getMappedThreadFlow(

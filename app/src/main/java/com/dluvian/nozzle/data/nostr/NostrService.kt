@@ -26,10 +26,6 @@ class NostrService(
         }
 
         override fun onEvent(subscriptionId: String, event: Event, relayUrl: String?) {
-            Log.d(
-                TAG,
-                "OnEvent: id ${event.id}, kind ${event.kind}, relay $relayUrl in subscription $subscriptionId"
-            )
             eventProcessor.process(event = event, relayUrl = relayUrl)
         }
 

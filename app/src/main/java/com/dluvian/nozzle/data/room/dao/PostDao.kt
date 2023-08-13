@@ -4,6 +4,7 @@ import androidx.room.*
 import com.dluvian.nozzle.data.room.entity.PostEntity
 import com.dluvian.nozzle.data.room.helper.IdAndPubkey
 import com.dluvian.nozzle.data.room.helper.ReplyContext
+import com.dluvian.nozzle.data.room.helper.ReplyToIdAndPubkey
 import com.dluvian.nozzle.model.MentionedPost
 import com.dluvian.nozzle.model.PostEntityExtended
 import kotlinx.coroutines.flow.Flow
@@ -94,11 +95,11 @@ interface PostDao {
 
 
     @Query(
-        "SELECT post.replyToId " +
+        "SELECT post.replyToId, post.pubkey " +
                 "FROM post " +
                 "WHERE id = :id "
     )
-    suspend fun getReplyToId(id: String): String?
+    suspend fun getReplyToIdAndPubkey(id: String): ReplyToIdAndPubkey?
 
     @Query(
         // SELECT PostEntity
