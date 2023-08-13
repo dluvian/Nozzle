@@ -61,12 +61,6 @@ class ProfileViewModel(
 
     init {
         Log.i(TAG, "Initialize ProfileViewModel")
-        viewModelScope.launch(context = Dispatchers.IO) {
-            setProfileAndFeed(
-                pubkey = pubkeyProvider.getPubkey(),
-                dbBatchSize = DB_BATCH_SIZE
-            )
-        }
     }
 
     private val isSettingPubkey = AtomicBoolean(false)

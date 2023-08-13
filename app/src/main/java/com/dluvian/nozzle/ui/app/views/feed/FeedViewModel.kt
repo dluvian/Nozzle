@@ -72,8 +72,25 @@ class FeedViewModel(
             )
         }
         viewModelScope.launch(context = IO) {
-            handleRefresh()
+            initializeFeed()
         }
+    }
+
+    private suspend fun initializeFeed() {
+        setUIRefresh(true)
+        subscribeToNip65()
+        updateRelaySelection()
+        feedState = feedProvider.getFeedFlow(
+            feedSettings = viewModelState.value.feedSettings,
+            limit = DB_BATCH_SIZE,
+            waitForSubscription = WAIT_TIME,
+        ).stateIn(
+            viewModelScope,
+            SharingStarted.Eagerly,
+            feedState.value,
+        )
+        setUIRefresh(false)
+        renewAdditionalDataSubscription()
     }
 
     val onRefreshFeedView: () -> Unit = {
@@ -260,7 +277,6 @@ class FeedViewModel(
 
     private suspend fun updateScreen() {
         updateRelaySelection()
-        // TODO: combine flow instead of new stateIn??
         feedState = feedProvider.getFeedFlow(
             feedSettings = viewModelState.value.feedSettings,
             limit = DB_BATCH_SIZE,
@@ -322,6 +338,7 @@ class FeedViewModel(
         // TODO: Retryer that resubs unknown stuff. Use here, profile page and thread view
         // TODO: Resub only what does not exist. Reduce unnecessary data traffic
         // TODO: Filter conditions as helper functions
+        // TODO: Resub mentioned post from mention-author's read relays
         delay(2 * WAIT_TIME)
         if (isAppending.get()) return
         val postsWithUnknowns = feedState.value
