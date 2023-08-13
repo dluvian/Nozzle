@@ -4,8 +4,8 @@ package com.dluvian.nozzle.data
 // Full green ring will be achieved with a raw trust score percentage of 90.9%
 const val TRUST_SCORE_BOOST = 1.1f
 
-const val DB_BATCH_SIZE = 50
-const val DB_APPEND_BATCH_SIZE = 25
+const val DB_BATCH_SIZE = 75
+const val DB_APPEND_BATCH_SIZE = 30
 
 // TODO: Remove this after implementing infinite scroll via pagination
 const val MAX_FEED_LENGTH = 100

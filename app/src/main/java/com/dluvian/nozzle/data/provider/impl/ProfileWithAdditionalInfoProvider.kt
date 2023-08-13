@@ -13,7 +13,6 @@ import com.dluvian.nozzle.data.room.dao.Nip65Dao
 import com.dluvian.nozzle.data.room.dao.ProfileDao
 import com.dluvian.nozzle.data.room.entity.ProfileEntity
 import com.dluvian.nozzle.data.utils.NORMAL_DEBOUNCE
-import com.dluvian.nozzle.data.utils.SHORT_DEBOUNCE
 import com.dluvian.nozzle.data.utils.firstThenDistinctDebounce
 import com.dluvian.nozzle.data.utils.hexToNpub
 import com.dluvian.nozzle.model.ProfileWithAdditionalInfo
@@ -76,7 +75,7 @@ class ProfileWithAdditionalInfoProvider(
             relaysFlow = relaysFlow,
             profileFlow = profileFlow,
             numOfFollowingFlow = numOfFollowingFlow
-        ).firstThenDistinctDebounce(SHORT_DEBOUNCE)
+        )
 
         return getFinalFlow(
             mainFlow = mainFlow,

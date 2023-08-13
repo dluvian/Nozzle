@@ -45,8 +45,7 @@ fun PostCardList(
                     onNavigateToReply = onNavigateToReply,
                 )
                 // Append the next batch when half of the appended posts are left to be shown
-                if (index == posts.size - 1
-                    || index == (posts.size - (0.5 * DB_APPEND_BATCH_SIZE)).toInt()
+                if (index == (posts.size - (0.5 * DB_APPEND_BATCH_SIZE)).toInt()
                 ) {
                     onLoadMore()
                 }

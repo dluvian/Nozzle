@@ -77,17 +77,19 @@ class FeedViewModel(
     }
 
     private suspend fun initializeFeed() {
+        setUIRefresh(true)
         subscribeToNip65()
         updateRelaySelection()
         feedState = feedProvider.getFeedFlow(
             feedSettings = viewModelState.value.feedSettings,
             limit = DB_BATCH_SIZE,
-            waitForSubscription = null,
+            waitForSubscription = WAIT_TIME,
         ).stateIn(
             viewModelScope,
             SharingStarted.Eagerly,
             feedState.value,
         )
+        setUIRefresh(false)
         renewAdditionalDataSubscription()
     }
 
@@ -290,6 +292,7 @@ class FeedViewModel(
 
     // TODO: This is too slow and sucks. Same in ProfileViewModel. Use pagination
     private suspend fun appendFeed(currentFeed: List<PostWithMeta>) {
+        setUIRefresh(true)
         currentFeed.lastOrNull()?.let { last ->
             feedState = feedProvider.getFeedFlow(
                 feedSettings = viewModelState.value.feedSettings,
@@ -309,6 +312,8 @@ class FeedViewModel(
                     currentFeed,
                 )
         }
+        delay(WAIT_TIME)
+        setUIRefresh(false)
     }
 
     private fun subscribeToPersonalProfile() {
