@@ -5,7 +5,9 @@ package com.dluvian.nozzle.data
 const val TRUST_SCORE_BOOST = 1.1f
 
 const val DB_BATCH_SIZE = 50
-const val DB_APPEND_BATCH_SIZE = 20
+const val DB_APPEND_BATCH_SIZE = 25
+
+// TODO: Remove this after implementing infinite scroll via pagination
 const val MAX_FEED_LENGTH = 100
 
 const val SCOPE_TIMEOUT = 7_000L
