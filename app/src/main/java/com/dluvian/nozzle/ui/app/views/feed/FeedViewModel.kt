@@ -328,7 +328,7 @@ class FeedViewModel(
             .takeLast(DB_BATCH_SIZE)
             .filter {
                 it.name.isEmpty() ||
-                        (it.replyToId != null && (it.replyToPubkey.isNullOrEmpty() || it.name.isNullOrEmpty()))
+                        (it.replyToId != null && (it.replyToPubkey.isNullOrEmpty() || it.replyToName.isNullOrEmpty()))
                         || (it.mentionedPost?.pubkey?.isEmpty() ?: false)
             }
         if (postsWithUnknowns.isNotEmpty()) {
