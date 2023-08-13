@@ -378,10 +378,12 @@ private fun PostCardHeader(
 ) {
     Row {
         Username(username = name, pubkey = pubkey, onOpenProfile = onOpenProfile)
-        Spacer(modifier = Modifier.width(spacing.medium))
-        Bullet()
-        Spacer(modifier = Modifier.width(spacing.medium))
-        RelativeTime(from = createdAt)
+        if (createdAt > 0) {
+            Spacer(modifier = Modifier.width(spacing.medium))
+            Bullet()
+            Spacer(modifier = Modifier.width(spacing.medium))
+            RelativeTime(from = createdAt)
+        }
     }
 }
 
