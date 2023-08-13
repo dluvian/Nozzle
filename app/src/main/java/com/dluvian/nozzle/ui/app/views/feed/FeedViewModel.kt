@@ -325,10 +325,11 @@ class FeedViewModel(
         delay(2 * WAIT_TIME)
         if (isAppending.get()) return
         val postsWithUnknowns = feedState.value
-            .takeLast(2 * DB_BATCH_SIZE)
+            .takeLast(DB_BATCH_SIZE)
             .filter {
-                (it.replyToId != null && (it.replyToPubkey.isNullOrEmpty() || it.replyToName.isNullOrEmpty())) ||
-                        (it.mentionedPost?.pubkey?.isEmpty() ?: false)
+                it.name.isEmpty() ||
+                        (it.replyToId != null && (it.replyToPubkey.isNullOrEmpty() || it.name.isNullOrEmpty()))
+                        || (it.mentionedPost?.pubkey?.isEmpty() ?: false)
             }
         if (postsWithUnknowns.isNotEmpty()) {
             Log.i(TAG, "Resubscribe missing posts and profiles of ${postsWithUnknowns.size} posts")
