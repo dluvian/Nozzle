@@ -77,19 +77,17 @@ class FeedViewModel(
     }
 
     private suspend fun initializeFeed() {
-        setUIRefresh(true)
         subscribeToNip65()
         updateRelaySelection()
         feedState = feedProvider.getFeedFlow(
             feedSettings = viewModelState.value.feedSettings,
             limit = DB_BATCH_SIZE,
-            waitForSubscription = WAIT_TIME,
+            waitForSubscription = null,
         ).stateIn(
             viewModelScope,
             SharingStarted.Eagerly,
             feedState.value,
         )
-        setUIRefresh(false)
         renewAdditionalDataSubscription()
     }
 
