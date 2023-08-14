@@ -12,17 +12,19 @@ import com.dluvian.nozzle.data.provider.IPersonalProfileProvider
 import com.dluvian.nozzle.data.provider.IRelayProvider
 import com.dluvian.nozzle.data.room.dao.PostDao
 import com.dluvian.nozzle.data.room.entity.PostEntity
+import com.dluvian.nozzle.data.utils.hexToNote
 import com.dluvian.nozzle.data.utils.listRelayStatuses
 import com.dluvian.nozzle.data.utils.toggleRelay
 import com.dluvian.nozzle.model.AllRelays
+import com.dluvian.nozzle.model.MentionedPost
 import com.dluvian.nozzle.model.RelayActive
-import com.dluvian.nozzle.model.RelaySelection
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import java.util.concurrent.atomic.AtomicBoolean
 
 private const val TAG = "PostViewModel"
 
@@ -31,6 +33,7 @@ data class PostViewModelState(
     val pubkey: String = "",
     val relayStatuses: List<RelayActive> = emptyList(),
     val isSendable: Boolean = false,
+    val postToQuote: MentionedPost? = null,
 )
 
 class PostViewModel(
@@ -60,30 +63,39 @@ class PostViewModel(
         Log.i(TAG, "Initialize PostViewModel")
     }
 
-    val onPreparePost: (RelaySelection) -> Unit = { relaySelection ->
+    val onPreparePost: () -> Unit = {
         updateMetadataState()
-        viewModelScope.launch(context = Dispatchers.IO) {
-            Log.i(TAG, "Prepare new post")
-            viewModelState.update {
-                it.copy(
-                    pubkey = personalProfileProvider.getPubkey(),
-                    content = "",
-                    isSendable = false,
-                    relayStatuses = listRelayStatuses(
-                        allRelayUrls = (relayProvider.getWriteRelays() +
-                                relaySelection.getSelectedRelays().orEmpty()
-                                ).distinct(),
-                        relaySelection = AllRelays
-                    ),
-                )
-            }
+        Log.i(TAG, "Prepare new post")
+        viewModelState.update {
+            it.copy(
+                pubkey = personalProfileProvider.getPubkey(),
+                content = "",
+                isSendable = it.postToQuote != null,
+                relayStatuses = getRelayStatuses()
+            )
+        }
+    }
+
+    // TODO: Show "Quoting abc"
+    // TODO: Render post card
+    // TODO: Add recipients read relays to selection
+    private val isPreparing = AtomicBoolean(false)
+    val onPrepareQuote: (String) -> Unit = { postIdToQuote ->
+        Log.i(TAG, "Prepare new quoted post")
+        if (!isPreparing.get()) {
+            isPreparing.set(true)
+            viewModelScope.launch(context = Dispatchers.IO) {
+                val postToQuote = postDao.getMentionedPost(postId = postIdToQuote)
+                viewModelState.update { it.copy(postToQuote = postToQuote) }
+                onPreparePost()
+            }.invokeOnCompletion { isPreparing.set(false) }
         }
     }
 
     val onChangeContent: (String) -> Unit = { input ->
         if (input != uiState.value.content) {
             viewModelState.update {
-                it.copy(content = input, isSendable = input.isNotBlank())
+                it.copy(content = input, isSendable = input.isNotBlank() || it.postToQuote != null)
             }
         }
     }
@@ -99,24 +111,32 @@ class PostViewModel(
 
     val onSend: () -> Unit = {
         uiState.value.let { state ->
-            val err = getErrorText(context = context, state = state)
-            if (err != null) {
-                Toast.makeText(context, err, Toast.LENGTH_SHORT).show()
-            } else {
-                val selectedRelays = state.relayStatuses
-                    .filter { it.isActive }
-                    .map { it.relayUrl }
-                Log.i(TAG, "Send post to ${selectedRelays.size} relays")
-                val event = nostrService.sendPost(
-                    content = state.content,
-                    relays = selectedRelays
-                )
-                viewModelScope.launch(context = Dispatchers.IO) {
-                    postDao.insertIfNotPresent(PostEntity.fromEvent(event))
-                }
-                showPostPublishedToast()
-                resetUI()
+            val selectedRelays = state.relayStatuses
+                .filter { it.isActive }
+                .map { it.relayUrl }
+            Log.i(TAG, "Send post to ${selectedRelays.size} relays")
+            val event = nostrService.sendPost(
+                content = getContentToPublish(state = state),
+                relays = selectedRelays
+            )
+            viewModelScope.launch(context = Dispatchers.IO) {
+                postDao.insertIfNotPresent(PostEntity.fromEvent(event))
             }
+            showPostPublishedToast()
+            resetUI()
+        }
+    }
+
+    private fun resetUI() {
+        Log.i(TAG, "Reset Post view")
+        viewModelState.update {
+            it.copy(
+                content = "",
+                relayStatuses = getRelayStatuses(),
+                isSendable = false,
+                pubkey = personalProfileProvider.getPubkey(),
+                postToQuote = null
+            )
         }
     }
 
@@ -125,7 +145,7 @@ class PostViewModel(
             .stateIn(
                 viewModelScope,
                 SharingStarted.WhileSubscribed(),
-                null
+                metadataState.value
             )
     }
 
@@ -137,28 +157,21 @@ class PostViewModel(
         ).show()
     }
 
-    private fun getErrorText(context: Context, state: PostViewModelState): String? {
-        return if (state.content.isBlank()) {
-            context.getString(R.string.your_post_is_empty)
-        } else if (state.relayStatuses.all { !it.isActive }) {
-            context.getString(R.string.pls_select_relays)
-        } else {
-            null
-        }
+    private fun getRelayStatuses() = listRelayStatuses(
+        allRelayUrls = relayProvider.getWriteRelays(),
+        relaySelection = AllRelays
+    )
+
+    private fun getContentToPublish(state: PostViewModelState): String {
+        return state.content + getNewLineQuoteUri(state.postToQuote?.id)
     }
 
-    private fun resetUI() {
-        viewModelState.update {
-            it.copy(
-                content = "",
-                relayStatuses = listRelayStatuses(
-                    allRelayUrls = relayProvider.getWriteRelays(),
-                    relaySelection = AllRelays
-                ),
-                isSendable = false,
-                pubkey = personalProfileProvider.getPubkey()
-            )
-        }
+
+    // TODO: Move to utils
+    private fun getNewLineQuoteUri(postIdToQuote: String?): String {
+        return if (postIdToQuote == null) ""
+        // TODO: nostr: URI from utils
+        else hexToNote(postId = postIdToQuote).let { noteId -> "\nnostr:$noteId" }
     }
 
     companion object {

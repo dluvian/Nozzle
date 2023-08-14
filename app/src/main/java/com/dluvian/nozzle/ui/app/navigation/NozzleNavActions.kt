@@ -36,6 +36,7 @@ class NozzleNavActions(private val navController: NavHostController) {
         }
     }
 
+    // TODO: Reformat string
     val navigateToThread: (String, String?) -> Unit = { postId, replyToId ->
         navController.navigate(
             NozzleRoute.THREAD + "/$postId" +
@@ -53,6 +54,12 @@ class NozzleNavActions(private val navController: NavHostController) {
 
     val navigateToPost: () -> Unit = {
         navController.navigate(NozzleRoute.POST) {
+            setSimpleNavOptions(optionsBuilder = this)
+        }
+    }
+
+    val navigateToQuote: (String) -> Unit = { id ->
+        navController.navigate("${NozzleRoute.QUOTE}/${id}") {
             setSimpleNavOptions(optionsBuilder = this)
         }
     }

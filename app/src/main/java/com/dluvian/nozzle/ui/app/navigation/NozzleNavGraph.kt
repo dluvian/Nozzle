@@ -30,6 +30,8 @@ import kotlinx.coroutines.launch
 private const val TAG = "NozzleNavGraph"
 private const val URI = "nostr:"
 
+// TODO: Figure out transitions
+
 @Composable
 fun NozzleNavGraph(
     modifier: Modifier = Modifier,
@@ -63,6 +65,7 @@ fun NozzleNavGraph(
                 onNavigateToThread = navActions.navigateToThread,
                 onNavigateToReply = navActions.navigateToReply,
                 onNavigateToPost = navActions.navigateToPost,
+                onNavigateToQuote = navActions.navigateToQuote,
             )
         }
         composable(
@@ -76,6 +79,7 @@ fun NozzleNavGraph(
                 onNavigateToThread = navActions.navigateToThread,
                 onNavigateToReply = navActions.navigateToReply,
                 onNavigateToEditProfile = onNavigateToEditProfile,
+                onNavigateToQuote = navActions.navigateToQuote,
             )
         }
         composable(NozzleRoute.SEARCH) {
@@ -104,9 +108,7 @@ fun NozzleNavGraph(
             )
         }
         composable(
-            route = NozzleRoute.THREAD +
-                    "/{postId}" +
-                    "?replyToId={replyToId}",
+            route = "${NozzleRoute.THREAD}/{postId}?replyToId={replyToId}",
             arguments = listOf(
                 navArgument("postId") { type = NavType.StringType },
                 navArgument("replyToId") { type = NavType.StringType },
@@ -123,6 +125,7 @@ fun NozzleNavGraph(
                 onPrepareReply = vmContainer.replyViewModel.onPrepareReply,
                 onNavigateToProfile = navActions.navigateToProfile,
                 onNavigateToReply = navActions.navigateToReply,
+                onNavigateToQuote = navActions.navigateToQuote,
                 onGoBack = navActions.popStack,
             )
         }
@@ -133,6 +136,20 @@ fun NozzleNavGraph(
             )
         }
         composable(NozzleRoute.POST) {
+            PostRoute(
+                postViewModel = vmContainer.postViewModel,
+                onGoBack = navActions.popStack,
+            )
+        }
+        composable(
+            route = "${NozzleRoute.QUOTE}/{postId}",
+            arguments = listOf(navArgument("postId") { type = NavType.StringType })
+        ) { backStackEntry ->
+            val postIdToQuote = backStackEntry.arguments?.getString("postId").orEmpty()
+            remember(postIdToQuote) {
+                vmContainer.postViewModel.onPrepareQuote(postIdToQuote)
+                postIdToQuote
+            }
             PostRoute(
                 postViewModel = vmContainer.postViewModel,
                 onGoBack = navActions.popStack,

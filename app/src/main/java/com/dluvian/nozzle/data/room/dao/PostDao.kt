@@ -180,4 +180,12 @@ interface PostDao {
                 "WHERE id IN (:postIds) "
     )
     fun getMentionedPostsMapFlow(postIds: Collection<String>): Flow<Map<String, MentionedPost>>
+
+    @Query(
+        "SELECT id, post.pubkey, content, name, picture, post.createdAt " +
+                "FROM post " +
+                "JOIN profile ON post.pubkey = profile.pubkey " +
+                "WHERE id = :postId"
+    )
+    suspend fun getMentionedPost(postId: String): MentionedPost?
 }

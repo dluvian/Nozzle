@@ -17,13 +17,13 @@ fun PostCardList(
     isRefreshing: Boolean,
     onRefresh: () -> Unit,
     onLike: (String) -> Unit,
-    onQuote: (String) -> Unit,
     onShowMedia: (String) -> Unit,
     onShouldShowMedia: (String) -> Boolean,
     onPrepareReply: (PostWithMeta) -> Unit,
     onLoadMore: () -> Unit,
     onNavigateToThread: (PostIds) -> Unit,
     onNavigateToReply: () -> Unit,
+    onNavigateToQuote: (String) -> Unit,
     lazyListState: LazyListState = rememberLazyListState(),
     onOpenProfile: ((String) -> Unit)? = null,
 ) {
@@ -35,13 +35,13 @@ fun PostCardList(
                 PostCard(
                     post = post,
                     onLike = onLike,
-                    onQuote = onQuote,
                     onOpenProfile = onOpenProfile,
                     onShowMedia = onShowMedia,
                     onShouldShowMedia = onShouldShowMedia,
                     onPrepareReply = onPrepareReply,
                     onNavigateToThread = onNavigateToThread,
                     onNavigateToReply = onNavigateToReply,
+                    onNavigateToQuote = onNavigateToQuote,
                 )
                 if (index == posts.size - 7 || index == posts.size - 1) {
                     onLoadMore()

@@ -50,7 +50,6 @@ fun ProfileScreen(
     feed: List<PostWithMeta>,
     onPrepareReply: (PostWithMeta) -> Unit,
     onLike: (String) -> Unit,
-    onQuote: (String) -> Unit,
     onFollow: (String) -> Unit,
     onUnfollow: (String) -> Unit,
     onShowMedia: (String) -> Unit,
@@ -60,6 +59,7 @@ fun ProfileScreen(
     onLoadMore: () -> Unit,
     onNavigateToThread: (PostIds) -> Unit,
     onNavigateToReply: () -> Unit,
+    onNavigateToQuote: (String) -> Unit,
     onNavigateToEditProfile: () -> Unit,
 ) {
     Column {
@@ -83,13 +83,13 @@ fun ProfileScreen(
             isRefreshing = isRefreshing,
             onRefresh = onRefreshProfileView,
             onLike = onLike,
-            onQuote = onQuote,
             onShowMedia = onShowMedia,
             onShouldShowMedia = onShouldShowMedia,
             onPrepareReply = onPrepareReply,
             onLoadMore = onLoadMore,
             onNavigateToThread = onNavigateToThread,
-            onNavigateToReply = onNavigateToReply
+            onNavigateToReply = onNavigateToReply,
+            onNavigateToQuote = onNavigateToQuote
         )
     }
     if (feed.isEmpty()) {

@@ -135,15 +135,6 @@ class ProfileViewModel(
     }
 
     // TODO: Refactor: Same in other ViewModels
-    val onQuote: (String) -> Unit = { id ->
-        feedState.value.find { it.id == id }?.let {
-            viewModelScope.launch(context = Dispatchers.IO) {
-                TODO()
-            }
-        }
-    }
-
-    // TODO: Refactor: Same in other ViewModels
     val onShowMedia: (String) -> Unit = { mediaUrl ->
         clickedMediaUrlCache.insert(mediaUrl = mediaUrl)
     }

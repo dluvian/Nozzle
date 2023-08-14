@@ -33,7 +33,6 @@ fun ThreadScreen(
     isRefreshing: Boolean,
     onPrepareReply: (PostWithMeta) -> Unit,
     onLike: (String) -> Unit,
-    onQuote: (String) -> Unit,
     onRefreshThreadView: () -> Unit,
     onOpenThread: (PostIds) -> Unit,
     onShowMedia: (String) -> Unit,
@@ -41,6 +40,7 @@ fun ThreadScreen(
     onGoBack: () -> Unit,
     onNavigateToProfile: (String) -> Unit,
     onNavigateToReply: () -> Unit,
+    onNavigateToQuote: (String) -> Unit,
 ) {
     Column {
         ReturnableTopBar(text = stringResource(id = R.string.thread), onGoBack = onGoBack)
@@ -51,12 +51,12 @@ fun ThreadScreen(
                 onPrepareReply = onPrepareReply,
                 onRefresh = onRefreshThreadView,
                 onLike = onLike,
-                onQuote = onQuote,
                 onOpenThread = onOpenThread,
                 onShowMedia = onShowMedia,
                 onShouldShowMedia = onShouldShowMedia,
                 onNavigateToProfile = onNavigateToProfile,
                 onNavigateToReply = onNavigateToReply,
+                onNavigateToQuote = onNavigateToQuote,
             )
         }
     }
@@ -69,12 +69,12 @@ private fun ThreadedPosts(
     onPrepareReply: (PostWithMeta) -> Unit,
     onRefresh: () -> Unit,
     onLike: (String) -> Unit,
-    onQuote: (String) -> Unit,
     onNavigateToProfile: (String) -> Unit,
     onOpenThread: (PostIds) -> Unit,
     onShowMedia: (String) -> Unit,
     onShouldShowMedia: (String) -> Boolean,
     onNavigateToReply: () -> Unit,
+    onNavigateToQuote: (String) -> Unit,
 ) {
     val lazyListState = rememberLazyListState(initialFirstVisibleItemIndex = thread.previous.size)
     LaunchedEffect(key1 = thread.previous.size) {
@@ -98,14 +98,14 @@ private fun ThreadedPosts(
                     PostCard(
                         post = post,
                         onLike = onLike,
-                        threadPosition = threadPosition,
-                        onQuote = onQuote,
                         onPrepareReply = onPrepareReply,
                         onNavigateToThread = onOpenThread,
                         onNavigateToReply = onNavigateToReply,
-                        onOpenProfile = onNavigateToProfile,
+                        onNavigateToQuote = onNavigateToQuote,
                         onShowMedia = onShowMedia,
                         onShouldShowMedia = onShouldShowMedia,
+                        threadPosition = threadPosition,
+                        onOpenProfile = onNavigateToProfile,
                     )
                 }
                 item {
@@ -115,15 +115,15 @@ private fun ThreadedPosts(
                     PostCard(
                         modifier = Modifier.background(color = LightYellow),
                         post = it,
-                        threadPosition = thread.getCurrentThreadPosition(),
                         onLike = onLike,
-                        isCurrent = true,
-                        onQuote = onQuote,
-                        onShowMedia = onShowMedia,
-                        onShouldShowMedia = onShouldShowMedia,
                         onPrepareReply = onPrepareReply,
                         onNavigateToThread = onOpenThread,
                         onNavigateToReply = onNavigateToReply,
+                        onNavigateToQuote = onNavigateToQuote,
+                        onShowMedia = onShowMedia,
+                        onShouldShowMedia = onShouldShowMedia,
+                        isCurrent = true,
+                        threadPosition = thread.getCurrentThreadPosition(),
                         onOpenProfile = onNavigateToProfile,
                     )
                     Divider()
@@ -134,12 +134,12 @@ private fun ThreadedPosts(
                     PostCard(
                         post = post,
                         onLike = onLike,
-                        onQuote = onQuote,
-                        onShowMedia = onShowMedia,
-                        onShouldShowMedia = onShouldShowMedia,
                         onPrepareReply = onPrepareReply,
                         onNavigateToThread = onOpenThread,
                         onNavigateToReply = onNavigateToReply,
+                        onNavigateToQuote = onNavigateToQuote,
+                        onShowMedia = onShowMedia,
+                        onShouldShowMedia = onShouldShowMedia,
                         onOpenProfile = onNavigateToProfile,
                     )
                 }

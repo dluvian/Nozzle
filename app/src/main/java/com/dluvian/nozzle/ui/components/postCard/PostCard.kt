@@ -48,11 +48,11 @@ import com.dluvian.nozzle.ui.theme.*
 fun PostCard(
     post: PostWithMeta,
     onLike: (String) -> Unit,
-    onQuote: (String) -> Unit,
     onPrepareReply: (PostWithMeta) -> Unit,
     modifier: Modifier = Modifier,
     onNavigateToThread: (PostIds) -> Unit,
     onNavigateToReply: () -> Unit,
+    onNavigateToQuote: (String) -> Unit,
     onShowMedia: (String) -> Unit,
     onShouldShowMedia: (String) -> Boolean,
     isCurrent: Boolean = false,
@@ -174,9 +174,9 @@ fun PostCard(
                 numOfReplies = post.numOfReplies,
                 post = post,
                 onLike = { onLike(post.id) },
-                onQuote = { onQuote(post.id) },
                 onPrepareReply = onPrepareReply,
                 onNavigateToReply = onNavigateToReply,
+                onNavigateToQuote = onNavigateToQuote,
             )
         }
     }
@@ -414,9 +414,9 @@ private fun PostCardActions(
     numOfReplies: Int,
     post: PostWithMeta,
     onLike: () -> Unit,
-    onQuote: () -> Unit,
     onPrepareReply: (PostWithMeta) -> Unit,
     onNavigateToReply: () -> Unit,
+    onNavigateToQuote: (String) -> Unit,
 ) {
     Row(
         modifier = Modifier.fillMaxWidth(0.85f),
@@ -436,7 +436,7 @@ private fun PostCardActions(
             modifier = Modifier
                 .fillMaxWidth()
                 .weight(1f),
-            onQuote = onQuote
+            onNavigateToQuote = { onNavigateToQuote(post.id) }
         )
         LikeAction(
             modifier = Modifier
@@ -474,10 +474,9 @@ private fun ReplyAction(
 
 @Composable
 private fun QuoteAction(
-    onQuote: () -> Unit,
     modifier: Modifier = Modifier,
+    onNavigateToQuote: () -> Unit,
 ) {
-    val isClicked = remember { mutableStateOf(false) }
     Row(
         modifier = modifier,
         horizontalArrangement = Arrangement.Center,
@@ -487,10 +486,7 @@ private fun QuoteAction(
             modifier = Modifier
                 .size(sizing.smallIcon)
                 .clip(RoundedCornerShape(spacing.medium))
-                .clickable {
-                    onQuote()
-                    isClicked.value = true
-                }
+                .clickable(onClick = onNavigateToQuote)
         )
     }
 }

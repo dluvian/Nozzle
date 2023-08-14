@@ -4,7 +4,7 @@ sealed class RelaySelection {
     abstract fun getSelectedRelays(): Collection<String>?
 }
 
-object AllRelays : RelaySelection() {
+data object AllRelays : RelaySelection() {
     override fun getSelectedRelays(): List<String>? = null
 }
 

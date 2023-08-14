@@ -11,6 +11,7 @@ fun ThreadRoute(
     onPrepareReply: (PostWithMeta) -> Unit,
     onNavigateToProfile: (String) -> Unit,
     onNavigateToReply: () -> Unit,
+    onNavigateToQuote: (String) -> Unit,
     onGoBack: () -> Unit,
 ) {
     val thread by threadViewModel.threadState.collectAsState()
@@ -22,12 +23,12 @@ fun ThreadRoute(
         onPrepareReply = onPrepareReply,
         onRefreshThreadView = threadViewModel.onRefreshThreadView,
         onLike = threadViewModel.onLike,
-        onQuote = threadViewModel.onQuote,
         onShowMedia = threadViewModel.onShowMedia,
         onShouldShowMedia = threadViewModel.onShouldShowMedia,
         onOpenThread = threadViewModel.onOpenThread,
         onNavigateToProfile = onNavigateToProfile,
         onNavigateToReply = onNavigateToReply,
+        onNavigateToQuote = onNavigateToQuote,
         onGoBack = onGoBack,
     )
 }

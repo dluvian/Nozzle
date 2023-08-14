@@ -11,6 +11,7 @@ fun ProfileRoute(
     onPrepareReply: (PostWithMeta) -> Unit,
     onNavigateToThread: (String, String?) -> Unit,
     onNavigateToReply: () -> Unit,
+    onNavigateToQuote: (String) -> Unit,
     onNavigateToEditProfile: () -> Unit,
 ) {
     val isRefreshing by profileViewModel.isRefreshingState.collectAsState()
@@ -23,7 +24,6 @@ fun ProfileRoute(
         feed = feed,
         onPrepareReply = onPrepareReply,
         onLike = profileViewModel.onLike,
-        onQuote = profileViewModel.onQuote,
         onFollow = profileViewModel.onFollow,
         onUnfollow = profileViewModel.onUnfollow,
         onShowMedia = profileViewModel.onShowMedia,
@@ -39,5 +39,6 @@ fun ProfileRoute(
         },
         onNavigateToReply = onNavigateToReply,
         onNavigateToEditProfile = onNavigateToEditProfile,
+        onNavigateToQuote = onNavigateToQuote
     )
 }

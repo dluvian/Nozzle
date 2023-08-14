@@ -95,16 +95,6 @@ class ThreadViewModel(
     }
 
     // TODO: Refactor: Same in other ViewModels
-    val onQuote: (String) -> Unit = { postId ->
-        val toQuote = getCurrentPost(postId = postId)
-        toQuote?.let {
-            viewModelScope.launch(context = Dispatchers.IO) {
-                TODO()
-            }
-        }
-    }
-
-    // TODO: Refactor: Same in other ViewModels
     val onShowMedia: (String) -> Unit = { mediaUrl ->
         clickedMediaUrlCache.insert(mediaUrl = mediaUrl)
     }

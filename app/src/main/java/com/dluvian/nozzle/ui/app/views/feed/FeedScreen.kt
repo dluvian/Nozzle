@@ -32,7 +32,6 @@ import com.dluvian.nozzle.model.Oneself
 import com.dluvian.nozzle.model.PostIds
 import com.dluvian.nozzle.model.PostWithMeta
 import com.dluvian.nozzle.model.RelayActive
-import com.dluvian.nozzle.model.RelaySelection
 import com.dluvian.nozzle.model.UserSpecific
 import com.dluvian.nozzle.model.nostr.Metadata
 import com.dluvian.nozzle.ui.components.AddIcon
@@ -51,13 +50,12 @@ fun FeedScreen(
     feedState: List<PostWithMeta>,
     metadataState: Metadata?,
     onLike: (String) -> Unit,
-    onRepost: (String) -> Unit,
     onShowMedia: (String) -> Unit,
     onShouldShowMedia: (String) -> Boolean,
     onRefreshFeedView: () -> Unit,
     onRefreshOnMenuDismiss: () -> Unit,
     onPrepareReply: (PostWithMeta) -> Unit,
-    onPreparePost: (RelaySelection) -> Unit,
+    onPreparePost: () -> Unit,
     onToggleContactsOnly: () -> Unit,
     onTogglePosts: () -> Unit,
     onToggleReplies: () -> Unit,
@@ -69,6 +67,7 @@ fun FeedScreen(
     onNavigateToProfile: (String) -> Unit,
     onNavigateToReply: () -> Unit,
     onNavigateToPost: () -> Unit,
+    onNavigateToQuote: (String) -> Unit,
 ) {
     val lazyListState = rememberLazyListState()
     val scope = rememberCoroutineScope()
@@ -92,7 +91,8 @@ fun FeedScreen(
         },
         floatingActionButton = {
             FeedFab(onPrepareNewPost = {
-                onPreparePost(uiState.feedSettings.relaySelection)
+                // TODO: only onNavigateToPost()
+                onPreparePost()
                 onNavigateToPost()
             })
         },
@@ -107,13 +107,13 @@ fun FeedScreen(
                 isRefreshing = uiState.isRefreshing,
                 onRefresh = onRefreshFeedView,
                 onLike = onLike,
-                onQuote = onRepost,
                 onShowMedia = onShowMedia,
                 onShouldShowMedia = onShouldShowMedia,
                 onPrepareReply = onPrepareReply,
                 onLoadMore = onLoadMore,
                 onNavigateToThread = onNavigateToThread,
                 onNavigateToReply = onNavigateToReply,
+                onNavigateToQuote = onNavigateToQuote,
                 lazyListState = lazyListState,
                 onOpenProfile = onNavigateToProfile,
             )

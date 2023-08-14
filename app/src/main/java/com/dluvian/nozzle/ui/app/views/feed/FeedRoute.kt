@@ -4,19 +4,19 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import com.dluvian.nozzle.model.PostWithMeta
-import com.dluvian.nozzle.model.RelaySelection
 
+// TODO: Nav with args, no need for onPrepare
 @Composable
 fun FeedRoute(
     feedViewModel: FeedViewModel,
-    // TODO: Nav with args, no need for onPrepare
     onPrepareReply: (PostWithMeta) -> Unit,
-    onPreparePost: (RelaySelection) -> Unit,
+    onPreparePost: () -> Unit,
     onOpenDrawer: () -> Unit,
     onNavigateToProfile: (String) -> Unit,
     onNavigateToThread: (String, String?) -> Unit,
     onNavigateToReply: () -> Unit,
     onNavigateToPost: () -> Unit,
+    onNavigateToQuote: (String) -> Unit,
 ) {
     val uiState by feedViewModel.uiState.collectAsState()
     val metadataState by feedViewModel.metadataState.collectAsState()
@@ -27,7 +27,6 @@ fun FeedRoute(
         feedState = feedState,
         metadataState = metadataState,
         onLike = feedViewModel.onLike,
-        onRepost = feedViewModel.onQuote,
         onShowMedia = feedViewModel.onShowMedia,
         onShouldShowMedia = feedViewModel.onShouldShowMedia,
         onPrepareReply = onPrepareReply,
@@ -50,5 +49,6 @@ fun FeedRoute(
         },
         onNavigateToReply = onNavigateToReply,
         onNavigateToPost = onNavigateToPost,
+        onNavigateToQuote = onNavigateToQuote,
     )
 }

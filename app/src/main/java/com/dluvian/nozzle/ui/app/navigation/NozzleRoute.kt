@@ -9,5 +9,6 @@ object NozzleRoute {
     const val THREAD = "thread"
     const val REPLY = "reply"
     const val POST = "post"
+    const val QUOTE = "quote"
     const val ROUTER = "router"
 }
