@@ -15,7 +15,6 @@ import java.util.UUID
 
 private const val TAG = "Client"
 
-// TODO: Check concurrent modification (not just in this file)
 class Client {
     private val httpClient = OkHttpClient()
     private val sockets: MutableMap<String, WebSocket> = Collections.synchronizedMap(mutableMapOf())
@@ -74,18 +73,17 @@ class Client {
 
         val ids = mutableListOf<String>()
         relays?.let { addRelays(relays) }
-        val filteredSockets = sockets.entries
+        sockets.entries
             .filter { relays?.contains(it.key) ?: true }
             .map { it.value }
-
-        filteredSockets.forEach {
-            val subscriptionId = UUID.randomUUID().toString()
-            ids.add(subscriptionId)
-            subscriptions[subscriptionId] = it
-            val request = createSubscriptionRequest(subscriptionId, filters)
-            Log.d(TAG, "Subscribe $request")
-            it.send(request)
-        }
+            .forEach {
+                val subscriptionId = UUID.randomUUID().toString()
+                ids.add(subscriptionId)
+                subscriptions[subscriptionId] = it
+                val request = createSubscriptionRequest(subscriptionId, filters)
+                Log.d(TAG, "Subscribe $request")
+                it.send(request)
+            }
 
         return ids
     }

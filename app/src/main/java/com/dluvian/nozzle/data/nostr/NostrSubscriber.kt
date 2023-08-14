@@ -65,7 +65,6 @@ class NostrSubscriber(
         return ids
     }
 
-    // TODO: Set limit. Large threads will fry your device otherwise
     override suspend fun subscribeToAdditionalPostsData(
         posts: Collection<PostWithMeta>,
         relays: Collection<String>?,

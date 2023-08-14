@@ -130,7 +130,6 @@ private fun PictureIndicator(
 
 }
 
-// TODO: Sub to friends follower list for friends visible in feed
 @Composable
 private fun PictureIndicatorBase(
     color: Color,

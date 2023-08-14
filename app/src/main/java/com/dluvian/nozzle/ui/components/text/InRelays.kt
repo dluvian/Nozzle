@@ -17,6 +17,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.withStyle
 import com.dluvian.nozzle.R
+import com.dluvian.nozzle.data.utils.UrlUtils
 import com.dluvian.nozzle.ui.components.dialog.RelaysDialog
 import com.dluvian.nozzle.ui.theme.Shapes
 
@@ -58,8 +59,7 @@ private fun InRelay(relay: String, modifier: Modifier = Modifier, color: Color =
                 append(" ")
             }
             withStyle(style = SpanStyle(fontWeight = FontWeight.Bold, color = color)) {
-                // TODO: Util function for removing ws prefix
-                append(relay.removePrefix("wss://"))
+                append(UrlUtils.removeWebsocketPrefix(relay))
             }
         },
         maxLines = 1,

@@ -45,5 +45,7 @@ object UrlUtils {
             } else null
         }
     }
+
+    fun removeWebsocketPrefix(url: String) = url.removePrefix("wss://")
 }
 
