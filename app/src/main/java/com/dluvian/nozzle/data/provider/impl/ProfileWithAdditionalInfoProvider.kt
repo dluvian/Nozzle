@@ -1,7 +1,6 @@
 package com.dluvian.nozzle.data.provider.impl
 
 import android.util.Log
-import com.dluvian.nozzle.data.MAX_RELAY_REQUESTS
 import com.dluvian.nozzle.data.WAIT_TIME
 import com.dluvian.nozzle.data.nostr.INostrSubscriber
 import com.dluvian.nozzle.data.provider.IProfileWithAdditionalInfoProvider
@@ -150,9 +149,6 @@ class ProfileWithAdditionalInfoProvider(
             pubkeys = listOf(pubkey),
             relays = nip65Dao.getWriteRelaysOfPubkey(pubkey = pubkey)
                 .ifEmpty { relaysFlow.firstOrNull().orEmpty() }
-                // TODO: Take random n instead of shuffling whole list
-                .let { if (it.size > MAX_RELAY_REQUESTS) it.shuffled() else it }
-                .take(MAX_RELAY_REQUESTS)
                 .ifEmpty { relayProvider.getReadRelays() }
         )
     }
