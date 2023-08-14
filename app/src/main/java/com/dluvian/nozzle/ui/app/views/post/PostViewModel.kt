@@ -61,13 +61,7 @@ class PostViewModel(
     }
 
     val onPreparePost: (RelaySelection) -> Unit = { relaySelection ->
-        metadataState = personalProfileProvider.getMetadata()
-            .stateIn(
-                viewModelScope,
-                SharingStarted.WhileSubscribed(),
-                null
-            )
-
+        updateMetadataState()
         viewModelScope.launch(context = Dispatchers.IO) {
             Log.i(TAG, "Prepare new post")
             viewModelState.update {
@@ -76,9 +70,9 @@ class PostViewModel(
                     content = "",
                     isSendable = false,
                     relayStatuses = listRelayStatuses(
-                        allRelayUrls = (relaySelection.getSelectedRelays()
-                            .orEmpty() + relayProvider.getWriteRelays()
-                            .toList()).distinct(),
+                        allRelayUrls = (relayProvider.getWriteRelays() +
+                                relaySelection.getSelectedRelays().orEmpty()
+                                ).distinct(),
                         relaySelection = AllRelays
                     ),
                 )
@@ -112,8 +106,7 @@ class PostViewModel(
                 val selectedRelays = state.relayStatuses
                     .filter { it.isActive }
                     .map { it.relayUrl }
-                    .ifEmpty { null }
-                Log.i(TAG, "Send post to ${selectedRelays?.size ?: -1} relays")
+                Log.i(TAG, "Send post to ${selectedRelays.size} relays")
                 val event = nostrService.sendPost(
                     content = state.content,
                     relays = selectedRelays
@@ -125,6 +118,15 @@ class PostViewModel(
                 resetUI()
             }
         }
+    }
+
+    private fun updateMetadataState() {
+        metadataState = personalProfileProvider.getMetadata()
+            .stateIn(
+                viewModelScope,
+                SharingStarted.WhileSubscribed(),
+                null
+            )
     }
 
     private val showPostPublishedToast: () -> Unit = {

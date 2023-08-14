@@ -65,25 +65,23 @@ class ReplyViewModel(
     }
 
     val onPrepareReply: (PostWithMeta) -> Unit = { post ->
-        metadataState = personalProfileProvider.getMetadata()
-            .stateIn(
-                viewModelScope,
-                SharingStarted.WhileSubscribed(),
-                null
-            )
-
+        updateMetadataState()
         postToReplyTo = post
         viewModelScope.launch(context = Dispatchers.IO) {
             Log.i(TAG, "Set reply to ${post.pubkey}")
             viewModelState.update {
                 recipientPubkey = post.pubkey
+                val recipientsReadRelays = relayProvider.getReadRelaysOfPubkey(recipientPubkey)
                 it.copy(
                     recipientName = post.name,
                     pubkey = personalProfileProvider.getPubkey(),
                     reply = "",
                     isSendable = false,
                     relaySelection = listRelayStatuses(
-                        allRelayUrls = (post.relays + relayProvider.getWriteRelays()).distinct(),
+                        allRelayUrls = (relayProvider.getWriteRelays()
+                                + recipientsReadRelays
+                                + post.relays)
+                            .distinct(),
                         relaySelection = AllRelays,
                     ),
                 )
@@ -127,7 +125,6 @@ class ReplyViewModel(
                     val selectedRelays = state.relaySelection
                         .filter { it.isActive }
                         .map { it.relayUrl }
-                        .ifEmpty { null }
                     val event = nostrService.sendReply(
                         replyTo = replyTo,
                         replyToPubkey = parentPost.pubkey,
@@ -141,6 +138,15 @@ class ReplyViewModel(
                 resetUI()
             }
         }
+    }
+
+    private fun updateMetadataState() {
+        metadataState = personalProfileProvider.getMetadata()
+            .stateIn(
+                viewModelScope,
+                SharingStarted.WhileSubscribed(),
+                null
+            )
     }
 
     private fun getErrorText(context: Context, state: ReplyViewModelState): String? {

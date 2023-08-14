@@ -62,6 +62,10 @@ class RelayProvider(
         return autopilotProvider.getAutopilotRelays(pubkeys = contacts)
     }
 
+    override suspend fun getReadRelaysOfPubkey(pubkey: String): List<String> {
+        return nip65Dao.getReadRelaysOfPubkey(pubkey = pubkey)
+    }
+
     private fun updateFlow() {
         // TODO: Obsolete this check. See TODO above
         if (personalPubkey != pubkeyProvider.getPubkey()) {
