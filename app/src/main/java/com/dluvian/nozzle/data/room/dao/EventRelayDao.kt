@@ -6,6 +6,9 @@ import androidx.room.Query
 import com.dluvian.nozzle.model.CountedRelayUsage
 import kotlinx.coroutines.flow.Flow
 
+
+// TODO: Remove deprecated @MapInfo
+
 @Dao
 interface EventRelayDao {
     @Query(
@@ -16,7 +19,7 @@ interface EventRelayDao {
 
     @MapInfo(keyColumn = "eventId", valueColumn = "relayUrl")
     @Query(
-        "SELECT * " +
+        "SELECT eventId, relayUrl " +
                 "FROM eventRelay " +
                 "WHERE eventId IN (:eventIds)"
     )

@@ -7,7 +7,6 @@ import com.dluvian.nozzle.data.room.dao.Nip65Dao
 import com.dluvian.nozzle.data.room.dao.PostDao
 import com.dluvian.nozzle.data.room.dao.ProfileDao
 import com.dluvian.nozzle.data.room.dao.ReactionDao
-import com.dluvian.nozzle.data.room.entity.ContactEntity
 import com.dluvian.nozzle.data.room.entity.Nip65Entity
 import com.dluvian.nozzle.data.room.entity.PostEntity
 import com.dluvian.nozzle.data.room.entity.ProfileEntity
@@ -79,18 +78,10 @@ class EventProcessor(
         idCache.add(event.id)
 
         scope.launch {
-            // TODO: Without ContactEntity mapping
-            val contacts = getContactPubkeys(event.tags).map { contactPubkey ->
-                ContactEntity(
-                    pubkey = event.pubkey,
-                    contactPubkey = contactPubkey,
-                    createdAt = event.createdAt
-                )
-            }
             contactDao.insertAndDeleteOutdated(
                 pubkey = event.pubkey,
                 newTimestamp = event.createdAt,
-                *contacts.toTypedArray()
+                contactPubkeys = getContactPubkeys(event.tags),
             )
         }
     }
@@ -184,6 +175,7 @@ class EventProcessor(
         return tags
             .filter { tag -> tag.size >= 2 && tag[0] == "p" }
             .map { tag -> tag[1] }
+            .distinct()
     }
 
     private fun insertEventRelay(eventId: String, relayUrl: String?) {

@@ -96,10 +96,17 @@ interface ContactDao {
     suspend fun insertAndDeleteOutdated(
         pubkey: String,
         newTimestamp: Long,
-        vararg contacts: ContactEntity
+        contactPubkeys: Collection<String>
     ) {
         deleteIfOutdated(pubkey = pubkey, newTimestamp = newTimestamp)
-        insertOrIgnore(*contacts)
+        val contacts = contactPubkeys.map { contactPubkey ->
+            ContactEntity(
+                pubkey = pubkey,
+                contactPubkey = contactPubkey,
+                createdAt = newTimestamp
+            )
+        }
+        insertOrIgnore(*contacts.toTypedArray())
     }
 
     @Query(
