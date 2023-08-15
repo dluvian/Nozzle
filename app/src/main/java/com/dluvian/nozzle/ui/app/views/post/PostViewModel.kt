@@ -166,7 +166,7 @@ class PostViewModel(
     )
 
     private fun getContentToPublish(state: PostViewModelState): String {
-        return state.content + getNewLineQuoteUri(state.postToQuote?.id)
+        return (state.content + getNewLineQuoteUri(state.postToQuote?.id)).trim()
     }
 
 

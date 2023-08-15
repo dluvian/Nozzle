@@ -67,7 +67,7 @@ class Event(
 
         fun create(kind: Int, tags: List<Tag>, content: String, keys: Keys): Event {
             val pubkey = Hex.encode(keys.pubkey)
-            val createdAt = System.currentTimeMillis() / 1000
+            val createdAt = System.currentTimeMillis() / 1000  // TODO: Use util function
             val id = generateId(
                 pubkey,
                 createdAt,

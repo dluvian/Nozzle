@@ -128,7 +128,7 @@ class ReplyViewModel(
                     val event = nostrService.sendReply(
                         replyTo = replyTo,
                         replyToPubkey = parentPost.pubkey,
-                        content = state.reply,
+                        content = state.reply.trim(),
                         relays = selectedRelays
                     )
                     viewModelScope.launch(context = Dispatchers.IO) {
