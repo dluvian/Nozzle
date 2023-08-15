@@ -11,7 +11,13 @@ import androidx.compose.material.Icon
 import androidx.compose.material.MaterialTheme.colors
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.CellTower
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Send
+import androidx.compose.material.icons.filled.SettingsSuggest
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -51,13 +57,12 @@ fun CloseButton(onGoBack: () -> Unit) {
 
 @Composable
 fun SendTopBarButton(
-    isSendable: Boolean,
     onSend: () -> Unit,
     onGoBack: () -> Unit,
 ) {
     TopBarButton(
         imageVector = Icons.Default.Send,
-        hasChanges = isSendable,
+        hasChanges = true, // TODO: Refactor so this won't be needed
         description = stringResource(id = R.string.send),
         onClick = onSend,
         onCanGoBack = { true },

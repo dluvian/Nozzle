@@ -34,7 +34,7 @@ import com.dluvian.nozzle.data.utils.getShortenedNpub
 import com.dluvian.nozzle.model.Oneself
 import com.dluvian.nozzle.model.nostr.Metadata
 import com.dluvian.nozzle.ui.app.navigation.NozzleNavActions
-import com.dluvian.nozzle.ui.components.ProfilePicture
+import com.dluvian.nozzle.ui.components.media.ProfilePicture
 import com.dluvian.nozzle.ui.theme.spacing
 
 @Composable

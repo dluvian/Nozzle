@@ -32,8 +32,8 @@ import com.dluvian.nozzle.model.TrustType
 import com.dluvian.nozzle.ui.components.CopyIcon
 import com.dluvian.nozzle.ui.components.EditProfileButton
 import com.dluvian.nozzle.ui.components.FollowButton
-import com.dluvian.nozzle.ui.components.ProfilePicture
 import com.dluvian.nozzle.ui.components.dialog.RelaysDialog
+import com.dluvian.nozzle.ui.components.media.ProfilePicture
 import com.dluvian.nozzle.ui.components.postCard.NoPostsHint
 import com.dluvian.nozzle.ui.components.postCard.PostCardList
 import com.dluvian.nozzle.ui.components.text.HyperlinkedText

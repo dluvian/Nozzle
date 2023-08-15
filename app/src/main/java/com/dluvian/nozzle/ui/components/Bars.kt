@@ -32,11 +32,12 @@ fun ContentCreationTopBar(
                     onClickIndex = onToggleRelaySelection,
                 )
                 Spacer(modifier = Modifier.width(spacing.large))
-                SendTopBarButton(
-                    isSendable = isSendable,
-                    onSend = onSend,
-                    onGoBack = onClose,
-                )
+                if (isSendable) {
+                    SendTopBarButton(
+                        onSend = onSend,
+                        onGoBack = onClose,
+                    )
+                }
             }
         }
     )

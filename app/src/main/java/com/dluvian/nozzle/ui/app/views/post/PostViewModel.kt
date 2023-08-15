@@ -64,16 +64,7 @@ class PostViewModel(
     }
 
     val onPreparePost: () -> Unit = {
-        updateMetadataState()
-        Log.i(TAG, "Prepare new post")
-        viewModelState.update {
-            it.copy(
-                pubkey = personalProfileProvider.getPubkey(),
-                content = "",
-                isSendable = it.postToQuote != null,
-                relayStatuses = getRelayStatuses()
-            )
-        }
+        preparePost(postToQuote = null)
     }
 
     // TODO: Show "Quoting abc"
@@ -81,14 +72,26 @@ class PostViewModel(
     // TODO: Add recipients read relays to selection
     private val isPreparing = AtomicBoolean(false)
     val onPrepareQuote: (String) -> Unit = { postIdToQuote ->
-        Log.i(TAG, "Prepare new quoted post")
         if (!isPreparing.get()) {
             isPreparing.set(true)
             viewModelScope.launch(context = Dispatchers.IO) {
                 val postToQuote = postDao.getMentionedPost(postId = postIdToQuote)
-                viewModelState.update { it.copy(postToQuote = postToQuote) }
-                onPreparePost()
+                preparePost(postToQuote = postToQuote)
             }.invokeOnCompletion { isPreparing.set(false) }
+        }
+    }
+
+    private fun preparePost(postToQuote: MentionedPost?) {
+        updateMetadataState()
+        Log.i(TAG, "Prepare new ${postToQuote?.let { "quoted " } ?: ""}post")
+        viewModelState.update {
+            it.copy(
+                pubkey = personalProfileProvider.getPubkey(),
+                content = "",
+                isSendable = postToQuote != null,
+                relayStatuses = getRelayStatuses(),
+                postToQuote = postToQuote
+            )
         }
     }
 

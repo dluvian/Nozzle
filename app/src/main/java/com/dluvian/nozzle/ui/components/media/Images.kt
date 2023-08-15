@@ -1,4 +1,4 @@
-package com.dluvian.nozzle.ui.components
+package com.dluvian.nozzle.ui.components.media
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
