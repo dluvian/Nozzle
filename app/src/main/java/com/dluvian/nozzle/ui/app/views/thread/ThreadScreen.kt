@@ -1,6 +1,5 @@
 package com.dluvian.nozzle.ui.app.views.thread
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -10,9 +9,12 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.Divider
+import androidx.compose.material.MaterialTheme.colors
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.res.stringResource
 import com.dluvian.nozzle.R
 import com.dluvian.nozzle.model.PostIds
@@ -23,7 +25,6 @@ import com.dluvian.nozzle.ui.components.PullRefreshBox
 import com.dluvian.nozzle.ui.components.ReturnableTopBar
 import com.dluvian.nozzle.ui.components.postCard.PostCard
 import com.dluvian.nozzle.ui.components.postCard.PostNotFound
-import com.dluvian.nozzle.ui.theme.LightYellow
 import com.dluvian.nozzle.ui.theme.spacing
 
 
@@ -112,8 +113,16 @@ private fun ThreadedPosts(
                     if (it.replyToId != null && thread.previous.isEmpty()) {
                         PostNotFound()
                     }
+                    val focusColor = colors.primaryVariant
                     PostCard(
-                        modifier = Modifier.background(color = LightYellow),
+                        modifier = Modifier.drawBehind {
+                            drawLine(
+                                color = focusColor,
+                                strokeWidth = 24f,
+                                start = Offset(x = 0f, y = 0f),
+                                end = Offset(x = 0f, y = size.height),
+                            )
+                        },
                         post = it,
                         onLike = onLike,
                         onPrepareReply = onPrepareReply,
