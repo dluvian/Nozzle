@@ -22,10 +22,22 @@ class AutopilotProvider(
         val result = mutableListOf<Pair<String, Set<String>>>()
         val processedPubkeys = mutableSetOf<String>()
 
-        processNip65(result = result, processedPubkeys = processedPubkeys, pubkeys = pubkeys)
+        // We don't use relayProvider here because it depends on AutopilotProvider
+        val myReadRelays = nip65Dao
+            .getReadRelaysOfPubkey(pubkey = pubkeyProvider.getPubkey())
+            .ifEmpty { getDefaultRelays() }
+            .toSet()
+
+        processNip65(
+            myReadRelays = myReadRelays,
+            result = result,
+            processedPubkeys = processedPubkeys,
+            pubkeys = pubkeys
+        )
 
         if (pubkeys.size > processedPubkeys.size) {
             processEventRelays(
+                myReadRelays = myReadRelays,
                 result = result,
                 processedPubkeys = processedPubkeys,
                 pubkeys = pubkeys.minus(processedPubkeys)
@@ -33,7 +45,8 @@ class AutopilotProvider(
         }
 
         if (pubkeys.size > processedPubkeys.size) {
-            processDefault(
+            processFallback(
+                myReadRelays = myReadRelays,
                 result = result,
                 processedPubkeys = processedPubkeys,
                 pubkeys = pubkeys.minus(processedPubkeys)
@@ -48,6 +61,7 @@ class AutopilotProvider(
     }
 
     private suspend fun processNip65(
+        myReadRelays: Set<String>,
         result: MutableList<Pair<String, Set<String>>>,
         processedPubkeys: MutableSet<String>,
         pubkeys: Collection<String>
@@ -55,18 +69,19 @@ class AutopilotProvider(
         nip65Dao.getPubkeysPerWriteRelayMap(pubkeys = pubkeys)
             .toList()
             .sortedByDescending { it.second.size }
+            .sortedByDescending { myReadRelays.contains(it.first) } // Prefer my relays
             .forEach {
                 val pubkeysToAdd = it.second.minus(processedPubkeys)
                 if (pubkeysToAdd.isNotEmpty()) {
                     processedPubkeys.addAll(pubkeysToAdd)
                     result.add(Pair(it.first, pubkeysToAdd))
                 }
-
             }
         Log.d(TAG, "Processed ${result.size} nip65 relays for ${processedPubkeys.size} pubkeys")
     }
 
     private suspend fun processEventRelays(
+        myReadRelays: Set<String>,
         result: MutableList<Pair<String, Set<String>>>,
         processedPubkeys: MutableSet<String>,
         pubkeys: Collection<String>
@@ -76,6 +91,7 @@ class AutopilotProvider(
 
         eventRelayDao.getCountedRelaysPerPubkey(pubkeys = pubkeys)
             .sortedByDescending { it.numOfPosts }
+            .sortedByDescending { myReadRelays.contains(it.relayUrl) } // Prefer my relays
             .forEach {
                 if (!newlyProcessedPubkeys.contains(it.pubkey)) {
                     newlyProcessedPubkeys.add(it.pubkey)
@@ -100,22 +116,27 @@ class AutopilotProvider(
         )
     }
 
-    private suspend fun processDefault(
+    private fun processFallback(
+        myReadRelays: Set<String>,
         result: MutableList<Pair<String, Set<String>>>,
         processedPubkeys: MutableSet<String>,
-        pubkeys: Collection<String>
+        pubkeys: Set<String>
     ) {
-        Log.d(TAG, "Default to your read relays for ${pubkeys.size} pubkeys")
+        if (pubkeys.isEmpty() || myReadRelays.isEmpty()) return
 
-        // We don't use relayProvider here because it depends on AutopilotProvider
-        nip65Dao.getReadRelaysOfPubkey(pubkey = pubkeyProvider.getPubkey())
-            .ifEmpty { getDefaultRelays() }
-            .randomOrNull()
-            ?.let {
-                Log.d(TAG, "Selected default relay $it")
-                result.add(Pair(it, pubkeys.toSet()))
-                processedPubkeys.addAll(pubkeys)
-            }
+        val chunkSize = (pubkeys.size / myReadRelays.size) + 1
+        val chunkedPubkeys = pubkeys.chunked(chunkSize) { it.toSet() }
+
+        myReadRelays.shuffled().zip(chunkedPubkeys).forEach {
+            result.add(Pair(it.first, it.second))
+            processedPubkeys.addAll(it.second)
+        }
+
+        Log.i(
+            TAG,
+            "Defaulted to ${myReadRelays.size} read relays for " +
+                    "${pubkeys.size} pubkeys in ${chunkedPubkeys.size} chunks"
+        )
     }
 
     private fun mergeResult(toMerge: List<Pair<String, Set<String>>>): Map<String, Set<String>> {
@@ -126,7 +147,6 @@ class AutopilotProvider(
                 current?.let { _ -> result[it.first]?.addAll(it.second) }
             }
         }
-        Log.d(TAG, "${result.map { "${it.key} -> ${it.value.size}\n" }}")
 
         return result
     }

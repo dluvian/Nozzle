@@ -5,7 +5,7 @@ private val defaultRelays = listOf(
     // EU
     "wss://nostr.einundzwanzig.space",
     "wss://nostr.lu.ke",
-    "wss://nos.lol",
+    "wss://nostr.mom",
 
     // NA
     "wss://nostr.fmt.wiz.biz",
