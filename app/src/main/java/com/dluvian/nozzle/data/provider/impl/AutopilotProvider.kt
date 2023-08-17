@@ -15,6 +15,10 @@ class AutopilotProvider(
     private val eventRelayDao: EventRelayDao,
 ) : IAutopilotProvider {
 
+    // TODO: Dismiss relays you have trouble to connecting
+    // java.net.ProtocolException: Expected HTTP 101 response but was '502 Bad Gateway'
+    // javax.net.ssl.SSLPeerUnverifiedException: Hostname relay.nostr.vision not verified:
+
     override suspend fun getAutopilotRelays(pubkeys: Set<String>): Map<String, Set<String>> {
         Log.i(TAG, "Get autopilot relays of ${pubkeys.size} pubkeys")
         if (pubkeys.isEmpty()) return emptyMap()
@@ -134,7 +138,7 @@ class AutopilotProvider(
 
         Log.i(
             TAG,
-            "Defaulted to ${myReadRelays.size} read relays for " +
+            "Fall back to ${myReadRelays.size} read relays for " +
                     "${pubkeys.size} pubkeys in ${chunkedPubkeys.size} chunks"
         )
     }

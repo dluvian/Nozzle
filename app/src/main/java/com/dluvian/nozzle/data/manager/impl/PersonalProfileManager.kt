@@ -7,7 +7,11 @@ import com.dluvian.nozzle.data.room.dao.ProfileDao
 import com.dluvian.nozzle.data.utils.NORMAL_DEBOUNCE
 import com.dluvian.nozzle.data.utils.firstThenDistinctDebounce
 import com.dluvian.nozzle.model.nostr.Metadata
-import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.stateIn
 
 private const val TAG = "PersonalProfileManager"
 
@@ -15,8 +19,14 @@ class PersonalProfileManager(
     private val pubkeyProvider: IPubkeyProvider,
     private val profileDao: ProfileDao
 ) : IPersonalProfileManager {
-    private var metadataFlow = profileDao.getMetadata(pubkeyProvider.getPubkey())
+    private val scope = CoroutineScope(Dispatchers.IO)
+    private var metadataStateFlow = profileDao.getMetadata(pubkeyProvider.getPubkey())
         .firstThenDistinctDebounce(NORMAL_DEBOUNCE)
+        .stateIn(
+            scope,
+            SharingStarted.Eagerly,
+            null
+        )
 
     override suspend fun setMeta(
         name: String,
@@ -37,13 +47,17 @@ class PersonalProfileManager(
 
     override fun updateMetadata() {
         Log.i(TAG, "Update metadata with new pubkey ${pubkeyProvider.getPubkey()}")
-        metadataFlow = profileDao.getMetadata(pubkeyProvider.getPubkey())
+        metadataStateFlow = profileDao.getMetadata(pubkeyProvider.getPubkey())
             .firstThenDistinctDebounce(NORMAL_DEBOUNCE)
-
+            .stateIn(
+                scope,
+                SharingStarted.Eagerly,
+                null
+            )
     }
 
-    override fun getMetadata(): Flow<Metadata?> {
-        return metadataFlow
+    override fun getMetadataStateFlow(): StateFlow<Metadata?> {
+        return metadataStateFlow
     }
 
     override fun getPubkey() = pubkeyProvider.getPubkey()

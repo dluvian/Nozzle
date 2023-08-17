@@ -71,6 +71,7 @@ class KeysViewModel(
                 Log.i(TAG, "Saving new privkey")
                 keyManager.setPrivkey(state.privkeyInput)
                 personalProfileManager.updateMetadata()
+                // TODO: Move this to personalProfileManager
                 nostrSubscriber.subscribeToProfileMetadataAndContactList(
                     pubkeys = listOf(keyManager.getPubkey())
                 )

@@ -51,12 +51,7 @@ class FeedViewModel(
         viewModelScope, SharingStarted.Eagerly, viewModelState.value
     )
 
-    var metadataState = personalProfileProvider.getMetadata()
-        .stateIn(
-            viewModelScope,
-            SharingStarted.Eagerly,
-            null
-        )
+    var metadataState = personalProfileProvider.getMetadataStateFlow()
 
     var feedState: StateFlow<List<PostWithMeta>> = MutableStateFlow(emptyList())
 
@@ -218,12 +213,7 @@ class FeedViewModel(
     // TODO: This should be handled with a flow, not manually
     val onResetProfileIconUiState: () -> Unit = {
         Log.i(TAG, "Reset profile icon")
-        metadataState = personalProfileProvider.getMetadata()
-            .stateIn(
-                viewModelScope,
-                SharingStarted.Eagerly,
-                null
-            )
+        metadataState = personalProfileProvider.getMetadataStateFlow()
         viewModelState.update {
             it.copy(pubkey = personalProfileProvider.getPubkey())
         }
@@ -321,7 +311,6 @@ class FeedViewModel(
     }
 
     private suspend fun renewAdditionalDataSubscription() {
-        nostrSubscriber.unsubscribeAdditionalPostsData()
         nostrSubscriber.subscribeToAdditionalPostsData(
             posts = feedState.value.takeLast(DB_BATCH_SIZE),
             relays = getSelectedRelays()

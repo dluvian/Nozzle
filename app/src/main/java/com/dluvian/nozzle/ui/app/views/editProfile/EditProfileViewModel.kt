@@ -10,11 +10,9 @@ import androidx.lifecycle.viewModelScope
 import com.dluvian.nozzle.R
 import com.dluvian.nozzle.data.manager.IPersonalProfileManager
 import com.dluvian.nozzle.data.nostr.INostrService
-import com.dluvian.nozzle.data.nostr.INostrSubscriber
 import com.dluvian.nozzle.data.utils.NostrUtils.isValidUsername
 import com.dluvian.nozzle.model.nostr.Metadata
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 
@@ -33,13 +31,12 @@ data class EditProfileViewModelState(
 
 class EditProfileViewModel(
     private val personalProfileManager: IPersonalProfileManager,
-    private val nostrSubscriber: INostrSubscriber,
     private val nostrService: INostrService,
     context: Context,
 ) : ViewModel() {
     private val viewModelState = MutableStateFlow(EditProfileViewModelState())
 
-    private var metadataState: Metadata? = null
+    var metadataState = personalProfileManager.getMetadataStateFlow()
 
     val uiState = viewModelState
         .stateIn(
@@ -50,9 +47,6 @@ class EditProfileViewModel(
 
     init {
         Log.i(TAG, "Initialize EditProfileViewModel")
-        nostrSubscriber.subscribeToProfileMetadataAndContactList(
-            listOf(personalProfileManager.getPubkey())
-        )
         useCachedValues()
     }
 
@@ -177,7 +171,7 @@ class EditProfileViewModel(
     private fun isValidUrl(url: String) = url.isEmpty() || URLUtil.isValidUrl(url)
 
     private fun setUIHasChanges() {
-        metadataState.let { metadata ->
+        metadataState.value.let { metadata ->
             uiState.value.let { oldState ->
                 val hasChanges = oldState.nameInput != metadata?.name.orEmpty()
                         || oldState.aboutInput != metadata?.about.orEmpty()
@@ -195,28 +189,20 @@ class EditProfileViewModel(
 
     private fun useCachedValues() {
         Log.i(TAG, "Use cached values")
-        collectLatestMetadata().invokeOnCompletion {
-            metadataState.let { metadata ->
-                viewModelState.update {
-                    it.copy(
-                        nameInput = metadata?.name.orEmpty(),
-                        aboutInput = metadata?.about.orEmpty(),
-                        pictureInput = metadata?.picture.orEmpty(),
-                        nip05Input = metadata?.nip05.orEmpty(),
-                        lud16Input = metadata?.lud16.orEmpty(),
-                        hasChanges = false,
-                        isInvalidUsername = false,
-                        isInvalidPictureUrl = false
-                    )
-                }
+        metadataState = personalProfileManager.getMetadataStateFlow()
+        metadataState.value.let { metadata ->
+            viewModelState.update {
+                it.copy(
+                    nameInput = metadata?.name.orEmpty(),
+                    aboutInput = metadata?.about.orEmpty(),
+                    pictureInput = metadata?.picture.orEmpty(),
+                    nip05Input = metadata?.nip05.orEmpty(),
+                    lud16Input = metadata?.lud16.orEmpty(),
+                    hasChanges = false,
+                    isInvalidUsername = false,
+                    isInvalidPictureUrl = false
+                )
             }
-        }
-    }
-
-    private fun collectLatestMetadata(): Job {
-        Log.i(TAG, "Collect latest metadata")
-        return viewModelScope.launch(Dispatchers.IO) {
-            metadataState = personalProfileManager.getMetadata().firstOrNull()
         }
     }
 
@@ -224,7 +210,6 @@ class EditProfileViewModel(
     companion object {
         fun provideFactory(
             personalProfileManager: IPersonalProfileManager,
-            nostrSubscriber: INostrSubscriber,
             nostrService: INostrService,
             context: Context,
         ): ViewModelProvider.Factory = object : ViewModelProvider.Factory {
@@ -232,7 +217,6 @@ class EditProfileViewModel(
             override fun <T : ViewModel> create(modelClass: Class<T>): T {
                 return EditProfileViewModel(
                     personalProfileManager = personalProfileManager,
-                    nostrSubscriber = nostrSubscriber,
                     nostrService = nostrService,
                     context = context
                 ) as T

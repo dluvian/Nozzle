@@ -25,12 +25,7 @@ class NozzleDrawerViewModel(
 ) : ViewModel() {
     private val drawerViewModelState = MutableStateFlow(DrawerViewModelState())
 
-    var metadataState = personalProfileProvider.getMetadata()
-        .stateIn(
-            viewModelScope,
-            SharingStarted.Eagerly,
-            null
-        )
+    var metadataState = personalProfileProvider.getMetadataStateFlow()
 
     val pubkeyState = drawerViewModelState
         .stateIn(
@@ -48,12 +43,8 @@ class NozzleDrawerViewModel(
 
     val onResetUiState: () -> Unit = {
         Log.i(TAG, "Reset UI")
-        metadataState = personalProfileProvider.getMetadata()
-            .stateIn(
-                viewModelScope,
-                SharingStarted.Eagerly,
-                null
-            )
+        // TODO: USE FLOWS
+        metadataState = personalProfileProvider.getMetadataStateFlow()
         useCachedValues()
     }
 

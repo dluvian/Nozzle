@@ -12,6 +12,7 @@ import com.dluvian.nozzle.data.provider.IPersonalProfileProvider
 import com.dluvian.nozzle.data.provider.IRelayProvider
 import com.dluvian.nozzle.data.room.dao.PostDao
 import com.dluvian.nozzle.data.room.entity.PostEntity
+import com.dluvian.nozzle.data.utils.getShortenedNpubFromPubkey
 import com.dluvian.nozzle.data.utils.listRelayStatuses
 import com.dluvian.nozzle.data.utils.toggleRelay
 import com.dluvian.nozzle.model.AllRelays
@@ -46,12 +47,7 @@ class ReplyViewModel(
     private var recipientPubkey: String = ""
     private var postToReplyTo: PostWithMeta? = null
 
-    var metadataState = personalProfileProvider.getMetadata()
-        .stateIn(
-            viewModelScope,
-            SharingStarted.WhileSubscribed(),
-            null
-        )
+    var metadataState = personalProfileProvider.getMetadataStateFlow()
 
     val uiState = viewModelState
         .stateIn(
@@ -73,7 +69,7 @@ class ReplyViewModel(
                 recipientPubkey = post.pubkey
                 val recipientsReadRelays = relayProvider.getReadRelaysOfPubkey(recipientPubkey)
                 it.copy(
-                    recipientName = post.name,
+                    recipientName = post.name.ifEmpty { getShortenedNpubFromPubkey(post.pubkey) },
                     pubkey = personalProfileProvider.getPubkey(),
                     reply = "",
                     isSendable = false,
@@ -140,13 +136,9 @@ class ReplyViewModel(
         }
     }
 
+    // TODO: Use flows. This should not be needed
     private fun updateMetadataState() {
-        metadataState = personalProfileProvider.getMetadata()
-            .stateIn(
-                viewModelScope,
-                SharingStarted.WhileSubscribed(),
-                null
-            )
+        metadataState = personalProfileProvider.getMetadataStateFlow()
     }
 
     private fun getErrorText(context: Context, state: ReplyViewModelState): String? {

@@ -45,12 +45,7 @@ class PostViewModel(
 ) : ViewModel() {
     private val viewModelState = MutableStateFlow(PostViewModelState())
 
-    var metadataState = personalProfileProvider.getMetadata()
-        .stateIn(
-            viewModelScope,
-            SharingStarted.WhileSubscribed(),
-            null
-        )
+    var metadataState = personalProfileProvider.getMetadataStateFlow()
 
     val uiState = viewModelState
         .stateIn(
@@ -72,11 +67,12 @@ class PostViewModel(
     // TODO: Add recipients read relays to selection
     private val isPreparing = AtomicBoolean(false)
     val onPrepareQuote: (String) -> Unit = { postIdToQuote ->
+        Log.i(TAG, "Prepare quoting $postIdToQuote")
         if (!isPreparing.get()) {
             isPreparing.set(true)
             viewModelScope.launch(context = Dispatchers.IO) {
-                val postToQuote = postDao.getMentionedPost(postId = postIdToQuote)
-                preparePost(postToQuote = postToQuote)
+                val postToQuote = postDao.getNullableMentionedPost(postId = postIdToQuote)
+                preparePost(postToQuote = postToQuote?.toMentionedPost())
             }.invokeOnCompletion { isPreparing.set(false) }
         }
     }
@@ -143,13 +139,9 @@ class PostViewModel(
         }
     }
 
+    // TODO: USE FLOWS. This should not be needed
     private fun updateMetadataState() {
-        metadataState = personalProfileProvider.getMetadata()
-            .stateIn(
-                viewModelScope,
-                SharingStarted.WhileSubscribed(),
-                metadataState.value
-            )
+        metadataState = personalProfileProvider.getMetadataStateFlow()
     }
 
     private val showPostPublishedToast: () -> Unit = {

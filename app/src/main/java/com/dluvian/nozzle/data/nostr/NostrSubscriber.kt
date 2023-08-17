@@ -49,7 +49,7 @@ class NostrSubscriber(
         until: Long?,
         relays: Collection<String>?
     ): List<String> {
-        Log.d(TAG, "Subscribe to feed of ${authorPubkeys?.size} pubkeys in ${relays?.size} relays")
+        Log.i(TAG, "Subscribe to feed of ${authorPubkeys?.size} pubkeys in ${relays?.size} relays")
         val postFilter = Filter.createPostFilter(
             pubkeys = authorPubkeys,
             until = until ?: getCurrentTimeInSeconds(),
@@ -69,7 +69,7 @@ class NostrSubscriber(
         posts: Collection<PostWithMeta>,
         relays: Collection<String>?,
     ): List<String> {
-        Log.i(TAG, "Subscribe to additional posts data")
+        Log.i(TAG, "Subscribe to additional posts data of ${posts.size} posts")
         if (posts.isEmpty()) return emptyList()
 
         // TODO: First referenced posts, then referenced authors.
@@ -203,30 +203,35 @@ class NostrSubscriber(
     }
 
     override fun unsubscribeFeeds() {
+        Log.i(TAG, "Unsubscribe feeds")
         val snapshot = feedSubscriptions.toList()
         nostrService.unsubscribe(snapshot)
         feedSubscriptions.removeAll(snapshot)
     }
 
     override fun unsubscribeAdditionalPostsData() {
+        Log.i(TAG, "Unsubscribe additional posts data")
         val snapshot = additionalFeedDataSubscriptions.toList()
         nostrService.unsubscribe(snapshot)
         additionalFeedDataSubscriptions.removeAll(snapshot)
     }
 
     override fun unsubscribeThread() {
+        Log.i(TAG, "Unsubscribe thread")
         val snapshot = threadSubscriptions.toList()
         nostrService.unsubscribe(snapshot)
         threadSubscriptions.removeAll(snapshot)
     }
 
     override fun unsubscribeProfiles() {
+        Log.i(TAG, "Unsubscribe profiles")
         val snapshot = profileSubscriptions.toList()
         nostrService.unsubscribe(snapshot)
         profileSubscriptions.removeAll(snapshot)
     }
 
     override fun unsubscribeNip65() {
+        Log.i(TAG, "Unsubscribe nip65")
         val snapshot = nip65Subscriptions.toList()
         nostrService.unsubscribe(snapshot)
         nip65Subscriptions.removeAll(snapshot)
