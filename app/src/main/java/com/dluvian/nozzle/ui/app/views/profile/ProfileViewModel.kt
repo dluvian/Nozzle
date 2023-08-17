@@ -35,12 +35,12 @@ private const val TAG = "ProfileViewModel"
 
 class ProfileViewModel(
     val postCardInteractor: IPostCardInteractor,
+    val clickedMediaUrlCache: IClickedMediaUrlCache,
     private val feedProvider: IFeedProvider,
     private val profileProvider: IProfileWithAdditionalInfoProvider,
     private val relayProvider: IRelayProvider,
     private val profileFollower: IProfileFollower,
     private val pubkeyProvider: IPubkeyProvider,
-    private val clickedMediaUrlCache: IClickedMediaUrlCache,
     private val nostrSubscriber: INostrSubscriber,
     context: Context,
     clip: ClipboardManager,
@@ -119,16 +119,6 @@ class ProfileViewModel(
             Toast.makeText(context, context.getString(R.string.pubkey_copied), Toast.LENGTH_SHORT)
                 .show()
         }
-    }
-
-    // TODO: Refactor: Same in other ViewModels
-    val onShowMedia: (String) -> Unit = { mediaUrl ->
-        clickedMediaUrlCache.insert(mediaUrl = mediaUrl)
-    }
-
-    // TODO: Refactor: Same in other ViewModels
-    val onShouldShowMedia: (String) -> Boolean = { mediaUrl ->
-        clickedMediaUrlCache.contains(mediaUrl = mediaUrl)
     }
 
     private val isInFollowProcess = AtomicBoolean(false)
@@ -247,12 +237,12 @@ class ProfileViewModel(
                 override fun <T : ViewModel> create(modelClass: Class<T>): T {
                     return ProfileViewModel(
                         postCardInteractor = postCardInteractor,
+                        clickedMediaUrlCache = clickedMediaUrlCache,
                         feedProvider = feedProvider,
                         profileProvider = profileProvider,
                         relayProvider = relayProvider,
                         profileFollower = profileFollower,
                         pubkeyProvider = pubkeyProvider,
-                        clickedMediaUrlCache = clickedMediaUrlCache,
                         nostrSubscriber = nostrSubscriber,
                         context = context,
                         clip = clip,

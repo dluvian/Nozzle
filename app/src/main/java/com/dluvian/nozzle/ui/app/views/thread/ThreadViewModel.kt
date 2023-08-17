@@ -24,9 +24,9 @@ private const val WAIT_TIME = 2100L
 
 class ThreadViewModel(
     val postCardInteractor: IPostCardInteractor,
+    val clickedMediaUrlCache: IClickedMediaUrlCache,
     private val threadProvider: IThreadProvider,
     private val relayProvider: IRelayProvider,
-    private val clickedMediaUrlCache: IClickedMediaUrlCache,
     private val nostrSubscriber: INostrSubscriber,
 ) : ViewModel() {
     var threadState: StateFlow<PostThread> = MutableStateFlow(PostThread.createEmpty())
@@ -80,16 +80,6 @@ class ThreadViewModel(
         }
     }
 
-    // TODO: Refactor: Same in other ViewModels
-    val onShowMedia: (String) -> Unit = { mediaUrl ->
-        clickedMediaUrlCache.insert(mediaUrl = mediaUrl)
-    }
-
-    // TODO: Refactor: Same in other ViewModels
-    val onShouldShowMedia: (String) -> Boolean = { mediaUrl ->
-        clickedMediaUrlCache.contains(mediaUrl = mediaUrl)
-    }
-
     private suspend fun updateScreen(
         postIds: PostIds,
         waitForSubscription: Long? = null,
@@ -136,9 +126,9 @@ class ThreadViewModel(
             override fun <T : ViewModel> create(modelClass: Class<T>): T {
                 return ThreadViewModel(
                     postCardInteractor = postCardInteractor,
+                    clickedMediaUrlCache = clickedMediaUrlCache,
                     threadProvider = threadProvider,
                     relayProvider = relayProvider,
-                    clickedMediaUrlCache = clickedMediaUrlCache,
                     nostrSubscriber = nostrSubscriber
                 ) as T
             }

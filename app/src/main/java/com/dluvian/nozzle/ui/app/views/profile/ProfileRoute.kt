@@ -28,8 +28,12 @@ fun ProfileRoute(
         },
         onFollow = profileViewModel.onFollow,
         onUnfollow = profileViewModel.onUnfollow,
-        onShowMedia = profileViewModel.onShowMedia,
-        onShouldShowMedia = profileViewModel.onShouldShowMedia,
+        onShowMedia = { mediaUrl ->
+            profileViewModel.clickedMediaUrlCache.insert(mediaUrl)
+        },
+        onShouldShowMedia = { mediaUrl ->
+            profileViewModel.clickedMediaUrlCache.contains(mediaUrl)
+        },
         onRefreshProfileView = profileViewModel.onRefreshProfileView,
         onCopyNpub = profileViewModel.onCopyNpub,
         onLoadMore = profileViewModel.onLoadMore,

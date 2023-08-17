@@ -25,8 +25,12 @@ fun ThreadRoute(
         onLike = { post ->
             threadViewModel.postCardInteractor.like(postId = post.id, postPubkey = post.pubkey)
         },
-        onShowMedia = threadViewModel.onShowMedia,
-        onShouldShowMedia = threadViewModel.onShouldShowMedia,
+        onShowMedia = { mediaUrl ->
+            threadViewModel.clickedMediaUrlCache.insert(mediaUrl)
+        },
+        onShouldShowMedia = { mediaUrl ->
+            threadViewModel.clickedMediaUrlCache.contains(mediaUrl)
+        },
         onOpenThread = threadViewModel.onOpenThread,
         onNavigateToProfile = onNavigateToProfile,
         onNavigateToReply = onNavigateToReply,
