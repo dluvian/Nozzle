@@ -67,8 +67,8 @@ class PostViewModel(
     // TODO: Add recipients read relays to selection
     private val isPreparing = AtomicBoolean(false)
     val onPrepareQuote: (String) -> Unit = { postIdToQuote ->
-        Log.i(TAG, "Prepare quoting $postIdToQuote")
-        if (!isPreparing.get()) {
+        if (!isPreparing.get() && uiState.value.postToQuote?.id != postIdToQuote) {
+            Log.i(TAG, "Prepare quoting $postIdToQuote")
             isPreparing.set(true)
             viewModelScope.launch(context = Dispatchers.IO) {
                 val postToQuote = postDao.getNullableMentionedPost(postId = postIdToQuote)

@@ -146,10 +146,7 @@ fun NozzleNavGraph(
             arguments = listOf(navArgument("postId") { type = NavType.StringType })
         ) { backStackEntry ->
             val postIdToQuote = backStackEntry.arguments?.getString("postId").orEmpty()
-            remember(postIdToQuote) {
-                vmContainer.postViewModel.onPrepareQuote(postIdToQuote)
-                postIdToQuote
-            }
+            vmContainer.postViewModel.onPrepareQuote(postIdToQuote)
             PostRoute(
                 postViewModel = vmContainer.postViewModel,
                 onGoBack = navActions.popStack,

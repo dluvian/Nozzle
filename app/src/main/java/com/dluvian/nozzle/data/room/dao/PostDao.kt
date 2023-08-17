@@ -6,6 +6,7 @@ import com.dluvian.nozzle.data.room.helper.IdAndPubkey
 import com.dluvian.nozzle.data.room.helper.ReplyContext
 import com.dluvian.nozzle.data.room.helper.ReplyToIdAndPubkey
 import com.dluvian.nozzle.model.MentionedPost
+import com.dluvian.nozzle.model.NullableMentionedPost
 import com.dluvian.nozzle.model.PostEntityExtended
 import kotlinx.coroutines.flow.Flow
 
@@ -184,8 +185,8 @@ interface PostDao {
     @Query(
         "SELECT id, post.pubkey, content, name, picture, post.createdAt " +
                 "FROM post " +
-                "JOIN profile ON post.pubkey = profile.pubkey " +
+                "LEFT JOIN profile ON post.pubkey = profile.pubkey " +
                 "WHERE id = :postId"
     )
-    suspend fun getMentionedPost(postId: String): MentionedPost?
+    suspend fun getNullableMentionedPost(postId: String): NullableMentionedPost?
 }
