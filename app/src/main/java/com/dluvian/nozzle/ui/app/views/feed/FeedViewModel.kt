@@ -58,6 +58,10 @@ class FeedViewModel(
     private val lastAutopilotResult: MutableMap<String, Set<String>> =
         Collections.synchronizedMap(mutableMapOf<String, Set<String>>())
 
+    private val pubkeysAlreadySubbedNip65 = mutableSetOf<String>()
+    private val isAppending = AtomicBoolean(false)
+    private var lastPubkeyToSubPersonalProfile = ""
+
     init {
         Log.i(TAG, "Initialize FeedViewModel")
         viewModelState.update {
@@ -96,7 +100,6 @@ class FeedViewModel(
         }
     }
 
-    private val isAppending = AtomicBoolean(false)
     val onLoadMore: () -> Unit = {
         if (!isAppending.get()) {
             isAppending.set(true)
@@ -294,7 +297,6 @@ class FeedViewModel(
         setUIRefresh(false)
     }
 
-    private var lastPubkeyToSubPersonalProfile = ""
     private fun subscribeToPersonalProfile() {
         if (lastPubkeyToSubPersonalProfile != personalProfileProvider.getPubkey()) {
             lastPubkeyToSubPersonalProfile = personalProfileProvider.getPubkey()
@@ -305,7 +307,6 @@ class FeedViewModel(
         }
     }
 
-    private val pubkeysAlreadySubbedNip65 = mutableSetOf<String>()
     private suspend fun subscribeToNip65() {
         val pubkeys = contactListProvider
             .listPersonalContactPubkeys()
