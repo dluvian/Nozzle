@@ -86,8 +86,9 @@ class NostrSubscriber(
         val unknownParentAuthors = postsWithUnknownRefAuthors
             .filter { hasUnknownParentAuthor(it) }
             .mapNotNull { it.replyToPubkey }
-        val unknownPubkeys =
-            unknownAuthors.toSet() + unknownMentionedPostAuthors + unknownParentAuthors
+        val unknownPubkeys = unknownAuthors.toSet() +
+                unknownMentionedPostAuthors +
+                unknownParentAuthors
 
         val filters = mutableListOf<Filter>()
 

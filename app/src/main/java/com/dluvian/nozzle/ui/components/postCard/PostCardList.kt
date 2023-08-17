@@ -16,7 +16,7 @@ fun PostCardList(
     posts: List<PostWithMeta>,
     isRefreshing: Boolean,
     onRefresh: () -> Unit,
-    onLike: (String) -> Unit,
+    onLike: (PostWithMeta) -> Unit,
     onShowMedia: (String) -> Unit,
     onShouldShowMedia: (String) -> Boolean,
     onPrepareReply: (PostWithMeta) -> Unit,
@@ -34,7 +34,7 @@ fun PostCardList(
             itemsIndexed(items = posts, key = { _, item -> item.id }) { index, post ->
                 PostCard(
                     post = post,
-                    onLike = onLike,
+                    onLike = { onLike(post) },
                     onOpenProfile = onOpenProfile,
                     onShowMedia = onShowMedia,
                     onShouldShowMedia = onShouldShowMedia,

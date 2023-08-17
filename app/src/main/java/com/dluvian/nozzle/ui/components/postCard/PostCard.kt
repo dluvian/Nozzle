@@ -44,7 +44,7 @@ import com.dluvian.nozzle.ui.theme.*
 @Composable
 fun PostCard(
     post: PostWithMeta,
-    onLike: (String) -> Unit,
+    onLike: () -> Unit,
     onPrepareReply: (PostWithMeta) -> Unit,
     modifier: Modifier = Modifier,
     onNavigateToThread: (PostIds) -> Unit,
@@ -170,7 +170,7 @@ fun PostCard(
             PostCardActions(
                 numOfReplies = post.numOfReplies,
                 post = post,
-                onLike = { onLike(post.id) },
+                onLike = onLike,
                 onPrepareReply = onPrepareReply,
                 onNavigateToReply = onNavigateToReply,
                 onNavigateToQuote = onNavigateToQuote,

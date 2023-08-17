@@ -23,7 +23,9 @@ fun ProfileRoute(
         profile = profile,
         feed = feed,
         onPrepareReply = onPrepareReply,
-        onLike = profileViewModel.onLike,
+        onLike = { post ->
+            profileViewModel.postCardInteractor.like(postId = post.id, postPubkey = post.pubkey)
+        },
         onFollow = profileViewModel.onFollow,
         onUnfollow = profileViewModel.onUnfollow,
         onShowMedia = profileViewModel.onShowMedia,

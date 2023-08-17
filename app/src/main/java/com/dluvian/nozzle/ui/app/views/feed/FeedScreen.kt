@@ -49,7 +49,7 @@ fun FeedScreen(
     uiState: FeedViewModelState,
     feedState: List<PostWithMeta>,
     metadataState: Metadata?,
-    onLike: (String) -> Unit,
+    onLike: (PostWithMeta) -> Unit,
     onShowMedia: (String) -> Unit,
     onShouldShowMedia: (String) -> Boolean,
     onRefreshFeedView: () -> Unit,

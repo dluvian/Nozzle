@@ -33,7 +33,7 @@ fun ThreadScreen(
     thread: PostThread,
     isRefreshing: Boolean,
     onPrepareReply: (PostWithMeta) -> Unit,
-    onLike: (String) -> Unit,
+    onLike: (PostWithMeta) -> Unit,
     onRefreshThreadView: () -> Unit,
     onOpenThread: (PostIds) -> Unit,
     onShowMedia: (String) -> Unit,
@@ -69,7 +69,7 @@ private fun ThreadedPosts(
     isRefreshing: Boolean,
     onPrepareReply: (PostWithMeta) -> Unit,
     onRefresh: () -> Unit,
-    onLike: (String) -> Unit,
+    onLike: (PostWithMeta) -> Unit,
     onNavigateToProfile: (String) -> Unit,
     onOpenThread: (PostIds) -> Unit,
     onShowMedia: (String) -> Unit,
@@ -98,7 +98,7 @@ private fun ThreadedPosts(
                     }
                     PostCard(
                         post = post,
-                        onLike = onLike,
+                        onLike = { onLike(post) },
                         onPrepareReply = onPrepareReply,
                         onNavigateToThread = onOpenThread,
                         onNavigateToReply = onNavigateToReply,
@@ -124,7 +124,7 @@ private fun ThreadedPosts(
                             )
                         },
                         post = it,
-                        onLike = onLike,
+                        onLike = { onLike(it) },
                         onPrepareReply = onPrepareReply,
                         onNavigateToThread = onOpenThread,
                         onNavigateToReply = onNavigateToReply,
@@ -142,7 +142,7 @@ private fun ThreadedPosts(
                 items(thread.replies) { post ->
                     PostCard(
                         post = post,
-                        onLike = onLike,
+                        onLike = { onLike(post) },
                         onPrepareReply = onPrepareReply,
                         onNavigateToThread = onOpenThread,
                         onNavigateToReply = onNavigateToReply,

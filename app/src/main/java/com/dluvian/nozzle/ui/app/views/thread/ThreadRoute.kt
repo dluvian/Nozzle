@@ -22,7 +22,9 @@ fun ThreadRoute(
         isRefreshing = isRefreshing,
         onPrepareReply = onPrepareReply,
         onRefreshThreadView = threadViewModel.onRefreshThreadView,
-        onLike = threadViewModel.onLike,
+        onLike = { post ->
+            threadViewModel.postCardInteractor.like(postId = post.id, postPubkey = post.pubkey)
+        },
         onShowMedia = threadViewModel.onShowMedia,
         onShouldShowMedia = threadViewModel.onShouldShowMedia,
         onOpenThread = threadViewModel.onOpenThread,

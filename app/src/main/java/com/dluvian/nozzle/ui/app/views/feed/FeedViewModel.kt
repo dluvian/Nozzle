@@ -37,12 +37,12 @@ data class FeedViewModelState(
 )
 
 class FeedViewModel(
+    val clickedMediaUrlCache: IClickedMediaUrlCache,
+    val postCardInteractor: IPostCardInteractor,
     private val personalProfileProvider: IPersonalProfileProvider,
     private val feedProvider: IFeedProvider,
     private val relayProvider: IRelayProvider,
     private val contactListProvider: IContactListProvider,
-    private val clickedMediaUrlCache: IClickedMediaUrlCache,
-    private val postCardInteractor: IPostCardInteractor,
     private val nostrSubscriber: INostrSubscriber,
     private val feedSettingsPreferences: IFeedSettingsPreferences,
 ) : ViewModel() {
@@ -52,7 +52,6 @@ class FeedViewModel(
     )
 
     var metadataState = personalProfileProvider.getMetadataStateFlow()
-
     var feedState: StateFlow<List<PostWithMeta>> = MutableStateFlow(emptyList())
 
     private val lastAutopilotResult: MutableMap<String, Set<String>> =
@@ -71,32 +70,14 @@ class FeedViewModel(
             )
         }
         viewModelScope.launch(context = IO) {
-            initializeFeed()
+            handleRefresh(delayBeforeUpdate = false)
         }
-    }
-
-    private suspend fun initializeFeed() {
-        setUIRefresh(true)
-        subscribeToNip65()
-        subscribeToPersonalProfile()
-        updateRelaySelection()
-        feedState = feedProvider.getFeedFlow(
-            feedSettings = viewModelState.value.feedSettings,
-            limit = DB_BATCH_SIZE,
-            waitForSubscription = WAIT_TIME,
-        ).stateIn(
-            viewModelScope,
-            SharingStarted.Eagerly,
-            feedState.value,
-        )
-        setUIRefresh(false)
-        delayAndRenewReferencedDataSubscription()
     }
 
     val onRefreshFeedView: () -> Unit = {
         viewModelScope.launch(context = IO) {
             Log.i(TAG, "Refresh feed view")
-            handleRefresh()
+            handleRefresh(delayBeforeUpdate = true)
         }
     }
 
@@ -222,37 +203,12 @@ class FeedViewModel(
         }
     }
 
-    // TODO: Refactor: Same in other ViewModels
-    val onLike: (String) -> Unit = { id ->
-        uiState.value.let { _ ->
-            feedState.value.find { it.id == id }?.let {
-                viewModelScope.launch(context = IO) {
-                    postCardInteractor.like(
-                        postId = id,
-                        postPubkey = it.pubkey,
-                        relays = relayProvider.getWriteRelays()
-                    )
-                }
-            }
-        }
-    }
-
-    // TODO: Refactor: Same in other ViewModels
-    val onShowMedia: (String) -> Unit = { mediaUrl ->
-        clickedMediaUrlCache.insert(mediaUrl = mediaUrl)
-    }
-
-    // TODO: Refactor: Same in other ViewModels
-    val onShouldShowMedia: (String) -> Boolean = { mediaUrl ->
-        clickedMediaUrlCache.contains(mediaUrl = mediaUrl)
-    }
-
-    private suspend fun handleRefresh() {
+    private suspend fun handleRefresh(delayBeforeUpdate: Boolean) {
         setUIRefresh(true)
         subscribeToNip65()
         subscribeToPersonalProfile()
         // TODO: Update screen with latest. Freeze post ids once loading indicator is gone
-        delay(WAIT_TIME)
+        if (delayBeforeUpdate) delay(WAIT_TIME)
         updateScreen()
         setUIRefresh(false)
         delayAndRenewReferencedDataSubscription()
@@ -334,6 +290,7 @@ class FeedViewModel(
         // TODO: Resub only what does not exist. Reduce unnecessary data traffic
         // TODO: Filter conditions as helper functions
         // TODO: Resub mentioned post from mention-author's read relays
+        // TODO: Sub nip65 of unknown pubkeys, then their profiles
         delay(3 * WAIT_TIME)
         if (isAppending.get() || viewModelState.value.isRefreshing) {
             isRenewingRef.set(false)
@@ -405,24 +362,24 @@ class FeedViewModel(
 
     companion object {
         fun provideFactory(
+            clickedMediaUrlCache: IClickedMediaUrlCache,
+            postCardInteractor: IPostCardInteractor,
             personalProfileProvider: IPersonalProfileProvider,
             feedProvider: IFeedProvider,
             relayProvider: IRelayProvider,
             contactListProvider: IContactListProvider,
-            clickedMediaUrlCache: IClickedMediaUrlCache,
-            postCardInteractor: IPostCardInteractor,
             nostrSubscriber: INostrSubscriber,
             feedSettingsPreferences: IFeedSettingsPreferences,
         ): ViewModelProvider.Factory = object : ViewModelProvider.Factory {
             @Suppress("UNCHECKED_CAST")
             override fun <T : ViewModel> create(modelClass: Class<T>): T {
                 return FeedViewModel(
+                    clickedMediaUrlCache = clickedMediaUrlCache,
+                    postCardInteractor = postCardInteractor,
                     personalProfileProvider = personalProfileProvider,
                     feedProvider = feedProvider,
                     relayProvider = relayProvider,
                     contactListProvider = contactListProvider,
-                    clickedMediaUrlCache = clickedMediaUrlCache,
-                    postCardInteractor = postCardInteractor,
                     nostrSubscriber = nostrSubscriber,
                     feedSettingsPreferences = feedSettingsPreferences,
                 ) as T

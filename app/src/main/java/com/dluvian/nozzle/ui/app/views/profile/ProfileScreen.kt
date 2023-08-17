@@ -49,7 +49,7 @@ fun ProfileScreen(
     profile: ProfileWithAdditionalInfo,
     feed: List<PostWithMeta>,
     onPrepareReply: (PostWithMeta) -> Unit,
-    onLike: (String) -> Unit,
+    onLike: (PostWithMeta) -> Unit,
     onFollow: (String) -> Unit,
     onUnfollow: (String) -> Unit,
     onShowMedia: (String) -> Unit,

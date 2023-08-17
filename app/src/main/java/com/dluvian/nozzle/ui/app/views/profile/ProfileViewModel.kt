@@ -34,11 +34,11 @@ private const val TAG = "ProfileViewModel"
 // TODO: Sub contactlist of contacts if its your personal profile page. Only once tho
 
 class ProfileViewModel(
+    val postCardInteractor: IPostCardInteractor,
     private val feedProvider: IFeedProvider,
     private val profileProvider: IProfileWithAdditionalInfoProvider,
     private val relayProvider: IRelayProvider,
     private val profileFollower: IProfileFollower,
-    private val postCardInteractor: IPostCardInteractor,
     private val pubkeyProvider: IPubkeyProvider,
     private val clickedMediaUrlCache: IClickedMediaUrlCache,
     private val nostrSubscriber: INostrSubscriber,
@@ -118,19 +118,6 @@ class ProfileViewModel(
             clip.setText(AnnotatedString(it))
             Toast.makeText(context, context.getString(R.string.pubkey_copied), Toast.LENGTH_SHORT)
                 .show()
-        }
-    }
-
-    // TODO: Refactor: Same in other ViewModels
-    val onLike: (String) -> Unit = { id ->
-        feedState.value.find { it.id == id }?.let {
-            viewModelScope.launch(context = Dispatchers.IO) {
-                postCardInteractor.like(
-                    postId = id,
-                    postPubkey = it.pubkey,
-                    relays = relayProvider.getWriteRelays()
-                )
-            }
         }
     }
 
@@ -244,8 +231,8 @@ class ProfileViewModel(
 
     companion object {
         fun provideFactory(
-            profileFollower: IProfileFollower,
             postCardInteractor: IPostCardInteractor,
+            profileFollower: IProfileFollower,
             feedProvider: IFeedProvider,
             relayProvider: IRelayProvider,
             profileProvider: IProfileWithAdditionalInfoProvider,
@@ -259,12 +246,12 @@ class ProfileViewModel(
                 @Suppress("UNCHECKED_CAST")
                 override fun <T : ViewModel> create(modelClass: Class<T>): T {
                     return ProfileViewModel(
-                        profileFollower = profileFollower,
                         postCardInteractor = postCardInteractor,
                         feedProvider = feedProvider,
                         profileProvider = profileProvider,
-                        pubkeyProvider = pubkeyProvider,
                         relayProvider = relayProvider,
+                        profileFollower = profileFollower,
+                        pubkeyProvider = pubkeyProvider,
                         clickedMediaUrlCache = clickedMediaUrlCache,
                         nostrSubscriber = nostrSubscriber,
                         context = context,

@@ -56,10 +56,10 @@ fun NozzleApp(appContainer: AppContainer) {
                 profileViewModel = viewModel(
                     factory = ProfileViewModel.provideFactory(
                         postCardInteractor = appContainer.postCardInteractor,
-                        feedProvider = appContainer.feedProvider,
-                        profileProvider = appContainer.profileWithFollowerProvider,
-                        relayProvider = appContainer.relayProvider,
                         profileFollower = appContainer.profileFollower,
+                        feedProvider = appContainer.feedProvider,
+                        relayProvider = appContainer.relayProvider,
+                        profileProvider = appContainer.profileWithFollowerProvider,
                         pubkeyProvider = appContainer.keyManager,
                         clickedMediaUrlCache = appContainer.clickedMediaUrlCache,
                         nostrSubscriber = appContainer.nostrSubscriber,
@@ -78,12 +78,12 @@ fun NozzleApp(appContainer: AppContainer) {
                 ),
                 feedViewModel = viewModel(
                     factory = FeedViewModel.provideFactory(
+                        clickedMediaUrlCache = appContainer.clickedMediaUrlCache,
+                        postCardInteractor = appContainer.postCardInteractor,
                         personalProfileProvider = appContainer.personalProfileManager,
                         feedProvider = appContainer.feedProvider,
                         relayProvider = appContainer.relayProvider,
                         contactListProvider = appContainer.contactListProvider,
-                        clickedMediaUrlCache = appContainer.clickedMediaUrlCache,
-                        postCardInteractor = appContainer.postCardInteractor,
                         nostrSubscriber = appContainer.nostrSubscriber,
                         feedSettingsPreferences = appContainer.feedSettingsPreferences,
                     )

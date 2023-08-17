@@ -13,7 +13,6 @@ import com.dluvian.nozzle.data.provider.IThreadProvider
 import com.dluvian.nozzle.data.utils.*
 import com.dluvian.nozzle.model.PostIds
 import com.dluvian.nozzle.model.PostThread
-import com.dluvian.nozzle.model.PostWithMeta
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -24,9 +23,9 @@ private const val TAG = "ThreadViewModel"
 private const val WAIT_TIME = 2100L
 
 class ThreadViewModel(
+    val postCardInteractor: IPostCardInteractor,
     private val threadProvider: IThreadProvider,
     private val relayProvider: IRelayProvider,
-    private val postCardInteractor: IPostCardInteractor,
     private val clickedMediaUrlCache: IClickedMediaUrlCache,
     private val nostrSubscriber: INostrSubscriber,
 ) : ViewModel() {
@@ -82,20 +81,6 @@ class ThreadViewModel(
     }
 
     // TODO: Refactor: Same in other ViewModels
-    val onLike: (String) -> Unit = { postId ->
-        val toLike = getCurrentPost(postId = postId)
-        toLike?.let {
-            viewModelScope.launch(context = Dispatchers.IO) {
-                postCardInteractor.like(
-                    postId = postId,
-                    postPubkey = it.pubkey,
-                    relays = relayProvider.getWriteRelays()
-                )
-            }
-        }
-    }
-
-    // TODO: Refactor: Same in other ViewModels
     val onShowMedia: (String) -> Unit = { mediaUrl ->
         clickedMediaUrlCache.insert(mediaUrl = mediaUrl)
     }
@@ -139,20 +124,6 @@ class ThreadViewModel(
         )
     }
 
-    private fun getCurrentPost(postId: String): PostWithMeta? {
-        return threadState.value.let { state ->
-            if (state.current?.id == postId) {
-                state.current
-            } else if (state.previous.any { post -> post.id == postId }) {
-                state.previous.find { post -> post.id == postId }
-            } else if (state.replies.any { post -> post.id == postId }) {
-                state.replies.find { post -> post.id == postId }
-            } else {
-                null
-            }
-        }
-    }
-
     companion object {
         fun provideFactory(
             threadProvider: IThreadProvider,
@@ -164,11 +135,11 @@ class ThreadViewModel(
             @Suppress("UNCHECKED_CAST")
             override fun <T : ViewModel> create(modelClass: Class<T>): T {
                 return ThreadViewModel(
+                    postCardInteractor = postCardInteractor,
                     threadProvider = threadProvider,
                     relayProvider = relayProvider,
-                    postCardInteractor = postCardInteractor,
-                    nostrSubscriber = nostrSubscriber,
-                    clickedMediaUrlCache = clickedMediaUrlCache
+                    clickedMediaUrlCache = clickedMediaUrlCache,
+                    nostrSubscriber = nostrSubscriber
                 ) as T
             }
         }

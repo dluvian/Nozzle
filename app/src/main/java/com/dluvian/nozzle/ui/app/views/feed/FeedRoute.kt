@@ -26,9 +26,15 @@ fun FeedRoute(
         uiState = uiState,
         feedState = feedState,
         metadataState = metadataState,
-        onLike = feedViewModel.onLike,
-        onShowMedia = feedViewModel.onShowMedia,
-        onShouldShowMedia = feedViewModel.onShouldShowMedia,
+        onLike = { post ->
+            feedViewModel.postCardInteractor.like(postId = post.id, postPubkey = post.pubkey)
+        },
+        onShowMedia = { mediaUrl ->
+            feedViewModel.clickedMediaUrlCache.insert(mediaUrl)
+        },
+        onShouldShowMedia = { mediaUrl ->
+            feedViewModel.clickedMediaUrlCache.contains(mediaUrl)
+        },
         onPrepareReply = onPrepareReply,
         onPreparePost = onPreparePost,
         onToggleContactsOnly = feedViewModel.onToggleContactsOnly,
