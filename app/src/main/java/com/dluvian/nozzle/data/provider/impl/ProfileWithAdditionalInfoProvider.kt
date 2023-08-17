@@ -8,7 +8,6 @@ import com.dluvian.nozzle.data.provider.IPubkeyProvider
 import com.dluvian.nozzle.data.provider.IRelayProvider
 import com.dluvian.nozzle.data.room.dao.ContactDao
 import com.dluvian.nozzle.data.room.dao.EventRelayDao
-import com.dluvian.nozzle.data.room.dao.Nip65Dao
 import com.dluvian.nozzle.data.room.dao.ProfileDao
 import com.dluvian.nozzle.data.room.entity.ProfileEntity
 import com.dluvian.nozzle.data.utils.NORMAL_DEBOUNCE
@@ -32,7 +31,6 @@ class ProfileWithAdditionalInfoProvider(
     private val profileDao: ProfileDao,
     private val contactDao: ContactDao,
     private val eventRelayDao: EventRelayDao,
-    private val nip65Dao: Nip65Dao,
 ) : IProfileWithAdditionalInfoProvider {
 
     override fun getProfileFlow(pubkey: String): Flow<ProfileWithAdditionalInfo> {
@@ -147,7 +145,7 @@ class ProfileWithAdditionalInfoProvider(
         delay(WAIT_TIME)
         nostrSubscriber.subscribeToProfileMetadataAndContactList(
             pubkeys = listOf(pubkey),
-            relays = nip65Dao.getWriteRelaysOfPubkey(pubkey = pubkey)
+            relays = relayProvider.getWriteRelaysOfPubkey(pubkey = pubkey)
                 .ifEmpty { relaysFlow.firstOrNull().orEmpty() }
                 .ifEmpty { relayProvider.getReadRelays() }
         )

@@ -66,6 +66,10 @@ class RelayProvider(
         return nip65Dao.getReadRelaysOfPubkey(pubkey = pubkey)
     }
 
+    override suspend fun getWriteRelaysOfPubkey(pubkey: String): List<String> {
+        return nip65Dao.getWriteRelaysOfPubkey(pubkey = pubkey)
+    }
+
     private fun updateFlow() {
         // TODO: Obsolete this check. See TODO above
         if (personalPubkey != pubkeyProvider.getPubkey()) {

@@ -63,7 +63,6 @@ fun NozzleApp(appContainer: AppContainer) {
                         pubkeyProvider = appContainer.keyManager,
                         clickedMediaUrlCache = appContainer.clickedMediaUrlCache,
                         nostrSubscriber = appContainer.nostrSubscriber,
-                        nip65Dao = appContainer.roomDb.nip65Dao(),
                         context = LocalContext.current,
                         clip = LocalClipboardManager.current,
                     )

@@ -87,7 +87,6 @@ class AppContainer(context: Context) {
     val nostrSubscriber: INostrSubscriber = NostrSubscriber(
         nostrService = nostrService,
         pubkeyProvider = keyManager,
-        postDao = roomDb.postDao()
     )
 
     val postCardInteractor: IPostCardInteractor = PostCardInteractor(
@@ -126,7 +125,6 @@ class AppContainer(context: Context) {
             profileDao = roomDb.profileDao(),
             contactDao = roomDb.contactDao(),
             eventRelayDao = roomDb.eventRelayDao(),
-            nip65Dao = roomDb.nip65Dao(),
         )
 
     val personalProfileManager: IPersonalProfileManager = PersonalProfileManager(

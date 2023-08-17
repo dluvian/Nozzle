@@ -74,6 +74,7 @@ class FeedViewModel(
     private suspend fun initializeFeed() {
         setUIRefresh(true)
         subscribeToNip65()
+        subscribeToPersonalProfile()
         updateRelaySelection()
         feedState = feedProvider.getFeedFlow(
             feedSettings = viewModelState.value.feedSettings,
@@ -85,7 +86,7 @@ class FeedViewModel(
             feedState.value,
         )
         setUIRefresh(false)
-        renewAdditionalDataSubscription()
+        delayAndRenewReferencedDataSubscription()
     }
 
     val onRefreshFeedView: () -> Unit = {
@@ -102,9 +103,8 @@ class FeedViewModel(
             viewModelScope.launch(context = IO) {
                 Log.i(TAG, "Load more")
                 appendFeed(currentFeed = feedState.value)
-                delay(WAIT_TIME)
-                renewAdditionalDataSubscription()
                 isAppending.set(false)
+                delayAndRenewReferencedDataSubscription()
             }
         }
     }
@@ -247,11 +247,12 @@ class FeedViewModel(
     private suspend fun handleRefresh() {
         setUIRefresh(true)
         subscribeToNip65()
+        subscribeToPersonalProfile()
         // TODO: Update screen with latest. Freeze post ids once loading indicator is gone
         delay(WAIT_TIME)
-        subscribeToPersonalProfile()
         updateScreen()
         setUIRefresh(false)
+        delayAndRenewReferencedDataSubscription()
     }
 
     private suspend fun updateScreen() {
@@ -265,8 +266,6 @@ class FeedViewModel(
             SharingStarted.Eagerly,
             feedState.value,
         )
-        delay(WAIT_TIME)
-        renewAdditionalDataSubscription()
     }
 
     // TODO: This is too slow and sucks. Same in ProfileViewModel. Use pagination
@@ -295,23 +294,37 @@ class FeedViewModel(
         setUIRefresh(false)
     }
 
+    private var lastPubkeyToSubPersonalProfile = ""
     private fun subscribeToPersonalProfile() {
-        nostrSubscriber.unsubscribeProfiles()
-        nostrSubscriber.subscribeToProfileMetadataAndContactList(
-            pubkeys = listOf(personalProfileProvider.getPubkey()),
-            relays = relayProvider.getWriteRelays(),
-        )
+        if (lastPubkeyToSubPersonalProfile != personalProfileProvider.getPubkey()) {
+            lastPubkeyToSubPersonalProfile = personalProfileProvider.getPubkey()
+            nostrSubscriber.subscribeToProfileMetadataAndContactList(
+                pubkeys = listOf(personalProfileProvider.getPubkey()),
+                relays = relayProvider.getWriteRelays(),
+            )
+        }
     }
 
+    private val pubkeysAlreadySubbedNip65 = mutableSetOf<String>()
     private suspend fun subscribeToNip65() {
-        nostrSubscriber.unsubscribeNip65()
-        nostrSubscriber.subscribeNip65(
-            pubkeys = contactListProvider.listPersonalContactPubkeys() + personalProfileProvider.getPubkey()
-        )
+        val pubkeys = contactListProvider
+            .listPersonalContactPubkeys()
+            .toSet() + personalProfileProvider.getPubkey()
+        val newPubkeys = pubkeys - pubkeysAlreadySubbedNip65
+        if (newPubkeys.isNotEmpty()) {
+            Log.i(TAG, "Subscribe to ${newPubkeys.size} new nip65s")
+            pubkeysAlreadySubbedNip65.addAll(newPubkeys)
+            nostrSubscriber.unsubscribeNip65()
+            nostrSubscriber.subscribeNip65(pubkeys = newPubkeys)
+        }
     }
 
-    private suspend fun renewAdditionalDataSubscription() {
-        nostrSubscriber.subscribeToAdditionalPostsData(
+    private val isRenewingRef = AtomicBoolean(false)
+    private suspend fun delayAndRenewReferencedDataSubscription() {
+        if (isRenewingRef.get()) return
+        isRenewingRef.set(true)
+        delay(WAIT_TIME)
+        nostrSubscriber.subscribeToReferencedData(
             posts = feedState.value.takeLast(DB_BATCH_SIZE),
             relays = getSelectedRelays()
         )
@@ -320,24 +333,24 @@ class FeedViewModel(
         // TODO: Resub only what does not exist. Reduce unnecessary data traffic
         // TODO: Filter conditions as helper functions
         // TODO: Resub mentioned post from mention-author's read relays
-        delay(2 * WAIT_TIME)
-        if (isAppending.get()) return
+        delay(3 * WAIT_TIME)
+        if (isAppending.get() || viewModelState.value.isRefreshing) {
+            isRenewingRef.set(false)
+            return
+        }
+
         val postsWithUnknowns = feedState.value
             .takeLast(DB_BATCH_SIZE)
-            .filter {
-                it.name.isEmpty() ||
-                        (it.replyToId != null && (it.replyToPubkey.isNullOrEmpty() || it.replyToName.isNullOrEmpty()))
-                        || (it.mentionedPost?.pubkey?.isEmpty() ?: false)
-            }
+            .filter { hasUnknownReferencedAuthors(it) }
         if (postsWithUnknowns.isNotEmpty()) {
             Log.i(TAG, "Resubscribe missing posts and profiles of ${postsWithUnknowns.size} posts")
-            nostrSubscriber.unsubscribeAdditionalPostsData()
-            nostrSubscriber.subscribeToAdditionalPostsData(
+            nostrSubscriber.unsubscribeReferencedPostsData()
+            nostrSubscriber.subscribeToReferencedData(
                 posts = postsWithUnknowns,
                 relays = null
             )
         }
-
+        isRenewingRef.set(false)
     }
 
     private fun setUIRefresh(value: Boolean) {

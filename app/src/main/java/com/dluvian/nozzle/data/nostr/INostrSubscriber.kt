@@ -8,14 +8,14 @@ interface INostrSubscriber {
         relays: Collection<String>? = null
     ): List<String>
 
-    fun subscribeToFeed(
+    fun subscribeToFeedPosts(
         authorPubkeys: Collection<String>?,
         limit: Int,
         until: Long?,
         relays: Collection<String>? = null,
     ): List<String>
 
-    suspend fun subscribeToAdditionalPostsData(
+    fun subscribeToReferencedData(
         posts: Collection<PostWithMeta>,
         relays: Collection<String>? = null
     ): List<String>
@@ -35,7 +35,7 @@ interface INostrSubscriber {
 
     fun unsubscribeFeeds()
 
-    fun unsubscribeAdditionalPostsData()
+    fun unsubscribeReferencedPostsData()
 
     fun unsubscribeThread()
 

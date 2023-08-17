@@ -2,11 +2,12 @@ package com.dluvian.nozzle.data.nostr
 
 import android.util.Log
 import com.dluvian.nozzle.data.provider.IPubkeyProvider
-import com.dluvian.nozzle.data.room.dao.PostDao
 import com.dluvian.nozzle.data.utils.getCurrentTimeInSeconds
 import com.dluvian.nozzle.data.utils.getIdsPerRelayHintMap
+import com.dluvian.nozzle.data.utils.hasUnknownMentionedPostAuthor
+import com.dluvian.nozzle.data.utils.hasUnknownParentAuthor
+import com.dluvian.nozzle.data.utils.hasUnknownReferencedAuthors
 import com.dluvian.nozzle.data.utils.listReferencedPostIds
-import com.dluvian.nozzle.data.utils.listReferencedPubkeys
 import com.dluvian.nozzle.model.PostWithMeta
 import com.dluvian.nozzle.model.nostr.Filter
 import java.util.Collections
@@ -16,7 +17,6 @@ private const val TAG = "NostrSubscriber"
 class NostrSubscriber(
     private val nostrService: INostrService,
     private val pubkeyProvider: IPubkeyProvider,
-    private val postDao: PostDao
 ) : INostrSubscriber {
     private val feedSubscriptions = Collections.synchronizedList(mutableListOf<String>())
     private val threadSubscriptions = Collections.synchronizedList(mutableListOf<String>())
@@ -43,7 +43,7 @@ class NostrSubscriber(
         return ids
     }
 
-    override fun subscribeToFeed(
+    override fun subscribeToFeedPosts(
         authorPubkeys: Collection<String>?,
         limit: Int,
         until: Long?,
@@ -65,11 +65,11 @@ class NostrSubscriber(
         return ids
     }
 
-    override suspend fun subscribeToAdditionalPostsData(
+    override fun subscribeToReferencedData(
         posts: Collection<PostWithMeta>,
         relays: Collection<String>?,
     ): List<String> {
-        Log.i(TAG, "Subscribe to additional posts data of ${posts.size} posts")
+        Log.i(TAG, "Subscribe to referenced data of ${posts.size} posts")
         if (posts.isEmpty()) return emptyList()
 
         // TODO: First referenced posts, then referenced authors.
@@ -77,28 +77,45 @@ class NostrSubscriber(
         // TODO: Show shortened npub after referenced post is found
 
         val postIds = posts.map { it.id }
-        val referencedPostIds = listReferencedPostIds(posts)
-        val referencedPubkeys = mutableSetOf<String>()
-        referencedPubkeys.addAll(listReferencedPubkeys(posts))
+        val postsWithUnknownRefAuthors = posts.filter { hasUnknownReferencedAuthors(it) }
+        val unknownReferencedPostIds = listReferencedPostIds(postsWithUnknownRefAuthors)
+        val unknownAuthors = posts.filter { it.name.isEmpty() }.map { it.id }
+        val unknownMentionedPostAuthors = postsWithUnknownRefAuthors
+            .filter { hasUnknownMentionedPostAuthor(it) }
+            .mapNotNull { it.mentionedPost?.pubkey }
+        val unknownParentAuthors = postsWithUnknownRefAuthors
+            .filter { hasUnknownParentAuthor(it) }
+            .mapNotNull { it.replyToPubkey }
+        val unknownPubkeys =
+            unknownAuthors.toSet() + unknownMentionedPostAuthors + unknownParentAuthors
 
         val filters = mutableListOf<Filter>()
+
+        // My likes
         filters.add(
             Filter.createReactionFilter(
-                e = postIds,
+                e = posts.map { it.id },
                 pubkeys = listOf(pubkeyProvider.getPubkey())
             )
         )
+
+        // Replies
         filters.add(Filter.createPostFilter(e = postIds))
-        if (referencedPostIds.isNotEmpty()) {
-            referencedPubkeys.addAll(postDao.listAuthorPubkeys(referencedPostIds))
-            filters.add(Filter.createPostFilter(ids = referencedPostIds))
-        }
-        if (referencedPubkeys.isNotEmpty()) {
-            filters.add(Filter.createProfileFilter(pubkeys = referencedPubkeys.toList()))
+
+        // Unknown parent and mentioned posts
+        if (unknownReferencedPostIds.isNotEmpty()) {
+            filters.add(Filter.createPostFilter(ids = unknownReferencedPostIds))
         }
 
+        // Authors with empty name of main, parent, mentioned posts
+        if (unknownPubkeys.isNotEmpty()) {
+            filters.add(Filter.createProfileFilter(pubkeys = unknownPubkeys.toList()))
+        }
+
+        // Contactlists of those I follow to improve trustscore
         val followedAuthorPubkeys = posts.filter { it.isFollowedByMe }.map { it.pubkey }.distinct()
         if (followedAuthorPubkeys.isNotEmpty()) {
+            // TODO: Cache which ones you already fetched and don't fetch it again
             filters.add(Filter.createContactListFilter(pubkeys = followedAuthorPubkeys))
         }
 
@@ -106,8 +123,7 @@ class NostrSubscriber(
             filters = filters,
             unsubOnEOSE = true,
             relays = relays,
-        ).toMutableList()
-        ids.addAll(subscribeReplyRelayHint(posts, relays))
+        ) + subscribeReplyRelayHint(posts, relays)
         additionalFeedDataSubscriptions.addAll(ids)
 
         return ids
@@ -203,36 +219,36 @@ class NostrSubscriber(
     }
 
     override fun unsubscribeFeeds() {
-        Log.i(TAG, "Unsubscribe feeds")
         val snapshot = feedSubscriptions.toList()
+        Log.i(TAG, "Unsubscribe ${snapshot.size} feeds")
         nostrService.unsubscribe(snapshot)
         feedSubscriptions.removeAll(snapshot)
     }
 
-    override fun unsubscribeAdditionalPostsData() {
-        Log.i(TAG, "Unsubscribe additional posts data")
+    override fun unsubscribeReferencedPostsData() {
         val snapshot = additionalFeedDataSubscriptions.toList()
+        Log.i(TAG, "Unsubscribe ${snapshot.size} referenced posts data")
         nostrService.unsubscribe(snapshot)
         additionalFeedDataSubscriptions.removeAll(snapshot)
     }
 
     override fun unsubscribeThread() {
-        Log.i(TAG, "Unsubscribe thread")
         val snapshot = threadSubscriptions.toList()
+        Log.i(TAG, "Unsubscribe ${snapshot.size} thread")
         nostrService.unsubscribe(snapshot)
         threadSubscriptions.removeAll(snapshot)
     }
 
     override fun unsubscribeProfiles() {
-        Log.i(TAG, "Unsubscribe profiles")
         val snapshot = profileSubscriptions.toList()
+        Log.i(TAG, "Unsubscribe ${snapshot.size} profiles")
         nostrService.unsubscribe(snapshot)
         profileSubscriptions.removeAll(snapshot)
     }
 
     override fun unsubscribeNip65() {
-        Log.i(TAG, "Unsubscribe nip65")
         val snapshot = nip65Subscriptions.toList()
+        Log.i(TAG, "Unsubscribe ${snapshot.size} nip65")
         nostrService.unsubscribe(snapshot)
         nip65Subscriptions.removeAll(snapshot)
     }

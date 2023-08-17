@@ -48,6 +48,7 @@ class ThreadViewModel(
 
     // TODO: Why is this called when returning to feed? Prevent that
     // TODO: Does not work when clicking on post from profile feed from new profile
+    // TODO: Prevent redundant subscriptions
     private var job: Job? = null
     val onOpenThread: (PostIds) -> Unit = { postIds ->
         Log.i(TAG, "Open thread of post ${postIds.id}")
@@ -129,10 +130,10 @@ class ThreadViewModel(
         }
     }
 
-    private suspend fun renewAdditionalDataSubscription(thread: PostThread) {
+    private fun renewAdditionalDataSubscription(thread: PostThread) {
         val posts = thread.getList()
-        nostrSubscriber.unsubscribeAdditionalPostsData()
-        nostrSubscriber.subscribeToAdditionalPostsData(
+        nostrSubscriber.unsubscribeReferencedPostsData()
+        nostrSubscriber.subscribeToReferencedData(
             posts = posts,
             relays = relayProvider.getPostRelays(posts = posts),
         )

@@ -9,4 +9,5 @@ interface IRelayProvider {
     fun getPostRelays(posts: List<PostWithMeta>): List<String>
     suspend fun getAutopilotRelays(): Map<String, Set<String>>
     suspend fun getReadRelaysOfPubkey(pubkey: String): List<String>
+    suspend fun getWriteRelaysOfPubkey(pubkey: String): List<String>
 }

@@ -2,19 +2,6 @@ package com.dluvian.nozzle.data.utils
 
 import com.dluvian.nozzle.model.PostWithMeta
 
-fun listReferencedPubkeys(posts: Collection<PostWithMeta>): List<String> {
-    if (posts.isEmpty()) return emptyList()
-
-    val referencedPubkeys = mutableListOf<String>()
-    for (post in posts) {
-        referencedPubkeys.add(post.pubkey)
-        post.replyToPubkey?.let { referencedPubkeys.add(it) }
-        post.mentionedPost?.pubkey?.let { referencedPubkeys.add(it) }
-    }
-
-    return referencedPubkeys.distinct()
-}
-
 fun listReferencedPostIds(posts: Collection<PostWithMeta>): List<String> {
     if (posts.isEmpty()) return emptyList()
 
@@ -40,4 +27,17 @@ fun getIdsPerRelayHintMap(posts: Collection<PostWithMeta>): Map<String, List<Str
     }
 
     return result
+}
+
+fun hasUnknownParentAuthor(post: PostWithMeta): Boolean {
+    return post.replyToId != null
+            && (post.replyToPubkey.isNullOrEmpty() || post.replyToName.isNullOrEmpty())
+}
+
+fun hasUnknownMentionedPostAuthor(post: PostWithMeta): Boolean {
+    return post.mentionedPost?.let { it.pubkey.isEmpty() || it.name.isEmpty() } ?: false
+}
+
+fun hasUnknownReferencedAuthors(post: PostWithMeta): Boolean {
+    return hasUnknownMentionedPostAuthor(post) || hasUnknownParentAuthor(post)
 }

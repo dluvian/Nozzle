@@ -37,15 +37,14 @@ class FeedProvider(
         waitForSubscription: Long?,
     ): Flow<List<PostWithMeta>> {
         Log.i(TAG, "Get feed")
-
         nostrSubscriber.unsubscribeFeeds()
-        nostrSubscriber.unsubscribeAdditionalPostsData()
-        val authorPubkeys = listPubkeys(authorSelection = feedSettings.authorSelection)
-        subscribeToFeed(
+        nostrSubscriber.unsubscribeReferencedPostsData()
+        val authorSelectionPubkeys = listPubkeys(authorSelection = feedSettings.authorSelection)
+        subscribeToFeedPosts(
             isReplies = feedSettings.isReplies,
             limit = limit,
             until = until,
-            authorPubkeys = authorPubkeys,
+            authorPubkeys = authorSelectionPubkeys,
             relaySelection = feedSettings.relaySelection
         )
 
@@ -55,19 +54,25 @@ class FeedProvider(
         val idsAndPubkeys = listIdsAndAuthorPubkeys(
             isPosts = feedSettings.isPosts,
             isReplies = feedSettings.isReplies,
-            authorPubkeys = authorPubkeys,
+            authorPubkeys = authorSelectionPubkeys,
             relays = feedSettings.relaySelection.getSelectedRelays(),
             until = until ?: getCurrentTimeInSeconds(),
             limit = limit,
         )
 
+        val foundAuthorPubkeys = idsAndPubkeys.map { it.pubkey }.distinct()
+        nostrSubscriber.subscribeProfiles(
+            pubkeys = foundAuthorPubkeys,
+            relays = feedSettings.relaySelection.getSelectedRelays()
+        )
+
         return postMapper.mapToPostsWithMetaFlow(
             postIds = idsAndPubkeys.map { it.id }.distinct(),
-            authorPubkeys = idsAndPubkeys.map { it.pubkey }.distinct()
+            authorPubkeys = foundAuthorPubkeys
         )
     }
 
-    private fun subscribeToFeed(
+    private fun subscribeToFeedPosts(
         authorPubkeys: List<String>?,
         isReplies: Boolean,
         limit: Int,
@@ -83,7 +88,7 @@ class FeedProvider(
 
         when (relaySelection) {
             is AllRelays, is MultipleRelays -> {
-                nostrSubscriber.subscribeToFeed(
+                nostrSubscriber.subscribeToFeedPosts(
                     authorPubkeys = authorPubkeys,
                     limit = adjustedLimit,
                     until = until,
@@ -93,7 +98,7 @@ class FeedProvider(
 
             is UserSpecific -> {
                 if (authorPubkeys == null) {
-                    nostrSubscriber.subscribeToFeed(
+                    nostrSubscriber.subscribeToFeedPosts(
                         authorPubkeys = null,
                         limit = adjustedLimit,
                         until = until,
@@ -103,7 +108,7 @@ class FeedProvider(
                     relaySelection.pubkeysPerRelay.forEach { (relay, pubkeys) ->
                         // We ignore authorPubkeys because relaySelection should contain them
                         if (pubkeys.isNotEmpty()) {
-                            nostrSubscriber.subscribeToFeed(
+                            nostrSubscriber.subscribeToFeedPosts(
                                 authorPubkeys = pubkeys,
                                 limit = adjustedLimit,
                                 until = until,

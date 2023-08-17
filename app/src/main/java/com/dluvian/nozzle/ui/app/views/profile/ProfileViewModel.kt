@@ -22,7 +22,6 @@ import com.dluvian.nozzle.data.provider.IFeedProvider
 import com.dluvian.nozzle.data.provider.IProfileWithAdditionalInfoProvider
 import com.dluvian.nozzle.data.provider.IPubkeyProvider
 import com.dluvian.nozzle.data.provider.IRelayProvider
-import com.dluvian.nozzle.data.room.dao.Nip65Dao
 import com.dluvian.nozzle.model.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -31,6 +30,8 @@ import kotlinx.coroutines.launch
 import java.util.concurrent.atomic.AtomicBoolean
 
 private const val TAG = "ProfileViewModel"
+
+// TODO: Sub contactlist of contacts if its your personal profile page. Only once tho
 
 class ProfileViewModel(
     private val feedProvider: IFeedProvider,
@@ -41,7 +42,6 @@ class ProfileViewModel(
     private val pubkeyProvider: IPubkeyProvider,
     private val clickedMediaUrlCache: IClickedMediaUrlCache,
     private val nostrSubscriber: INostrSubscriber,
-    private val nip65Dao: Nip65Dao,
     context: Context,
     clip: ClipboardManager,
 ) : ViewModel() {
@@ -216,8 +216,8 @@ class ProfileViewModel(
 
     // TODO: Handle sub in FeedProvider
     private suspend fun renewAdditionalDataSubscription(pubkey: String) {
-        nostrSubscriber.unsubscribeAdditionalPostsData()
-        nostrSubscriber.subscribeToAdditionalPostsData(
+        nostrSubscriber.unsubscribeReferencedPostsData()
+        nostrSubscriber.subscribeToReferencedData(
             posts = feedState.value.takeLast(DB_BATCH_SIZE),
             relays = getRelays(pubkey)
         )
@@ -233,14 +233,12 @@ class ProfileViewModel(
     }
 
     private suspend fun getRelays(pubkey: String): List<String> {
-        return nip65Dao.getWriteRelaysOfPubkey(pubkey)
+        return relayProvider.getWriteRelaysOfPubkey(pubkey)
             .ifEmpty {
-                if (profileState.value.pubkey == pubkey) profileState.value.relays
-                else emptyList()
+                if (profileState.value.pubkey == pubkey) {
+                    profileState.value.relays.shuffled().take(MAX_RELAY_REQUESTS)
+                } else emptyList()
             }
-            // TODO: Take random n instead of shuffling whole list
-            .let { if (it.size > MAX_RELAY_REQUESTS) it.shuffled() else it }
-            .take(MAX_RELAY_REQUESTS)
             .ifEmpty { relayProvider.getReadRelays() }
     }
 
@@ -254,7 +252,6 @@ class ProfileViewModel(
             pubkeyProvider: IPubkeyProvider,
             clickedMediaUrlCache: IClickedMediaUrlCache,
             nostrSubscriber: INostrSubscriber,
-            nip65Dao: Nip65Dao,
             context: Context,
             clip: ClipboardManager,
         ): ViewModelProvider.Factory =
@@ -270,7 +267,6 @@ class ProfileViewModel(
                         relayProvider = relayProvider,
                         clickedMediaUrlCache = clickedMediaUrlCache,
                         nostrSubscriber = nostrSubscriber,
-                        nip65Dao = nip65Dao,
                         context = context,
                         clip = clip,
                     ) as T
