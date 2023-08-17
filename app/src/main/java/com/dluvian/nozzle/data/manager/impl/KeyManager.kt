@@ -39,7 +39,6 @@ class KeyManager(context: Context) : IKeyManager {
         var privkey = getPrivkey()
         if (privkey.isEmpty()) {
             privkey = generatePrivkey()
-            Log.i(TAG, "Setting initial privkey $privkey")
             setPrivkey(privkey)
         }
         setPubkeyAndNpub(privkey)
@@ -47,7 +46,7 @@ class KeyManager(context: Context) : IKeyManager {
 
     override fun getPubkey() = pubkey
 
-    override fun getNpub() = hexToNpub(pubkey)
+    override fun getNpub() = npub
 
     override fun getPrivkey() = preferences.getString(PRIVKEY, "") ?: ""
 
