@@ -29,6 +29,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import java.util.concurrent.atomic.AtomicBoolean
+import java.util.concurrent.atomic.AtomicInteger
 
 private const val TAG = "ProfileViewModel"
 
@@ -64,18 +65,26 @@ class ProfileViewModel(
         Log.i(TAG, "Initialize ProfileViewModel")
     }
 
+    private val failedAppendAttempts = AtomicInteger(0)
+
     private val isSettingPubkey = AtomicBoolean(false)
     val onSetPubkey: (String?) -> Unit = { pubkey ->
         if (!isSettingPubkey.get()) {
             isSettingPubkey.set(true)
             val nonNullPubkey = pubkey ?: pubkeyProvider.getPubkey()
-            if (pubkey == null) Log.w(TAG, "Tried to set empty pubkey for UI")
-            else Log.i(TAG, "Set UI for $pubkey")
 
-            viewModelScope.launch(context = Dispatchers.IO) {
-                setProfileAndFeed(pubkey = nonNullPubkey, dbBatchSize = DB_BATCH_SIZE)
-            }.invokeOnCompletion {
+            if (pubkey == null) Log.w(TAG, "Tried to set empty pubkey for UI")
+            if (pubkey == profileState.value.pubkey) {
+                Log.i(TAG, "Profile of $pubkey is already set. Do nothing")
                 isSettingPubkey.set(false)
+            } else {
+                Log.i(TAG, "Set UI for $pubkey")
+                failedAppendAttempts.set(0)
+                viewModelScope.launch(context = Dispatchers.IO) {
+                    setProfileAndFeed(pubkey = nonNullPubkey, dbBatchSize = DB_BATCH_SIZE)
+                }.invokeOnCompletion {
+                    isSettingPubkey.set(false)
+                }
             }
         }
     }
@@ -84,6 +93,7 @@ class ProfileViewModel(
         viewModelScope.launch(context = Dispatchers.IO) {
             Log.i(TAG, "Refresh profile view")
             isRefreshingFlow.update { true }
+            failedAppendAttempts.set(0)
             setFeed(
                 pubkey = profileState.value.pubkey,
                 dbBatchSize = DB_BATCH_SIZE
@@ -95,14 +105,21 @@ class ProfileViewModel(
 
     private val isAppending = AtomicBoolean(false)
     val onLoadMore: () -> Unit = {
-        if (!isAppending.get()) {
+        // TODO: Magic number
+        if (!isAppending.get() && failedAppendAttempts.get() < 5) {
             isAppending.set(true)
             viewModelScope.launch(context = Dispatchers.IO) {
                 Log.i(TAG, "Load more")
                 val pubkey = profileState.value.pubkey
-                appendFeed(pubkey = pubkey, currentFeed = feedState.value)
+                val currentFeed = feedState.value
+                appendFeed(pubkey = pubkey, currentFeed = currentFeed)
+                delay(WAIT_TIME)
+                if (currentFeed.lastOrNull()?.id.orEmpty() == feedState.value.lastOrNull()?.id.orEmpty()) {
+                    val attempt = failedAppendAttempts.getAndIncrement()
+                    Log.w(TAG, "Failed to append profile feed. Attempt $attempt")
+                }
                 isAppending.set(false)
-                delayAndRenewReferencedDataSubscription(pubkey)
+                renewReferencedDataSubscription(pubkey)
             }
         }
     }
@@ -162,7 +179,8 @@ class ProfileViewModel(
             SharingStarted.WhileSubscribed(stopTimeoutMillis = SCOPE_TIMEOUT),
             if (profileState.value.pubkey == pubkey) feedState.value else emptyList(),
         )
-        delayAndRenewReferencedDataSubscription(pubkey)
+        delay(WAIT_TIME)
+        renewReferencedDataSubscription(pubkey)
     }
 
     // TODO: Append in FeedProvider to reduce duplicate code in ProvileVM and FeedVM
@@ -181,7 +199,7 @@ class ProfileViewModel(
                 .stateIn(
                     viewModelScope,
                     SharingStarted.WhileSubscribed(stopTimeoutMillis = SCOPE_TIMEOUT),
-                    feedState.value,
+                    currentFeed,
                 )
         }
         delay(WAIT_TIME)
@@ -190,16 +208,15 @@ class ProfileViewModel(
 
     // TODO: Handle sub in FeedProvider. This is copy&paste from FeedVM
     private val isRenewingRef = AtomicBoolean(false)
-    private suspend fun delayAndRenewReferencedDataSubscription(pubkey: String) {
+    private suspend fun renewReferencedDataSubscription(pubkey: String) {
         if (isRenewingRef.get()) return
         isRenewingRef.set(true)
-        delay(WAIT_TIME)
         nostrSubscriber.subscribeToReferencedData(
             posts = feedState.value.takeLast(DB_BATCH_SIZE),
             relays = getRelays(pubkey)
         )
 
-        delay(3 * WAIT_TIME)
+        delay(2 * WAIT_TIME)
         if (isAppending.get() || isRefreshingFlow.value) {
             isRenewingRef.set(false)
             return
