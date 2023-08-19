@@ -14,10 +14,10 @@ import com.dluvian.nozzle.data.utils.*
 import com.dluvian.nozzle.model.PostIds
 import com.dluvian.nozzle.model.PostThread
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
+import java.util.concurrent.atomic.AtomicBoolean
 
 private const val TAG = "ThreadViewModel"
 private const val WAIT_TIME = 2100L
@@ -45,22 +45,24 @@ class ThreadViewModel(
         Log.i(TAG, "Initialize ThreadViewModel")
     }
 
-    // TODO: Why is this called when returning to feed? Prevent that
-    // TODO: Does not work when clicking on post from profile feed from new profile
+    // TODO: Why is this called multiple times?
     // TODO: Prevent redundant subscriptions
-    private var job: Job? = null
+    private val isSettingThread = AtomicBoolean(false)
     val onOpenThread: (PostIds) -> Unit = { postIds ->
-        Log.i(TAG, "Open thread of post ${postIds.id}")
-        threadState = MutableStateFlow(PostThread.createEmpty())
-        currentPostIds = postIds
-        job?.let { if (it.isActive) it.cancel() }
-        job = viewModelScope.launch(context = Dispatchers.IO) {
+        if (!isSettingThread.get() && postIds.id != threadState.value.current?.id) {
+            isSettingThread.set(true)
             isRefreshingFlow.update { true }
-            updateScreen(postIds = postIds)
-            isRefreshingFlow.update { false }
-            delay(WAIT_TIME)
-            renewAdditionalDataSubscription(threadState.value)
-            updateCurrentPostIds(threadState.value)
+            Log.i(TAG, "Open thread of post ${postIds.id}")
+            threadState = MutableStateFlow(PostThread.createEmpty())
+            currentPostIds = postIds
+            viewModelScope.launch(context = Dispatchers.IO) {
+                updateScreen(postIds = postIds)
+                isRefreshingFlow.update { false }
+                delay(WAIT_TIME)
+                isSettingThread.set(false)
+                renewReferencedDataSubscription(threadState.value)
+                updateCurrentPostIds(threadState.value)
+            }
         }
     }
 
@@ -75,7 +77,7 @@ class ThreadViewModel(
             )
             isRefreshingFlow.update { false }
             delay(WAIT_TIME)
-            renewAdditionalDataSubscription(threadState.value)
+            renewReferencedDataSubscription(threadState.value)
             updateCurrentPostIds(threadState.value)
         }
     }
@@ -105,7 +107,7 @@ class ThreadViewModel(
         }
     }
 
-    private fun renewAdditionalDataSubscription(thread: PostThread) {
+    private fun renewReferencedDataSubscription(thread: PostThread) {
         val posts = thread.getList()
         nostrSubscriber.unsubscribeReferencedPostsData()
         nostrSubscriber.subscribeToReferencedData(
