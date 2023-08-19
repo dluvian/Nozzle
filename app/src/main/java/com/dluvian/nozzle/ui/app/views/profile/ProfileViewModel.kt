@@ -11,7 +11,7 @@ import androidx.lifecycle.viewModelScope
 import com.dluvian.nozzle.R
 import com.dluvian.nozzle.data.DB_APPEND_BATCH_SIZE
 import com.dluvian.nozzle.data.DB_BATCH_SIZE
-import com.dluvian.nozzle.data.MAX_RELAY_REQUESTS
+import com.dluvian.nozzle.data.MAX_FEED_LENGTH
 import com.dluvian.nozzle.data.SCOPE_TIMEOUT
 import com.dluvian.nozzle.data.WAIT_TIME
 import com.dluvian.nozzle.data.cache.IClickedMediaUrlCache
@@ -22,6 +22,7 @@ import com.dluvian.nozzle.data.provider.IFeedProvider
 import com.dluvian.nozzle.data.provider.IProfileWithAdditionalInfoProvider
 import com.dluvian.nozzle.data.provider.IPubkeyProvider
 import com.dluvian.nozzle.data.provider.IRelayProvider
+import com.dluvian.nozzle.data.utils.hasUnknownReferencedAuthors
 import com.dluvian.nozzle.model.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -73,7 +74,6 @@ class ProfileViewModel(
 
             viewModelScope.launch(context = Dispatchers.IO) {
                 setProfileAndFeed(pubkey = nonNullPubkey, dbBatchSize = DB_BATCH_SIZE)
-                delay(WAIT_TIME)
             }.invokeOnCompletion {
                 isSettingPubkey.set(false)
             }
@@ -100,14 +100,9 @@ class ProfileViewModel(
             viewModelScope.launch(context = Dispatchers.IO) {
                 Log.i(TAG, "Load more")
                 val pubkey = profileState.value.pubkey
-                appendFeed(
-                    feedSettings = getCurrentFeedSettings(
-                        pubkey = pubkey,
-                        relays = getRelays(pubkey)
-                    ),
-                    dbBatchSize = DB_APPEND_BATCH_SIZE,
-                )
+                appendFeed(pubkey = pubkey, currentFeed = feedState.value)
                 isAppending.set(false)
+                delayAndRenewReferencedDataSubscription(pubkey)
             }
         }
     }
@@ -167,37 +162,61 @@ class ProfileViewModel(
             SharingStarted.WhileSubscribed(stopTimeoutMillis = SCOPE_TIMEOUT),
             if (profileState.value.pubkey == pubkey) feedState.value else emptyList(),
         )
-        renewAdditionalDataSubscription(pubkey)
+        delayAndRenewReferencedDataSubscription(pubkey)
     }
 
     // TODO: Append in FeedProvider to reduce duplicate code in ProvileVM and FeedVM
-    private suspend fun appendFeed(
-        feedSettings: FeedSettings,
-        dbBatchSize: Int,
-    ) {
+    private suspend fun appendFeed(pubkey: String, currentFeed: List<PostWithMeta>) {
+        isRefreshingFlow.update { (true) }
         feedState.value.lastOrNull()?.let { last ->
-            Log.i(TAG, "Append feed")
             feedState = feedProvider.getFeedFlow(
-                feedSettings = feedSettings,
-                limit = dbBatchSize,
+                feedSettings = getCurrentFeedSettings(
+                    pubkey = pubkey,
+                    relays = getRelays(pubkey)
+                ),
+                limit = DB_APPEND_BATCH_SIZE,
                 until = last.createdAt
-            ).map { toAppend -> feedState.value + toAppend }
+            ).distinctUntilChanged()
+                .map { toAppend -> currentFeed.takeLast(MAX_FEED_LENGTH) + toAppend }
                 .stateIn(
                     viewModelScope,
                     SharingStarted.WhileSubscribed(stopTimeoutMillis = SCOPE_TIMEOUT),
                     feedState.value,
                 )
-            renewAdditionalDataSubscription(pubkey = profileState.value.pubkey)
         }
+        delay(WAIT_TIME)
+        isRefreshingFlow.update { (false) }
     }
 
-    // TODO: Handle sub in FeedProvider
-    private suspend fun renewAdditionalDataSubscription(pubkey: String) {
-        nostrSubscriber.unsubscribeReferencedPostsData()
+    // TODO: Handle sub in FeedProvider. This is copy&paste from FeedVM
+    private val isRenewingRef = AtomicBoolean(false)
+    private suspend fun delayAndRenewReferencedDataSubscription(pubkey: String) {
+        if (isRenewingRef.get()) return
+        isRenewingRef.set(true)
+        delay(WAIT_TIME)
         nostrSubscriber.subscribeToReferencedData(
             posts = feedState.value.takeLast(DB_BATCH_SIZE),
             relays = getRelays(pubkey)
         )
+
+        delay(3 * WAIT_TIME)
+        if (isAppending.get() || isRefreshingFlow.value) {
+            isRenewingRef.set(false)
+            return
+        }
+
+        val postsWithUnknowns = feedState.value
+            .takeLast(DB_BATCH_SIZE)
+            .filter { hasUnknownReferencedAuthors(it) }
+        if (postsWithUnknowns.isNotEmpty()) {
+            Log.i(TAG, "Resubscribe missing posts and profiles of ${postsWithUnknowns.size} posts")
+            nostrSubscriber.unsubscribeReferencedPostsData()
+            nostrSubscriber.subscribeToReferencedData(
+                posts = postsWithUnknowns,
+                relays = null
+            )
+        }
+        isRenewingRef.set(false)
     }
 
     private fun getCurrentFeedSettings(pubkey: String, relays: List<String>): FeedSettings {
@@ -211,11 +230,6 @@ class ProfileViewModel(
 
     private suspend fun getRelays(pubkey: String): List<String> {
         return relayProvider.getWriteRelaysOfPubkey(pubkey)
-            .ifEmpty {
-                if (profileState.value.pubkey == pubkey) {
-                    profileState.value.relays.shuffled().take(MAX_RELAY_REQUESTS)
-                } else emptyList()
-            }
             .ifEmpty { relayProvider.getReadRelays() }
     }
 

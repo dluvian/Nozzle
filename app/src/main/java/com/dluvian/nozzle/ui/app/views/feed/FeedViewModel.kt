@@ -237,12 +237,6 @@ class FeedViewModel(
                 until = last.createdAt,
             ).distinctUntilChanged()
                 .map { toAppend -> currentFeed.takeLast(MAX_FEED_LENGTH) + toAppend }
-                .onFirstEmit(action = {
-                    Log.i(
-                        TAG,
-                        "New feed length ${feedState.value.size}, last post from ${feedState.value.lastOrNull()?.name}"
-                    )
-                })
                 .stateIn(
                     viewModelScope,
                     SharingStarted.Eagerly,
