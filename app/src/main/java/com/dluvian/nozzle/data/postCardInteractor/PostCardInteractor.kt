@@ -15,16 +15,15 @@ class PostCardInteractor(
     private val relayProvider: IRelayProvider,
     private val reactionDao: ReactionDao,
 ) : IPostCardInteractor {
-    private val scope = CoroutineScope(Dispatchers.IO)
-
-    override fun like(postId: String, postPubkey: String) {
+    override fun like(scope: CoroutineScope, postId: String, postPubkey: String) {
         Log.i(TAG, "Like $postId")
-        val event = nostrService.sendLike(
-            postId = postId,
-            postPubkey = postPubkey,
-            relays = relayProvider.getWriteRelays()
-        )
-        scope.launch {
+        scope.launch(context = Dispatchers.IO) {
+            val event = nostrService.sendLike(
+                postId = postId,
+                postPubkey = postPubkey,
+                relays = relayProvider.getReadRelaysOfPubkey(postPubkey).toSet()
+                        + relayProvider.getWriteRelays()
+            )
             reactionDao.like(pubkey = event.pubkey, eventId = postId)
         }
     }

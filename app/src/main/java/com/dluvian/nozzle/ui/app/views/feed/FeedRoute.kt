@@ -3,6 +3,7 @@ package com.dluvian.nozzle.ui.app.views.feed
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.lifecycle.viewModelScope
 import com.dluvian.nozzle.model.PostWithMeta
 
 // TODO: Nav with args, no need for onPrepare
@@ -27,7 +28,11 @@ fun FeedRoute(
         feedState = feedState,
         metadataState = metadataState,
         onLike = { post ->
-            feedViewModel.postCardInteractor.like(postId = post.id, postPubkey = post.pubkey)
+            feedViewModel.postCardInteractor.like(
+                scope = feedViewModel.viewModelScope,
+                postId = post.id,
+                postPubkey = post.pubkey
+            )
         },
         onShowMedia = { mediaUrl ->
             feedViewModel.clickedMediaUrlCache.insert(mediaUrl)

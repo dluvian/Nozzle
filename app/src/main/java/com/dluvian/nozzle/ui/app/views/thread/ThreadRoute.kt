@@ -3,6 +3,7 @@ package com.dluvian.nozzle.ui.app.views.thread
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.lifecycle.viewModelScope
 import com.dluvian.nozzle.model.PostWithMeta
 
 @Composable
@@ -23,7 +24,11 @@ fun ThreadRoute(
         onPrepareReply = onPrepareReply,
         onRefreshThreadView = threadViewModel.onRefreshThreadView,
         onLike = { post ->
-            threadViewModel.postCardInteractor.like(postId = post.id, postPubkey = post.pubkey)
+            threadViewModel.postCardInteractor.like(
+                scope = threadViewModel.viewModelScope,
+                postId = post.id,
+                postPubkey = post.pubkey
+            )
         },
         onShowMedia = { mediaUrl ->
             threadViewModel.clickedMediaUrlCache.insert(mediaUrl)

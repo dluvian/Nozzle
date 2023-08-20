@@ -3,6 +3,7 @@ package com.dluvian.nozzle.ui.app.views.profile
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.lifecycle.viewModelScope
 import com.dluvian.nozzle.model.PostWithMeta
 
 @Composable
@@ -24,7 +25,11 @@ fun ProfileRoute(
         feed = feed,
         onPrepareReply = onPrepareReply,
         onLike = { post ->
-            profileViewModel.postCardInteractor.like(postId = post.id, postPubkey = post.pubkey)
+            profileViewModel.postCardInteractor.like(
+                scope = profileViewModel.viewModelScope,
+                postId = post.id,
+                postPubkey = post.pubkey
+            )
         },
         onFollow = profileViewModel.onFollow,
         onUnfollow = profileViewModel.onUnfollow,
