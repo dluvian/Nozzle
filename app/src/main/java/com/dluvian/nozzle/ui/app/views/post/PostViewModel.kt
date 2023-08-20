@@ -70,6 +70,7 @@ class PostViewModel(
         if (!isPreparing.get() && uiState.value.postToQuote?.id != postIdToQuote) {
             Log.i(TAG, "Prepare quoting $postIdToQuote")
             isPreparing.set(true)
+            viewModelState.update { it.copy(postToQuote = null) }
             viewModelScope.launch(context = Dispatchers.IO) {
                 val postToQuote = postDao.getNullableMentionedPost(postId = postIdToQuote)
                 preparePost(postToQuote = postToQuote?.toMentionedPost())
