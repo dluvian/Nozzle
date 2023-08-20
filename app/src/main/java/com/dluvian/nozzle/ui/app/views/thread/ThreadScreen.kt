@@ -118,7 +118,7 @@ private fun ThreadedPosts(
                         modifier = Modifier.drawBehind {
                             drawLine(
                                 color = focusColor,
-                                strokeWidth = 24f,
+                                strokeWidth = 21f,
                                 start = Offset(x = 0f, y = 0f),
                                 end = Offset(x = 0f, y = size.height),
                             )

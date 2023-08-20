@@ -193,6 +193,7 @@ private fun PostCardHeaderAndContent(
             createdAt = post.createdAt,
             onOpenProfile = onOpenProfile
         )
+        // TODO: Correct name in post. Should not be decided in UI
         PostCardContentBase(
             replyToName = if (post.replyToId != null) {
                 post.replyToName.orEmpty()
