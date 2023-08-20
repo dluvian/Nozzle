@@ -8,6 +8,7 @@ import com.dluvian.nozzle.data.room.dao.PostDao
 import com.dluvian.nozzle.data.utils.NORMAL_DEBOUNCE
 import com.dluvian.nozzle.data.utils.UrlUtils
 import com.dluvian.nozzle.data.utils.firstThenDistinctDebounce
+import com.dluvian.nozzle.data.utils.getShortenedNpubFromPubkey
 import com.dluvian.nozzle.model.MentionedPost
 import com.dluvian.nozzle.model.ParsedContent
 import com.dluvian.nozzle.model.PostEntityExtended
@@ -82,11 +83,11 @@ class PostMapper(
                     createdAt = it.postEntity.createdAt,
                     content = parsedContent.cleanedContent,
                     mediaUrl = parsedContent.mediaUrl,
-                    name = it.name.orEmpty(),
+                    name = it.name.orEmpty().ifEmpty { getShortenedNpubFromPubkey(pubkey) },
                     pictureUrl = it.pictureUrl.orEmpty(),
                     replyToId = it.postEntity.replyToId,
-                    replyToName = it.replyToName,
                     replyToPubkey = it.replyToPubkey,
+                    replyToName = getReplyToName(it),
                     replyRelayHint = it.postEntity.replyRelayHint,
                     isLikedByMe = it.isLikedByMe,
                     numOfReplies = it.numOfReplies,
@@ -99,7 +100,13 @@ class PostMapper(
                             id = mentionedPostId,
                             pubkey = it.mentionedPostPubkey.orEmpty(),
                             content = it.mentionedPostContent.orEmpty(),
-                            name = it.mentionedPostName.orEmpty(),
+                            name = it.mentionedPostName
+                                .orEmpty()
+                                .ifEmpty {
+                                    it.mentionedPostPubkey?.let { key ->
+                                        getShortenedNpubFromPubkey(key)
+                                    }
+                                }.orEmpty(),
                             picture = it.mentionedPostPicture.orEmpty(),
                             createdAt = it.mentionedPostCreatedAt ?: 0L,
                         )
@@ -107,6 +114,15 @@ class PostMapper(
                 )
             }
         }
+    }
+
+    private fun getReplyToName(post: PostEntityExtended): String? {
+        return if (post.replyToPubkey != null) {
+            post.replyToName.orEmpty().ifEmpty {
+                getShortenedNpubFromPubkey(post.replyToPubkey)
+            }
+        } else if (post.postEntity.replyToId != null) "???"
+        else null
     }
 
     private val parsedContentCache: MutableMap<String, ParsedContent> =

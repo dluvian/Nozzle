@@ -23,7 +23,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.style.TextAlign
 import com.dluvian.nozzle.R
-import com.dluvian.nozzle.data.utils.getShortenedNpubFromPubkey
 import com.dluvian.nozzle.data.utils.hexToNote
 import com.dluvian.nozzle.model.PostIds
 import com.dluvian.nozzle.model.PostWithMeta
@@ -188,21 +187,13 @@ private fun PostCardHeaderAndContent(
 ) {
     Column {
         PostCardHeader(
-            name = post.name.ifEmpty { getShortenedNpubFromPubkey(post.pubkey) },
+            name = post.name,
             pubkey = post.pubkey,
             createdAt = post.createdAt,
             onOpenProfile = onOpenProfile
         )
-        // TODO: Correct name in post. Should not be decided in UI
         PostCardContentBase(
-            replyToName = if (post.replyToId != null) {
-                post.replyToName.orEmpty()
-                    .ifEmpty {
-                        post.replyToPubkey?.let { getShortenedNpubFromPubkey(post.replyToPubkey) }
-                            .orEmpty()
-                    }
-                    .ifEmpty { "???" }
-            } else null,
+            replyToName = post.replyToName,
             replyRelayHint = post.replyRelayHint,
             relays = post.relays,
             content = post.content,

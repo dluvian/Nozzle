@@ -123,12 +123,11 @@ interface PostDao {
                 "(SELECT COUNT(*) FROM post WHERE post.replyToId = mainPost.id) " +
                 "AS numOfReplies, " +
                 // SELECT replyToPubkey
-                "(SELECT profile.pubkey " +
-                "FROM profile " +
-                "JOIN post " +
-                "ON (profile.pubkey = post.pubkey AND post.id = mainPost.replyToId)) " +
+                "(SELECT post.pubkey " +
+                "FROM post " +
+                "WHERE post.id = mainPost.replyToId) " +
                 "AS replyToPubkey, " +
-                // SELECT replyToName // TODO: replyToPubkey + replyToName as embedded ?
+                // SELECT replyToName
                 "(SELECT profile.name " +
                 "FROM profile " +
                 "JOIN post " +
@@ -154,7 +153,6 @@ interface PostDao {
         personalPubkey: String
     ): Flow<List<PostEntityExtended>>
 
-
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insertIfNotPresent(vararg post: PostEntity)
 
@@ -165,13 +163,6 @@ interface PostDao {
                 "OR id = :currentPostId" // Current post
     )
     suspend fun listReplyContext(currentPostId: String): List<ReplyContext>
-
-    @Query(
-        "SELECT pubkey " +
-                "FROM post " +
-                "WHERE id IN (:postIds) "
-    )
-    suspend fun listAuthorPubkeys(postIds: Collection<String>): List<String>
 
     @MapInfo(keyColumn = "id")
     @Query(
