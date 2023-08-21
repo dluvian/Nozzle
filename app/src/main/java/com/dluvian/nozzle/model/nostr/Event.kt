@@ -213,14 +213,17 @@ class Event(
                     && it.first() == "r"
                     && it[1].startsWith("wss://")
                     && it[1].length >= 10
-        }.map {
-            val restriction = it.getOrNull(2)
-            Nip65Entry(
-                url = UrlUtils.cleanUrl(it[1]),
-                isRead = restriction == null || restriction == "read",
-                isWrite = restriction == null || restriction == "write",
-            )
-        }.filter { it.url.isNotEmpty() }
+        }
+            .map {
+                val restriction = it.getOrNull(2)
+                Nip65Entry(
+                    url = UrlUtils.cleanUrl(it[1]),
+                    isRead = restriction == null || restriction == "read",
+                    isWrite = restriction == null || restriction == "write",
+                )
+            }
+            .filter { it.url.isNotEmpty() }
+            .distinctBy { it.url }
     }
 
     fun parseContent(): ContentContext {

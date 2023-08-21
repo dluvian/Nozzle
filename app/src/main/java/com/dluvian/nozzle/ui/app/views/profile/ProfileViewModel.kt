@@ -12,6 +12,7 @@ import com.dluvian.nozzle.R
 import com.dluvian.nozzle.data.DB_APPEND_BATCH_SIZE
 import com.dluvian.nozzle.data.DB_BATCH_SIZE
 import com.dluvian.nozzle.data.MAX_FEED_LENGTH
+import com.dluvian.nozzle.data.MAX_RELAYS
 import com.dluvian.nozzle.data.SCOPE_TIMEOUT
 import com.dluvian.nozzle.data.WAIT_TIME
 import com.dluvian.nozzle.data.cache.IClickedMediaUrlCache
@@ -19,7 +20,7 @@ import com.dluvian.nozzle.data.nostr.INostrSubscriber
 import com.dluvian.nozzle.data.postCardInteractor.IPostCardInteractor
 import com.dluvian.nozzle.data.profileFollower.IProfileFollower
 import com.dluvian.nozzle.data.provider.IFeedProvider
-import com.dluvian.nozzle.data.provider.IProfileWithAdditionalInfoProvider
+import com.dluvian.nozzle.data.provider.IProfileWithMetaProvider
 import com.dluvian.nozzle.data.provider.IPubkeyProvider
 import com.dluvian.nozzle.data.provider.IRelayProvider
 import com.dluvian.nozzle.data.utils.hasUnknownReferencedAuthors
@@ -39,7 +40,7 @@ class ProfileViewModel(
     val postCardInteractor: IPostCardInteractor,
     val clickedMediaUrlCache: IClickedMediaUrlCache,
     private val feedProvider: IFeedProvider,
-    private val profileProvider: IProfileWithAdditionalInfoProvider,
+    private val profileProvider: IProfileWithMetaProvider,
     private val relayProvider: IRelayProvider,
     private val profileFollower: IProfileFollower,
     private val pubkeyProvider: IPubkeyProvider,
@@ -55,8 +56,8 @@ class ProfileViewModel(
             false
         )
 
-    var profileState: StateFlow<ProfileWithAdditionalInfo> = MutableStateFlow(
-        ProfileWithAdditionalInfo.createEmpty()
+    var profileState: StateFlow<ProfileWithMeta> = MutableStateFlow(
+        ProfileWithMeta.createEmpty()
     )
 
     var feedState: StateFlow<List<PostWithMeta>> = MutableStateFlow(emptyList())
@@ -81,7 +82,7 @@ class ProfileViewModel(
                 Log.i(TAG, "Set UI for $pubkey")
                 failedAppendAttempts.set(0)
                 viewModelScope.launch(context = Dispatchers.IO) {
-                    setProfileAndFeed(pubkey = nonNullPubkey, dbBatchSize = DB_BATCH_SIZE)
+                    setProfileAndFeed(pubkey = nonNullPubkey)
                 }.invokeOnCompletion {
                     isSettingPubkey.set(false)
                 }
@@ -94,10 +95,7 @@ class ProfileViewModel(
             Log.i(TAG, "Refresh profile view")
             isRefreshingFlow.update { true }
             failedAppendAttempts.set(0)
-            setFeed(
-                pubkey = profileState.value.pubkey,
-                dbBatchSize = DB_BATCH_SIZE
-            )
+            setFeed(pubkey = profileState.value.pubkey)
             delay(1000)
             isRefreshingFlow.update { false }
         }
@@ -158,22 +156,22 @@ class ProfileViewModel(
         }
     }
 
-    private suspend fun setProfileAndFeed(pubkey: String, dbBatchSize: Int) {
+    private suspend fun setProfileAndFeed(pubkey: String) {
         Log.i(TAG, "Set profile of $pubkey")
         profileState = profileProvider.getProfileFlow(pubkey)
             .stateIn(
                 viewModelScope,
                 SharingStarted.WhileSubscribed(stopTimeoutMillis = SCOPE_TIMEOUT),
-                ProfileWithAdditionalInfo.createEmpty(),
+                ProfileWithMeta.createEmpty(),
             )
-        setFeed(pubkey = pubkey, dbBatchSize = dbBatchSize)
+        setFeed(pubkey = pubkey)
     }
 
-    private suspend fun setFeed(pubkey: String, dbBatchSize: Int) {
+    private suspend fun setFeed(pubkey: String) {
         Log.i(TAG, "Set feed of $pubkey")
         feedState = feedProvider.getFeedFlow(
             feedSettings = getCurrentFeedSettings(pubkey = pubkey, relays = getRelays(pubkey)),
-            limit = dbBatchSize
+            limit = DB_BATCH_SIZE
         ).stateIn(
             viewModelScope,
             SharingStarted.WhileSubscribed(stopTimeoutMillis = SCOPE_TIMEOUT),
@@ -245,8 +243,16 @@ class ProfileViewModel(
         )
     }
 
+
     private suspend fun getRelays(pubkey: String): List<String> {
+        // TODO: Refactor into util function. Same in ProfileWithAdditionalInfoProvider
         return relayProvider.getWriteRelaysOfPubkey(pubkey)
+            .let {
+                if (it.size > MAX_RELAYS) it.shuffled()
+                    .sortedByDescending { relay -> relayProvider.getReadRelays().contains(relay) }
+                    .take(7)
+                else it
+            }
             .ifEmpty { relayProvider.getReadRelays() }
     }
 
@@ -256,7 +262,7 @@ class ProfileViewModel(
             profileFollower: IProfileFollower,
             feedProvider: IFeedProvider,
             relayProvider: IRelayProvider,
-            profileProvider: IProfileWithAdditionalInfoProvider,
+            profileProvider: IProfileWithMetaProvider,
             pubkeyProvider: IPubkeyProvider,
             clickedMediaUrlCache: IClickedMediaUrlCache,
             nostrSubscriber: INostrSubscriber,

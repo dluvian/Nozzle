@@ -2,7 +2,7 @@ package com.dluvian.nozzle.model
 
 import com.dluvian.nozzle.model.nostr.Metadata
 
-data class ProfileWithAdditionalInfo(
+data class ProfileWithMeta(
     val pubkey: String,
     val npub: String,
     val metadata: Metadata,
@@ -14,7 +14,7 @@ data class ProfileWithAdditionalInfo(
     val trustScore: Float?,
 ) {
     companion object {
-        fun createEmpty() = ProfileWithAdditionalInfo(
+        fun createEmpty() = ProfileWithMeta(
             pubkey = "",
             npub = "",
             metadata = Metadata(),

@@ -59,7 +59,7 @@ fun NozzleApp(appContainer: AppContainer) {
                         profileFollower = appContainer.profileFollower,
                         feedProvider = appContainer.feedProvider,
                         relayProvider = appContainer.relayProvider,
-                        profileProvider = appContainer.profileWithFollowerProvider,
+                        profileProvider = appContainer.profileWithMetaProvider,
                         pubkeyProvider = appContainer.keyManager,
                         clickedMediaUrlCache = appContainer.clickedMediaUrlCache,
                         nostrSubscriber = appContainer.nostrSubscriber,

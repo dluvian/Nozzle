@@ -275,6 +275,7 @@ class FeedViewModel(
         if (isRenewingRef.get()) return
         isRenewingRef.set(true)
         delay(WAIT_TIME)
+        // TODO: Split method into separate ones
         nostrSubscriber.subscribeToReferencedData(
             posts = feedState.value.takeLast(DB_BATCH_SIZE),
             relays = getSelectedRelays()

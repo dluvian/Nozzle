@@ -25,13 +25,13 @@ import com.dluvian.nozzle.data.profileFollower.ProfileFollower
 import com.dluvian.nozzle.data.provider.IAutopilotProvider
 import com.dluvian.nozzle.data.provider.IContactListProvider
 import com.dluvian.nozzle.data.provider.IFeedProvider
-import com.dluvian.nozzle.data.provider.IProfileWithAdditionalInfoProvider
+import com.dluvian.nozzle.data.provider.IProfileWithMetaProvider
 import com.dluvian.nozzle.data.provider.IRelayProvider
 import com.dluvian.nozzle.data.provider.IThreadProvider
 import com.dluvian.nozzle.data.provider.impl.AutopilotProvider
 import com.dluvian.nozzle.data.provider.impl.ContactListProvider
 import com.dluvian.nozzle.data.provider.impl.FeedProvider
-import com.dluvian.nozzle.data.provider.impl.ProfileWithAdditionalInfoProvider
+import com.dluvian.nozzle.data.provider.impl.ProfileWithMetaProvider
 import com.dluvian.nozzle.data.provider.impl.RelayProvider
 import com.dluvian.nozzle.data.provider.impl.ThreadProvider
 import com.dluvian.nozzle.data.room.AppDatabase
@@ -118,8 +118,8 @@ class AppContainer(context: Context) {
         postDao = roomDb.postDao(),
     )
 
-    val profileWithFollowerProvider: IProfileWithAdditionalInfoProvider =
-        ProfileWithAdditionalInfoProvider(
+    val profileWithMetaProvider: IProfileWithMetaProvider =
+        ProfileWithMetaProvider(
             pubkeyProvider = keyManager,
             nostrSubscriber = nostrSubscriber,
             relayProvider = relayProvider,

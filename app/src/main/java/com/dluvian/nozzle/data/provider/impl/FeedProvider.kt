@@ -60,11 +60,13 @@ class FeedProvider(
             limit = limit,
         )
 
+        // TODO: Don't resub all the time
         val foundAuthorPubkeys = idsAndPubkeys.map { it.pubkey }.distinct()
         nostrSubscriber.subscribeProfiles(
             pubkeys = foundAuthorPubkeys,
             relays = feedSettings.relaySelection.getSelectedRelays()
         )
+        // TODO: Subscribe replies in read relays
 
         return postMapper.mapToPostsWithMetaFlow(
             postIds = idsAndPubkeys.map { it.id }.distinct(),
