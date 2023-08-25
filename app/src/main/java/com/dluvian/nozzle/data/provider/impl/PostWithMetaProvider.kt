@@ -1,6 +1,7 @@
-package com.dluvian.nozzle.data.mapper
+package com.dluvian.nozzle.data.provider.impl
 
 import com.dluvian.nozzle.data.provider.IContactListProvider
+import com.dluvian.nozzle.data.provider.IPostWithMetaProvider
 import com.dluvian.nozzle.data.provider.IPubkeyProvider
 import com.dluvian.nozzle.data.room.dao.ContactDao
 import com.dluvian.nozzle.data.room.dao.EventRelayDao
@@ -19,14 +20,14 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flow
 import java.util.Collections
 
-class PostMapper(
+class PostWithMetaProvider(
     private val pubkeyProvider: IPubkeyProvider,
     private val contactListProvider: IContactListProvider,
     private val postDao: PostDao,
     private val eventRelayDao: EventRelayDao,
     private val contactDao: ContactDao,
-) : IPostMapper {
-    override suspend fun mapToPostsWithMetaFlow(
+) : IPostWithMetaProvider {
+    override suspend fun getPostsWithMetaFlow(
         postIds: Collection<String>,
         authorPubkeys: Collection<String>,
     ): Flow<List<PostWithMeta>> {

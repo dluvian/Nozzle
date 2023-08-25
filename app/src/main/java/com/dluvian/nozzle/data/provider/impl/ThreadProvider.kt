@@ -1,8 +1,8 @@
 package com.dluvian.nozzle.data.provider.impl
 
 import android.util.Log
-import com.dluvian.nozzle.data.mapper.IPostMapper
 import com.dluvian.nozzle.data.nostr.INostrSubscriber
+import com.dluvian.nozzle.data.provider.IPostWithMetaProvider
 import com.dluvian.nozzle.data.provider.IThreadProvider
 import com.dluvian.nozzle.data.room.dao.PostDao
 import com.dluvian.nozzle.data.room.helper.ReplyContext
@@ -17,7 +17,7 @@ import kotlinx.coroutines.flow.map
 private const val TAG = "ThreadProvider"
 
 class ThreadProvider(
-    private val postMapper: IPostMapper,
+    private val postMapper: IPostWithMetaProvider,
     private val nostrSubscriber: INostrSubscriber,
     private val postDao: PostDao,
 ) : IThreadProvider {
@@ -93,7 +93,7 @@ class ThreadProvider(
         authorPubkeys: Collection<String>,
     ): Flow<PostThread> {
         val relevantPostIds = listOf(listOf(currentId), previousIds, replyIds).flatten()
-        return postMapper.mapToPostsWithMetaFlow(
+        return postMapper.getPostsWithMetaFlow(
             postIds = relevantPostIds,
             authorPubkeys = authorPubkeys
         )

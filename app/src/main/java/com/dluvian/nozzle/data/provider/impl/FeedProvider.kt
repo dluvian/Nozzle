@@ -1,10 +1,10 @@
 package com.dluvian.nozzle.data.provider.impl
 
 import android.util.Log
-import com.dluvian.nozzle.data.mapper.IPostMapper
 import com.dluvian.nozzle.data.nostr.INostrSubscriber
 import com.dluvian.nozzle.data.provider.IContactListProvider
 import com.dluvian.nozzle.data.provider.IFeedProvider
+import com.dluvian.nozzle.data.provider.IPostWithMetaProvider
 import com.dluvian.nozzle.data.room.dao.PostDao
 import com.dluvian.nozzle.data.room.helper.IdAndPubkey
 import com.dluvian.nozzle.data.utils.getCurrentTimeInSeconds
@@ -24,7 +24,7 @@ import kotlinx.coroutines.flow.Flow
 private const val TAG = "FeedProvider"
 
 class FeedProvider(
-    private val postMapper: IPostMapper,
+    private val postMapper: IPostWithMetaProvider,
     private val nostrSubscriber: INostrSubscriber,
     private val postDao: PostDao,
     private val contactListProvider: IContactListProvider,
@@ -68,7 +68,7 @@ class FeedProvider(
         )
         // TODO: Subscribe replies in read relays
 
-        return postMapper.mapToPostsWithMetaFlow(
+        return postMapper.getPostsWithMetaFlow(
             postIds = idsAndPubkeys.map { it.id }.distinct(),
             authorPubkeys = foundAuthorPubkeys
         )
