@@ -6,7 +6,7 @@ import androidx.navigation.NavOptionsBuilder
 class NozzleNavActions(private val navController: NavHostController) {
     val navigateToProfile: (String) -> Unit = { pubkey ->
         if (pubkey.isNotEmpty()) {
-            navController.navigate(NozzleRoute.PROFILE + "/$pubkey") {
+            navController.navigate("${NozzleRoute.PROFILE}/$pubkey") {
                 setSimpleNavOptions(optionsBuilder = this)
             }
         }
@@ -36,12 +36,9 @@ class NozzleNavActions(private val navController: NavHostController) {
         }
     }
 
-    // TODO: Reformat string
     val navigateToThread: (String, String?) -> Unit = { postId, replyToId ->
-        navController.navigate(
-            NozzleRoute.THREAD + "/$postId" +
-                    "?replyToId=${replyToId.orEmpty()}"
-        ) {
+        val path = "${NozzleRoute.THREAD}/$postId?replyToId=${replyToId.orEmpty()}"
+        navController.navigate(path) {
             setSimpleNavOptions(optionsBuilder = this)
         }
     }
