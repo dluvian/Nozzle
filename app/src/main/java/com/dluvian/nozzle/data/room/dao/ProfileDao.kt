@@ -13,12 +13,24 @@ interface ProfileDao {
     @Query("SELECT * FROM profile WHERE pubkey = :pubkey")
     suspend fun getProfile(pubkey: String): ProfileEntity?
 
-    @Query("SELECT * FROM profile WHERE pubkey = :pubkey")
-    fun getProfileFlow(pubkey: String): Flow<ProfileEntity?>
-
-    // TODO: GET IT
-    @Query("SELECT * FROM profile WHERE pubkey = :pubkey")
-    fun getProfileEntityExtendedFlow(pubkey: String): Flow<ProfileEntityExtended?>
+    @Query(
+        // SELECT metadata
+        "SELECT mainProfile.*, " +
+                // SELECT isFollowedByMe
+                "(EXISTS (SELECT contactPubkey FROM contact " +
+                "WHERE pubkey = :personalPubkey AND contactPubkey = mainProfile.pubkey)) " +
+                "AS isFollowedByMe, " +
+                // SELECT numOfFollowing
+                "(SELECT COUNT(contactPubkey) FROM contact WHERE pubkey = :pubkey) AS numOfFollowing, " +
+                // SELECT numOfFollowers
+                "(SELECT COUNT(pubkey) FROM contact WHERE contactPubkey = :pubkey) AS numOfFollowers " +
+                "FROM profile AS mainProfile " +
+                "WHERE mainProfile.pubkey = :pubkey"
+    )
+    fun getProfileEntityExtendedFlow(
+        pubkey: String,
+        personalPubkey: String
+    ): Flow<ProfileEntityExtended?>
 
     @RewriteQueriesToDropUnusedColumns
     @Query("SELECT * FROM profile WHERE pubkey = :pubkey")

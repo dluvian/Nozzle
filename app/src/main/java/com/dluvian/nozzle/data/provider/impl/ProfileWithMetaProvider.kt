@@ -13,8 +13,8 @@ import com.dluvian.nozzle.data.room.dao.ProfileDao
 import com.dluvian.nozzle.data.room.helper.extended.ProfileEntityExtended
 import com.dluvian.nozzle.data.utils.NORMAL_DEBOUNCE
 import com.dluvian.nozzle.data.utils.firstThenDistinctDebounce
-import com.dluvian.nozzle.data.utils.hexToNpub
 import com.dluvian.nozzle.model.ProfileWithMeta
+import com.dluvian.nozzle.model.helper.PubkeyVariations
 import com.dluvian.nozzle.model.nostr.Metadata
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
@@ -34,8 +34,10 @@ class ProfileWithMetaProvider(
 
     override fun getProfileFlow(pubkey: String): Flow<ProfileWithMeta> {
         Log.i(TAG, "Get profile $pubkey")
-        val profileExtendedFlow = profileDao.getProfileEntityExtendedFlow(pubkey)
-            .distinctUntilChanged()
+        val profileExtendedFlow = profileDao.getProfileEntityExtendedFlow(
+            pubkey = pubkey,
+            personalPubkey = pubkeyProvider.getPubkey()
+        ).distinctUntilChanged()
 
         // TODO: SQL join (?)
         val relaysFlow = eventRelayDao.listUsedRelaysFlow(pubkey)
@@ -48,6 +50,7 @@ class ProfileWithMetaProvider(
         ).distinctUntilChanged()
 
         return getFinalFlow(
+            pubkeyVariations = PubkeyVariations.fromPubkey(pubkey),
             profileFlow = profileExtendedFlow,
             relaysFlow = relaysFlow,
             trustScoreFlow = trustScoreFlow,
@@ -55,6 +58,7 @@ class ProfileWithMetaProvider(
     }
 
     private fun getFinalFlow(
+        pubkeyVariations: PubkeyVariations,
         profileFlow: Flow<ProfileEntityExtended?>,
         relaysFlow: Flow<List<String>>,
         trustScoreFlow: Flow<Float>,
@@ -64,17 +68,16 @@ class ProfileWithMetaProvider(
             relaysFlow,
             trustScoreFlow,
         ) { profile, relays, trustScore ->
-            val pubkey = profile?.profileEntity?.pubkey.orEmpty()
-            handleNostrSubscriptions(pubkey)
+            handleNostrSubscriptions(pubkeyVariations.pubkey)
             ProfileWithMeta(
-                pubkey = profile?.profileEntity?.pubkey.orEmpty(),
-                // TODO: Cache npub
-                npub = if (pubkey.isNotEmpty()) hexToNpub(pubkey) else "",
-                metadata = profile?.profileEntity?.metadata ?: Metadata(),
+                pubkey = pubkeyVariations.pubkey,
+                npub = pubkeyVariations.npub, // TODO: Cache npub
+                metadata = profile?.profileEntity?.metadata
+                    ?: Metadata(name = pubkeyVariations.shortenedNpub),
                 numOfFollowing = profile?.numOfFollowing ?: 0,
                 numOfFollowers = profile?.numOfFollowers ?: 0,
                 relays = relays,
-                isOneself = profile?.isOneself ?: false,
+                isOneself = pubkeyProvider.isOneself(pubkeyVariations.pubkey),
                 isFollowedByMe = profile?.isFollowedByMe ?: false,
                 trustScore = trustScore,
             )
