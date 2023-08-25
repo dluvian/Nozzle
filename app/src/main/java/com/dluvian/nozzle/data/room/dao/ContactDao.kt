@@ -3,8 +3,6 @@ package com.dluvian.nozzle.data.room.dao
 import androidx.room.*
 import com.dluvian.nozzle.data.TRUST_SCORE_BOOST
 import com.dluvian.nozzle.data.room.entity.ContactEntity
-import com.dluvian.nozzle.data.utils.NORMAL_DEBOUNCE
-import com.dluvian.nozzle.data.utils.firstThenDistinctDebounce
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -142,12 +140,11 @@ interface ContactDao {
         pubkey: String,
         contactPubkey: String
     ): Flow<Float> {
-        val trustScoreDividerFlow = getTrustScoreDividerFlow(pubkey)
-            .firstThenDistinctDebounce(NORMAL_DEBOUNCE)
+        val trustScoreDividerFlow = getTrustScoreDividerFlow(pubkey).distinctUntilChanged()
         val rawTrustScoreFlow = getRawTrustScoreFlow(
             pubkey = pubkey,
             contactPubkey = contactPubkey
-        ).firstThenDistinctDebounce(NORMAL_DEBOUNCE)
+        ).distinctUntilChanged()
         return trustScoreDividerFlow
             .combine(rawTrustScoreFlow) { divider, rawTrustScore ->
                 getTrustScorePercentage(

@@ -240,7 +240,7 @@ class NostrSubscriber(
         threadSubscriptions.removeAll(snapshot)
     }
 
-    override fun unsubscribeProfiles() {
+    override fun unsubscribeProfileMetadataAndContactLists() {
         val snapshot = profileSubscriptions.toList()
         Log.i(TAG, "Unsubscribe ${snapshot.size} profiles")
         nostrService.unsubscribe(snapshot)

@@ -1,6 +1,10 @@
 package com.dluvian.nozzle.data.utils
 
-import com.dluvian.nozzle.model.*
+import com.dluvian.nozzle.model.AllRelays
+import com.dluvian.nozzle.model.MultipleRelays
+import com.dluvian.nozzle.model.RelayActive
+import com.dluvian.nozzle.model.RelaySelection
+import com.dluvian.nozzle.model.UserSpecific
 
 fun toggleRelay(relays: List<RelayActive>, index: Int): List<RelayActive> {
     return relays.mapIndexed { i, relay ->

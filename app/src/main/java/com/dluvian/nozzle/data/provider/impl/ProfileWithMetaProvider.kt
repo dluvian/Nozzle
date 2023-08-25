@@ -10,7 +10,7 @@ import com.dluvian.nozzle.data.provider.IRelayProvider
 import com.dluvian.nozzle.data.room.dao.ContactDao
 import com.dluvian.nozzle.data.room.dao.EventRelayDao
 import com.dluvian.nozzle.data.room.dao.ProfileDao
-import com.dluvian.nozzle.data.room.entity.ProfileEntity
+import com.dluvian.nozzle.data.room.helper.extended.ProfileEntityExtended
 import com.dluvian.nozzle.data.utils.NORMAL_DEBOUNCE
 import com.dluvian.nozzle.data.utils.firstThenDistinctDebounce
 import com.dluvian.nozzle.data.utils.hexToNpub
@@ -20,8 +20,6 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.firstOrNull
-import kotlinx.coroutines.flow.flow
 
 private const val TAG = "ProfileWithMetaProvider"
 
@@ -36,29 +34,12 @@ class ProfileWithMetaProvider(
 
     override fun getProfileFlow(pubkey: String): Flow<ProfileWithMeta> {
         Log.i(TAG, "Get profile $pubkey")
-        val npub = hexToNpub(pubkey)
-        val profileFlow = profileDao.getProfileFlow(pubkey)
-            .firstThenDistinctDebounce(NORMAL_DEBOUNCE)
+        val profileExtendedFlow = profileDao.getProfileEntityExtendedFlow(pubkey)
+            .distinctUntilChanged()
 
         // TODO: SQL join (?)
         val relaysFlow = eventRelayDao.listUsedRelaysFlow(pubkey)
             .firstThenDistinctDebounce(NORMAL_DEBOUNCE)
-
-        // TODO: SQL join
-        val numOfFollowingFlow = contactDao.countFollowingFlow(pubkey)
-            .firstThenDistinctDebounce(NORMAL_DEBOUNCE)
-
-        // No debounce because of immediate user interaction response
-        // TODO: SQL join
-        val isFollowedByMeFlow = contactDao.isFollowedFlow(
-            pubkey = pubkeyProvider.getPubkey(),
-            contactPubkey = pubkey
-        ).distinctUntilChanged()
-
-        // No debounce because of immediate user interaction response
-        // TODO: SQL join
-        val numOfFollowersFlow = contactDao.countFollowersFlow(pubkey)
-            .distinctUntilChanged()
 
         // No debounce because of immediate user interaction response
         val trustScoreFlow = contactDao.getTrustScoreFlow(
@@ -66,95 +47,63 @@ class ProfileWithMetaProvider(
             contactPubkey = pubkey
         ).distinctUntilChanged()
 
-        val baseFlow = getBaseFlow(pubkey = pubkey, npub = npub, relaysFlow = relaysFlow)
-
-        val mainFlow = getMainFlow(
-            baseFlow = baseFlow,
-            relaysFlow = relaysFlow,
-            profileFlow = profileFlow,
-            numOfFollowingFlow = numOfFollowingFlow
-        )
-
         return getFinalFlow(
-            mainFlow = mainFlow,
+            profileFlow = profileExtendedFlow,
+            relaysFlow = relaysFlow,
             trustScoreFlow = trustScoreFlow,
-            isFollowedByMeFlow = isFollowedByMeFlow,
-            numOfFollowersFlow = numOfFollowersFlow
         ).distinctUntilChanged()
     }
 
     private fun getFinalFlow(
-        mainFlow: Flow<ProfileWithMeta>,
-        trustScoreFlow: Flow<Float>,
-        isFollowedByMeFlow: Flow<Boolean>,
-        numOfFollowersFlow: Flow<Int>,
-    ): Flow<ProfileWithMeta> {
-        return combine(
-            mainFlow,
-            trustScoreFlow,
-            isFollowedByMeFlow,
-            numOfFollowersFlow,
-        ) { main, trustScore, isFollowedByMe, numOfFollowers ->
-            Log.d(TAG, "Combining profile final flow")
-            main.copy(
-                trustScore = trustScore,
-                isFollowedByMe = isFollowedByMe,
-                numOfFollowers = numOfFollowers
-            )
-        }
-    }
-
-    private fun getMainFlow(
-        baseFlow: Flow<ProfileWithMeta>,
+        profileFlow: Flow<ProfileEntityExtended?>,
         relaysFlow: Flow<List<String>>,
-        profileFlow: Flow<ProfileEntity?>,
-        numOfFollowingFlow: Flow<Int>
+        trustScoreFlow: Flow<Float>,
     ): Flow<ProfileWithMeta> {
         return combine(
-            baseFlow,
             profileFlow,
             relaysFlow,
-            numOfFollowingFlow,
-        ) { base, profile, relays, numOfFollowing ->
-            Log.d(TAG, "Combining profile main flow")
-            base.copy(
-                metadata = profile?.getMetadata() ?: Metadata(),
+            trustScoreFlow,
+        ) { profile, relays, trustScore ->
+            val pubkey = profile?.profileEntity?.pubkey.orEmpty()
+            handleNostrSubscriptions(pubkey)
+            ProfileWithMeta(
+                pubkey = profile?.profileEntity?.pubkey.orEmpty(),
+                // TODO: Cache npub
+                npub = if (pubkey.isNotEmpty()) hexToNpub(pubkey) else "",
+                metadata = profile?.profileEntity?.metadata ?: Metadata(),
+                numOfFollowing = profile?.numOfFollowing ?: 0,
+                numOfFollowers = profile?.numOfFollowers ?: 0,
                 relays = relays,
-                numOfFollowing = numOfFollowing
+                isOneself = profile?.isOneself ?: false,
+                isFollowedByMe = profile?.isFollowedByMe ?: false,
+                trustScore = trustScore,
             )
         }
     }
 
-    private fun getBaseFlow(pubkey: String, npub: String, relaysFlow: Flow<List<String>>) = flow {
-        val isOneself = pubkeyProvider.isOneself(pubkey = pubkey)
-        emit(
-            ProfileWithMeta(
-                pubkey = pubkey,
-                npub = npub,
-                metadata = Metadata(),
-                numOfFollowing = 0,
-                numOfFollowers = 0,
-                relays = emptyList(),
-                isOneself = isOneself,
-                isFollowedByMe = false,
-                trustScore = if (isOneself) null else 0.001f,
-            )
-        )
+    private var subscribedToPubkey = ""
+    private suspend fun handleNostrSubscriptions(pubkey: String) {
+        synchronized(subscribedToPubkey) {
+            if (subscribedToPubkey == pubkey) return
+            subscribedToPubkey = pubkey
+        }
+        if (pubkey.isEmpty()) return
+
         nostrSubscriber.unsubscribeNip65()
-        nostrSubscriber.unsubscribeProfiles()
+        nostrSubscriber.unsubscribeProfileMetadataAndContactLists()
         nostrSubscriber.subscribeNip65(listOf(pubkey))
         delay(WAIT_TIME)
         nostrSubscriber.subscribeToProfileMetadataAndContactList(
             pubkeys = listOf(pubkey),
             relays = relayProvider.getWriteRelaysOfPubkey(pubkey = pubkey)
-                .ifEmpty { relaysFlow.firstOrNull().orEmpty() }
+                // TODO: Fallback to post relays
                 // TODO: Refactor into util function. Same in Profile view
                 .let {
                     if (it.size > MAX_RELAYS) it.shuffled()
                         .sortedByDescending { relay ->
                             relayProvider.getReadRelays().contains(relay)
                         }
-                        .take(7)
+                        .take(MAX_RELAYS)
                     else it
                 }
                 .ifEmpty { relayProvider.getReadRelays() }

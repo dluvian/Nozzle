@@ -39,7 +39,7 @@ interface INostrSubscriber {
 
     fun unsubscribeThread()
 
-    fun unsubscribeProfiles()
+    fun unsubscribeProfileMetadataAndContactLists()
 
     fun unsubscribeNip65()
 }

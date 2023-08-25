@@ -20,6 +20,7 @@ class ContactListProvider(
 ) : IContactListProvider {
     private val scope = CoroutineScope(context = Dispatchers.Default)
 
+    // TODO: Don't track it. Use extra DB table for current user
     private var personalPubkey = pubkeyProvider.getPubkey()
     private var personalContactListState = contactDao.listContactPubkeysFlow(personalPubkey)
         .firstThenDistinctDebounce(NORMAL_DEBOUNCE)

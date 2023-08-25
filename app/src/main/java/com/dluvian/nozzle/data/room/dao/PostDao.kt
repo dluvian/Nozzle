@@ -5,9 +5,9 @@ import com.dluvian.nozzle.data.room.entity.PostEntity
 import com.dluvian.nozzle.data.room.helper.IdAndPubkey
 import com.dluvian.nozzle.data.room.helper.ReplyContext
 import com.dluvian.nozzle.data.room.helper.ReplyToIdAndPubkey
+import com.dluvian.nozzle.data.room.helper.extended.PostEntityExtended
 import com.dluvian.nozzle.model.MentionedPost
 import com.dluvian.nozzle.model.NullableMentionedPost
-import com.dluvian.nozzle.model.PostEntityExtended
 import kotlinx.coroutines.flow.Flow
 
 

@@ -100,11 +100,13 @@ class EventProcessor(
                     newTimestamp = event.createdAt,
                     ProfileEntity(
                         pubkey = event.pubkey,
-                        name = it.name.orEmpty().trim(),
-                        about = it.about.orEmpty().trim(),
-                        picture = it.picture.orEmpty().trim(),
-                        nip05 = it.nip05.orEmpty().trim(),
-                        lud16 = it.lud16.orEmpty().trim(),
+                        metadata = Metadata(
+                            name = it.name.orEmpty().trim(),
+                            about = it.about.orEmpty().trim(),
+                            picture = it.picture.orEmpty().trim(),
+                            nip05 = it.nip05.orEmpty().trim(),
+                            lud16 = it.lud16.orEmpty().trim(),
+                        ),
                         createdAt = event.createdAt,
                     )
                 )

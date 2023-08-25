@@ -2,8 +2,9 @@ package com.dluvian.nozzle.data.room.dao
 
 import androidx.room.*
 import com.dluvian.nozzle.data.room.entity.ProfileEntity
-import com.dluvian.nozzle.model.NameAndPicture
-import com.dluvian.nozzle.model.NameAndPubkey
+import com.dluvian.nozzle.data.room.helper.NameAndPicture
+import com.dluvian.nozzle.data.room.helper.NameAndPubkey
+import com.dluvian.nozzle.data.room.helper.extended.ProfileEntityExtended
 import com.dluvian.nozzle.model.nostr.Metadata
 import kotlinx.coroutines.flow.Flow
 
@@ -14,6 +15,10 @@ interface ProfileDao {
 
     @Query("SELECT * FROM profile WHERE pubkey = :pubkey")
     fun getProfileFlow(pubkey: String): Flow<ProfileEntity?>
+
+    // TODO: GET IT
+    @Query("SELECT * FROM profile WHERE pubkey = :pubkey")
+    fun getProfileEntityExtendedFlow(pubkey: String): Flow<ProfileEntityExtended?>
 
     @RewriteQueriesToDropUnusedColumns
     @Query("SELECT * FROM profile WHERE pubkey = :pubkey")

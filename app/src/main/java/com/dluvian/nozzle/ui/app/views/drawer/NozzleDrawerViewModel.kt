@@ -15,6 +15,7 @@ import kotlinx.coroutines.launch
 
 private const val TAG = "NozzleDrawerViewModel"
 
+// TODO: Flow from DB instead of manually setting state
 data class DrawerViewModelState(
     val pubkey: String = "",
     val npub: String = "",

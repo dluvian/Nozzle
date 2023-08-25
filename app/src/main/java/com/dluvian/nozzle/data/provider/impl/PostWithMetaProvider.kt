@@ -6,13 +6,13 @@ import com.dluvian.nozzle.data.provider.IPubkeyProvider
 import com.dluvian.nozzle.data.room.dao.ContactDao
 import com.dluvian.nozzle.data.room.dao.EventRelayDao
 import com.dluvian.nozzle.data.room.dao.PostDao
+import com.dluvian.nozzle.data.room.helper.extended.PostEntityExtended
 import com.dluvian.nozzle.data.utils.NORMAL_DEBOUNCE
 import com.dluvian.nozzle.data.utils.UrlUtils
 import com.dluvian.nozzle.data.utils.firstThenDistinctDebounce
 import com.dluvian.nozzle.data.utils.getShortenedNpubFromPubkey
 import com.dluvian.nozzle.model.MentionedPost
 import com.dluvian.nozzle.model.ParsedContent
-import com.dluvian.nozzle.model.PostEntityExtended
 import com.dluvian.nozzle.model.PostWithMeta
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
@@ -33,6 +33,7 @@ class PostWithMetaProvider(
     ): Flow<List<PostWithMeta>> {
         if (postIds.isEmpty()) return flow { emit(emptyList()) }
 
+        // TODO: No PersonalPubkey. Use extra DB Table for current user
         val extendedPostsFlow = postDao
             .listExtendedPostsFlow(postIds = postIds, personalPubkey = pubkeyProvider.getPubkey())
             .distinctUntilChanged()
@@ -46,6 +47,7 @@ class PostWithMetaProvider(
             .getRelaysPerEventIdMapFlow(postIds)
             .firstThenDistinctDebounce(NORMAL_DEBOUNCE)
 
+        // TODO: No pubkey. Use extra DB Table for current user
         // No debounce because of immediate user interaction
         val trustScorePerPubkeyFlow = contactDao
             .getTrustScorePerPubkeyFlow(

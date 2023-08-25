@@ -250,7 +250,7 @@ class ProfileViewModel(
             .let {
                 if (it.size > MAX_RELAYS) it.shuffled()
                     .sortedByDescending { relay -> relayProvider.getReadRelays().contains(relay) }
-                    .take(7)
+                    .take(MAX_RELAYS)
                 else it
             }
             .ifEmpty { relayProvider.getReadRelays() }
