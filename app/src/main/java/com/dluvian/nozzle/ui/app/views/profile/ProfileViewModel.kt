@@ -11,6 +11,7 @@ import androidx.lifecycle.viewModelScope
 import com.dluvian.nozzle.R
 import com.dluvian.nozzle.data.DB_APPEND_BATCH_SIZE
 import com.dluvian.nozzle.data.DB_BATCH_SIZE
+import com.dluvian.nozzle.data.MAX_APPEND_ATTEMPTS
 import com.dluvian.nozzle.data.MAX_FEED_LENGTH
 import com.dluvian.nozzle.data.MAX_RELAYS
 import com.dluvian.nozzle.data.SCOPE_TIMEOUT
@@ -103,8 +104,7 @@ class ProfileViewModel(
 
     private val isAppending = AtomicBoolean(false)
     val onLoadMore: () -> Unit = {
-        // TODO: Magic number
-        if (!isAppending.get() && failedAppendAttempts.get() < 5) {
+        if (!isAppending.get() && failedAppendAttempts.get() <= MAX_APPEND_ATTEMPTS) {
             isAppending.set(true)
             viewModelScope.launch(context = Dispatchers.IO) {
                 Log.i(TAG, "Load more")

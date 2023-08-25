@@ -62,8 +62,6 @@ class PostViewModel(
         preparePost(postToQuote = null)
     }
 
-    // TODO: Show "Quoting abc"
-    // TODO: Render post card
     // TODO: Add recipients read relays to selection
     private val isPreparing = AtomicBoolean(false)
     val onPrepareQuote: (String) -> Unit = { postIdToQuote ->

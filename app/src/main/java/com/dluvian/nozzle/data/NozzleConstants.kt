@@ -14,3 +14,5 @@ const val SCOPE_TIMEOUT = 7_000L
 const val WAIT_TIME = 1300L
 
 const val MAX_RELAYS = 7
+
+const val MAX_APPEND_ATTEMPTS = 3
