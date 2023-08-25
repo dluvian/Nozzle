@@ -19,11 +19,19 @@ fun ReplyingTo(name: String, replyRelayHint: String?, modifier: Modifier = Modif
         text = buildAnnotatedString {
             // TODO: Refactor: Move styles to different file
             withStyle(style = SpanStyle(color = Color.LightGray)) {
-                append(stringResource(id = R.string.replying_to))
-                append(" ")
+                if (name.isNotEmpty()) append(stringResource(id = R.string.replying_to))
+                else append(stringResource(id = R.string.replying))
             }
-            withStyle(style = SpanStyle(fontWeight = FontWeight.Bold, color = Color.LightGray)) {
-                append(name)
+            if (name.isNotEmpty()) {
+                withStyle(
+                    style = SpanStyle(
+                        fontWeight = FontWeight.Bold,
+                        color = Color.LightGray
+                    )
+                ) {
+                    append(" ")
+                    append(name)
+                }
             }
             replyRelayHint?.let { relayHint ->
                 withStyle(style = SpanStyle(color = Color.LightGray)) {

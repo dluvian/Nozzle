@@ -121,7 +121,7 @@ class PostMapper(
             post.replyToName.orEmpty().ifEmpty {
                 getShortenedNpubFromPubkey(post.replyToPubkey)
             }
-        } else if (post.postEntity.replyToId != null) "???"
+        } else if (post.postEntity.replyToId != null) ""
         else null
     }
 

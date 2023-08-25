@@ -47,6 +47,7 @@
     <string name="update_profile">Update profile</string>
     <string name="invalid_url">Invalid URL</string>
     <string name="remove">Remove</string>
+    <string name="replying">replying</string>
     <string name="replying_to">replying to</string>
     <string name="thread">Thread</string>
     <string name="post_not_found">Post not found</string>
