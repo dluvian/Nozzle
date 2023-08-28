@@ -2,7 +2,6 @@ package com.dluvian.nozzle.data.provider.impl
 
 import android.util.Log
 import com.dluvian.nozzle.data.MAX_RELAYS
-import com.dluvian.nozzle.data.WAIT_TIME
 import com.dluvian.nozzle.data.nostr.INostrSubscriber
 import com.dluvian.nozzle.data.provider.IProfileWithMetaProvider
 import com.dluvian.nozzle.data.provider.IPubkeyProvider
@@ -16,7 +15,6 @@ import com.dluvian.nozzle.data.utils.firstThenDistinctDebounce
 import com.dluvian.nozzle.model.ProfileWithMeta
 import com.dluvian.nozzle.model.helper.PubkeyVariations
 import com.dluvian.nozzle.model.nostr.Metadata
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -34,6 +32,9 @@ class ProfileWithMetaProvider(
 
     override fun getProfileFlow(pubkey: String): Flow<ProfileWithMeta> {
         Log.i(TAG, "Get profile $pubkey")
+
+        makeSubscriptionAvailable()
+
         val profileExtendedFlow = profileDao.getProfileEntityExtendedFlow(
             pubkey = pubkey,
             personalPubkey = pubkeyProvider.getPubkey()
@@ -85,6 +86,13 @@ class ProfileWithMetaProvider(
     }
 
     private var subscribedToPubkey = ""
+
+    private fun makeSubscriptionAvailable() {
+        synchronized(subscribedToPubkey) {
+            subscribedToPubkey = ""
+        }
+    }
+
     private suspend fun handleNostrSubscriptions(pubkey: String) {
         synchronized(subscribedToPubkey) {
             if (subscribedToPubkey == pubkey) return
@@ -95,7 +103,6 @@ class ProfileWithMetaProvider(
         nostrSubscriber.unsubscribeNip65()
         nostrSubscriber.unsubscribeProfileMetadataAndContactLists()
         nostrSubscriber.subscribeNip65(listOf(pubkey))
-        delay(WAIT_TIME)
         nostrSubscriber.subscribeToProfileMetadataAndContactList(
             pubkeys = listOf(pubkey),
             relays = relayProvider.getWriteRelaysOfPubkey(pubkey = pubkey)

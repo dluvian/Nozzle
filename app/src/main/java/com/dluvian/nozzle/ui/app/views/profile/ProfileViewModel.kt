@@ -157,14 +157,19 @@ class ProfileViewModel(
     }
 
     private suspend fun setProfileAndFeed(pubkey: String) {
+        setProfile(pubkey = pubkey)
+        setFeed(pubkey = pubkey)
+    }
+
+    private fun setProfile(pubkey: String) {
         Log.i(TAG, "Set profile of $pubkey")
         profileState = profileProvider.getProfileFlow(pubkey)
             .stateIn(
                 viewModelScope,
                 SharingStarted.WhileSubscribed(stopTimeoutMillis = SCOPE_TIMEOUT),
-                ProfileWithMeta.createEmpty(),
+                if (profileState.value.pubkey == pubkey) profileState.value
+                else ProfileWithMeta.createEmpty(),
             )
-        setFeed(pubkey = pubkey)
     }
 
     private suspend fun setFeed(pubkey: String) {
@@ -175,7 +180,7 @@ class ProfileViewModel(
         ).stateIn(
             viewModelScope,
             SharingStarted.WhileSubscribed(stopTimeoutMillis = SCOPE_TIMEOUT),
-            if (profileState.value.pubkey == pubkey) feedState.value else emptyList(),
+            if (profileState.value.pubkey == pubkey) feedState.value else emptyList()
         )
         delay(WAIT_TIME)
         renewReferencedDataSubscription(pubkey)
