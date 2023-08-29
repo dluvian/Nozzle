@@ -3,7 +3,6 @@ package com.dluvian.nozzle.data.nostr
 import android.util.Log
 import com.dluvian.nozzle.data.eventProcessor.IEventProcessor
 import com.dluvian.nozzle.data.manager.IKeyManager
-import com.dluvian.nozzle.data.provider.IRelayProvider
 import com.dluvian.nozzle.model.nostr.Event
 import com.dluvian.nozzle.model.nostr.Filter
 import com.dluvian.nozzle.model.nostr.Metadata
@@ -15,8 +14,7 @@ private const val TAG = "NostrService"
 
 class NostrService(
     private val keyManager: IKeyManager,
-    relayProvider: IRelayProvider,
-    private val eventProcessor: IEventProcessor
+    private val eventProcessor: IEventProcessor,
 ) : INostrService {
     private val client = Client()
     private val unsubOnEOSECache = Collections.synchronizedSet(mutableSetOf<String>())
@@ -55,11 +53,10 @@ class NostrService(
 
     }
 
-    init {
+    override fun initialize(initRelays: Collection<String>) {
         client.setListener(listener)
-        val relays = (relayProvider.getReadRelays() + relayProvider.getWriteRelays()).distinct()
-        Log.i(TAG, "Add ${relays.size} relays")
-        client.addRelays(relays)
+        Log.i(TAG, "Add ${initRelays.size} relays")
+        client.addRelays(initRelays)
     }
 
     override fun publishProfile(metadata: Metadata): Event {

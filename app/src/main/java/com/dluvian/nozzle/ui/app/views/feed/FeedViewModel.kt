@@ -42,7 +42,6 @@ class FeedViewModel(
     private val personalProfileProvider: IPersonalProfileProvider,
     private val feedProvider: IFeedProvider,
     private val relayProvider: IRelayProvider,
-    private val contactListProvider: IContactListProvider,
     private val nostrSubscriber: INostrSubscriber,
     private val feedSettingsPreferences: IFeedSettingsPreferences,
 ) : ViewModel() {
@@ -57,7 +56,6 @@ class FeedViewModel(
     private val lastAutopilotResult: MutableMap<String, Set<String>> =
         Collections.synchronizedMap(mutableMapOf<String, Set<String>>())
 
-    private val pubkeysAlreadySubbedNip65 = mutableSetOf<String>()
     private val isAppending = AtomicBoolean(false)
     private var lastPubkeyToSubPersonalProfile = ""
 
@@ -205,7 +203,6 @@ class FeedViewModel(
 
     private suspend fun handleRefresh(delayBeforeUpdate: Boolean) {
         setUIRefresh(true)
-        subscribeToNip65()
         subscribeToPersonalProfile()
         // TODO: Update screen with latest. Freeze post ids once loading indicator is gone
         if (delayBeforeUpdate) delay(WAIT_TIME)
@@ -254,19 +251,6 @@ class FeedViewModel(
                 pubkeys = listOf(personalProfileProvider.getPubkey()),
                 relays = relayProvider.getWriteRelays(),
             )
-        }
-    }
-
-    private suspend fun subscribeToNip65() {
-        val pubkeys = contactListProvider
-            .listPersonalContactPubkeys()
-            .toSet() + personalProfileProvider.getPubkey()
-        val newPubkeys = pubkeys - pubkeysAlreadySubbedNip65
-        if (newPubkeys.isNotEmpty()) {
-            Log.i(TAG, "Subscribe to ${newPubkeys.size} new nip65s")
-            pubkeysAlreadySubbedNip65.addAll(newPubkeys)
-            nostrSubscriber.unsubscribeNip65()
-            nostrSubscriber.subscribeNip65(pubkeys = newPubkeys)
         }
     }
 
@@ -362,7 +346,6 @@ class FeedViewModel(
             personalProfileProvider: IPersonalProfileProvider,
             feedProvider: IFeedProvider,
             relayProvider: IRelayProvider,
-            contactListProvider: IContactListProvider,
             nostrSubscriber: INostrSubscriber,
             feedSettingsPreferences: IFeedSettingsPreferences,
         ): ViewModelProvider.Factory = object : ViewModelProvider.Factory {
@@ -374,7 +357,6 @@ class FeedViewModel(
                     personalProfileProvider = personalProfileProvider,
                     feedProvider = feedProvider,
                     relayProvider = relayProvider,
-                    contactListProvider = contactListProvider,
                     nostrSubscriber = nostrSubscriber,
                     feedSettingsPreferences = feedSettingsPreferences,
                 ) as T

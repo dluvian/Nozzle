@@ -83,7 +83,6 @@ fun NozzleApp(appContainer: AppContainer) {
                         personalProfileProvider = appContainer.personalProfileManager,
                         feedProvider = appContainer.feedProvider,
                         relayProvider = appContainer.relayProvider,
-                        contactListProvider = appContainer.contactListProvider,
                         nostrSubscriber = appContainer.nostrSubscriber,
                         feedSettingsPreferences = appContainer.feedSettingsPreferences,
                     )

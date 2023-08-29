@@ -2,10 +2,12 @@ package com.dluvian.nozzle.data.provider.impl
 
 import android.util.Log
 import com.dluvian.nozzle.data.getDefaultRelays
+import com.dluvian.nozzle.data.nostr.INostrSubscriber
 import com.dluvian.nozzle.data.provider.IAutopilotProvider
 import com.dluvian.nozzle.data.provider.IPubkeyProvider
 import com.dluvian.nozzle.data.room.dao.EventRelayDao
 import com.dluvian.nozzle.data.room.dao.Nip65Dao
+import java.util.Collections
 
 private const val TAG = "AutopilotProvider"
 
@@ -13,6 +15,7 @@ class AutopilotProvider(
     private val pubkeyProvider: IPubkeyProvider,
     private val nip65Dao: Nip65Dao,
     private val eventRelayDao: EventRelayDao,
+    private val nostrSubscriber: INostrSubscriber,
 ) : IAutopilotProvider {
 
     // TODO: Dismiss relays you have trouble to connecting
@@ -22,6 +25,8 @@ class AutopilotProvider(
     override suspend fun getAutopilotRelays(pubkeys: Set<String>): Map<String, Set<String>> {
         Log.i(TAG, "Get autopilot relays of ${pubkeys.size} pubkeys")
         if (pubkeys.isEmpty()) return emptyMap()
+
+        subscribeNip65(pubkeys = pubkeys)
 
         val result = mutableListOf<Pair<String, Set<String>>>()
         val processedPubkeys = mutableSetOf<String>()
@@ -153,5 +158,16 @@ class AutopilotProvider(
         }
 
         return result
+    }
+
+    private val pubkeysAlreadySubbedNip65 = Collections.synchronizedSet(mutableSetOf<String>())
+    private fun subscribeNip65(pubkeys: Set<String>) {
+        // TODO: Don't sub if nip65 already in DB. Or at least not all of them
+        val newPubkeys = pubkeys - pubkeysAlreadySubbedNip65
+        if (newPubkeys.isNotEmpty()) {
+            nostrSubscriber.unsubscribeNip65()
+            nostrSubscriber.subscribeNip65(pubkeys = newPubkeys)
+            pubkeysAlreadySubbedNip65.addAll(newPubkeys)
+        }
     }
 }

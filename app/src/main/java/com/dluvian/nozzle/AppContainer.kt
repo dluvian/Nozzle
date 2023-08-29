@@ -52,19 +52,6 @@ class AppContainer(context: Context) {
         contactDao = roomDb.contactDao()
     )
 
-    private val autopilotProvider: IAutopilotProvider = AutopilotProvider(
-        pubkeyProvider = keyManager,
-        nip65Dao = roomDb.nip65Dao(),
-        eventRelayDao = roomDb.eventRelayDao()
-    )
-
-    val relayProvider: IRelayProvider = RelayProvider(
-        contactListProvider = contactListProvider,
-        autopilotProvider = autopilotProvider,
-        pubkeyProvider = keyManager,
-        nip65Dao = roomDb.nip65Dao(),
-    )
-
     private val nozzlePreferences = NozzlePreferences(context = context)
 
     val feedSettingsPreferences: IFeedSettingsPreferences = nozzlePreferences
@@ -80,7 +67,6 @@ class AppContainer(context: Context) {
 
     val nostrService: INostrService = NostrService(
         keyManager = keyManager,
-        relayProvider = relayProvider,
         eventProcessor = eventProcessor
     )
 
@@ -88,6 +74,26 @@ class AppContainer(context: Context) {
         nostrService = nostrService,
         pubkeyProvider = keyManager,
     )
+
+    private val autopilotProvider: IAutopilotProvider = AutopilotProvider(
+        pubkeyProvider = keyManager,
+        nip65Dao = roomDb.nip65Dao(),
+        eventRelayDao = roomDb.eventRelayDao(),
+        nostrSubscriber = nostrSubscriber,
+    )
+
+    val relayProvider: IRelayProvider = RelayProvider(
+        contactListProvider = contactListProvider,
+        autopilotProvider = autopilotProvider,
+        pubkeyProvider = keyManager,
+        nip65Dao = roomDb.nip65Dao(),
+    )
+
+    init {
+        nostrService.initialize(
+            initRelays = relayProvider.getWriteRelays().toSet() + relayProvider.getReadRelays()
+        )
+    }
 
     val postCardInteractor: IPostCardInteractor = PostCardInteractor(
         nostrService = nostrService,

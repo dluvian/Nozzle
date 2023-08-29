@@ -6,6 +6,8 @@ import com.dluvian.nozzle.model.nostr.Metadata
 import com.dluvian.nozzle.model.nostr.ReplyTo
 
 interface INostrService {
+    fun initialize(initRelays: Collection<String>)
+
     fun publishProfile(metadata: Metadata): Event
 
     fun sendPost(content: String, relays: Collection<String>?): Event
