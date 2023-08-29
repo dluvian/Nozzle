@@ -11,6 +11,7 @@ import kotlinx.coroutines.flow.take
 
 const val SHORT_DEBOUNCE = 100L
 const val NORMAL_DEBOUNCE = 300L
+const val LONG_DEBOUNCE = 600L
 
 @OptIn(FlowPreview::class)
 fun <T> Flow<T>.firstThenDistinctDebounce(millis: Long): Flow<T> {
@@ -20,16 +21,6 @@ fun <T> Flow<T>.firstThenDistinctDebounce(millis: Long): Flow<T> {
             this@firstThenDistinctDebounce.drop(1)
                 .distinctUntilChanged()
                 .debounce(millis)
-        )
-    }
-}
-
-fun <T> Flow<T>.onFirstEmit(action: () -> Unit): Flow<T> {
-    return flow {
-        emitAll(this@onFirstEmit.take(1))
-        action()
-        emitAll(
-            this@onFirstEmit.drop(1)
         )
     }
 }

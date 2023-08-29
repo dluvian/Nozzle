@@ -7,7 +7,9 @@ import com.dluvian.nozzle.data.room.dao.ContactDao
 import com.dluvian.nozzle.data.room.dao.EventRelayDao
 import com.dluvian.nozzle.data.room.dao.PostDao
 import com.dluvian.nozzle.data.room.helper.extended.PostEntityExtended
+import com.dluvian.nozzle.data.utils.LONG_DEBOUNCE
 import com.dluvian.nozzle.data.utils.NORMAL_DEBOUNCE
+import com.dluvian.nozzle.data.utils.SHORT_DEBOUNCE
 import com.dluvian.nozzle.data.utils.UrlUtils
 import com.dluvian.nozzle.data.utils.firstThenDistinctDebounce
 import com.dluvian.nozzle.data.utils.getShortenedNpubFromPubkey
@@ -36,25 +38,24 @@ class PostWithMetaProvider(
         // TODO: No PersonalPubkey. Use extra DB Table for current user
         val extendedPostsFlow = postDao
             .listExtendedPostsFlow(postIds = postIds, personalPubkey = pubkeyProvider.getPubkey())
-            .distinctUntilChanged()
+            .firstThenDistinctDebounce(NORMAL_DEBOUNCE)
 
         val contactPubkeysFlow = contactListProvider
             .getPersonalContactPubkeysFlow()
-            .distinctUntilChanged()
+            .firstThenDistinctDebounce(SHORT_DEBOUNCE)
 
         // TODO: In initial SQL query possible?
         val relaysFlow = eventRelayDao
             .getRelaysPerEventIdMapFlow(postIds)
-            .firstThenDistinctDebounce(NORMAL_DEBOUNCE)
+            .firstThenDistinctDebounce(LONG_DEBOUNCE)
 
         // TODO: No pubkey. Use extra DB Table for current user
-        // No debounce because of immediate user interaction
         val trustScorePerPubkeyFlow = contactDao
             .getTrustScorePerPubkeyFlow(
                 pubkey = pubkeyProvider.getPubkey(),
                 contactPubkeys = authorPubkeys
             )
-            .distinctUntilChanged()
+            .firstThenDistinctDebounce(NORMAL_DEBOUNCE)
 
         return getFinalFlow(
             extendedPostsFlow = extendedPostsFlow,

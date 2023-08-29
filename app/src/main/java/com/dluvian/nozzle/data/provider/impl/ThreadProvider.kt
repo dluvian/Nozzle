@@ -6,6 +6,8 @@ import com.dluvian.nozzle.data.provider.IPostWithMetaProvider
 import com.dluvian.nozzle.data.provider.IThreadProvider
 import com.dluvian.nozzle.data.room.dao.PostDao
 import com.dluvian.nozzle.data.room.helper.ReplyContext
+import com.dluvian.nozzle.data.utils.NORMAL_DEBOUNCE
+import com.dluvian.nozzle.data.utils.firstThenDistinctDebounce
 import com.dluvian.nozzle.model.PostThread
 import com.dluvian.nozzle.model.PostWithMeta
 import com.dluvian.nozzle.model.helper.IdsAndPubkeys
@@ -17,7 +19,7 @@ import kotlinx.coroutines.flow.map
 private const val TAG = "ThreadProvider"
 
 class ThreadProvider(
-    private val postMapper: IPostWithMetaProvider,
+    private val postWithMetaProvider: IPostWithMetaProvider,
     private val nostrSubscriber: INostrSubscriber,
     private val postDao: PostDao,
 ) : IThreadProvider {
@@ -93,10 +95,11 @@ class ThreadProvider(
         authorPubkeys: Collection<String>,
     ): Flow<PostThread> {
         val relevantPostIds = listOf(listOf(currentId), previousIds, replyIds).flatten()
-        return postMapper.getPostsWithMetaFlow(
+        return postWithMetaProvider.getPostsWithMetaFlow(
             postIds = relevantPostIds,
             authorPubkeys = authorPubkeys
         )
+            .firstThenDistinctDebounce(NORMAL_DEBOUNCE)
             .map { unsortedPosts ->
                 val currentPost = unsortedPosts.find { currentId == it.id }
                 PostThread(

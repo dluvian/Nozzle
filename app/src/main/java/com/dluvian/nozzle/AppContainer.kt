@@ -103,7 +103,7 @@ class AppContainer(context: Context) {
 
     val clickedMediaUrlCache: IClickedMediaUrlCache = ClickedMediaUrlCache()
 
-    private val postMapper: IPostWithMetaProvider = PostWithMetaProvider(
+    private val postWithMetaProvider: IPostWithMetaProvider = PostWithMetaProvider(
         pubkeyProvider = keyManager,
         contactListProvider = contactListProvider,
         postDao = roomDb.postDao(),
@@ -112,7 +112,7 @@ class AppContainer(context: Context) {
     )
 
     val feedProvider: IFeedProvider = FeedProvider(
-        postMapper = postMapper,
+        postWithMetaProvider = postWithMetaProvider,
         nostrSubscriber = nostrSubscriber,
         contactListProvider = contactListProvider,
         postDao = roomDb.postDao(),
@@ -134,7 +134,7 @@ class AppContainer(context: Context) {
     )
 
     val threadProvider: IThreadProvider = ThreadProvider(
-        postMapper = postMapper,
+        postWithMetaProvider = postWithMetaProvider,
         nostrSubscriber = nostrSubscriber,
         postDao = roomDb.postDao()
     )

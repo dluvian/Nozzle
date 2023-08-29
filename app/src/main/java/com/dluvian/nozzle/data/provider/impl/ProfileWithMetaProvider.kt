@@ -10,7 +10,7 @@ import com.dluvian.nozzle.data.room.dao.ContactDao
 import com.dluvian.nozzle.data.room.dao.EventRelayDao
 import com.dluvian.nozzle.data.room.dao.ProfileDao
 import com.dluvian.nozzle.data.room.helper.extended.ProfileEntityExtended
-import com.dluvian.nozzle.data.utils.NORMAL_DEBOUNCE
+import com.dluvian.nozzle.data.utils.LONG_DEBOUNCE
 import com.dluvian.nozzle.data.utils.firstThenDistinctDebounce
 import com.dluvian.nozzle.model.ProfileWithMeta
 import com.dluvian.nozzle.model.helper.PubkeyVariations
@@ -42,7 +42,7 @@ class ProfileWithMetaProvider(
 
         // TODO: SQL join (?)
         val relaysFlow = eventRelayDao.listUsedRelaysFlow(pubkey)
-            .firstThenDistinctDebounce(NORMAL_DEBOUNCE)
+            .firstThenDistinctDebounce(LONG_DEBOUNCE)
 
         // No debounce because of immediate user interaction response
         val trustScoreFlow = contactDao.getTrustScoreFlow(

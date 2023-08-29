@@ -24,7 +24,7 @@ import kotlinx.coroutines.flow.Flow
 private const val TAG = "FeedProvider"
 
 class FeedProvider(
-    private val postMapper: IPostWithMetaProvider,
+    private val postWithMetaProvider: IPostWithMetaProvider,
     private val nostrSubscriber: INostrSubscriber,
     private val postDao: PostDao,
     private val contactListProvider: IContactListProvider,
@@ -68,7 +68,7 @@ class FeedProvider(
         )
         // TODO: Subscribe replies in read relays
 
-        return postMapper.getPostsWithMetaFlow(
+        return postWithMetaProvider.getPostsWithMetaFlow(
             postIds = idsAndPubkeys.map { it.id }.distinct(),
             authorPubkeys = foundAuthorPubkeys
         )
