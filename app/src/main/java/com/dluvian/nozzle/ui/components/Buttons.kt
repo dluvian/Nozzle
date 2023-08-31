@@ -213,41 +213,23 @@ fun FollowButton(
     onFollow: () -> Unit,
     onUnfollow: () -> Unit
 ) {
-    // We can't rely on isFollowed bc the real follow/unfollow process
-    // might get delayed when multiple processes are running.
-    val isFollowedUI = remember(isFollowed) { mutableStateOf(isFollowed) }
-    if (isFollowedUI.value) {
-        Button(
-            onClick = {
-                if (isFollowed) {
-                    onUnfollow()
-                    isFollowedUI.value = false
-                }
-            },
-            shape = RoundedCornerShape(20.dp),
-            border = BorderStroke(1.dp, colors.onBackground),
-            colors = ButtonDefaults.outlinedButtonColors(
+    Button(
+        onClick = if (isFollowed) onUnfollow else onFollow,
+        shape = RoundedCornerShape(20.dp),
+        border = BorderStroke(1.dp, colors.onBackground),
+        colors = if (isFollowed) {
+            ButtonDefaults.outlinedButtonColors(
                 contentColor = colors.onBackground,
                 backgroundColor = colors.background
             )
-        ) {
-            Text(text = stringResource(id = R.string.following))
-        }
-    } else {
-        Button(
-            onClick = {
-                if (!isFollowed) {
-                    onFollow()
-                    isFollowedUI.value = true
-                }
-            },
-            shape = RoundedCornerShape(20.dp),
-            colors = ButtonDefaults.outlinedButtonColors(
+        } else {
+            ButtonDefaults.outlinedButtonColors(
                 contentColor = colors.background,
                 backgroundColor = colors.onBackground
             )
-        ) {
-            Text(text = stringResource(id = R.string.follow))
         }
+    ) {
+        if (isFollowed) Text(text = stringResource(id = R.string.following))
+        else Text(text = stringResource(id = R.string.follow))
     }
 }
