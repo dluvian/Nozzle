@@ -180,4 +180,21 @@ interface PostDao {
                 "WHERE id = :postId"
     )
     suspend fun getNullableMentionedPost(postId: String): NullableMentionedPost?
+
+
+    @Query(
+        "DELETE FROM post " +
+                "WHERE (" +
+                "id NOT IN (:exclude) " +
+                "AND id NOT IN (SELECT id FROM post ORDER BY createdAt DESC LIMIT :amountToKeep)" +
+                ") OR createdAt > :currentTimestamp"
+    )
+    suspend fun deleteAllExceptNewest(
+        amountToKeep: Int,
+        exclude: Collection<String>,
+        currentTimestamp: Long
+    ): Int
+
+    @Query("SELECT COUNT(*) FROM post")
+    suspend fun countPosts(): Int
 }

@@ -1,12 +1,8 @@
 package com.dluvian.nozzle.data.eventProcessor
 
 import android.util.Log
-import com.dluvian.nozzle.data.room.dao.ContactDao
-import com.dluvian.nozzle.data.room.dao.EventRelayDao
-import com.dluvian.nozzle.data.room.dao.Nip65Dao
-import com.dluvian.nozzle.data.room.dao.PostDao
-import com.dluvian.nozzle.data.room.dao.ProfileDao
-import com.dluvian.nozzle.data.room.dao.ReactionDao
+import com.dluvian.nozzle.data.cache.IIdCache
+import com.dluvian.nozzle.data.room.AppDatabase
 import com.dluvian.nozzle.data.room.entity.Nip65Entity
 import com.dluvian.nozzle.data.room.entity.PostEntity
 import com.dluvian.nozzle.data.room.entity.ProfileEntity
@@ -25,16 +21,12 @@ import java.util.Collections
 private const val TAG = "EventProcessor"
 
 class EventProcessor(
-    private val reactionDao: ReactionDao,
-    private val contactDao: ContactDao,
-    private val profileDao: ProfileDao,
-    private val postDao: PostDao,
-    private val eventRelayDao: EventRelayDao,
-    private val nip65Dao: Nip65Dao,
+    private val dbSweepExcludingCache: IIdCache,
+    private val database: AppDatabase,
 ) : IEventProcessor {
     private val scope = CoroutineScope(Dispatchers.IO)
     private val gson: Gson = GsonBuilder().disableHtmlEscaping().create()
-    private val idCache = Collections.synchronizedSet(mutableSetOf<String>())
+    private val otherIdsCache = Collections.synchronizedSet(mutableSetOf<String>())
 
     override fun process(event: Event, relayUrl: String?) {
         if (event.isPost()) {
@@ -63,22 +55,22 @@ class EventProcessor(
         if (!verify(event)) return
         insertEventRelay(eventId = event.id, relayUrl = relayUrl?.let { UrlUtils.cleanUrl(it) })
 
-        val wasNew = idCache.add(event.id)
+        val wasNew = dbSweepExcludingCache.addPostId(event.id)
         if (!wasNew) return
 
         scope.launch {
-            postDao.insertIfNotPresent(PostEntity.fromEvent(event))
+            database.postDao().insertIfNotPresent(PostEntity.fromEvent(event))
         }
     }
 
     private fun processContactList(event: Event) {
-        if (idCache.contains(event.id)) return
+        if (otherIdsCache.contains(event.id)) return
         if (!verify(event)) return
 
-        idCache.add(event.id)
+        otherIdsCache.add(event.id)
 
         scope.launch {
-            contactDao.insertAndDeleteOutdated(
+            database.contactDao().insertAndDeleteOutdated(
                 pubkey = event.pubkey,
                 newTimestamp = event.createdAt,
                 contactPubkeys = getContactPubkeys(event.tags),
@@ -87,15 +79,16 @@ class EventProcessor(
     }
 
     private fun processMetadata(event: Event) {
-        if (idCache.contains(event.id)) return
+        if (otherIdsCache.contains(event.id)) return
         if (!verify(event)) return
 
-        idCache.add(event.id)
+        otherIdsCache.add(event.id)
+        dbSweepExcludingCache.addPubkey(event.pubkey)
 
         Log.d(TAG, "Process profile event ${event.content}")
         deserializeMetadata(event.content)?.let {
             scope.launch {
-                profileDao.insertAndDeleteOutdated(
+                database.profileDao().insertAndDeleteOutdated(
                     pubkey = event.pubkey,
                     newTimestamp = event.createdAt,
                     ProfileEntity(
@@ -115,13 +108,13 @@ class EventProcessor(
     }
 
     private fun processNip65(event: Event) {
-        if (idCache.contains(event.id)) return
+        if (otherIdsCache.contains(event.id)) return
 
         val nip65Entries = event.getNip65Entries()
         if (nip65Entries.isEmpty()) return
         if (!verify(event)) return
 
-        idCache.add(event.id)
+        otherIdsCache.add(event.id)
 
         Log.d(TAG, "Process ${nip65Entries.size} nip65 entries from ${hexToNpub(event.pubkey)}")
         scope.launch {
@@ -134,7 +127,7 @@ class EventProcessor(
                     createdAt = event.createdAt,
                 )
             }
-            nip65Dao.insertAndDeleteOutdated(
+            database.nip65Dao().insertAndDeleteOutdated(
                 pubkey = event.pubkey,
                 timestamp = event.createdAt,
                 nip65Entities = entities.toTypedArray()
@@ -144,14 +137,14 @@ class EventProcessor(
 
     private fun processReaction(event: Event) {
         if (event.content != "+") return
-        if (idCache.contains(event.id)) return
+        if (otherIdsCache.contains(event.id)) return
         if (!verify(event)) return
 
-        idCache.add(event.id)
+        otherIdsCache.add(event.id)
 
         event.getReactedToId()?.let {
             scope.launch {
-                reactionDao.like(eventId = it, pubkey = event.pubkey)
+                database.reactionDao().like(eventId = it, pubkey = event.pubkey)
             }
         }
     }
@@ -183,11 +176,11 @@ class EventProcessor(
     private fun insertEventRelay(eventId: String, relayUrl: String?) {
         if (relayUrl == null) return
 
-        val wasNew = idCache.add(eventId + relayUrl)
+        val wasNew = otherIdsCache.add(eventId + relayUrl)
         if (!wasNew) return
 
         scope.launch {
-            eventRelayDao.insertOrIgnore(eventId = eventId, relayUrl = relayUrl)
+            database.eventRelayDao().insertOrIgnore(eventId = eventId, relayUrl = relayUrl)
         }
     }
 }

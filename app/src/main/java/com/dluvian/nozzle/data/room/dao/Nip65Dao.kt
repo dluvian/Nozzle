@@ -61,4 +61,10 @@ interface Nip65Dao {
     )
     fun getRelaysOfPubkeyFlow(pubkey: String): Flow<List<Nip65Entity>>
 
+    @Query(
+        "DELETE FROM nip65 " +
+                "WHERE pubkey NOT IN (SELECT pubkey FROM profile)"
+    )
+    suspend fun deleteOrphaned(): Int
+
 }

@@ -5,16 +5,19 @@ import android.os.Bundle
 import android.view.WindowManager
 import androidx.activity.compose.setContent
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.lifecycleScope
 import coil.Coil
 import coil.ImageLoader
 import coil.decode.GifDecoder
 import coil.decode.ImageDecoderDecoder
 import com.dluvian.nozzle.ui.app.NozzleApp
+import kotlinx.coroutines.launch
 
 class MainActivity : AppCompatActivity() {
+    private lateinit var appContainer: AppContainer
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        val appContainer = AppContainer(applicationContext)
+        appContainer = AppContainer(applicationContext)
 
         // Allow GIFs
         val imageLoader = ImageLoader.Builder(applicationContext)
@@ -35,4 +38,10 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    override fun onStop() {
+        super.onStop()
+        lifecycleScope.launch {
+            appContainer.databaseSweeper.sweep()
+        }
+    }
 }

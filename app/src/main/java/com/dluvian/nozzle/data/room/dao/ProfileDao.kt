@@ -2,8 +2,6 @@ package com.dluvian.nozzle.data.room.dao
 
 import androidx.room.*
 import com.dluvian.nozzle.data.room.entity.ProfileEntity
-import com.dluvian.nozzle.data.room.helper.NameAndPicture
-import com.dluvian.nozzle.data.room.helper.NameAndPubkey
 import com.dluvian.nozzle.data.room.helper.extended.ProfileEntityExtended
 import com.dluvian.nozzle.model.nostr.Metadata
 import kotlinx.coroutines.flow.Flow
@@ -73,21 +71,10 @@ interface ProfileDao {
         insertOrIgnore(profile)
     }
 
-    @RewriteQueriesToDropUnusedColumns
-    @MapInfo(keyColumn = "pubkey")
     @Query(
-        "SELECT * " +
-                "FROM profile " +
-                "WHERE pubkey IN (:pubkeys) "
+        "DELETE FROM profile " +
+                "WHERE pubkey NOT IN (SELECT pubkey FROM post) " +
+                "AND pubkey NOT IN (:exclude)"
     )
-    fun getNamesAndPicturesMapFlow(pubkeys: List<String>): Flow<Map<String, NameAndPicture>>
-
-    @MapInfo(keyColumn = "postId")
-    @Query(
-        "SELECT id AS postId, name, profile.pubkey " +
-                "FROM profile " +
-                "JOIN post ON post.pubkey = profile.pubkey " +
-                "WHERE postId IN (:postIds) "
-    )
-    fun getAuthorNamesAndPubkeysMapFlow(postIds: List<String>): Flow<Map<String, NameAndPubkey>>
+    suspend fun deleteOrphaned(exclude: Collection<String>): Int
 }

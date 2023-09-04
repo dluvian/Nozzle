@@ -183,4 +183,10 @@ interface ContactDao {
         }
         return minOf(percentage * TRUST_SCORE_BOOST, 1f)
     }
+
+    @Query(
+        "DELETE FROM contact " +
+                "WHERE pubkey NOT IN (SELECT pubkey FROM profile)"
+    )
+    suspend fun deleteOrphaned(): Int
 }

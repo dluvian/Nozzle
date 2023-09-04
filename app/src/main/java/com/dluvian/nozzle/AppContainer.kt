@@ -2,8 +2,13 @@ package com.dluvian.nozzle
 
 import android.content.Context
 import androidx.room.Room
+import com.dluvian.nozzle.data.MAX_DB_SIZE
 import com.dluvian.nozzle.data.cache.ClickedMediaUrlCache
 import com.dluvian.nozzle.data.cache.IClickedMediaUrlCache
+import com.dluvian.nozzle.data.cache.IIdCache
+import com.dluvian.nozzle.data.cache.IdCache
+import com.dluvian.nozzle.data.databaseSweeper.DatabaseSweeper
+import com.dluvian.nozzle.data.databaseSweeper.IDatabaseSweeper
 import com.dluvian.nozzle.data.eventProcessor.EventProcessor
 import com.dluvian.nozzle.data.eventProcessor.IEventProcessor
 import com.dluvian.nozzle.data.manager.IKeyManager
@@ -47,7 +52,7 @@ class AppContainer(context: Context) {
 
     val keyManager: IKeyManager = KeyManager(context = context)
 
-    val contactListProvider: IContactListProvider = ContactListProvider(
+    private val contactListProvider: IContactListProvider = ContactListProvider(
         pubkeyProvider = keyManager,
         contactDao = roomDb.contactDao()
     )
@@ -56,13 +61,11 @@ class AppContainer(context: Context) {
 
     val feedSettingsPreferences: IFeedSettingsPreferences = nozzlePreferences
 
+    private val dbSweepExcludingCache: IIdCache = IdCache()
+
     private val eventProcessor: IEventProcessor = EventProcessor(
-        reactionDao = roomDb.reactionDao(),
-        profileDao = roomDb.profileDao(),
-        contactDao = roomDb.contactDao(),
-        postDao = roomDb.postDao(),
-        eventRelayDao = roomDb.eventRelayDao(),
-        nip65Dao = roomDb.nip65Dao(),
+        dbSweepExcludingCache = dbSweepExcludingCache,
+        database = roomDb,
     )
 
     val nostrService: INostrService = NostrService(
@@ -143,5 +146,12 @@ class AppContainer(context: Context) {
         postWithMetaProvider = postWithMetaProvider,
         nostrSubscriber = nostrSubscriber,
         postDao = roomDb.postDao()
+    )
+
+    val databaseSweeper: IDatabaseSweeper = DatabaseSweeper(
+        keepPosts = MAX_DB_SIZE,
+        pubkeyProvider = keyManager,
+        dbSweepExcludingCache = dbSweepExcludingCache,
+        database = roomDb,
     )
 }
