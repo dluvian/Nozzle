@@ -10,13 +10,14 @@ private const val TAG = "DatabaseSweeper"
 
 class DatabaseSweeper(
     private val keepPosts: Int,
+    private val thresholdFactor: Float,
     private val pubkeyProvider: IPubkeyProvider,
     private val dbSweepExcludingCache: IIdCache,
     private val database: AppDatabase
 ) : IDatabaseSweeper {
     override suspend fun sweep() {
         val postCount = database.postDao().countPosts()
-        if (postCount < 2 * keepPosts) {
+        if (postCount < thresholdFactor * keepPosts) {
             Log.i(TAG, "Skip sweep. Only $postCount posts in db")
             return
         }
@@ -28,15 +29,23 @@ class DatabaseSweeper(
                     "excluding ${excludePostIds.size} posts " +
                     "and ${excludeProfiles.size} profiles"
         )
-        val start = System.currentTimeMillis()
 
+        val start = System.currentTimeMillis()
+        delete(excludePostIds = excludePostIds, excludeProfiles = excludeProfiles)
+        Log.i(TAG, "Execution time ${System.currentTimeMillis() - start}ms")
+    }
+
+    private suspend fun delete(
+        excludePostIds: Collection<String>,
+        excludeProfiles: Collection<String>
+    ) {
         val deletePostCount = database.postDao().deleteAllExceptNewest(
             amountToKeep = keepPosts,
             exclude = excludePostIds,
             currentTimestamp = getCurrentTimeInSeconds()
         )
-        if (deletePostCount == 0) return
         Log.i(TAG, "Deleted $deletePostCount posts")
+        if (deletePostCount == 0) return
 
         val deleteRelayCount = database.eventRelayDao().deleteOrphaned()
         Log.i(TAG, "Deleted $deleteRelayCount event relay entries")
@@ -55,7 +64,5 @@ class DatabaseSweeper(
 
         val deleteNip65Count = database.nip65Dao().deleteOrphaned()
         Log.i(TAG, "Deleted $deleteNip65Count nip65 entries")
-
-        Log.i(TAG, "Execution time ${System.currentTimeMillis() - start}ms")
     }
 }

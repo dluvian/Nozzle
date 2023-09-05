@@ -2,7 +2,8 @@ package com.dluvian.nozzle
 
 import android.content.Context
 import androidx.room.Room
-import com.dluvian.nozzle.data.MAX_DB_SIZE
+import com.dluvian.nozzle.data.SWEEP_THRESHOLD
+import com.dluvian.nozzle.data.SWEEP_THRESHOLD_FACTOR
 import com.dluvian.nozzle.data.cache.ClickedMediaUrlCache
 import com.dluvian.nozzle.data.cache.IClickedMediaUrlCache
 import com.dluvian.nozzle.data.cache.IIdCache
@@ -149,7 +150,8 @@ class AppContainer(context: Context) {
     )
 
     val databaseSweeper: IDatabaseSweeper = DatabaseSweeper(
-        keepPosts = MAX_DB_SIZE,
+        keepPosts = SWEEP_THRESHOLD,
+        thresholdFactor = SWEEP_THRESHOLD_FACTOR,
         pubkeyProvider = keyManager,
         dbSweepExcludingCache = dbSweepExcludingCache,
         database = roomDb,
