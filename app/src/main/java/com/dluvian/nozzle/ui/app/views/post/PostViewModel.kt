@@ -160,7 +160,6 @@ class PostViewModel(
         return (state.content + getNewLineQuoteUri(state.postToQuote?.id)).trim()
     }
 
-
     // TODO: Move to utils
     private fun getNewLineQuoteUri(postIdToQuote: String?): String {
         return if (postIdToQuote == null) ""
