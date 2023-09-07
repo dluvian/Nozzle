@@ -23,7 +23,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.style.TextAlign
 import com.dluvian.nozzle.R
-import com.dluvian.nozzle.data.utils.hexToNote
+import com.dluvian.nozzle.data.nostr.utils.hexToNote1
 import com.dluvian.nozzle.model.PostIds
 import com.dluvian.nozzle.model.PostWithMeta
 import com.dluvian.nozzle.model.ThreadPosition
@@ -65,7 +65,7 @@ fun PostCard(
         .combinedClickable(enabled = !isCurrent,
             onClick = { onNavigateToThread(post.getPostIds()) },
             onLongClick = {
-                clipboard.setText(AnnotatedString(hexToNote(post.id)))
+                clipboard.setText(AnnotatedString(hexToNote1(post.id)))
                 Toast
                     .makeText(
                         context,

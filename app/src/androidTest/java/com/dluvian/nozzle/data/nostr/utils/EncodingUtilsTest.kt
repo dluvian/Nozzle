@@ -1,26 +1,8 @@
-package com.dluvian.nozzle.data.utils
+package com.dluvian.nozzle.data.nostr.utils
 
 import org.junit.Test
 
-internal class KeysUtilsKtTest {
-
-    @Test
-    fun generatePrivkeyGenerates64HexChars() {
-        val privkey = generatePrivkey()
-
-        assert(privkey.isHex())
-        assert(privkey.length == 64)
-    }
-
-    @Test
-    fun derivePubkeyDerivesCorrectPubkey() {
-        val privkey = "a0244a7a2cf9172532d100c424ed5737c688a71f4e6c6e1b559d45f2684d1e93"
-        val expectedPubkey = "8f83f7586cf53ae6fc4e78dc014860132a51cd1e4bdb27866baccf7acc090530"
-
-        val derived = derivePubkey(privkey)
-
-        assert(derived == expectedPubkey)
-    }
+internal class EncodingUtilsTest {
 
     @Test
     fun hexToNpubConvertsHexPubkeyToNpub() {
@@ -83,23 +65,34 @@ internal class KeysUtilsKtTest {
     }
 
     @Test
-    fun noteIdToHexConvertsNoteIdToHex() {
-        val noteId = "note1xy9fv8ntag53ts5t7967tehc6edrvgpdutx93c9g9vrr4zpqm46slh9vlf"
+    fun note1ToHexConvertsNoteIdToHex() {
+        val note1 = "note1xy9fv8ntag53ts5t7967tehc6edrvgpdutx93c9g9vrr4zpqm46slh9vlf"
         val expectedHex = "310a961e6bea2915c28bf175e5e6f8d65a36202de2cc58e0a82b063a8820dd75"
 
-        val result = noteIdToHex(noteId)
+        val result = note1ToHex(note1)
 
         assert(result.isSuccess)
         assert(result.getOrNull() == expectedHex)
     }
 
     @Test
-    fun noteIdToHexFailsOnInvalidNoteId() {
-        val noteId = "note1cx5v7vvvdgdq7f76fcszy9wvrnl0ulehkkudzy"
+    fun note1ToHexFailsOnInvalidNoteId() {
+        val note1 = "note1cx5v7vvvdgdq7f76fcszy9wvrnl0ulehkkudzy"
 
-        val result = noteIdToHex(noteId)
+        val result = note1ToHex(note1)
 
         assert(result.isFailure)
     }
 
+    @Test
+    fun readNeventReadsNeventCorrectly() {
+        val nevent =
+            "nevent1qqs2ckeu45u6trzxfh5qy0e7n0lcxl0g3yjc7960pmv0xa6m4hxs9agpzamhxue69uhhyetvv9ujumn0wd68ytnzv9hxgtcpzdmhxue69uhhyetvv9ujumn0wvhxcmmv742ldw"
+
+        val result = readNevent(nevent)
+
+        assert(result != null)
+        assert(result?.eventId == "ac5b3cad39a58c464de8023f3e9bff837de889258f174f0ed8f3775badcd02f5")
+        assert(result?.relays == listOf("wss://relay.nostr.band/", "wss://relay.nos.lol"))
+    }
 }

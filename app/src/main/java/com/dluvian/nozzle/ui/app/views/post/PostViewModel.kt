@@ -8,11 +8,11 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.dluvian.nozzle.R
 import com.dluvian.nozzle.data.nostr.INostrService
+import com.dluvian.nozzle.data.nostr.utils.hexToNote1
 import com.dluvian.nozzle.data.provider.IPersonalProfileProvider
 import com.dluvian.nozzle.data.provider.IRelayProvider
 import com.dluvian.nozzle.data.room.dao.PostDao
 import com.dluvian.nozzle.data.room.entity.PostEntity
-import com.dluvian.nozzle.data.utils.hexToNote
 import com.dluvian.nozzle.data.utils.listRelayStatuses
 import com.dluvian.nozzle.data.utils.toggleRelay
 import com.dluvian.nozzle.model.AllRelays
@@ -164,7 +164,7 @@ class PostViewModel(
     private fun getNewLineQuoteUri(postIdToQuote: String?): String {
         return if (postIdToQuote == null) ""
         // TODO: nostr: URI from utils
-        else hexToNote(postId = postIdToQuote).let { noteId -> "\nnostr:$noteId" }
+        else hexToNote1(postId = postIdToQuote).let { noteId -> "\nnostr:$noteId" }
     }
 
     companion object {

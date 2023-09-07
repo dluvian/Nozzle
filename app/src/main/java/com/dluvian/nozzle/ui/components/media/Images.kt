@@ -30,8 +30,8 @@ import androidx.compose.ui.res.stringResource
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.dluvian.nozzle.R
+import com.dluvian.nozzle.data.nostr.utils.hexToNpub
 import com.dluvian.nozzle.data.utils.getRobohashUrl
-import com.dluvian.nozzle.data.utils.hexToNpub
 import com.dluvian.nozzle.model.FollowedByFriend
 import com.dluvian.nozzle.model.Friend
 import com.dluvian.nozzle.model.Oneself

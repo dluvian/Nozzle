@@ -46,6 +46,11 @@ object UrlUtils {
         }
     }
 
+    // TODO: Improve this
+    fun isWebsocketUrl(url: String) = url.startsWith("wss://")
+            && url.length >= 9
+            && url.contains(".")
+
     fun removeWebsocketPrefix(url: String) = url.removePrefix("wss://")
 }
 

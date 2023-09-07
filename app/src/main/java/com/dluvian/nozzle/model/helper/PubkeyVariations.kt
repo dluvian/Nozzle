@@ -1,7 +1,8 @@
 package com.dluvian.nozzle.model.helper
 
-import com.dluvian.nozzle.data.utils.getShortenedNpub
-import com.dluvian.nozzle.data.utils.hexToNpub
+import com.dluvian.nozzle.data.nostr.utils.getShortenedNpub
+import com.dluvian.nozzle.data.nostr.utils.hexToNpub
+
 
 data class PubkeyVariations(val pubkey: String, val npub: String, val shortenedNpub: String) {
     companion object {

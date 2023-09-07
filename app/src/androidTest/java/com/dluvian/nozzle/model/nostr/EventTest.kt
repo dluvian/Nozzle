@@ -1,6 +1,5 @@
-package com.dluvian.nozzle
+package com.dluvian.nozzle.model.nostr
 
-import com.dluvian.nozzle.model.nostr.Event
 import org.junit.Test
 
 internal class EventTest {

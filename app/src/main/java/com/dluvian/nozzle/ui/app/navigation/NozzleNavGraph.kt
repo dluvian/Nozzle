@@ -13,8 +13,8 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import androidx.navigation.navDeepLink
-import com.dluvian.nozzle.data.utils.noteIdToHex
-import com.dluvian.nozzle.data.utils.npubToHex
+import com.dluvian.nozzle.data.nostr.utils.note1ToHex
+import com.dluvian.nozzle.data.nostr.utils.npubToHex
 import com.dluvian.nozzle.model.PostIds
 import com.dluvian.nozzle.ui.app.VMContainer
 import com.dluvian.nozzle.ui.app.views.editProfile.EditProfileRoute
@@ -167,7 +167,7 @@ fun NozzleNavGraph(
                         navActions.navigateToFeed()
                     }
             } else if (nip21?.startsWith("note1") == true) {
-                noteIdToHex(nip21)
+                note1ToHex(nip21)
                     .onSuccess { hex -> navActions.navigateToThread(hex, null) }
                     .onFailure {
                         Log.i(TAG, "note1 $nip21 is invalid")

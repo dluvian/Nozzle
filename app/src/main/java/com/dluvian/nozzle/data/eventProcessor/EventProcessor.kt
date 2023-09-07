@@ -2,12 +2,12 @@ package com.dluvian.nozzle.data.eventProcessor
 
 import android.util.Log
 import com.dluvian.nozzle.data.cache.IIdCache
+import com.dluvian.nozzle.data.nostr.utils.hexToNpub
 import com.dluvian.nozzle.data.room.AppDatabase
 import com.dluvian.nozzle.data.room.entity.Nip65Entity
 import com.dluvian.nozzle.data.room.entity.PostEntity
 import com.dluvian.nozzle.data.room.entity.ProfileEntity
 import com.dluvian.nozzle.data.utils.UrlUtils
-import com.dluvian.nozzle.data.utils.hexToNpub
 import com.dluvian.nozzle.model.nostr.Event
 import com.dluvian.nozzle.model.nostr.Metadata
 import com.dluvian.nozzle.model.nostr.Tag

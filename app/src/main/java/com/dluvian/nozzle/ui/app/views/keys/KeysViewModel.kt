@@ -13,7 +13,7 @@ import com.dluvian.nozzle.R
 import com.dluvian.nozzle.data.manager.IKeyManager
 import com.dluvian.nozzle.data.manager.IPersonalProfileManager
 import com.dluvian.nozzle.data.nostr.INostrSubscriber
-import com.dluvian.nozzle.data.utils.isValidPrivkey
+import com.dluvian.nozzle.data.nostr.utils.isValidPrivkey
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.stateIn

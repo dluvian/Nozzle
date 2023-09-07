@@ -1,4 +1,4 @@
-package com.dluvian.nozzle.data.utils
+package com.dluvian.nozzle.data.nostr.utils
 
 /**
  * https://github.com/Giszmo/NostrPostr/blob/master/nostrpostrlib/src/main/java/nostr/postr/Bech32Util.kt

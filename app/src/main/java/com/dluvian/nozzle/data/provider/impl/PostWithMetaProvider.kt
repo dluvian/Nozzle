@@ -1,5 +1,6 @@
 package com.dluvian.nozzle.data.provider.impl
 
+import com.dluvian.nozzle.data.nostr.utils.getShortenedNpubFromPubkey
 import com.dluvian.nozzle.data.provider.IContactListProvider
 import com.dluvian.nozzle.data.provider.IPostWithMetaProvider
 import com.dluvian.nozzle.data.provider.IPubkeyProvider
@@ -12,7 +13,6 @@ import com.dluvian.nozzle.data.utils.NORMAL_DEBOUNCE
 import com.dluvian.nozzle.data.utils.SHORT_DEBOUNCE
 import com.dluvian.nozzle.data.utils.UrlUtils
 import com.dluvian.nozzle.data.utils.firstThenDistinctDebounce
-import com.dluvian.nozzle.data.utils.getShortenedNpubFromPubkey
 import com.dluvian.nozzle.model.MentionedPost
 import com.dluvian.nozzle.model.ParsedContent
 import com.dluvian.nozzle.model.PostWithMeta

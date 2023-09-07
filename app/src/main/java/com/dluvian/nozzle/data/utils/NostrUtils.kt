@@ -1,5 +1,7 @@
 package com.dluvian.nozzle.data.utils
 
+import com.dluvian.nozzle.data.nostr.utils.note1ToHex
+
 object NostrUtils {
     private val usernamePattern by lazy { Regex("\\w[\\w\\-]+\\w") }
     private val whitespacePattern by lazy { Regex("\\s+") }
@@ -14,7 +16,7 @@ object NostrUtils {
     }
 
     fun getHexFromNostrNote1(nostrNote1: String): String? {
-        return noteIdToHex(nostrNote1.removePrefix("nostr:"))
+        return note1ToHex(nostrNote1.removePrefix("nostr:"))
             .getOrNull()
     }
 }

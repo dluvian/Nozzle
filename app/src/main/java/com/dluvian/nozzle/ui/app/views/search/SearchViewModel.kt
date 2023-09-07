@@ -4,8 +4,8 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
-import com.dluvian.nozzle.data.utils.noteIdToHex
-import com.dluvian.nozzle.data.utils.npubToHex
+import com.dluvian.nozzle.data.nostr.utils.note1ToHex
+import com.dluvian.nozzle.data.nostr.utils.npubToHex
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.stateIn
@@ -42,7 +42,7 @@ class SearchViewModel : ViewModel() {
                     npub.onSuccess { onNavigateToProfile(it) }
                     npub.onFailure { setUIInvalid() }
                 } else if (trimmed.startsWith("note1")) {
-                    val noteId = noteIdToHex(trimmed)
+                    val noteId = note1ToHex(trimmed)
                     noteId.onSuccess { id -> onNavigateToThread(id, null) }
                     noteId.onFailure { setUIInvalid() }
                 } else {
