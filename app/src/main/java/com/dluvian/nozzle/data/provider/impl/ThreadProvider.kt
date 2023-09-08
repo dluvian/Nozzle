@@ -101,19 +101,19 @@ class ThreadProvider(
         )
             .firstThenDistinctDebounce(NORMAL_DEBOUNCE)
             .map { unsortedPosts ->
-                val currentPost = unsortedPosts.find { currentId == it.id }
+                val currentPost = unsortedPosts.find { currentId == it.entity.id }
                 PostThread(
                     current = currentPost,
                     previous = unsortedPosts
-                        .filter { unsorted -> previousIds.any { it == unsorted.id } }
+                        .filter { unsorted -> previousIds.any { it == unsorted.entity.id } }
                         .sortedBy { unsorted ->
                             previousIds.indexOfFirst { previousId ->
-                                unsorted.id == previousId
+                                unsorted.entity.id == previousId
                             }
                         },
                     replies = sortReplies(
                         replies = unsortedPosts.filter { unsorted ->
-                            replyIds.any { replyId -> replyId == unsorted.id }
+                            replyIds.any { replyId -> replyId == unsorted.entity.id }
                         },
                         originalAuthor = currentPost?.pubkey.orEmpty().ifEmpty {
                             Log.w(TAG, "Failed to find current post in thread")

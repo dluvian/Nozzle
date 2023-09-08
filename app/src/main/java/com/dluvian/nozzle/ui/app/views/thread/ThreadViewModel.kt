@@ -49,7 +49,7 @@ class ThreadViewModel(
     // TODO: Prevent redundant subscriptions
     private val isSettingThread = AtomicBoolean(false)
     val onOpenThread: (PostIds) -> Unit = { postIds ->
-        if (!isSettingThread.get() && postIds.id != threadState.value.current?.id) {
+        if (!isSettingThread.get() && postIds.id != threadState.value.current?.entity?.id) {
             isSettingThread.set(true)
             isRefreshingFlow.update { true }
             Log.i(TAG, "Open thread of post ${postIds.id}")
@@ -103,7 +103,7 @@ class ThreadViewModel(
 
     private fun updateCurrentPostIds(thread: PostThread) {
         thread.current?.let {
-            currentPostIds = PostIds(id = it.id, replyToId = it.replyToId)
+            currentPostIds = PostIds(id = it.entity.id, replyToId = it.entity.replyToId)
         }
     }
 

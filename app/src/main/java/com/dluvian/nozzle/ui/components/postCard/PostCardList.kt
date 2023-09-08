@@ -31,7 +31,7 @@ fun PostCardList(
         LazyColumn(
             modifier = Modifier.fillMaxSize(), state = lazyListState
         ) {
-            itemsIndexed(items = posts, key = { _, item -> item.id }) { index, post ->
+            itemsIndexed(items = posts, key = { _, item -> item.entity.id }) { index, post ->
                 PostCard(
                     post = post,
                     onLike = { onLike(post) },

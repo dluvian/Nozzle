@@ -1,31 +1,29 @@
 package com.dluvian.nozzle.model.nostr
 
-import com.dluvian.nozzle.data.nostr.utils.TLVAuthor
 import com.dluvian.nozzle.data.nostr.utils.TLVDefault
 import com.dluvian.nozzle.data.nostr.utils.TLVEntry
 import com.dluvian.nozzle.data.nostr.utils.TLVRelay
+import com.dluvian.nozzle.data.nostr.utils.isValidPubkey
 import com.dluvian.nozzle.data.utils.UrlUtils
 import com.dluvian.nozzle.data.utils.toHexString
 
-data class Nevent(
-    val eventId: String,
+data class Nprofile(
+    val pubkey: String,
     val relays: List<String>,
-    val pubkey: String?,
 ) {
     companion object {
-        fun fromTLVEntries(tlvEntries: List<TLVEntry>): Nevent? {
+        fun fromTLVEntries(tlvEntries: List<TLVEntry>): Nprofile? {
             if (tlvEntries.isEmpty()) return null
-            val eventId = tlvEntries.find { it is TLVDefault }
+            val pubkey = tlvEntries.find { it is TLVDefault }
                 ?.getBytes()
                 ?.toHexString()
                 ?: return null
+            if (!isValidPubkey(pubkey)) return null
             val relays = tlvEntries.filterIsInstance<TLVRelay>()
                 .map { it.getBytes().decodeToString() }
                 .filter { UrlUtils.isWebsocketUrl(it) }
-            val pubkey = tlvEntries.find { it is TLVAuthor }?.getBytes()?.toHexString()
-            // TODO: Check if eventId and pubkey? are valid
 
-            return Nevent(eventId = eventId, relays = relays, pubkey = pubkey)
+            return Nprofile(pubkey = pubkey, relays = relays)
         }
     }
 }

@@ -52,7 +52,7 @@ class RelayProvider(
         val result = mutableSetOf<String>().apply {
             addAll(getReadRelays())
             addAll(posts.flatMap { it.relays })
-            addAll(posts.mapNotNull { it.replyRelayHint })
+            addAll(posts.mapNotNull { it.entity.replyRelayHint })
         }
 
         return result.toList()

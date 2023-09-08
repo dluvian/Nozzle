@@ -231,7 +231,7 @@ class FeedViewModel(
             feedState = feedProvider.getFeedFlow(
                 feedSettings = viewModelState.value.feedSettings,
                 limit = DB_APPEND_BATCH_SIZE,
-                until = last.createdAt,
+                until = last.entity.createdAt,
             ).distinctUntilChanged()
                 .map { toAppend -> currentFeed.takeLast(MAX_FEED_LENGTH) + toAppend }
                 .stateIn(

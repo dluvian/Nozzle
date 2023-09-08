@@ -111,7 +111,7 @@ class ReplyViewModel(
                 postToReplyTo?.let { parentPost ->
                     Log.i(TAG, "Send reply to ${state.recipientName} ${state.pubkey}")
                     val replyTo = ReplyTo(
-                        replyTo = parentPost.id,
+                        replyTo = parentPost.entity.id,
                         relayUrl = parentPost.relays
                             .filter { relayProvider.getWriteRelays().contains(it) }
                             .randomOrNull()

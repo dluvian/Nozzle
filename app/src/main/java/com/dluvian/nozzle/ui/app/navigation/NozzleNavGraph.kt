@@ -157,6 +157,7 @@ fun NozzleNavGraph(
             deepLinks = listOf(navDeepLink { uriPattern = "$URI{nip21}" })
         ) { backStackEntry ->
             val nip21 = backStackEntry.arguments?.getString("nip21")
+            // TODO: Add nevent and nprofile
             if (nip21?.startsWith("npub1") == true) {
                 npubToHex(nip21)
                     .onSuccess { hex ->

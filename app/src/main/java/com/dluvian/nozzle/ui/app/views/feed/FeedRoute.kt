@@ -30,7 +30,7 @@ fun FeedRoute(
         onLike = { post ->
             feedViewModel.postCardInteractor.like(
                 scope = feedViewModel.viewModelScope,
-                postId = post.id,
+                postId = post.entity.id,
                 postPubkey = post.pubkey
             )
         },

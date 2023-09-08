@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.room.Room
 import com.dluvian.nozzle.data.SWEEP_THRESHOLD
 import com.dluvian.nozzle.data.SWEEP_THRESHOLD_FACTOR
+import com.dluvian.nozzle.data.annotatedContent.AnnotatedContentHandler
 import com.dluvian.nozzle.data.cache.ClickedMediaUrlCache
 import com.dluvian.nozzle.data.cache.IClickedMediaUrlCache
 import com.dluvian.nozzle.data.cache.IIdCache
@@ -113,9 +114,13 @@ class AppContainer(context: Context) {
 
     val clickedMediaUrlCache: IClickedMediaUrlCache = ClickedMediaUrlCache()
 
+    private val annotatedContentHandler = AnnotatedContentHandler()
+
     private val postWithMetaProvider: IPostWithMetaProvider = PostWithMetaProvider(
         pubkeyProvider = keyManager,
         contactListProvider = contactListProvider,
+        annotatedBuilder = annotatedContentHandler,
+        annotatedExtractor = annotatedContentHandler,
         postDao = roomDb.postDao(),
         eventRelayDao = roomDb.eventRelayDao(),
         contactDao = roomDb.contactDao()

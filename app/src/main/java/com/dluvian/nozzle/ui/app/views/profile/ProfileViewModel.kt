@@ -112,7 +112,7 @@ class ProfileViewModel(
                 val currentFeed = feedState.value
                 appendFeed(pubkey = pubkey, currentFeed = currentFeed)
                 delay(WAIT_TIME)
-                if (currentFeed.lastOrNull()?.id.orEmpty() == feedState.value.lastOrNull()?.id.orEmpty()) {
+                if (currentFeed.lastOrNull()?.entity?.id.orEmpty() == feedState.value.lastOrNull()?.entity?.id.orEmpty()) {
                     val attempt = failedAppendAttempts.getAndIncrement()
                     Log.w(TAG, "Failed to append profile feed. Attempt $attempt")
                 }
@@ -196,7 +196,7 @@ class ProfileViewModel(
                     relays = getRelays(pubkey)
                 ),
                 limit = DB_APPEND_BATCH_SIZE,
-                until = last.createdAt
+                until = last.entity.createdAt
             ).distinctUntilChanged()
                 .map { toAppend -> currentFeed.takeLast(MAX_FEED_LENGTH) + toAppend }
                 .stateIn(

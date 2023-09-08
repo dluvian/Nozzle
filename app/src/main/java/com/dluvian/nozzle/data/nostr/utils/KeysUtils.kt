@@ -27,5 +27,13 @@ fun derivePubkey(privkey: String): String {
 }
 
 fun isValidPrivkey(privkey: String): Boolean {
-    return nsecToHex(privkey).isSuccess || (privkey.length == 64 && privkey.isHex())
+    return isValidHexKey(privkey) || nsecToHex(privkey).isSuccess
+}
+
+fun isValidPubkey(pubkey: String): Boolean {
+    return isValidHexKey(pubkey) || npubToHex(pubkey).isSuccess
+}
+
+private fun isValidHexKey(hexKey: String): Boolean {
+    return hexKey.length == 64 && hexKey.isHex()
 }

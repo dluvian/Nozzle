@@ -1,5 +1,7 @@
 package com.dluvian.nozzle.data.provider.impl
 
+import com.dluvian.nozzle.data.annotatedContent.IAnnotatedContentBuilder
+import com.dluvian.nozzle.data.annotatedContent.IAnnotatedContentExtractor
 import com.dluvian.nozzle.data.nostr.utils.getShortenedNpubFromPubkey
 import com.dluvian.nozzle.data.provider.IContactListProvider
 import com.dluvian.nozzle.data.provider.IPostWithMetaProvider
@@ -11,19 +13,19 @@ import com.dluvian.nozzle.data.room.helper.extended.PostEntityExtended
 import com.dluvian.nozzle.data.utils.LONG_DEBOUNCE
 import com.dluvian.nozzle.data.utils.NORMAL_DEBOUNCE
 import com.dluvian.nozzle.data.utils.SHORT_DEBOUNCE
-import com.dluvian.nozzle.data.utils.UrlUtils
 import com.dluvian.nozzle.data.utils.firstThenDistinctDebounce
-import com.dluvian.nozzle.model.ParsedContent
+import com.dluvian.nozzle.model.MentionedPost
 import com.dluvian.nozzle.model.PostWithMeta
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flow
-import java.util.Collections
 
 class PostWithMetaProvider(
     private val pubkeyProvider: IPubkeyProvider,
     private val contactListProvider: IContactListProvider,
+    private val annotatedBuilder: IAnnotatedContentBuilder,
+    private val annotatedExtractor: IAnnotatedContentExtractor,
     private val postDao: PostDao,
     private val eventRelayDao: EventRelayDao,
     private val contactDao: ContactDao,
@@ -79,25 +81,34 @@ class PostWithMetaProvider(
             extended.map {
                 val pubkey = it.postEntity.pubkey
                 val isOneself = pubkeyProvider.isOneself(pubkey)
-                val parsedContent = getParsedContent(it)
+                val annotatedContent = annotatedBuilder.annotateContent(it.postEntity.content)
                 PostWithMeta(
-                    id = it.postEntity.id,
+                    entity = it.postEntity,
                     pubkey = pubkey,
-                    createdAt = it.postEntity.createdAt,
-                    content = parsedContent.cleanedContent,
-                    mediaUrl = parsedContent.mediaUrl,
                     name = it.name.orEmpty().ifEmpty { getShortenedNpubFromPubkey(pubkey) },
                     pictureUrl = it.pictureUrl.orEmpty(),
-                    replyToId = it.postEntity.replyToId,
                     replyToPubkey = it.replyToPubkey,
                     replyToName = getReplyToName(it),
-                    replyRelayHint = it.postEntity.replyRelayHint,
                     isLikedByMe = it.isLikedByMe,
                     numOfReplies = it.numOfReplies,
                     relays = relays[it.postEntity.id].orEmpty(),
                     isOneself = isOneself,
                     isFollowedByMe = if (isOneself) false else contacts.contains(pubkey),
                     trustScore = if (isOneself) null else trustScore[pubkey],
+                    annotatedContent = annotatedContent,
+                    mediaUrls = annotatedExtractor.extractMediaLinks(annotatedContent),
+                    // TODO: Get Mentioned from db
+                    mentionedPosts = annotatedExtractor.extractNevents(annotatedContent)
+                        .map { nevent ->
+                            MentionedPost(
+                                id = nevent.eventId,
+                                pubkey = nevent.pubkey.orEmpty(),
+                                content = "",
+                                name = "",
+                                picture = "",
+                                createdAt = 0L
+                            )
+                        },
                 )
             }
         }
@@ -110,23 +121,5 @@ class PostWithMetaProvider(
             }
         } else if (post.postEntity.replyToId != null) ""
         else null
-    }
-
-    private val parsedContentCache: MutableMap<String, ParsedContent> =
-        Collections.synchronizedMap(mutableMapOf())
-
-    // TODO: Still working?
-    private fun getParsedContent(post: PostEntityExtended): ParsedContent {
-        val cached = parsedContentCache[post.postEntity.id]
-        if (cached != null) return cached
-
-        val mediaUrl = UrlUtils.getAppendedMediaUrl(post.postEntity.content)
-        val cleanedContent = mediaUrl?.let { url ->
-            post.postEntity.content.removeSuffix(url).trimEnd()
-        } ?: post.postEntity.content
-        val result = ParsedContent(cleanedContent = cleanedContent, mediaUrl = mediaUrl)
-        parsedContentCache[post.postEntity.id] = result
-
-        return result
     }
 }

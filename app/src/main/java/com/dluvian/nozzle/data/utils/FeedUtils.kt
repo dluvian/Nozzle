@@ -7,7 +7,7 @@ fun listReferencedPostIds(posts: Collection<PostWithMeta>): List<String> {
 
     val referencedPostIds = mutableListOf<String>()
     for (post in posts) {
-        post.replyToId?.let { referencedPostIds.add(it) }
+        post.entity.replyToId?.let { referencedPostIds.add(it) }
     }
 
     return referencedPostIds.distinct()
@@ -19,9 +19,10 @@ fun getIdsPerRelayHintMap(posts: Collection<PostWithMeta>): Map<String, List<Str
     val result = mutableMapOf<String, MutableList<String>>()
 
     posts.forEach { post ->
-        if (post.replyRelayHint != null && post.replyToId != null) {
-            val current = result.putIfAbsent(post.replyRelayHint, mutableListOf(post.replyToId))
-            if (current != null) result[post.replyRelayHint]?.add(post.replyToId)
+        if (post.entity.replyRelayHint != null && post.entity.replyToId != null) {
+            val current =
+                result.putIfAbsent(post.entity.replyRelayHint, mutableListOf(post.entity.replyToId))
+            if (current != null) result[post.entity.replyRelayHint]?.add(post.entity.replyToId)
         }
     }
 
@@ -29,6 +30,6 @@ fun getIdsPerRelayHintMap(posts: Collection<PostWithMeta>): Map<String, List<Str
 }
 
 fun hasUnknownParentAuthor(post: PostWithMeta): Boolean {
-    return post.replyToId != null
+    return post.entity.replyToId != null
             && (post.replyToPubkey.isNullOrEmpty() || post.replyToName.isNullOrEmpty())
 }

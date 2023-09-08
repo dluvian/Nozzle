@@ -1,15 +1,16 @@
 package com.dluvian.nozzle.model
 
+import androidx.compose.ui.text.AnnotatedString
+import com.dluvian.nozzle.data.room.entity.PostEntity
+
 data class PostWithMeta(
-    val id: String,
-    val replyToId: String?,
+    val entity: PostEntity,
     val replyToName: String?,
     val replyToPubkey: String?,
-    val replyRelayHint: String?,
     val pubkey: String,
-    val createdAt: Long,
-    val content: String,
-    val mediaUrl: String?,
+    val annotatedContent: AnnotatedString,
+    val mediaUrls: List<String>,
+    val mentionedPosts: List<MentionedPost>,
     val name: String,
     val pictureUrl: String,
     val isLikedByMe: Boolean,
@@ -20,6 +21,6 @@ data class PostWithMeta(
     val relays: List<String>,
 ) {
     fun getPostIds(): PostIds {
-        return PostIds(id = id, replyToId = replyToId)
+        return PostIds(id = entity.id, replyToId = entity.replyToId)
     }
 }

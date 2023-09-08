@@ -27,7 +27,7 @@ fun ProfileRoute(
         onLike = { post ->
             profileViewModel.postCardInteractor.like(
                 scope = profileViewModel.viewModelScope,
-                postId = post.id,
+                postId = post.entity.id,
                 postPubkey = post.pubkey
             )
         },

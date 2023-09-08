@@ -74,10 +74,10 @@ class NostrSubscriber(
         // At the same time does not make sense bc we don't know which pubkeys to sub yet
         // TODO: Show shortened npub after referenced post is found
 
-        val postIds = posts.map { it.id }
+        val postIds = posts.map { it.entity.id }
         val postsWithUnknownRefAuthors = posts.filter { hasUnknownParentAuthor(it) }
         val unknownReferencedPostIds = listReferencedPostIds(postsWithUnknownRefAuthors)
-        val unknownAuthors = posts.filter { it.name.isEmpty() }.map { it.id }
+        val unknownAuthors = posts.filter { it.name.isEmpty() }.map { it.entity.id }
         val unknownParentAuthors = postsWithUnknownRefAuthors
             .filter { hasUnknownParentAuthor(it) }
             .mapNotNull { it.replyToPubkey }
@@ -89,7 +89,7 @@ class NostrSubscriber(
         // My likes
         filters.add(
             Filter.createReactionFilter(
-                e = posts.map { it.id },
+                e = posts.map { it.entity.id },
                 pubkeys = listOf(pubkeyProvider.getPubkey())
             )
         )

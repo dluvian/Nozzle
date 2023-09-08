@@ -26,7 +26,7 @@ fun ThreadRoute(
         onLike = { post ->
             threadViewModel.postCardInteractor.like(
                 scope = threadViewModel.viewModelScope,
-                postId = post.id,
+                postId = post.entity.id,
                 postPubkey = post.pubkey
             )
         },

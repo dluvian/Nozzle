@@ -90,7 +90,7 @@ private fun ThreadedPosts(
                 itemsIndexed(thread.previous) { index, post ->
                     var threadPosition = ThreadPosition.MIDDLE
                     if (index == 0) {
-                        if (post.replyToId != null) {
+                        if (post.entity.replyToId != null) {
                             PostNotFound()
                         } else {
                             threadPosition = ThreadPosition.START
@@ -110,7 +110,7 @@ private fun ThreadedPosts(
                     )
                 }
                 item {
-                    if (it.replyToId != null && thread.previous.isEmpty()) {
+                    if (it.entity.replyToId != null && thread.previous.isEmpty()) {
                         PostNotFound()
                     }
                     val focusColor = colors.primaryVariant

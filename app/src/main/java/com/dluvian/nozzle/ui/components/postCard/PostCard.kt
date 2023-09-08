@@ -32,7 +32,6 @@ import com.dluvian.nozzle.ui.components.*
 import com.dluvian.nozzle.ui.components.postCard.atoms.PostCardContentBase
 import com.dluvian.nozzle.ui.components.postCard.atoms.PostCardHeader
 import com.dluvian.nozzle.ui.components.postCard.atoms.PostCardProfilePicture
-import com.dluvian.nozzle.ui.components.postCard.molecules.MediaDecisionCard
 import com.dluvian.nozzle.ui.components.text.*
 import com.dluvian.nozzle.ui.theme.*
 
@@ -65,7 +64,7 @@ fun PostCard(
         .combinedClickable(enabled = !isCurrent,
             onClick = { onNavigateToThread(post.getPostIds()) },
             onLongClick = {
-                clipboard.setText(AnnotatedString(hexToNote1(post.id)))
+                clipboard.setText(AnnotatedString(hexToNote1(post.entity.id)))
                 Toast
                     .makeText(
                         context,
@@ -147,14 +146,15 @@ fun PostCard(
                 }
             )
 
-            post.mediaUrl?.let { mediaUrl ->
-                Spacer(Modifier.height(spacing.medium))
-                MediaDecisionCard(
-                    mediaUrl = mediaUrl,
-                    onShowMedia = onShowMedia,
-                    onShouldShowMedia = onShouldShowMedia,
-                )
-            }
+            // TODO: Support multiple
+//            post.mediaUrl?.let { mediaUrl ->
+//                Spacer(Modifier.height(spacing.medium))
+//                MediaDecisionCard(
+//                    mediaUrl = mediaUrl,
+//                    onShowMedia = onShowMedia,
+//                    onShouldShowMedia = onShouldShowMedia,
+//                )
+//            }
 
             // TODO: Show mentioned posts
 //            post.mentionedPost?.let { mentionedPost ->
@@ -190,14 +190,14 @@ private fun PostCardHeaderAndContent(
         PostCardHeader(
             name = post.name,
             pubkey = post.pubkey,
-            createdAt = post.createdAt,
+            createdAt = post.entity.createdAt,
             onOpenProfile = onOpenProfile
         )
         PostCardContentBase(
             replyToName = post.replyToName,
-            replyRelayHint = post.replyRelayHint,
+            replyRelayHint = post.entity.replyRelayHint,
             relays = post.relays,
-            content = post.content,
+            content = post.entity.content,
             isCurrent = isCurrent,
             onNavigateToThread = onNavigateToThread,
         )
@@ -253,7 +253,7 @@ private fun PostCardActions(
             modifier = Modifier
                 .fillMaxWidth()
                 .weight(1f),
-            onNavigateToQuote = { onNavigateToQuote(post.id) }
+            onNavigateToQuote = { onNavigateToQuote(post.entity.id) }
         )
         LikeAction(
             modifier = Modifier
