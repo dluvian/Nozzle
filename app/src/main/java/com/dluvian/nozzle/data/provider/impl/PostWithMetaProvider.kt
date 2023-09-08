@@ -13,7 +13,6 @@ import com.dluvian.nozzle.data.utils.NORMAL_DEBOUNCE
 import com.dluvian.nozzle.data.utils.SHORT_DEBOUNCE
 import com.dluvian.nozzle.data.utils.UrlUtils
 import com.dluvian.nozzle.data.utils.firstThenDistinctDebounce
-import com.dluvian.nozzle.model.MentionedPost
 import com.dluvian.nozzle.model.ParsedContent
 import com.dluvian.nozzle.model.PostWithMeta
 import kotlinx.coroutines.flow.Flow
@@ -99,22 +98,6 @@ class PostWithMetaProvider(
                     isOneself = isOneself,
                     isFollowedByMe = if (isOneself) false else contacts.contains(pubkey),
                     trustScore = if (isOneself) null else trustScore[pubkey],
-                    mentionedPost = it.postEntity.mentionedPostId?.let { mentionedPostId ->
-                        MentionedPost(
-                            id = mentionedPostId,
-                            pubkey = it.mentionedPostPubkey.orEmpty(),
-                            content = it.mentionedPostContent.orEmpty(),
-                            name = it.mentionedPostName
-                                .orEmpty()
-                                .ifEmpty {
-                                    it.mentionedPostPubkey?.let { key ->
-                                        getShortenedNpubFromPubkey(key)
-                                    }
-                                }.orEmpty(),
-                            picture = it.mentionedPostPicture.orEmpty(),
-                            createdAt = it.mentionedPostCreatedAt ?: 0L,
-                        )
-                    }
                 )
             }
         }
@@ -132,6 +115,7 @@ class PostWithMetaProvider(
     private val parsedContentCache: MutableMap<String, ParsedContent> =
         Collections.synchronizedMap(mutableMapOf())
 
+    // TODO: Still working?
     private fun getParsedContent(post: PostEntityExtended): ParsedContent {
         val cached = parsedContentCache[post.postEntity.id]
         if (cached != null) return cached

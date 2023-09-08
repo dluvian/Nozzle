@@ -105,12 +105,6 @@ interface PostDao {
     @Query(
         // SELECT PostEntity
         "SELECT mainPost.*, " +
-                // SELECT mentioned post
-                "mentionedPost.pubkey AS mentionedPostPubkey, " +
-                "mentionedPost.content AS mentionedPostContent, " +
-                "mentionedPost.createdAt AS mentionedPostCreatedAt, " +
-                "mentionedProfile.name AS mentionedPostName, " +
-                "mentionedProfile.picture AS mentionedPostPicture, " +
                 // SELECT likedByMe
                 "(SELECT eventId IS NOT NULL " +
                 "FROM reaction " +
@@ -138,12 +132,6 @@ interface PostDao {
                 // Join author
                 "LEFT JOIN profile AS mainProfile " +
                 "ON mainPost.pubkey = mainProfile.pubkey " +
-                // Join mentioned post
-                "LEFT JOIN post AS mentionedPost " +
-                "ON mainPost.mentionedPostId = mentionedPost.id " +
-                // Join profile of mentioned post author
-                "LEFT JOIN profile AS mentionedProfile " +
-                "ON mentionedPost.pubkey = mentionedProfile.pubkey " +
                 // Conditioned by ids
                 "WHERE mainPost.id IN (:postIds) " +
                 "ORDER BY createdAt DESC "

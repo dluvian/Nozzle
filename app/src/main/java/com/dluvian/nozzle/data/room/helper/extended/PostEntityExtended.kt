@@ -12,9 +12,4 @@ data class PostEntityExtended(
     val pictureUrl: String?,
     val numOfReplies: Int,
     val isLikedByMe: Boolean,
-    val mentionedPostPubkey: String?,
-    val mentionedPostContent: String?,
-    val mentionedPostName: String?,
-    val mentionedPostPicture: String?,
-    val mentionedPostCreatedAt: Long?,
 )

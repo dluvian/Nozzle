@@ -4,9 +4,7 @@ import android.util.Log
 import com.dluvian.nozzle.data.provider.IPubkeyProvider
 import com.dluvian.nozzle.data.utils.getCurrentTimeInSeconds
 import com.dluvian.nozzle.data.utils.getIdsPerRelayHintMap
-import com.dluvian.nozzle.data.utils.hasUnknownMentionedPostAuthor
 import com.dluvian.nozzle.data.utils.hasUnknownParentAuthor
-import com.dluvian.nozzle.data.utils.hasUnknownReferencedAuthors
 import com.dluvian.nozzle.data.utils.listReferencedPostIds
 import com.dluvian.nozzle.model.PostWithMeta
 import com.dluvian.nozzle.model.nostr.Filter
@@ -77,17 +75,13 @@ class NostrSubscriber(
         // TODO: Show shortened npub after referenced post is found
 
         val postIds = posts.map { it.id }
-        val postsWithUnknownRefAuthors = posts.filter { hasUnknownReferencedAuthors(it) }
+        val postsWithUnknownRefAuthors = posts.filter { hasUnknownParentAuthor(it) }
         val unknownReferencedPostIds = listReferencedPostIds(postsWithUnknownRefAuthors)
         val unknownAuthors = posts.filter { it.name.isEmpty() }.map { it.id }
-        val unknownMentionedPostAuthors = postsWithUnknownRefAuthors
-            .filter { hasUnknownMentionedPostAuthor(it) }
-            .mapNotNull { it.mentionedPost?.pubkey }
         val unknownParentAuthors = postsWithUnknownRefAuthors
             .filter { hasUnknownParentAuthor(it) }
             .mapNotNull { it.replyToPubkey }
         val unknownPubkeys = unknownAuthors.toSet() +
-                unknownMentionedPostAuthors +
                 unknownParentAuthors
 
         val filters = mutableListOf<Filter>()

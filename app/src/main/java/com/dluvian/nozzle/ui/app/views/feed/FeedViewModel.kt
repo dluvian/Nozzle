@@ -278,7 +278,7 @@ class FeedViewModel(
 
         val postsWithUnknowns = feedState.value
             .takeLast(DB_BATCH_SIZE)
-            .filter { hasUnknownReferencedAuthors(it) }
+            .filter { hasUnknownParentAuthor(it) }
         if (postsWithUnknowns.isNotEmpty()) {
             Log.i(TAG, "Resubscribe missing posts and profiles of ${postsWithUnknowns.size} posts")
             nostrSubscriber.unsubscribeReferencedPostsData()

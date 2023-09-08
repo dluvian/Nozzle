@@ -10,20 +10,17 @@ data class PostEntity(
     val pubkey: String,
     val replyToId: String?,
     val replyRelayHint: String?,
-    val mentionedPostId: String?,
     val content: String,
     val createdAt: Long,
 ) {
     companion object {
         fun fromEvent(event: Event): PostEntity {
-            val contentContext = event.parseContent()
             return PostEntity(
                 id = event.id,
                 pubkey = event.pubkey,
                 replyToId = event.getReplyId(),
                 replyRelayHint = event.getReplyRelayHint(),
-                mentionedPostId = contentContext.mentionedPostId,
-                content = contentContext.cleanContent,
+                content = event.content,
                 createdAt = event.createdAt,
             )
         }

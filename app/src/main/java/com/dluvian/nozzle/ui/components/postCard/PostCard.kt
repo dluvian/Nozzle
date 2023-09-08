@@ -156,14 +156,15 @@ fun PostCard(
                 )
             }
 
-            post.mentionedPost?.let { mentionedPost ->
-                Spacer(Modifier.height(spacing.medium))
-                MentionedPostCard(
-                    post = mentionedPost,
-                    onOpenProfile = onOpenProfile,
-                    onNavigateToThread = onNavigateToThread,
-                )
-            }
+            // TODO: Show mentioned posts
+//            post.mentionedPost?.let { mentionedPost ->
+//                Spacer(Modifier.height(spacing.medium))
+//                MentionedPostCard(
+//                    post = mentionedPost,
+//                    onOpenProfile = onOpenProfile,
+//                    onNavigateToThread = onNavigateToThread,
+//                )
+//            }
 
             Spacer(Modifier.height(spacing.medium))
             PostCardActions(

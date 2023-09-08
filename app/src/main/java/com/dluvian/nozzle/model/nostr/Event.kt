@@ -1,19 +1,14 @@
 package com.dluvian.nozzle.model.nostr
 
-import android.util.Log
 import com.dluvian.nozzle.data.utils.JsonUtils.gson
-import com.dluvian.nozzle.data.utils.NostrUtils
-import com.dluvian.nozzle.data.utils.NostrUtils.getHexFromNostrNote1
 import com.dluvian.nozzle.data.utils.SchnorrUtils
 import com.dluvian.nozzle.data.utils.SchnorrUtils.secp256k1
 import com.dluvian.nozzle.data.utils.Sha256Utils.sha256
 import com.dluvian.nozzle.data.utils.UrlUtils
-import com.dluvian.nozzle.model.ContentContext
 import com.google.gson.JsonElement
 import com.google.gson.annotations.SerializedName
 import fr.acinq.secp256k1.Hex
 
-private const val TAG = "Event"
 
 typealias Tag = List<String>
 
@@ -225,30 +220,6 @@ class Event(
             .filter { it.url.isNotEmpty() }
             .distinctBy { it.url }
     }
-
-    fun parseContent(): ContentContext {
-        var cleanContent = content.trim()
-        val nostrNote1 = NostrUtils.getAppendedNostrNote1(cleanContent)
-        var mentionedPostId: String? = null
-
-        if (nostrNote1 != null) {
-            val hex = getHexFromNostrNote1(nostrNote1)
-            if (hex == null) {
-                Log.w(TAG, "Failed to convert '$nostrNote1' to hex")
-            } else {
-                cleanContent = cleanContent.removeSuffix(nostrNote1).trimEnd()
-                mentionedPostId = hex
-                Log.d(TAG, "Parsed $hex from $nostrNote1")
-            }
-
-        }
-
-        return ContentContext(
-            cleanContent = cleanContent,
-            mentionedPostId = mentionedPostId,
-        )
-    }
-
 
     fun isReaction() = this.kind == Kind.REACTION
     fun isPost() = this.kind == Kind.TEXT_NOTE

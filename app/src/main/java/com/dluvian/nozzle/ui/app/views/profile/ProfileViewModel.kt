@@ -24,7 +24,7 @@ import com.dluvian.nozzle.data.provider.IFeedProvider
 import com.dluvian.nozzle.data.provider.IProfileWithMetaProvider
 import com.dluvian.nozzle.data.provider.IPubkeyProvider
 import com.dluvian.nozzle.data.provider.IRelayProvider
-import com.dluvian.nozzle.data.utils.hasUnknownReferencedAuthors
+import com.dluvian.nozzle.data.utils.hasUnknownParentAuthor
 import com.dluvian.nozzle.model.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -227,7 +227,7 @@ class ProfileViewModel(
 
         val postsWithUnknowns = feedState.value
             .takeLast(DB_BATCH_SIZE)
-            .filter { hasUnknownReferencedAuthors(it) }
+            .filter { hasUnknownParentAuthor(it) }
         if (postsWithUnknowns.isNotEmpty()) {
             Log.i(TAG, "Resubscribe missing posts and profiles of ${postsWithUnknowns.size} posts")
             nostrSubscriber.unsubscribeReferencedPostsData()
