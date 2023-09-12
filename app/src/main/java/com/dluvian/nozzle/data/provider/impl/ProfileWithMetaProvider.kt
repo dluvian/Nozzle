@@ -103,7 +103,7 @@ class ProfileWithMetaProvider(
         nostrSubscriber.unsubscribeNip65()
         nostrSubscriber.unsubscribeProfileMetadataAndContactLists()
         nostrSubscriber.subscribeNip65(listOf(pubkey))
-        nostrSubscriber.subscribeToProfileMetadataAndContactList(
+        nostrSubscriber.subscribeToProfileAndContactList(
             pubkeys = listOf(pubkey),
             relays = relayProvider.getWriteRelaysOfPubkey(pubkey = pubkey)
                 // TODO: Fallback to post relays

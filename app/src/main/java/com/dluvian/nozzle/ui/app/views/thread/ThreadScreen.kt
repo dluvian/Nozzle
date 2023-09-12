@@ -42,6 +42,7 @@ fun ThreadScreen(
     onNavigateToProfile: (String) -> Unit,
     onNavigateToReply: () -> Unit,
     onNavigateToQuote: (String) -> Unit,
+    onNavigateToId: (String) -> Unit,
 ) {
     Column {
         ReturnableTopBar(text = stringResource(id = R.string.thread), onGoBack = onGoBack)
@@ -58,6 +59,7 @@ fun ThreadScreen(
                 onNavigateToProfile = onNavigateToProfile,
                 onNavigateToReply = onNavigateToReply,
                 onNavigateToQuote = onNavigateToQuote,
+                onNavigateToId = onNavigateToId,
             )
         }
     }
@@ -76,6 +78,7 @@ private fun ThreadedPosts(
     onShouldShowMedia: (String) -> Boolean,
     onNavigateToReply: () -> Unit,
     onNavigateToQuote: (String) -> Unit,
+    onNavigateToId: (String) -> Unit,
 ) {
     val lazyListState = rememberLazyListState(initialFirstVisibleItemIndex = thread.previous.size)
     LaunchedEffect(key1 = thread.previous.size) {
@@ -107,6 +110,7 @@ private fun ThreadedPosts(
                         onShouldShowMedia = onShouldShowMedia,
                         threadPosition = threadPosition,
                         onOpenProfile = onNavigateToProfile,
+                        onNavigateToId = onNavigateToId,
                     )
                 }
                 item {
@@ -134,6 +138,7 @@ private fun ThreadedPosts(
                         isCurrent = true,
                         threadPosition = thread.getCurrentThreadPosition(),
                         onOpenProfile = onNavigateToProfile,
+                        onNavigateToId = onNavigateToId,
                     )
                     Divider()
                     Spacer(modifier = Modifier.height(spacing.tiny))
@@ -150,6 +155,7 @@ private fun ThreadedPosts(
                         onShowMedia = onShowMedia,
                         onShouldShowMedia = onShouldShowMedia,
                         onOpenProfile = onNavigateToProfile,
+                        onNavigateToId = onNavigateToId,
                     )
                 }
             }

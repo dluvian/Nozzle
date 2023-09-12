@@ -6,11 +6,11 @@ import androidx.security.crypto.EncryptedSharedPreferences
 import androidx.security.crypto.MasterKey
 import com.dluvian.nozzle.data.PreferenceFileNames
 import com.dluvian.nozzle.data.manager.IKeyManager
-import com.dluvian.nozzle.data.nostr.utils.derivePubkey
-import com.dluvian.nozzle.data.nostr.utils.generatePrivkey
-import com.dluvian.nozzle.data.nostr.utils.hexToNpub
-import com.dluvian.nozzle.data.nostr.utils.hexToNsec
-import com.dluvian.nozzle.data.nostr.utils.nsecToHex
+import com.dluvian.nozzle.data.nostr.utils.EncodingUtils.hexToNpub
+import com.dluvian.nozzle.data.nostr.utils.EncodingUtils.hexToNsec
+import com.dluvian.nozzle.data.nostr.utils.EncodingUtils.nsecToHex
+import com.dluvian.nozzle.data.nostr.utils.KeyUtils.derivePubkey
+import com.dluvian.nozzle.data.nostr.utils.KeyUtils.generatePrivkey
 import com.dluvian.nozzle.model.nostr.Keys
 import fr.acinq.secp256k1.Hex
 
@@ -53,8 +53,7 @@ class KeyManager(context: Context) : IKeyManager {
     override fun getNsec() = hexToNsec(getPrivkey())
 
     override fun setPrivkey(privkey: String) {
-        val hex = if (privkey.startsWith("nsec1"))
-            nsecToHex(privkey).getOrThrow() else privkey
+        val hex = nsecToHex(privkey) ?: privkey
         setPubkeyAndNpub(hex)
         Log.i(TAG, "Setting privkey and derived pubkey $pubkey")
         preferences.edit()

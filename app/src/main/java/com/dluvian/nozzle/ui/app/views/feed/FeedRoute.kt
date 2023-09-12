@@ -18,6 +18,7 @@ fun FeedRoute(
     onNavigateToReply: () -> Unit,
     onNavigateToPost: () -> Unit,
     onNavigateToQuote: (String) -> Unit,
+    onNavigateToId: (String) -> Unit,
 ) {
     val uiState by feedViewModel.uiState.collectAsState()
     val metadataState by feedViewModel.metadataState.collectAsState()
@@ -61,5 +62,6 @@ fun FeedRoute(
         onNavigateToReply = onNavigateToReply,
         onNavigateToPost = onNavigateToPost,
         onNavigateToQuote = onNavigateToQuote,
+        onNavigateToId = onNavigateToId,
     )
 }

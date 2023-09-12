@@ -10,7 +10,7 @@ import androidx.lifecycle.viewModelScope
 import com.dluvian.nozzle.R
 import com.dluvian.nozzle.data.manager.IPersonalProfileManager
 import com.dluvian.nozzle.data.nostr.INostrService
-import com.dluvian.nozzle.data.utils.NostrUtils.isValidUsername
+import com.dluvian.nozzle.data.nostr.utils.UsernameUtils.isValidUsername
 import com.dluvian.nozzle.model.nostr.Metadata
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.*

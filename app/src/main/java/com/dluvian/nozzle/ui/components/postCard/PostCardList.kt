@@ -24,6 +24,7 @@ fun PostCardList(
     onNavigateToThread: (PostIds) -> Unit,
     onNavigateToReply: () -> Unit,
     onNavigateToQuote: (String) -> Unit,
+    onNavigateToId: (String) -> Unit,
     lazyListState: LazyListState = rememberLazyListState(),
     onOpenProfile: ((String) -> Unit)? = null,
 ) {
@@ -42,6 +43,7 @@ fun PostCardList(
                     onNavigateToThread = onNavigateToThread,
                     onNavigateToReply = onNavigateToReply,
                     onNavigateToQuote = onNavigateToQuote,
+                    onNavigateToId = onNavigateToId
                 )
                 if (index == posts.size - 7 || index == posts.size - 1) {
                     onLoadMore()

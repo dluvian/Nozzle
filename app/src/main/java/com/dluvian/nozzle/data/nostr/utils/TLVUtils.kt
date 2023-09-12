@@ -1,5 +1,11 @@
 package com.dluvian.nozzle.data.nostr.utils
 
+import com.dluvian.nozzle.model.nostr.TLVAuthor
+import com.dluvian.nozzle.model.nostr.TLVDefault
+import com.dluvian.nozzle.model.nostr.TLVEntry
+import com.dluvian.nozzle.model.nostr.TLVKind
+import com.dluvian.nozzle.model.nostr.TLVRelay
+
 object TLVUtils {
     const val TLV_DEFAULT: Byte = 0
     const val TLV_RELAY: Byte = 1
@@ -50,22 +56,3 @@ object TLVUtils {
     }
 }
 
-sealed class TLVEntry {
-    abstract fun getBytes(): ByteArray
-}
-
-class TLVDefault(val value: ByteArray) : TLVEntry() {
-    override fun getBytes() = value
-}
-
-class TLVRelay(val value: ByteArray) : TLVEntry() {
-    override fun getBytes() = value
-}
-
-class TLVAuthor(val value: ByteArray) : TLVEntry() {
-    override fun getBytes() = value
-}
-
-class TLVKind(val value: ByteArray) : TLVEntry() {
-    override fun getBytes() = value
-}

@@ -14,6 +14,7 @@ fun ProfileRoute(
     onNavigateToReply: () -> Unit,
     onNavigateToQuote: (String) -> Unit,
     onNavigateToEditProfile: () -> Unit,
+    onNavigateToId: (String) -> Unit
 ) {
     val isRefreshing by profileViewModel.isRefreshingState.collectAsState()
     val profile by profileViewModel.profileState.collectAsState()
@@ -50,6 +51,7 @@ fun ProfileRoute(
         },
         onNavigateToReply = onNavigateToReply,
         onNavigateToEditProfile = onNavigateToEditProfile,
-        onNavigateToQuote = onNavigateToQuote
+        onNavigateToQuote = onNavigateToQuote,
+        onNavigateToId = onNavigateToId,
     )
 }

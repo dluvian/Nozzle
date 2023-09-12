@@ -13,8 +13,8 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import androidx.navigation.navDeepLink
-import com.dluvian.nozzle.data.nostr.utils.note1ToHex
-import com.dluvian.nozzle.data.nostr.utils.npubToHex
+import com.dluvian.nozzle.data.nostr.utils.EncodingUtils.note1ToHex
+import com.dluvian.nozzle.data.nostr.utils.EncodingUtils.npubToHex
 import com.dluvian.nozzle.model.PostIds
 import com.dluvian.nozzle.ui.app.VMContainer
 import com.dluvian.nozzle.ui.app.views.editProfile.EditProfileRoute
@@ -66,6 +66,7 @@ fun NozzleNavGraph(
                 onNavigateToReply = navActions.navigateToReply,
                 onNavigateToPost = navActions.navigateToPost,
                 onNavigateToQuote = navActions.navigateToQuote,
+                onNavigateToId = navActions.navigateToId,
             )
         }
         composable(
@@ -80,6 +81,7 @@ fun NozzleNavGraph(
                 onNavigateToReply = navActions.navigateToReply,
                 onNavigateToEditProfile = onNavigateToEditProfile,
                 onNavigateToQuote = navActions.navigateToQuote,
+                onNavigateToId = navActions.navigateToId
             )
         }
         composable(NozzleRoute.SEARCH) {
@@ -126,6 +128,7 @@ fun NozzleNavGraph(
                 onNavigateToProfile = navActions.navigateToProfile,
                 onNavigateToReply = navActions.navigateToReply,
                 onNavigateToQuote = navActions.navigateToQuote,
+                onNavigateToId = navActions.navigateToId,
                 onGoBack = navActions.popStack,
             )
         }
@@ -159,21 +162,19 @@ fun NozzleNavGraph(
             val nip21 = backStackEntry.arguments?.getString("nip21")
             // TODO: Add nevent and nprofile
             if (nip21?.startsWith("npub1") == true) {
-                npubToHex(nip21)
-                    .onSuccess { hex ->
-                        navActions.navigateToProfile(hex)
-                    }
-                    .onFailure {
-                        Log.i(TAG, "npub $nip21 is invalid")
-                        navActions.navigateToFeed()
-                    }
+                val hex = npubToHex(nip21)
+                if (hex != null) navActions.navigateToProfile(hex)
+                else {
+                    Log.i(TAG, "npub $nip21 is invalid")
+                    navActions.navigateToFeed()
+                }
             } else if (nip21?.startsWith("note1") == true) {
-                note1ToHex(nip21)
-                    .onSuccess { hex -> navActions.navigateToThread(hex, null) }
-                    .onFailure {
-                        Log.i(TAG, "note1 $nip21 is invalid")
-                        navActions.navigateToFeed()
-                    }
+                val hex = note1ToHex(nip21)
+                if (hex != null) navActions.navigateToThread(hex, null)
+                else {
+                    Log.i(TAG, "note1 $nip21 is invalid")
+                    navActions.navigateToFeed()
+                }
             } else {
                 Log.i(TAG, "Nostr identifier $nip21 not recognized")
                 navActions.navigateToFeed()

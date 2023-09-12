@@ -2,7 +2,7 @@ package com.dluvian.nozzle.data.room.dao
 
 import androidx.room.*
 import com.dluvian.nozzle.data.room.entity.PostEntity
-import com.dluvian.nozzle.data.room.helper.IdAndPubkey
+import com.dluvian.nozzle.data.room.helper.BasePost
 import com.dluvian.nozzle.data.room.helper.ReplyContext
 import com.dluvian.nozzle.data.room.helper.ReplyToIdAndPubkey
 import com.dluvian.nozzle.data.room.helper.extended.PostEntityExtended
@@ -18,7 +18,7 @@ interface PostDao {
      * Sorted from newest to oldest
      */
     @Query(
-        "SELECT post.id, post.pubkey " +
+        "SELECT post.id, post.pubkey, post.content " +
                 "FROM post " +
                 "WHERE ((:isReplies AND replyToId IS NOT NULL) OR (:isPosts AND replyToId IS NULL)) " +
                 "AND pubkey IN (:authorPubkeys) " +
@@ -27,20 +27,20 @@ interface PostDao {
                 "ORDER BY createdAt DESC " +
                 "LIMIT :limit"
     )
-    suspend fun getAuthoredFeedIdsByRelays(
+    suspend fun getAuthoredFeedBasePostsByRelays(
         isPosts: Boolean,
         isReplies: Boolean,
         authorPubkeys: Collection<String>,
         relays: Collection<String>,
         until: Long,
         limit: Int,
-    ): List<IdAndPubkey>
+    ): List<BasePost>
 
     /**
      * Sorted from newest to oldest
      */
     @Query(
-        "SELECT post.id, post.pubkey " +
+        "SELECT post.id, post.pubkey, post.content " +
                 "FROM post " +
                 "WHERE ((:isReplies AND replyToId IS NOT NULL) OR (:isPosts AND replyToId IS NULL)) " +
                 "AND pubkey IN (:authorPubkeys) " +
@@ -48,19 +48,19 @@ interface PostDao {
                 "ORDER BY createdAt DESC " +
                 "LIMIT :limit"
     )
-    suspend fun getAuthoredFeedIds(
+    suspend fun getAuthoredFeedBasePosts(
         isPosts: Boolean,
         isReplies: Boolean,
         authorPubkeys: Collection<String>,
         until: Long,
         limit: Int,
-    ): List<IdAndPubkey>
+    ): List<BasePost>
 
     /**
      * Sorted from newest to oldest
      */
     @Query(
-        "SELECT post.id, post.pubkey " +
+        "SELECT post.id, post.pubkey, post.content " +
                 "FROM post " +
                 "WHERE ((:isReplies AND replyToId IS NOT NULL) OR (:isPosts AND replyToId IS NULL)) " +
                 "AND id IN (SELECT DISTINCT eventId FROM eventRelay WHERE relayUrl IN (:relays)) " +
@@ -68,31 +68,31 @@ interface PostDao {
                 "ORDER BY createdAt DESC " +
                 "LIMIT :limit"
     )
-    suspend fun getGlobalFeedIdsByRelays(
+    suspend fun getGlobalFeedBasePostsByRelays(
         isPosts: Boolean,
         isReplies: Boolean,
         relays: Collection<String>,
         until: Long,
         limit: Int,
-    ): List<IdAndPubkey>
+    ): List<BasePost>
 
     /**
      * Sorted from newest to oldest
      */
     @Query(
-        "SELECT post.id, post.pubkey " +
+        "SELECT post.id, post.pubkey, post.content " +
                 "FROM post " +
                 "WHERE ((:isReplies AND replyToId IS NOT NULL) OR (:isPosts AND replyToId IS NULL)) " +
                 "AND createdAt < :until " +
                 "ORDER BY createdAt DESC " +
                 "LIMIT :limit"
     )
-    suspend fun getGlobalFeedIds(
+    suspend fun getGlobalFeedBasePosts(
         isPosts: Boolean,
         isReplies: Boolean,
         until: Long,
         limit: Int,
-    ): List<IdAndPubkey>
+    ): List<BasePost>
 
 
     @Query(
@@ -145,7 +145,7 @@ interface PostDao {
     suspend fun insertIfNotPresent(vararg post: PostEntity)
 
     @Query(
-        "SELECT post.id, post.replyToId, post.pubkey " +
+        "SELECT post.id, post.replyToId, post.pubkey, post.content " +
                 "FROM post " +
                 "WHERE replyToId = :currentPostId " + // All replies to current post
                 "OR id = :currentPostId" // Current post

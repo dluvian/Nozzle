@@ -68,6 +68,7 @@ fun FeedScreen(
     onNavigateToReply: () -> Unit,
     onNavigateToPost: () -> Unit,
     onNavigateToQuote: (String) -> Unit,
+    onNavigateToId: (String) -> Unit,
 ) {
     val lazyListState = rememberLazyListState()
     val scope = rememberCoroutineScope()
@@ -116,6 +117,7 @@ fun FeedScreen(
                 onNavigateToQuote = onNavigateToQuote,
                 lazyListState = lazyListState,
                 onOpenProfile = onNavigateToProfile,
+                onNavigateToId = onNavigateToId,
             )
         }
         if (feedState.isEmpty()) {

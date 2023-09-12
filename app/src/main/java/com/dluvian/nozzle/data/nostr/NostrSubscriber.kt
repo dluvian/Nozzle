@@ -23,7 +23,7 @@ class NostrSubscriber(
     private val profileSubscriptions = Collections.synchronizedList(mutableListOf<String>())
     private val nip65Subscriptions = Collections.synchronizedList(mutableListOf<String>())
 
-    override fun subscribeToProfileMetadataAndContactList(
+    override fun subscribeToProfileAndContactList(
         pubkeys: Collection<String>,
         relays: Collection<String>?
     ): List<String> {
@@ -42,7 +42,7 @@ class NostrSubscriber(
     }
 
     override fun subscribeToFeedPosts(
-        authorPubkeys: Collection<String>?,
+        authorPubkeys: List<String>?,
         limit: Int,
         until: Long?,
         relays: Collection<String>?
@@ -52,6 +52,25 @@ class NostrSubscriber(
             pubkeys = authorPubkeys,
             until = until ?: getCurrentTimeInSeconds(),
             limit = limit
+        )
+        val ids = nostrService.subscribe(
+            filters = listOf(postFilter),
+            unsubOnEOSE = true,
+            relays = relays,
+        )
+        feedSubscriptions.addAll(ids)
+
+        return ids
+    }
+
+    override fun subscribePosts(
+        postIds: List<String>,
+        relays: Collection<String>?
+    ): List<String> {
+        Log.i(TAG, "Subscribe to ${postIds.size} posts in ${relays?.size} relays")
+        val postFilter = Filter.createPostFilter(
+            ids = postIds,
+            until = getCurrentTimeInSeconds(),
         )
         val ids = nostrService.subscribe(
             filters = listOf(postFilter),

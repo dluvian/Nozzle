@@ -13,6 +13,7 @@ fun ThreadRoute(
     onNavigateToProfile: (String) -> Unit,
     onNavigateToReply: () -> Unit,
     onNavigateToQuote: (String) -> Unit,
+    onNavigateToId: (String) -> Unit,
     onGoBack: () -> Unit,
 ) {
     val thread by threadViewModel.threadState.collectAsState()
@@ -40,6 +41,7 @@ fun ThreadRoute(
         onNavigateToProfile = onNavigateToProfile,
         onNavigateToReply = onNavigateToReply,
         onNavigateToQuote = onNavigateToQuote,
+        onNavigateToId = onNavigateToId,
         onGoBack = onGoBack,
     )
 }

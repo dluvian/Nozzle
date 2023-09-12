@@ -1,7 +1,15 @@
 package com.dluvian.nozzle.ui.app.navigation
 
+import android.util.Log
 import androidx.navigation.NavHostController
 import androidx.navigation.NavOptionsBuilder
+import com.dluvian.nozzle.data.nostr.utils.EncodingUtils.nostrStrToNostrId
+import com.dluvian.nozzle.model.nostr.NeventNostrId
+import com.dluvian.nozzle.model.nostr.NoteNostrId
+import com.dluvian.nozzle.model.nostr.NprofileNostrId
+import com.dluvian.nozzle.model.nostr.NpubNostrId
+
+private const val TAG = "NozzleNavActions"
 
 class NozzleNavActions(private val navController: NavHostController) {
     val navigateToProfile: (String) -> Unit = { pubkey ->
@@ -60,6 +68,25 @@ class NozzleNavActions(private val navController: NavHostController) {
             setSimpleNavOptions(optionsBuilder = this)
         }
     }
+
+    // TODO: This can replace navigateToProfile and navigateToThread
+    val navigateToId: (String) -> Unit = { id ->
+        nostrStrToNostrId(id)
+        val route = when (nostrStrToNostrId(id)) {
+            is NoteNostrId -> "${NozzleRoute.THREAD}/${id}"
+            is NeventNostrId -> "${NozzleRoute.THREAD}/${id}"
+            is NpubNostrId -> "${NozzleRoute.PROFILE}/${id}"
+            is NprofileNostrId -> "${NozzleRoute.PROFILE}/${id}"
+            null -> {
+                Log.w(TAG, "Failed to resolve $id")
+                NozzleRoute.FEED
+            }
+        }
+        navController.navigate(route) {
+            setSimpleNavOptions(optionsBuilder = this)
+        }
+    }
+
 
     val popStack: () -> Unit = {
         navController.popBackStack()

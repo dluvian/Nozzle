@@ -23,7 +23,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.style.TextAlign
 import com.dluvian.nozzle.R
-import com.dluvian.nozzle.data.nostr.utils.hexToNote1
+import com.dluvian.nozzle.data.nostr.utils.EncodingUtils.hexToNote1
 import com.dluvian.nozzle.model.PostIds
 import com.dluvian.nozzle.model.PostWithMeta
 import com.dluvian.nozzle.model.ThreadPosition
@@ -32,6 +32,7 @@ import com.dluvian.nozzle.ui.components.*
 import com.dluvian.nozzle.ui.components.postCard.atoms.PostCardContentBase
 import com.dluvian.nozzle.ui.components.postCard.atoms.PostCardHeader
 import com.dluvian.nozzle.ui.components.postCard.atoms.PostCardProfilePicture
+import com.dluvian.nozzle.ui.components.postCard.molecules.MediaDecisionCard
 import com.dluvian.nozzle.ui.components.text.*
 import com.dluvian.nozzle.ui.theme.*
 
@@ -48,6 +49,7 @@ fun PostCard(
     onNavigateToThread: (PostIds) -> Unit,
     onNavigateToReply: () -> Unit,
     onNavigateToQuote: (String) -> Unit,
+    onNavigateToId: (String) -> Unit,
     onShowMedia: (String) -> Unit,
     onShouldShowMedia: (String) -> Boolean,
     isCurrent: Boolean = false,
@@ -143,28 +145,28 @@ fun PostCard(
                     if (!isCurrent) {
                         onNavigateToThread(post.getPostIds())
                     }
-                }
+                },
+                onNavigateToId = onNavigateToId,
             )
 
-            // TODO: Support multiple
-//            post.mediaUrl?.let { mediaUrl ->
-//                Spacer(Modifier.height(spacing.medium))
-//                MediaDecisionCard(
-//                    mediaUrl = mediaUrl,
-//                    onShowMedia = onShowMedia,
-//                    onShouldShowMedia = onShouldShowMedia,
-//                )
-//            }
+            post.mediaUrls.forEach { mediaUrl ->
+                Spacer(Modifier.height(spacing.medium))
+                MediaDecisionCard(
+                    mediaUrl = mediaUrl,
+                    onShowMedia = onShowMedia,
+                    onShouldShowMedia = onShouldShowMedia,
+                )
+            }
 
-            // TODO: Show mentioned posts
-//            post.mentionedPost?.let { mentionedPost ->
-//                Spacer(Modifier.height(spacing.medium))
-//                MentionedPostCard(
-//                    post = mentionedPost,
-//                    onOpenProfile = onOpenProfile,
-//                    onNavigateToThread = onNavigateToThread,
-//                )
-//            }
+            post.mentionedPosts.forEach { mentionedPost ->
+                Spacer(Modifier.height(spacing.medium))
+                MentionedPostCard(
+                    post = mentionedPost,
+                    onOpenProfile = onOpenProfile,
+                    onNavigateToThread = onNavigateToThread,
+                    onNavigateToId = onNavigateToId,
+                )
+            }
 
             Spacer(Modifier.height(spacing.medium))
             PostCardActions(
@@ -185,6 +187,7 @@ private fun PostCardHeaderAndContent(
     isCurrent: Boolean,
     onOpenProfile: ((String) -> Unit)?,
     onNavigateToThread: () -> Unit,
+    onNavigateToId: (String) -> Unit,
 ) {
     Column {
         PostCardHeader(
@@ -197,9 +200,10 @@ private fun PostCardHeaderAndContent(
             replyToName = post.replyToName,
             replyRelayHint = post.entity.replyRelayHint,
             relays = post.relays,
-            content = post.entity.content,
+            annotatedContent = post.annotatedContent,
             isCurrent = isCurrent,
             onNavigateToThread = onNavigateToThread,
+            onNavigateToId = onNavigateToId,
         )
     }
 }

@@ -1,7 +1,7 @@
 package com.dluvian.nozzle.model.helper
 
-import com.dluvian.nozzle.data.nostr.utils.getShortenedNpub
-import com.dluvian.nozzle.data.nostr.utils.hexToNpub
+import com.dluvian.nozzle.data.nostr.utils.EncodingUtils.hexToNpub
+import com.dluvian.nozzle.data.nostr.utils.ShortenedNameUtils.getShortenedNpub
 
 
 data class PubkeyVariations(val pubkey: String, val npub: String, val shortenedNpub: String) {
@@ -11,7 +11,7 @@ data class PubkeyVariations(val pubkey: String, val npub: String, val shortenedN
             return PubkeyVariations(
                 pubkey = pubkey,
                 npub = npub,
-                shortenedNpub = getShortenedNpub(npub)
+                shortenedNpub = getShortenedNpub(npub) ?: npub
             )
         }
     }

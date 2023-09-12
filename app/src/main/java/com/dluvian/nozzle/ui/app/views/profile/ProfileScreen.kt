@@ -22,9 +22,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.style.TextOverflow
 import com.dluvian.nozzle.R
-import com.dluvian.nozzle.data.nostr.utils.getShortenedNpubFromPubkey
+import com.dluvian.nozzle.data.nostr.utils.ShortenedNameUtils.getShortenedNpubFromPubkey
 import com.dluvian.nozzle.model.PostIds
 import com.dluvian.nozzle.model.PostWithMeta
 import com.dluvian.nozzle.model.ProfileWithMeta
@@ -36,7 +37,7 @@ import com.dluvian.nozzle.ui.components.dialog.RelaysDialog
 import com.dluvian.nozzle.ui.components.media.ProfilePicture
 import com.dluvian.nozzle.ui.components.postCard.NoPostsHint
 import com.dluvian.nozzle.ui.components.postCard.PostCardList
-import com.dluvian.nozzle.ui.components.text.HyperlinkedText
+import com.dluvian.nozzle.ui.components.text.AnnotatedText
 import com.dluvian.nozzle.ui.components.text.NumberedCategory
 import com.dluvian.nozzle.ui.theme.Shapes
 import com.dluvian.nozzle.ui.theme.sizing
@@ -61,6 +62,7 @@ fun ProfileScreen(
     onNavigateToReply: () -> Unit,
     onNavigateToQuote: (String) -> Unit,
     onNavigateToEditProfile: () -> Unit,
+    onNavigateToId: (String) -> Unit
 ) {
     Column {
         ProfileData(
@@ -69,6 +71,7 @@ fun ProfileScreen(
             onUnfollow = onUnfollow,
             onCopyNpub = onCopyNpub,
             onNavToEditProfile = onNavigateToEditProfile,
+            onNavigateToId = onNavigateToId,
         )
         Spacer(Modifier.height(spacing.medium))
         NumberedCategories(
@@ -89,7 +92,8 @@ fun ProfileScreen(
             onLoadMore = onLoadMore,
             onNavigateToThread = onNavigateToThread,
             onNavigateToReply = onNavigateToReply,
-            onNavigateToQuote = onNavigateToQuote
+            onNavigateToQuote = onNavigateToQuote,
+            onNavigateToId = onNavigateToId,
         )
     }
     if (feed.isEmpty()) {
@@ -104,6 +108,7 @@ private fun ProfileData(
     onUnfollow: (String) -> Unit,
     onCopyNpub: () -> Unit,
     onNavToEditProfile: () -> Unit,
+    onNavigateToId: (String) -> Unit
 ) {
     Column(
         modifier = Modifier.padding(horizontal = spacing.screenEdge),
@@ -121,16 +126,17 @@ private fun ProfileData(
         )
         NameAndNpub(
             name = profile.metadata.name.orEmpty()
-                .ifEmpty { getShortenedNpubFromPubkey(profile.pubkey) },
+                .ifEmpty { getShortenedNpubFromPubkey(profile.pubkey) ?: profile.pubkey },
             npub = profile.npub,
             onCopyNpub = onCopyNpub,
         )
         Spacer(Modifier.height(spacing.medium))
         profile.metadata.about?.let { about ->
             if (about.isNotBlank()) {
-                HyperlinkedText(
-                    text = about.trim(),
+                AnnotatedText(
+                    text = AnnotatedString(about), // TODO: Annotate about
                     maxLines = 3,
+                    onNavigateToId = onNavigateToId,
                     onClickNonLink = { /*Do nothing*/ })
             }
         }

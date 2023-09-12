@@ -14,6 +14,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.text.AnnotatedString
 import com.dluvian.nozzle.model.MentionedPost
 import com.dluvian.nozzle.model.Oneself
 import com.dluvian.nozzle.model.PostIds
@@ -29,6 +30,7 @@ import com.dluvian.nozzle.ui.theme.spacing
 fun MentionedPostCard(
     post: MentionedPost,
     modifier: Modifier = Modifier,
+    onNavigateToId: (String) -> Unit,
     onOpenProfile: ((String) -> Unit)? = null,
     onNavigateToThread: ((PostIds) -> Unit)? = null,
 ) {
@@ -61,9 +63,10 @@ fun MentionedPostCard(
                     replyToName = null,
                     replyRelayHint = null,
                     relays = null,
-                    content = post.content,
+                    annotatedContent = AnnotatedString(post.content), // TODO: Annotate this
                     isCurrent = false,
-                    onNavigateToThread = { onNavigateToThread?.let { it(post.toPostIds()) } }
+                    onNavigateToThread = { onNavigateToThread?.let { it(post.toPostIds()) } },
+                    onNavigateToId = onNavigateToId,
                 )
             }
         }

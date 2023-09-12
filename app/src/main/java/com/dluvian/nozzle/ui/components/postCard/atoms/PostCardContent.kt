@@ -4,7 +4,8 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import com.dluvian.nozzle.ui.components.text.HyperlinkedText
+import androidx.compose.ui.text.AnnotatedString
+import com.dluvian.nozzle.ui.components.text.AnnotatedText
 import com.dluvian.nozzle.ui.components.text.InRelays
 import com.dluvian.nozzle.ui.components.text.ReplyingTo
 import com.dluvian.nozzle.ui.theme.spacing
@@ -14,16 +15,18 @@ fun PostCardContentBase(
     replyToName: String?,
     replyRelayHint: String?,
     relays: List<String>?,
-    content: String,
+    annotatedContent: AnnotatedString,
     isCurrent: Boolean,
     onNavigateToThread: () -> Unit,
+    onNavigateToId: (String) -> Unit,
 ) {
     replyToName?.let { ReplyingTo(name = it, replyRelayHint = replyRelayHint) }
     relays?.let { InRelays(relays = it) }
     Spacer(Modifier.height(spacing.medium))
-    HyperlinkedText(
-        text = content,
+    AnnotatedText(
+        text = annotatedContent,
         maxLines = if (isCurrent) null else 12,
-        onClickNonLink = onNavigateToThread
+        onClickNonLink = onNavigateToThread,
+        onNavigateToId = onNavigateToId,
     )
 }

@@ -8,7 +8,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.dluvian.nozzle.R
 import com.dluvian.nozzle.data.nostr.INostrService
-import com.dluvian.nozzle.data.nostr.utils.getShortenedNpubFromPubkey
+import com.dluvian.nozzle.data.nostr.utils.ShortenedNameUtils.getShortenedNpubFromPubkey
 import com.dluvian.nozzle.data.provider.IPersonalProfileProvider
 import com.dluvian.nozzle.data.provider.IRelayProvider
 import com.dluvian.nozzle.data.room.dao.PostDao
@@ -69,7 +69,9 @@ class ReplyViewModel(
                 recipientPubkey = post.pubkey
                 val recipientsReadRelays = relayProvider.getReadRelaysOfPubkey(recipientPubkey)
                 it.copy(
-                    recipientName = post.name.ifEmpty { getShortenedNpubFromPubkey(post.pubkey) },
+                    recipientName = post.name.ifEmpty {
+                        getShortenedNpubFromPubkey(post.pubkey) ?: post.pubkey
+                    },
                     pubkey = personalProfileProvider.getPubkey(),
                     reply = "",
                     isSendable = false,

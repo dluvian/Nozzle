@@ -2,6 +2,8 @@ package com.dluvian.nozzle.data.provider.impl
 
 import android.util.Log
 import com.dluvian.nozzle.data.nostr.INostrSubscriber
+import com.dluvian.nozzle.data.nostr.utils.IdExtractorUtils.extractNeventsAndNoteIds
+import com.dluvian.nozzle.data.nostr.utils.IdExtractorUtils.extractNprofilesAndNpubs
 import com.dluvian.nozzle.data.provider.IPostWithMetaProvider
 import com.dluvian.nozzle.data.provider.IThreadProvider
 import com.dluvian.nozzle.data.room.dao.PostDao
@@ -43,11 +45,27 @@ class ThreadProvider(
         val replies = replyContextList.filter { it.replyToId == current.id }
         val previous = listPrevious(currentId = current.id, replyToId = current.replyToId)
 
+        // TODO: Refactor! Same in feedProvider
+        val contents = replyContextList.map { it.content }
+        val mentionedNprofiles = extractNprofilesAndNpubs(contents = contents)
+        mentionedNprofiles.forEach {
+            nostrSubscriber.subscribeProfile(
+                pubkey = it.pubkey,
+                relays = it.relays.ifEmpty { relays }
+            )
+        }
+        extractNeventsAndNoteIds(contents = contents).forEach {
+            nostrSubscriber.subscribePost(
+                postId = it.eventId,
+                relays = it.relays.ifEmpty { relays })
+        }
+
         return getMappedThreadFlow(
             currentId = current.id,
             previousIds = previous.ids,
             replyIds = replies.map { it.id },
-            authorPubkeys = replyContextList.map { it.pubkey }.toSet() + previous.pubkeys
+            authorPubkeys = replyContextList.map { it.pubkey }.toSet() + previous.pubkeys,
+            mentionedPubkeys = replyContextList.map { it.content }
         )
     }
 
@@ -93,11 +111,13 @@ class ThreadProvider(
         previousIds: List<String>, // Order is important
         replyIds: List<String>,
         authorPubkeys: Collection<String>,
+        mentionedPubkeys: Collection<String>,
     ): Flow<PostThread> {
         val relevantPostIds = listOf(listOf(currentId), previousIds, replyIds).flatten()
         return postWithMetaProvider.getPostsWithMetaFlow(
             postIds = relevantPostIds,
-            authorPubkeys = authorPubkeys
+            authorPubkeys = authorPubkeys,
+            mentionedPubkeys = mentionedPubkeys,
         )
             .firstThenDistinctDebounce(NORMAL_DEBOUNCE)
             .map { unsortedPosts ->

@@ -119,11 +119,11 @@ class AppContainer(context: Context) {
     private val postWithMetaProvider: IPostWithMetaProvider = PostWithMetaProvider(
         pubkeyProvider = keyManager,
         contactListProvider = contactListProvider,
-        annotatedBuilder = annotatedContentHandler,
-        annotatedExtractor = annotatedContentHandler,
+        annotatedContentHandler = annotatedContentHandler,
         postDao = roomDb.postDao(),
         eventRelayDao = roomDb.eventRelayDao(),
-        contactDao = roomDb.contactDao()
+        contactDao = roomDb.contactDao(),
+        profileDao = roomDb.profileDao()
     )
 
     val feedProvider: IFeedProvider = FeedProvider(

@@ -4,8 +4,8 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
-import com.dluvian.nozzle.data.nostr.utils.note1ToHex
-import com.dluvian.nozzle.data.nostr.utils.npubToHex
+import com.dluvian.nozzle.data.nostr.utils.EncodingUtils.note1ToHex
+import com.dluvian.nozzle.data.nostr.utils.EncodingUtils.npubToHex
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.stateIn
@@ -33,18 +33,19 @@ class SearchViewModel : ViewModel() {
         Log.i(TAG, "Initialize SearchViewModel")
     }
 
+    // TODO: This sucks
     val onValidateAndNavigateToDestination: ((String) -> Unit, (String, String?) -> Unit) -> Unit =
         { onNavigateToProfile, onNavigateToThread ->
             uiState.value.input.let { input ->
                 val trimmed = input.trim()
                 if (trimmed.startsWith("npub1")) {
-                    val npub = npubToHex(trimmed)
-                    npub.onSuccess { onNavigateToProfile(it) }
-                    npub.onFailure { setUIInvalid() }
+                    val hex = npubToHex(trimmed)
+                    if (hex != null) onNavigateToProfile(hex)
+                    else setUIInvalid()
                 } else if (trimmed.startsWith("note1")) {
-                    val noteId = note1ToHex(trimmed)
-                    noteId.onSuccess { id -> onNavigateToThread(id, null) }
-                    noteId.onFailure { setUIInvalid() }
+                    val hex = note1ToHex(trimmed)
+                    if (hex != null) onNavigateToThread(hex, null)
+                    else setUIInvalid()
                 } else {
                     setUIInvalid()
                 }

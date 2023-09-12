@@ -13,7 +13,7 @@ import com.dluvian.nozzle.R
 import com.dluvian.nozzle.data.manager.IKeyManager
 import com.dluvian.nozzle.data.manager.IPersonalProfileManager
 import com.dluvian.nozzle.data.nostr.INostrSubscriber
-import com.dluvian.nozzle.data.nostr.utils.isValidPrivkey
+import com.dluvian.nozzle.data.nostr.utils.KeyUtils.isValidPrivkey
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.stateIn
@@ -72,7 +72,7 @@ class KeysViewModel(
                 keyManager.setPrivkey(state.privkeyInput)
                 personalProfileManager.updateMetadata()
                 // TODO: Move this to personalProfileManager
-                nostrSubscriber.subscribeToProfileMetadataAndContactList(
+                nostrSubscriber.subscribeToProfileAndContactList(
                     pubkeys = listOf(keyManager.getPubkey())
                 )
                 useCachedValues()

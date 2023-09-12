@@ -2,7 +2,6 @@ package com.dluvian.nozzle.data.eventProcessor
 
 import android.util.Log
 import com.dluvian.nozzle.data.cache.IIdCache
-import com.dluvian.nozzle.data.nostr.utils.hexToNpub
 import com.dluvian.nozzle.data.room.AppDatabase
 import com.dluvian.nozzle.data.room.entity.Nip65Entity
 import com.dluvian.nozzle.data.room.entity.PostEntity
@@ -116,7 +115,7 @@ class EventProcessor(
 
         otherIdsCache.add(event.id)
 
-        Log.d(TAG, "Process ${nip65Entries.size} nip65 entries from ${hexToNpub(event.pubkey)}")
+        Log.d(TAG, "Process ${nip65Entries.size} nip65 entries from ${event.pubkey}")
         scope.launch {
             val entities = nip65Entries.map {
                 Nip65Entity(

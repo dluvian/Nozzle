@@ -1,14 +1,14 @@
 package com.dluvian.nozzle.data.provider.impl
 
-import com.dluvian.nozzle.data.annotatedContent.IAnnotatedContentBuilder
-import com.dluvian.nozzle.data.annotatedContent.IAnnotatedContentExtractor
-import com.dluvian.nozzle.data.nostr.utils.getShortenedNpubFromPubkey
+import com.dluvian.nozzle.data.annotatedContent.IAnnotatedContentHandler
+import com.dluvian.nozzle.data.nostr.utils.ShortenedNameUtils.getShortenedNpubFromPubkey
 import com.dluvian.nozzle.data.provider.IContactListProvider
 import com.dluvian.nozzle.data.provider.IPostWithMetaProvider
 import com.dluvian.nozzle.data.provider.IPubkeyProvider
 import com.dluvian.nozzle.data.room.dao.ContactDao
 import com.dluvian.nozzle.data.room.dao.EventRelayDao
 import com.dluvian.nozzle.data.room.dao.PostDao
+import com.dluvian.nozzle.data.room.dao.ProfileDao
 import com.dluvian.nozzle.data.room.helper.extended.PostEntityExtended
 import com.dluvian.nozzle.data.utils.LONG_DEBOUNCE
 import com.dluvian.nozzle.data.utils.NORMAL_DEBOUNCE
@@ -24,15 +24,16 @@ import kotlinx.coroutines.flow.flow
 class PostWithMetaProvider(
     private val pubkeyProvider: IPubkeyProvider,
     private val contactListProvider: IContactListProvider,
-    private val annotatedBuilder: IAnnotatedContentBuilder,
-    private val annotatedExtractor: IAnnotatedContentExtractor,
+    private val annotatedContentHandler: IAnnotatedContentHandler,
     private val postDao: PostDao,
     private val eventRelayDao: EventRelayDao,
     private val contactDao: ContactDao,
+    private val profileDao: ProfileDao,
 ) : IPostWithMetaProvider {
     override suspend fun getPostsWithMetaFlow(
         postIds: Collection<String>,
         authorPubkeys: Collection<String>,
+        mentionedPubkeys: Collection<String>,
     ): Flow<List<PostWithMeta>> {
         if (postIds.isEmpty()) return flow { emit(emptyList()) }
 
@@ -58,11 +59,15 @@ class PostWithMetaProvider(
             )
             .firstThenDistinctDebounce(NORMAL_DEBOUNCE)
 
+        val mentionedNamesFlow = profileDao.getPubkeyToNameMapFlow(pubkeys = mentionedPubkeys)
+            .firstThenDistinctDebounce(NORMAL_DEBOUNCE)
+
         return getFinalFlow(
             extendedPostsFlow = extendedPostsFlow,
             contactPubkeysFlow = contactPubkeysFlow,
             relaysFlow = relaysFlow,
             trustScorePerPubkeyFlow = trustScorePerPubkeyFlow,
+            mentionedNamesFlow = mentionedNamesFlow,
         ).distinctUntilChanged()
     }
 
@@ -71,21 +76,27 @@ class PostWithMetaProvider(
         contactPubkeysFlow: Flow<List<String>>,
         relaysFlow: Flow<Map<String, List<String>>>,
         trustScorePerPubkeyFlow: Flow<Map<String, Float>>,
+        mentionedNamesFlow: Flow<Map<String, String>>
     ): Flow<List<PostWithMeta>> {
         return combine(
             extendedPostsFlow,
             contactPubkeysFlow,
             relaysFlow,
             trustScorePerPubkeyFlow,
-        ) { extended, contacts, relays, trustScore ->
+            mentionedNamesFlow
+        ) { extended, contacts, relays, trustScore, mentionedNames ->
             extended.map {
                 val pubkey = it.postEntity.pubkey
                 val isOneself = pubkeyProvider.isOneself(pubkey)
-                val annotatedContent = annotatedBuilder.annotateContent(it.postEntity.content)
+                val annotatedContent = annotatedContentHandler.annotateContent(
+                    content = it.postEntity.content,
+                    mentionedPubkeyToName = mentionedNames
+                )
                 PostWithMeta(
                     entity = it.postEntity,
                     pubkey = pubkey,
-                    name = it.name.orEmpty().ifEmpty { getShortenedNpubFromPubkey(pubkey) },
+                    name = it.name.orEmpty()
+                        .ifEmpty { getShortenedNpubFromPubkey(pubkey).orEmpty() },
                     pictureUrl = it.pictureUrl.orEmpty(),
                     replyToPubkey = it.replyToPubkey,
                     replyToName = getReplyToName(it),
@@ -96,9 +107,8 @@ class PostWithMetaProvider(
                     isFollowedByMe = if (isOneself) false else contacts.contains(pubkey),
                     trustScore = if (isOneself) null else trustScore[pubkey],
                     annotatedContent = annotatedContent,
-                    mediaUrls = annotatedExtractor.extractMediaLinks(annotatedContent),
-                    // TODO: Get Mentioned from db
-                    mentionedPosts = annotatedExtractor.extractNevents(annotatedContent)
+                    mediaUrls = annotatedContentHandler.extractMediaLinks(annotatedContent),
+                    mentionedPosts = annotatedContentHandler.extractNevents(annotatedContent)
                         .map { nevent ->
                             MentionedPost(
                                 id = nevent.eventId,

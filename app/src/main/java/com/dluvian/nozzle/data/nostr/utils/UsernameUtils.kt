@@ -1,6 +1,6 @@
-package com.dluvian.nozzle.data.utils
+package com.dluvian.nozzle.data.nostr.utils
 
-object NostrUtils {
+object UsernameUtils {
     private val usernamePattern by lazy { Regex("\\w[\\w\\-]+\\w") }
 
     fun isValidUsername(username: String): Boolean {

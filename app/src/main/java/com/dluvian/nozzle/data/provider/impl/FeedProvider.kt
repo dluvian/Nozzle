@@ -2,11 +2,13 @@ package com.dluvian.nozzle.data.provider.impl
 
 import android.util.Log
 import com.dluvian.nozzle.data.nostr.INostrSubscriber
+import com.dluvian.nozzle.data.nostr.utils.IdExtractorUtils.extractNeventsAndNoteIds
+import com.dluvian.nozzle.data.nostr.utils.IdExtractorUtils.extractNprofilesAndNpubs
 import com.dluvian.nozzle.data.provider.IContactListProvider
 import com.dluvian.nozzle.data.provider.IFeedProvider
 import com.dluvian.nozzle.data.provider.IPostWithMetaProvider
 import com.dluvian.nozzle.data.room.dao.PostDao
-import com.dluvian.nozzle.data.room.helper.IdAndPubkey
+import com.dluvian.nozzle.data.room.helper.BasePost
 import com.dluvian.nozzle.data.utils.getCurrentTimeInSeconds
 import com.dluvian.nozzle.model.AllRelays
 import com.dluvian.nozzle.model.AuthorSelection
@@ -51,7 +53,7 @@ class FeedProvider(
         // TODO: Use channel
         waitForSubscription?.let { delay(it) }
 
-        val idsAndPubkeys = listIdsAndAuthorPubkeys(
+        val basePosts = listBasePosts(
             isPosts = feedSettings.isPosts,
             isReplies = feedSettings.isReplies,
             authorPubkeys = authorSelectionPubkeys,
@@ -61,16 +63,31 @@ class FeedProvider(
         )
 
         // TODO: Don't resub all the time
-        val foundAuthorPubkeys = idsAndPubkeys.map { it.pubkey }.distinct()
+        val foundAuthorPubkeys = basePosts.map { it.pubkey }.distinct()
         nostrSubscriber.subscribeProfiles(
             pubkeys = foundAuthorPubkeys,
             relays = feedSettings.relaySelection.getSelectedRelays()
         )
         // TODO: Subscribe replies in read relays
 
+        val contents = basePosts.map { it.content }
+        val mentionedNprofiles = extractNprofilesAndNpubs(contents = contents)
+        mentionedNprofiles.forEach {
+            nostrSubscriber.subscribeProfile(
+                pubkey = it.pubkey,
+                relays = it.relays.ifEmpty { feedSettings.relaySelection.getSelectedRelays() }
+            )
+        }
+        extractNeventsAndNoteIds(contents = contents).forEach {
+            nostrSubscriber.subscribePost(
+                postId = it.eventId,
+                relays = it.relays.ifEmpty { feedSettings.relaySelection.getSelectedRelays() })
+        }
+
         return postWithMetaProvider.getPostsWithMetaFlow(
-            postIds = idsAndPubkeys.map { it.id }.distinct(),
-            authorPubkeys = foundAuthorPubkeys
+            postIds = basePosts.map { it.id }.distinct(),
+            authorPubkeys = foundAuthorPubkeys,
+            mentionedPubkeys = mentionedNprofiles.map { it.pubkey }
         )
     }
 
@@ -111,7 +128,7 @@ class FeedProvider(
                         // We ignore authorPubkeys because relaySelection should contain them
                         if (pubkeys.isNotEmpty()) {
                             nostrSubscriber.subscribeToFeedPosts(
-                                authorPubkeys = pubkeys,
+                                authorPubkeys = pubkeys.toList(),
                                 limit = adjustedLimit,
                                 until = until,
                                 relays = listOf(relay)
@@ -133,19 +150,19 @@ class FeedProvider(
         }
     }
 
-    private suspend fun listIdsAndAuthorPubkeys(
+    private suspend fun listBasePosts(
         isPosts: Boolean,
         isReplies: Boolean,
         authorPubkeys: List<String>?,
         relays: Collection<String>?,
         until: Long,
         limit: Int,
-    ): List<IdAndPubkey> {
+    ): List<BasePost> {
         if (!isPosts && !isReplies) return emptyList()
 
         return if (authorPubkeys == null && relays == null) {
             Log.d(TAG, "Get global feed")
-            postDao.getGlobalFeedIds(
+            postDao.getGlobalFeedBasePosts(
                 isPosts = isPosts,
                 isReplies = isReplies,
                 until = until,
@@ -154,7 +171,7 @@ class FeedProvider(
         } else if (authorPubkeys == null && relays != null) {
             Log.d(TAG, "Get global feed by ${relays.size} relays $relays")
             if (relays.isEmpty()) emptyList()
-            else postDao.getGlobalFeedIdsByRelays(
+            else postDao.getGlobalFeedBasePostsByRelays(
                 isPosts = isPosts,
                 isReplies = isReplies,
                 relays = relays,
@@ -164,7 +181,7 @@ class FeedProvider(
         } else if (authorPubkeys != null && relays == null) {
             Log.d(TAG, "Get ${authorPubkeys.size} authored feed")
             if (authorPubkeys.isEmpty()) emptyList()
-            else postDao.getAuthoredFeedIds(
+            else postDao.getAuthoredFeedBasePosts(
                 isPosts = isPosts,
                 isReplies = isReplies,
                 authorPubkeys = authorPubkeys,
@@ -174,7 +191,7 @@ class FeedProvider(
         } else if (authorPubkeys != null && relays != null) {
             Log.d(TAG, "Get ${authorPubkeys.size} authored feed by ${relays.size} relays")
             if (authorPubkeys.isEmpty() || relays.isEmpty()) emptyList()
-            else postDao.getAuthoredFeedIdsByRelays(
+            else postDao.getAuthoredFeedBasePostsByRelays(
                 isPosts = isPosts,
                 isReplies = isReplies,
                 authorPubkeys = authorPubkeys,

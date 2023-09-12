@@ -45,7 +45,8 @@ fun PostScreen(
                     modifier = Modifier
                         .wrapContentHeight()
                         .padding(spacing.screenEdge),
-                    post = quote
+                    post = quote,
+                    onNavigateToId = { /* Do nothing. Stay in PostScreen */ },
                 )
             }
         }

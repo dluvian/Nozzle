@@ -247,7 +247,7 @@ class FeedViewModel(
     private fun subscribeToPersonalProfile() {
         if (lastPubkeyToSubPersonalProfile != personalProfileProvider.getPubkey()) {
             lastPubkeyToSubPersonalProfile = personalProfileProvider.getPubkey()
-            nostrSubscriber.subscribeToProfileMetadataAndContactList(
+            nostrSubscriber.subscribeToProfileAndContactList(
                 pubkeys = listOf(personalProfileProvider.getPubkey()),
                 relays = relayProvider.getWriteRelays(),
             )
