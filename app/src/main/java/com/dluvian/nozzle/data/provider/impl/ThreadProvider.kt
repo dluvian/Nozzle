@@ -65,7 +65,7 @@ class ThreadProvider(
             previousIds = previous.ids,
             replyIds = replies.map { it.id },
             authorPubkeys = replyContextList.map { it.pubkey }.toSet() + previous.pubkeys,
-            mentionedPubkeys = replyContextList.map { it.content }
+            mentionedPubkeys = mentionedNprofiles.map { it.pubkey }
         )
     }
 
