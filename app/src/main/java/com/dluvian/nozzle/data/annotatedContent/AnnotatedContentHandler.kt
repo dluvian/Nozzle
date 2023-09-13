@@ -9,8 +9,8 @@ import androidx.compose.ui.text.UrlAnnotation
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.style.TextDecoration
 import com.dluvian.nozzle.data.nostr.utils.EncodingUtils.nostrUriToNostrId
-import com.dluvian.nozzle.data.nostr.utils.EncodingUtils.note1UriToHex
-import com.dluvian.nozzle.data.nostr.utils.EncodingUtils.readNeventUri
+import com.dluvian.nozzle.data.nostr.utils.EncodingUtils.note1ToHex
+import com.dluvian.nozzle.data.nostr.utils.EncodingUtils.readNevent
 import com.dluvian.nozzle.data.nostr.utils.ShortenedNameUtils.getShortenedNevent
 import com.dluvian.nozzle.data.nostr.utils.ShortenedNameUtils.getShortenedNote1
 import com.dluvian.nozzle.data.nostr.utils.ShortenedNameUtils.getShortenedNprofile
@@ -131,10 +131,10 @@ class AnnotatedContentHandler : IAnnotatedContentHandler {
     override fun extractNevents(annotatedContent: AnnotatedString): List<Nevent> {
         val nevents = annotatedContent
             .getStringAnnotations(tag = NEVENT_TAG, start = 0, end = annotatedContent.length)
-            .mapNotNull { readNeventUri(it.item) }
+            .mapNotNull { readNevent(it.item) }
         val note1s = annotatedContent
             .getStringAnnotations(tag = NOTE1_TAG, start = 0, end = annotatedContent.length)
-            .mapNotNull { note1UriToHex(it.item) }
+            .mapNotNull { note1ToHex(it.item) }
             .map { Nevent(eventId = it, relays = emptyList(), pubkey = null) }
 
         return nevents + note1s
