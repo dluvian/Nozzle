@@ -8,6 +8,7 @@ import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.UrlAnnotation
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.style.TextDecoration
+import com.dluvian.nozzle.data.nostr.utils.EncodingUtils.URI
 import com.dluvian.nozzle.data.nostr.utils.EncodingUtils.nostrUriToNostrId
 import com.dluvian.nozzle.data.nostr.utils.EncodingUtils.note1ToHex
 import com.dluvian.nozzle.data.nostr.utils.EncodingUtils.readNevent
@@ -96,7 +97,7 @@ class AnnotatedContentHandler : IAnnotatedContentHandler {
                     is NoteNostrId -> {
                         pushStringAnnotation(tag = NOTE1_TAG, annotation = nostrId.note1)
                         pushStyle(style = mentionStyle)
-                        val name = "nostr:" + (getShortenedNote1(nostrId.note1) ?: nostrId.note1)
+                        val name = URI + (getShortenedNote1(nostrId.note1) ?: nostrId.note1)
                         append(name)
                         pop()
                         pop()
@@ -105,7 +106,7 @@ class AnnotatedContentHandler : IAnnotatedContentHandler {
                     is NeventNostrId -> {
                         pushStringAnnotation(tag = NEVENT_TAG, annotation = nostrId.nevent)
                         pushStyle(style = mentionStyle)
-                        val name = "nostr:" + (getShortenedNevent(nostrId.nevent) ?: nostrId.nevent)
+                        val name = URI + (getShortenedNevent(nostrId.nevent) ?: nostrId.nevent)
                         append(name)
                         pop()
                         pop()
