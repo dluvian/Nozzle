@@ -83,6 +83,14 @@ object EncodingUtils {
         else null
     }
 
+    fun startsWithNostrPrefix(str: String): Boolean {
+        return str.startsWith(NPUB)
+                || str.startsWith(NPROFILE)
+                || str.startsWith(NOTE)
+                || str.startsWith(NEVENT)
+                || str.startsWith(NSEC)
+    }
+
     fun profileIdToNostrId(profileId: String): NostrId? {
         val npubHex = npubToHex(profileId)
         if (npubHex != null) {

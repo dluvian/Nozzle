@@ -19,6 +19,7 @@ import com.dluvian.nozzle.data.WAIT_TIME
 import com.dluvian.nozzle.data.cache.IClickedMediaUrlCache
 import com.dluvian.nozzle.data.nostr.INostrSubscriber
 import com.dluvian.nozzle.data.nostr.utils.EncodingUtils.profileIdToNostrId
+import com.dluvian.nozzle.data.nostr.utils.EncodingUtils.startsWithNostrPrefix
 import com.dluvian.nozzle.data.postCardInteractor.IPostCardInteractor
 import com.dluvian.nozzle.data.profileFollower.IProfileFollower
 import com.dluvian.nozzle.data.provider.IFeedProvider
@@ -74,12 +75,12 @@ class ProfileViewModel(
     val onSetProfileId: (String?) -> Unit = { profileId ->
         if (!isSettingPubkey.get()) {
             isSettingPubkey.set(true)
-            val nonNullPubkey = if (profileId == null) pubkeyProvider.getPubkey()
-            else profileIdToNostrId(profileId = profileId)?.getHex().let {
-                if (it == null) {
-                    Log.w(TAG, "Failed to resolve $profileId")
-                    pubkeyProvider.getPubkey()
-                } else it
+            val nonNullPubkey = if (profileId == null) {
+                pubkeyProvider.getPubkey()
+            } else if (startsWithNostrPrefix(profileId)) {
+                profileIdToNostrId(profileId = profileId)?.getHex() ?: profileId
+            } else {
+                profileId
             }
 
             if (profileId == null) Log.w(TAG, "Tried to set empty pubkey for UI")

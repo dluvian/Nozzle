@@ -15,7 +15,7 @@ object ShortenedNameUtils {
         return if (!npub.startsWith(EncodingUtils.NPUB + 1) || npub.length < 32) {
             null
         } else {
-            "${npub.take(8)}::${npub.takeLast(4)}"
+            "${npub.take(8)}::${npub.takeLast(6)}"
         }
     }
 
@@ -23,7 +23,7 @@ object ShortenedNameUtils {
         return if (!nprofile.startsWith(EncodingUtils.NPROFILE + 1) || nprofile.length < 32) {
             null
         } else {
-            "${nprofile.take(12)}::${nprofile.takeLast(4)}"
+            "${nprofile.take(8)}::${nprofile.takeLast(6)}"
         }
     }
 
@@ -31,7 +31,7 @@ object ShortenedNameUtils {
         return if (!note1.startsWith(EncodingUtils.NOTE + 1) || note1.length < 32) {
             null
         } else {
-            "${note1.take(8)}::${note1.takeLast(4)}"
+            "${note1.take(4)}::${note1.takeLast(6)}"
         }
     }
 
@@ -39,7 +39,7 @@ object ShortenedNameUtils {
         return if (!nevent.startsWith(EncodingUtils.NEVENT + 1) || nevent.length < 32) {
             null
         } else {
-            "${nevent.take(10)}::${nevent.takeLast(4)}"
+            "${nevent.take(6)}::${nevent.takeLast(6)}"
         }
     }
 }
