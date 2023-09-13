@@ -70,10 +70,12 @@ fun NozzleNavGraph(
             )
         }
         composable(
-            route = NozzleRoute.PROFILE + "/{pubkey}",
-            arguments = listOf(navArgument("pubkey") { type = NavType.StringType })
+            route = NozzleRoute.PROFILE + "/{profileId}",
+            arguments = listOf(navArgument("profileId") { type = NavType.StringType })
         ) { backStackEntry ->
-            vmContainer.profileViewModel.onSetPubkey(backStackEntry.arguments?.getString("pubkey"))
+            vmContainer.profileViewModel.onSetProfileId(
+                backStackEntry.arguments?.getString("profileId")
+            )
             ProfileRoute(
                 profileViewModel = vmContainer.profileViewModel,
                 onPrepareReply = vmContainer.replyViewModel.onPrepareReply,
@@ -109,6 +111,7 @@ fun NozzleNavGraph(
                 onGoBack = navActions.popStack,
             )
         }
+        // TODO: Simplify. No replyToId
         composable(
             route = "${NozzleRoute.THREAD}/{postId}?replyToId={replyToId}",
             arguments = listOf(

@@ -83,22 +83,30 @@ object EncodingUtils {
         else null
     }
 
-    fun nostrStrToNostrId(nostrStr: String): NostrId? {
-        val npubHex = npubToHex(nostrStr)
+    fun profileIdToNostrId(profileId: String): NostrId? {
+        val npubHex = npubToHex(profileId)
         if (npubHex != null) {
-            return NpubNostrId(npub = nostrStr, pubkeyHex = npubHex)
+            return NpubNostrId(npub = profileId, pubkeyHex = npubHex)
         }
-        val nprofile = readNprofile(nostrStr)
+        val nprofile = readNprofile(profileId)
         if (nprofile != null) {
-            return NprofileNostrId(nprofile = nostrStr, pubkeyHex = nprofile.pubkey)
+            return NprofileNostrId(nprofile = profileId, pubkeyHex = nprofile.pubkey)
+        }
+        return null
+    }
+
+    fun nostrStrToNostrId(nostrStr: String): NostrId? {
+        val profileNostrId = profileIdToNostrId(nostrStr)
+        if (profileNostrId != null) {
+            return profileNostrId
         }
         val note1Hex = note1ToHex(nostrStr)
         if (note1Hex != null) {
-            return NoteNostrId(note1 = nostrStr)
+            return NoteNostrId(note1 = nostrStr, noteIdHex = note1Hex)
         }
         val nevent = readNevent(nostrStr)
         if (nevent != null) {
-            return NeventNostrId(nevent = nostrStr)
+            return NeventNostrId(nevent = nostrStr, noteIdHex = nevent.eventId)
         }
         return null
     }
