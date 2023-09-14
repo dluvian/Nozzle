@@ -82,13 +82,14 @@ class PostWithMetaProvider(
         val mentionedNamesFlow = profileDao.getPubkeyToNameMapFlow(pubkeys = mentionedPubkeys)
             .firstThenDistinctDebounce(NORMAL_DEBOUNCE)
 
-        val mentionedPostsFlow = postDao.getMentionedPostsMapFlow(postIds = mentionedPostIds)
+        val mentionedPostsFlow = postDao
+            .getNullableMentionedPostsMapFlow(postIds = mentionedPostIds)
             .firstThenDistinctDebounce(NORMAL_DEBOUNCE)
 
         return combine(mentionedNamesFlow, mentionedPostsFlow) { names, posts ->
             MentionedNamesAndPosts(
                 mentionedPubkeyToNameMap = names,
-                mentionedPostIdToPostMap = posts
+                mentionedPostIdToPostMap = posts.mapValues { entry -> entry.value.toMentionedPost() }
             )
         }
     }
