@@ -93,7 +93,6 @@ interface PostDao {
         limit: Int,
     ): List<BasePost>
 
-
     @Query(
         "SELECT post.replyToId, post.pubkey " +
                 "FROM post " +

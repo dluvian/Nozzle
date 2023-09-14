@@ -23,10 +23,12 @@ fun PostCardContentBase(
     replyToName?.let { ReplyingTo(name = it, replyRelayHint = replyRelayHint) }
     relays?.let { InRelays(relays = it) }
     Spacer(Modifier.height(spacing.medium))
-    AnnotatedText(
-        text = annotatedContent,
-        maxLines = if (isCurrent) null else 12,
-        onClickNonLink = onNavigateToThread,
-        onNavigateToId = onNavigateToId,
-    )
+    if (annotatedContent.text.isNotBlank()) {
+        AnnotatedText(
+            text = annotatedContent,
+            maxLines = if (isCurrent) null else 12,
+            onClickNonLink = onNavigateToThread,
+            onNavigateToId = onNavigateToId,
+        )
+    }
 }
