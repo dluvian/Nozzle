@@ -59,7 +59,10 @@ object EncodingUtils {
 
     fun readNevent(nevent: String): Nevent? {
         if (!nevent.startsWith(NEVENT + 1)) return null
-        val tlvResult = TLVUtils.readTLVEntries(Bech32.decodeBytes(nevent).second)
+        val tlvEntries = runCatching { Bech32.decodeBytes(nevent).second }
+            .getOrNull()
+            ?: return null
+        val tlvResult = TLVUtils.readTLVEntries(tlvEntries)
         if (tlvResult.isFailure) return null
 
         return Nevent.fromTLVEntries(tlvResult.getOrNull().orEmpty())
@@ -72,7 +75,10 @@ object EncodingUtils {
 
     fun readNprofile(nprofile: String): Nprofile? {
         if (!nprofile.startsWith(NPROFILE + 1)) return null
-        val tlvResult = TLVUtils.readTLVEntries(Bech32.decodeBytes(nprofile).second)
+        val tlvEntries = runCatching { Bech32.decodeBytes(nprofile).second }
+            .getOrNull()
+            ?: return null
+        val tlvResult = TLVUtils.readTLVEntries(tlvEntries)
         if (tlvResult.isFailure) return null
 
         return Nprofile.fromTLVEntries(tlvResult.getOrNull().orEmpty())
@@ -83,14 +89,6 @@ object EncodingUtils {
         else null
     }
 
-    fun startsWithNostrPrefix(str: String): Boolean {
-        return str.startsWith(NPUB)
-                || str.startsWith(NPROFILE)
-                || str.startsWith(NOTE)
-                || str.startsWith(NEVENT)
-                || str.startsWith(NSEC)
-    }
-
     fun profileIdToNostrId(profileId: String): NostrId? {
         val npubHex = npubToHex(profileId)
         if (npubHex != null) {
@@ -98,7 +96,27 @@ object EncodingUtils {
         }
         val nprofile = readNprofile(profileId)
         if (nprofile != null) {
-            return NprofileNostrId(nprofile = profileId, pubkeyHex = nprofile.pubkey)
+            return NprofileNostrId(
+                nprofile = profileId,
+                pubkeyHex = nprofile.pubkey,
+                relays = nprofile.relays
+            )
+        }
+        return null
+    }
+
+    fun postIdToNostrId(postId: String): NostrId? {
+        val note1Hex = note1ToHex(postId)
+        if (note1Hex != null) {
+            return NoteNostrId(note1 = postId, noteIdHex = note1Hex)
+        }
+        val nevent = readNevent(postId)
+        if (nevent != null) {
+            return NeventNostrId(
+                nevent = postId,
+                noteIdHex = nevent.eventId,
+                relays = nevent.relays
+            )
         }
         return null
     }
@@ -108,13 +126,9 @@ object EncodingUtils {
         if (profileNostrId != null) {
             return profileNostrId
         }
-        val note1Hex = note1ToHex(nostrStr)
-        if (note1Hex != null) {
-            return NoteNostrId(note1 = nostrStr, noteIdHex = note1Hex)
-        }
-        val nevent = readNevent(nostrStr)
-        if (nevent != null) {
-            return NeventNostrId(nevent = nostrStr, noteIdHex = nevent.eventId)
+        val postNostrId = postIdToNostrId(nostrStr)
+        if (postNostrId != null) {
+            return postNostrId
         }
         return null
     }
