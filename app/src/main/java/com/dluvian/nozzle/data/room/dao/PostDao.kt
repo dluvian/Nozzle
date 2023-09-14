@@ -6,7 +6,7 @@ import com.dluvian.nozzle.data.room.helper.BasePost
 import com.dluvian.nozzle.data.room.helper.ReplyContext
 import com.dluvian.nozzle.data.room.helper.ReplyToIdAndPubkey
 import com.dluvian.nozzle.data.room.helper.extended.PostEntityExtended
-import com.dluvian.nozzle.model.NullableMentionedPost
+import com.dluvian.nozzle.model.MentionedPost
 import kotlinx.coroutines.flow.Flow
 
 
@@ -158,7 +158,7 @@ interface PostDao {
                 "LEFT JOIN profile ON post.pubkey = profile.pubkey " +
                 "WHERE id IN (:postIds) "
     )
-    fun getNullableMentionedPostsMapFlow(postIds: Collection<String>): Flow<Map<String, NullableMentionedPost>>
+    fun getMentionedPostsMapFlow(postIds: Collection<String>): Flow<Map<String, MentionedPost>>
 
     @Query(
         "SELECT id, post.pubkey, content, name, picture, post.createdAt " +
@@ -166,7 +166,7 @@ interface PostDao {
                 "LEFT JOIN profile ON post.pubkey = profile.pubkey " +
                 "WHERE id = :postId"
     )
-    suspend fun getNullableMentionedPost(postId: String): NullableMentionedPost?
+    suspend fun getMentionedPost(postId: String): MentionedPost?
 
 
     @Query(

@@ -17,7 +17,6 @@ import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.res.stringResource
 import com.dluvian.nozzle.R
-import com.dluvian.nozzle.model.PostIds
 import com.dluvian.nozzle.model.PostThread
 import com.dluvian.nozzle.model.PostWithMeta
 import com.dluvian.nozzle.model.ThreadPosition
@@ -35,7 +34,7 @@ fun ThreadScreen(
     onPrepareReply: (PostWithMeta) -> Unit,
     onLike: (PostWithMeta) -> Unit,
     onRefreshThreadView: () -> Unit,
-    onOpenThread: (PostIds) -> Unit,
+    onOpenThread: (String) -> Unit,
     onShowMedia: (String) -> Unit,
     onShouldShowMedia: (String) -> Boolean,
     onGoBack: () -> Unit,
@@ -73,7 +72,7 @@ private fun ThreadedPosts(
     onRefresh: () -> Unit,
     onLike: (PostWithMeta) -> Unit,
     onNavigateToProfile: (String) -> Unit,
-    onOpenThread: (PostIds) -> Unit,
+    onOpenThread: (String) -> Unit,
     onShowMedia: (String) -> Unit,
     onShouldShowMedia: (String) -> Boolean,
     onNavigateToReply: () -> Unit,

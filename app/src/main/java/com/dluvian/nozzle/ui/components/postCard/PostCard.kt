@@ -24,7 +24,6 @@ import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.style.TextAlign
 import com.dluvian.nozzle.R
 import com.dluvian.nozzle.data.nostr.utils.EncodingUtils.hexToNote1
-import com.dluvian.nozzle.model.PostIds
 import com.dluvian.nozzle.model.PostWithMeta
 import com.dluvian.nozzle.model.ThreadPosition
 import com.dluvian.nozzle.model.TrustType
@@ -46,7 +45,7 @@ fun PostCard(
     onLike: () -> Unit,
     onPrepareReply: (PostWithMeta) -> Unit,
     modifier: Modifier = Modifier,
-    onNavigateToThread: (PostIds) -> Unit,
+    onNavigateToThread: (String) -> Unit,
     onNavigateToReply: () -> Unit,
     onNavigateToQuote: (String) -> Unit,
     onNavigateToId: (String) -> Unit,
@@ -63,8 +62,9 @@ fun PostCard(
     val clipboard = LocalClipboardManager.current
     val context = LocalContext.current
     Row(modifier
-        .combinedClickable(enabled = !isCurrent,
-            onClick = { onNavigateToThread(post.getPostIds()) },
+        .combinedClickable(
+            enabled = !isCurrent,
+            onClick = { onNavigateToThread(post.entity.id) },
             onLongClick = {
                 clipboard.setText(AnnotatedString(hexToNote1(post.entity.id)))
                 Toast
@@ -143,7 +143,7 @@ fun PostCard(
                 onOpenProfile = onOpenProfile,
                 onNavigateToThread = {
                     if (!isCurrent) {
-                        onNavigateToThread(post.getPostIds())
+                        onNavigateToThread(post.entity.id)
                     }
                 },
                 onNavigateToId = onNavigateToId,

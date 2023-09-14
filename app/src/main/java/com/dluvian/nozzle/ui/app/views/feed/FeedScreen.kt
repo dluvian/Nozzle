@@ -29,7 +29,6 @@ import androidx.compose.ui.text.style.TextOverflow
 import com.dluvian.nozzle.model.Everyone
 import com.dluvian.nozzle.model.FeedSettings
 import com.dluvian.nozzle.model.Oneself
-import com.dluvian.nozzle.model.PostIds
 import com.dluvian.nozzle.model.PostWithMeta
 import com.dluvian.nozzle.model.RelayActive
 import com.dluvian.nozzle.model.UserSpecific
@@ -63,7 +62,7 @@ fun FeedScreen(
     onToggleAutopilot: () -> Unit,
     onLoadMore: () -> Unit,
     onOpenDrawer: () -> Unit,
-    onNavigateToThread: (PostIds) -> Unit,
+    onNavigateToThread: (String) -> Unit,
     onNavigateToProfile: (String) -> Unit,
     onNavigateToReply: () -> Unit,
     onNavigateToPost: () -> Unit,

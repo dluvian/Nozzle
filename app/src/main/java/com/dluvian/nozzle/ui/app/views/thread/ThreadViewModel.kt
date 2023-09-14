@@ -11,7 +11,6 @@ import com.dluvian.nozzle.data.postCardInteractor.IPostCardInteractor
 import com.dluvian.nozzle.data.provider.IRelayProvider
 import com.dluvian.nozzle.data.provider.IThreadProvider
 import com.dluvian.nozzle.data.utils.*
-import com.dluvian.nozzle.model.PostIds
 import com.dluvian.nozzle.model.PostThread
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -39,7 +38,7 @@ class ThreadViewModel(
             isRefreshingFlow.value
         )
 
-    private var currentPostIds = PostIds(id = "", replyToId = null)
+    private var currentPostId = ""
 
     init {
         Log.i(TAG, "Initialize ThreadViewModel")
@@ -48,15 +47,15 @@ class ThreadViewModel(
     // TODO: Why is this called multiple times?
     // TODO: Prevent redundant subscriptions
     private val isSettingThread = AtomicBoolean(false)
-    val onOpenThread: (PostIds) -> Unit = { postIds ->
-        if (!isSettingThread.get() && postIds.id != threadState.value.current?.entity?.id) {
+    val onOpenThread: (String) -> Unit = { postId ->
+        if (!isSettingThread.get() && postId != threadState.value.current?.entity?.id) {
             isSettingThread.set(true)
             isRefreshingFlow.update { true }
-            Log.i(TAG, "Open thread of post ${postIds.id}")
+            Log.i(TAG, "Open thread of post $postId")
             threadState = MutableStateFlow(PostThread.createEmpty())
-            currentPostIds = postIds
+            currentPostId = postId
             viewModelScope.launch(context = Dispatchers.IO) {
-                updateScreen(postIds = postIds)
+                updateScreen(postId = postId)
                 isRefreshingFlow.update { false }
                 delay(WAIT_TIME)
                 isSettingThread.set(false)
@@ -71,7 +70,7 @@ class ThreadViewModel(
             Log.i(TAG, "Refresh thread view")
             isRefreshingFlow.update { true }
             updateScreen(
-                postIds = currentPostIds,
+                postId = currentPostId,
                 waitForSubscription = WAIT_TIME,
                 initValue = threadState.value
             )
@@ -83,14 +82,13 @@ class ThreadViewModel(
     }
 
     private suspend fun updateScreen(
-        postIds: PostIds,
+        postId: String,
         waitForSubscription: Long? = null,
         initValue: PostThread = PostThread.createEmpty()
     ) {
-        Log.i(TAG, "Set new thread of post ${postIds.id}")
+        Log.i(TAG, "Set new thread of post $postId")
         threadState = threadProvider.getThreadFlow(
-            currentPostId = postIds.id,
-            replyToId = postIds.replyToId,
+            currentPostId = postId,
             waitForSubscription = waitForSubscription,
             relays = relayProvider.getPostRelays(posts = initValue.getList())
         )
@@ -103,7 +101,7 @@ class ThreadViewModel(
 
     private fun updateCurrentPostIds(thread: PostThread) {
         thread.current?.let {
-            currentPostIds = PostIds(id = it.entity.id, replyToId = it.entity.replyToId)
+            currentPostId = it.entity.id
         }
     }
 

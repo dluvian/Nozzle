@@ -14,7 +14,7 @@ fun FeedRoute(
     onPreparePost: () -> Unit,
     onOpenDrawer: () -> Unit,
     onNavigateToProfile: (String) -> Unit,
-    onNavigateToThread: (String, String?) -> Unit,
+    onNavigateToThread: (String) -> Unit,
     onNavigateToReply: () -> Unit,
     onNavigateToPost: () -> Unit,
     onNavigateToQuote: (String) -> Unit,
@@ -53,12 +53,7 @@ fun FeedRoute(
         onLoadMore = feedViewModel.onLoadMore,
         onOpenDrawer = onOpenDrawer,
         onNavigateToProfile = onNavigateToProfile,
-        onNavigateToThread = { postIds ->
-            onNavigateToThread(
-                postIds.id,
-                postIds.replyToId,
-            )
-        },
+        onNavigateToThread = onNavigateToThread,
         onNavigateToReply = onNavigateToReply,
         onNavigateToPost = onNavigateToPost,
         onNavigateToQuote = onNavigateToQuote,

@@ -26,7 +26,6 @@ import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.style.TextOverflow
 import com.dluvian.nozzle.R
 import com.dluvian.nozzle.data.nostr.utils.ShortenedNameUtils.getShortenedNpubFromPubkey
-import com.dluvian.nozzle.model.PostIds
 import com.dluvian.nozzle.model.PostWithMeta
 import com.dluvian.nozzle.model.ProfileWithMeta
 import com.dluvian.nozzle.model.TrustType
@@ -58,7 +57,7 @@ fun ProfileScreen(
     onRefreshProfileView: () -> Unit,
     onCopyNpub: () -> Unit,
     onLoadMore: () -> Unit,
-    onNavigateToThread: (PostIds) -> Unit,
+    onNavigateToThread: (String) -> Unit,
     onNavigateToReply: () -> Unit,
     onNavigateToQuote: (String) -> Unit,
     onNavigateToEditProfile: () -> Unit,

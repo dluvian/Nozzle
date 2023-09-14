@@ -10,7 +10,7 @@ import com.dluvian.nozzle.model.PostWithMeta
 fun ProfileRoute(
     profileViewModel: ProfileViewModel,
     onPrepareReply: (PostWithMeta) -> Unit,
-    onNavigateToThread: (String, String?) -> Unit,
+    onNavigateToThread: (String) -> Unit,
     onNavigateToReply: () -> Unit,
     onNavigateToQuote: (String) -> Unit,
     onNavigateToEditProfile: () -> Unit,
@@ -43,12 +43,7 @@ fun ProfileRoute(
         onRefreshProfileView = profileViewModel.onRefreshProfileView,
         onCopyNpub = profileViewModel.onCopyNpub,
         onLoadMore = profileViewModel.onLoadMore,
-        onNavigateToThread = { postIds ->
-            onNavigateToThread(
-                postIds.id,
-                postIds.replyToId,
-            )
-        },
+        onNavigateToThread = onNavigateToThread,
         onNavigateToReply = onNavigateToReply,
         onNavigateToEditProfile = onNavigateToEditProfile,
         onNavigateToQuote = onNavigateToQuote,

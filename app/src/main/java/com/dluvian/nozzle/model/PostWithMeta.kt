@@ -19,8 +19,4 @@ data class PostWithMeta(
     val trustScore: Float?,
     val numOfReplies: Int,
     val relays: List<String>,
-) {
-    fun getPostIds(): PostIds {
-        return PostIds(id = entity.id, replyToId = entity.replyToId)
-    }
-}
+)

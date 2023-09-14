@@ -70,8 +70,8 @@ class PostViewModel(
             isPreparing.set(true)
             viewModelState.update { it.copy(postToQuote = null) }
             viewModelScope.launch(context = Dispatchers.IO) {
-                val postToQuote = postDao.getNullableMentionedPost(postId = postIdToQuote)
-                preparePost(postToQuote = postToQuote?.toMentionedPost())
+                val postToQuote = postDao.getMentionedPost(postId = postIdToQuote)
+                preparePost(postToQuote = postToQuote)
             }.invokeOnCompletion { isPreparing.set(false) }
         }
     }

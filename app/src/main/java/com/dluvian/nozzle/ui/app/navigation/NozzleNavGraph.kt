@@ -13,9 +13,9 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import androidx.navigation.navDeepLink
+import com.dluvian.nozzle.data.nostr.utils.EncodingUtils.URI
 import com.dluvian.nozzle.data.nostr.utils.EncodingUtils.note1ToHex
 import com.dluvian.nozzle.data.nostr.utils.EncodingUtils.npubToHex
-import com.dluvian.nozzle.model.PostIds
 import com.dluvian.nozzle.ui.app.VMContainer
 import com.dluvian.nozzle.ui.app.views.editProfile.EditProfileRoute
 import com.dluvian.nozzle.ui.app.views.feed.FeedRoute
@@ -28,9 +28,7 @@ import com.dluvian.nozzle.ui.app.views.thread.ThreadRoute
 import kotlinx.coroutines.launch
 
 private const val TAG = "NozzleNavGraph"
-private const val URI = "nostr:"
 
-// TODO: Figure out transitions
 
 @Composable
 fun NozzleNavGraph(
@@ -111,19 +109,14 @@ fun NozzleNavGraph(
                 onGoBack = navActions.popStack,
             )
         }
-        // TODO: Simplify. No replyToId
         composable(
-            route = "${NozzleRoute.THREAD}/{postId}?replyToId={replyToId}",
+            route = "${NozzleRoute.THREAD}/{postId}",
             arguments = listOf(
                 navArgument("postId") { type = NavType.StringType },
-                navArgument("replyToId") { type = NavType.StringType },
             )
         ) { backStackEntry ->
             vmContainer.threadViewModel.onOpenThread(
-                PostIds(
-                    id = backStackEntry.arguments?.getString("postId").orEmpty(),
-                    replyToId = backStackEntry.arguments?.getString("replyToId"),
-                )
+                backStackEntry.arguments?.getString("postId").orEmpty()
             )
             ThreadRoute(
                 threadViewModel = vmContainer.threadViewModel,
@@ -173,7 +166,7 @@ fun NozzleNavGraph(
                 }
             } else if (nip21?.startsWith("note1") == true) {
                 val hex = note1ToHex(nip21)
-                if (hex != null) navActions.navigateToThread(hex, null)
+                if (hex != null) navActions.navigateToThread(hex)
                 else {
                     Log.i(TAG, "note1 $nip21 is invalid")
                     navActions.navigateToFeed()

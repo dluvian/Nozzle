@@ -17,7 +17,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.AnnotatedString
 import com.dluvian.nozzle.model.MentionedPost
 import com.dluvian.nozzle.model.Oneself
-import com.dluvian.nozzle.model.PostIds
 import com.dluvian.nozzle.ui.components.postCard.atoms.BorderedCard
 import com.dluvian.nozzle.ui.components.postCard.atoms.PostCardContentBase
 import com.dluvian.nozzle.ui.components.postCard.atoms.PostCardHeader
@@ -32,13 +31,13 @@ fun MentionedPostCard(
     modifier: Modifier = Modifier,
     onNavigateToId: (String) -> Unit,
     onOpenProfile: ((String) -> Unit)? = null,
-    onNavigateToThread: ((PostIds) -> Unit)? = null,
+    onNavigateToThread: ((String) -> Unit)? = null,
 ) {
     Box(modifier = modifier) {
         BorderedCard(
             modifier = Modifier
                 .fillMaxWidth()
-                .clickable { onNavigateToThread?.let { it(post.toPostIds()) } }
+                .clickable { onNavigateToThread?.let { it(post.id) } }
         ) {
             Column(modifier = Modifier.padding(spacing.large)) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
@@ -46,14 +45,14 @@ fun MentionedPostCard(
                         modifier = Modifier
                             .size(sizing.smallProfilePicture)
                             .clip(CircleShape),
-                        pictureUrl = post.picture,
+                        pictureUrl = post.picture.orEmpty(),
                         pubkey = post.pubkey,
                         trustType = Oneself, // TODO: Find correct trust type
                         onOpenProfile = onOpenProfile,
                     )
                     Spacer(modifier = Modifier.width(spacing.medium))
                     PostCardHeader(
-                        name = post.name,
+                        name = post.name.orEmpty(),
                         pubkey = post.pubkey,
                         createdAt = post.createdAt,
                         onOpenProfile = onOpenProfile
@@ -65,7 +64,7 @@ fun MentionedPostCard(
                     relays = null,
                     annotatedContent = AnnotatedString(post.content), // TODO: Annotate this
                     isCurrent = false,
-                    onNavigateToThread = { onNavigateToThread?.let { it(post.toPostIds()) } },
+                    onNavigateToThread = { onNavigateToThread?.let { it(post.id) } },
                     onNavigateToId = onNavigateToId,
                 )
             }

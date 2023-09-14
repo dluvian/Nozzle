@@ -31,7 +31,6 @@ interface INostrSubscriber {
 
     fun subscribeThread(
         currentPostId: String,
-        replyToId: String? = null,
         relays: Collection<String>? = null,
     ): List<String>
 

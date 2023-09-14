@@ -27,13 +27,11 @@ class ThreadProvider(
 ) : IThreadProvider {
     override suspend fun getThreadFlow(
         currentPostId: String,
-        replyToId: String?,
         relays: List<String>?,
         waitForSubscription: Long?
     ): Flow<PostThread> {
         renewThreadSubscription(
             currentPostId = currentPostId,
-            replyToId = replyToId,
             relays = relays
         )
         // TODO: Use a channel
@@ -74,13 +72,11 @@ class ThreadProvider(
 
     private fun renewThreadSubscription(
         currentPostId: String,
-        replyToId: String?,
         relays: List<String>?
     ) {
         nostrSubscriber.unsubscribeThread()
         nostrSubscriber.subscribeThread(
             currentPostId = currentPostId,
-            replyToId = replyToId,
             relays = relays
         )
     }

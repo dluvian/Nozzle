@@ -34,7 +34,7 @@ class SearchViewModel : ViewModel() {
     }
 
     // TODO: This sucks
-    val onValidateAndNavigateToDestination: ((String) -> Unit, (String, String?) -> Unit) -> Unit =
+    val onValidateAndNavigateToDestination: ((String) -> Unit, (String) -> Unit) -> Unit =
         { onNavigateToProfile, onNavigateToThread ->
             uiState.value.input.let { input ->
                 val trimmed = input.trim()
@@ -44,7 +44,7 @@ class SearchViewModel : ViewModel() {
                     else setUIInvalid()
                 } else if (trimmed.startsWith("note1")) {
                     val hex = note1ToHex(trimmed)
-                    if (hex != null) onNavigateToThread(hex, null)
+                    if (hex != null) onNavigateToThread(hex)
                     else setUIInvalid()
                 } else {
                     setUIInvalid()

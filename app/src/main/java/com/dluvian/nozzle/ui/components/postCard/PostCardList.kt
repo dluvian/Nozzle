@@ -7,7 +7,6 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import com.dluvian.nozzle.model.PostIds
 import com.dluvian.nozzle.model.PostWithMeta
 import com.dluvian.nozzle.ui.components.PullRefreshBox
 
@@ -21,7 +20,7 @@ fun PostCardList(
     onShouldShowMedia: (String) -> Boolean,
     onPrepareReply: (PostWithMeta) -> Unit,
     onLoadMore: () -> Unit,
-    onNavigateToThread: (PostIds) -> Unit,
+    onNavigateToThread: (String) -> Unit,
     onNavigateToReply: () -> Unit,
     onNavigateToQuote: (String) -> Unit,
     onNavigateToId: (String) -> Unit,

@@ -44,9 +44,8 @@ class NozzleNavActions(private val navController: NavHostController) {
         }
     }
 
-    val navigateToThread: (String, String?) -> Unit = { postId, replyToId ->
-        val path = "${NozzleRoute.THREAD}/$postId?replyToId=${replyToId.orEmpty()}"
-        navController.navigate(path) {
+    val navigateToThread: (String) -> Unit = { postId ->
+        navController.navigate("${NozzleRoute.THREAD}/$postId") {
             setSimpleNavOptions(optionsBuilder = this)
         }
     }
