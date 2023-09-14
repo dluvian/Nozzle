@@ -6,7 +6,7 @@ import com.dluvian.nozzle.data.room.AppDatabase
 import com.dluvian.nozzle.data.room.entity.Nip65Entity
 import com.dluvian.nozzle.data.room.entity.PostEntity
 import com.dluvian.nozzle.data.room.entity.ProfileEntity
-import com.dluvian.nozzle.data.utils.UrlUtils
+import com.dluvian.nozzle.data.utils.UrlUtils.removeTrailingSlashes
 import com.dluvian.nozzle.model.nostr.Event
 import com.dluvian.nozzle.model.nostr.Metadata
 import com.dluvian.nozzle.model.nostr.Tag
@@ -52,7 +52,10 @@ class EventProcessor(
 
     private fun processPost(event: Event, relayUrl: String?) {
         if (!verify(event)) return
-        insertEventRelay(eventId = event.id, relayUrl = relayUrl?.let { UrlUtils.cleanUrl(it) })
+        insertEventRelay(
+            eventId = event.id,
+            relayUrl = relayUrl?.removeTrailingSlashes()
+        )
 
         val wasNew = dbSweepExcludingCache.addPostId(event.id)
         if (!wasNew) return

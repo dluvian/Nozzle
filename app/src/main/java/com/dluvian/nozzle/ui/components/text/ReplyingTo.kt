@@ -11,6 +11,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.withStyle
 import com.dluvian.nozzle.R
+import com.dluvian.nozzle.data.utils.UrlUtils.removeTrailingSlashes
+import com.dluvian.nozzle.data.utils.UrlUtils.removeWebsocketPrefix
 
 @Composable
 fun ReplyingTo(name: String, replyRelayHint: String?, modifier: Modifier = Modifier) {
@@ -43,8 +45,7 @@ fun ReplyingTo(name: String, replyRelayHint: String?, modifier: Modifier = Modif
                         color = Color.LightGray
                     )
                 ) {
-                    // TODO: Util function for removing ws prefix and trailing slash
-                    append(relayHint.removePrefix("wss://").removeSuffix("/"))
+                    append(relayHint.removeWebsocketPrefix().removeTrailingSlashes())
                 }
             }
         },

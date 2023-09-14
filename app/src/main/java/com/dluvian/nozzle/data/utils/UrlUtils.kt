@@ -13,13 +13,12 @@ object UrlUtils {
         return urlPattern.findAll(extractFrom).toList()
     }
 
-    fun cleanUrl(url: String) = url.trim().dropLastWhile { lastChar -> lastChar == '/' }
+    fun String.removeTrailingSlashes() = this.trim().dropLastWhile { lastChar -> lastChar == '/' }
 
-    // TODO: Improve this
-    fun isWebsocketUrl(url: String) = url.startsWith("wss://")
-            && url.length >= 9
-            && url.contains(".")
+    fun String.isWebsocketUrl() = this.startsWith("wss://")
+            && this.length >= 9
+            && this.contains(".")
 
-    fun removeWebsocketPrefix(url: String) = url.removePrefix("wss://")
+    fun String.removeWebsocketPrefix() = this.removePrefix("wss://")
 }
 

@@ -4,7 +4,7 @@ import com.dluvian.nozzle.data.utils.JsonUtils.gson
 import com.dluvian.nozzle.data.utils.SchnorrUtils
 import com.dluvian.nozzle.data.utils.SchnorrUtils.secp256k1
 import com.dluvian.nozzle.data.utils.Sha256Utils.sha256
-import com.dluvian.nozzle.data.utils.UrlUtils
+import com.dluvian.nozzle.data.utils.UrlUtils.removeTrailingSlashes
 import com.google.gson.JsonElement
 import com.google.gson.annotations.SerializedName
 import fr.acinq.secp256k1.Hex
@@ -13,7 +13,7 @@ import fr.acinq.secp256k1.Hex
 typealias Tag = List<String>
 
 fun Tag.getNip10Marker() = this.getOrNull(3)
-fun Tag.getNip10RelayHint() = this.getOrNull(2)?.let { UrlUtils.cleanUrl(it) }
+fun Tag.getNip10RelayHint() = this.getOrNull(2)?.removeTrailingSlashes()
 
 class Event(
     val id: String,
@@ -212,7 +212,7 @@ class Event(
             .map {
                 val restriction = it.getOrNull(2)
                 Nip65Entry(
-                    url = UrlUtils.cleanUrl(it[1]),
+                    url = it[1].removeTrailingSlashes(),
                     isRead = restriction == null || restriction == "read",
                     isWrite = restriction == null || restriction == "write",
                 )
