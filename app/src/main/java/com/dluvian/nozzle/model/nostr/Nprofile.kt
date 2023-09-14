@@ -16,8 +16,9 @@ data class Nprofile(
                 ?.toHexString()
                 ?: return null
             if (!isValidPubkey(pubkey)) return null
+            // TODO: Remove trailing slashes with util function
             val relays = tlvEntries.filterIsInstance<TLVRelay>()
-                .map { it.value.decodeToString() }
+                .map { it.value.decodeToString().removeSuffix("/") }
                 .filter { UrlUtils.isWebsocketUrl(it) }
 
             return Nprofile(pubkey = pubkey, relays = relays)

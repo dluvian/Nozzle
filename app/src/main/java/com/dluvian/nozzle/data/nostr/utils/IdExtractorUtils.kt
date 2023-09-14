@@ -12,7 +12,7 @@ object IdExtractorUtils {
         Regex(pattern = "nostr:(npub1|nprofile1)[a-zA-Z0-9]+")
     }
     private val nostrUriPostPattern by lazy {
-        Regex(pattern = "nostr:(note1|nevent)[a-zA-Z0-9]+")
+        Regex(pattern = "nostr:(note1|nevent1)[a-zA-Z0-9]+")
     }
 
     fun extractNprofilesAndNpubs(contents: Collection<String>): List<Nprofile> {

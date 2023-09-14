@@ -119,6 +119,7 @@ class AnnotatedContentHandler : IAnnotatedContentHandler {
                 }
                 editedContent.delete(0, token.value.length)
             }
+            append(editedContent)
         }
     }
 

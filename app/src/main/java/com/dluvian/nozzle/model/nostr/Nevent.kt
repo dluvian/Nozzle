@@ -17,8 +17,9 @@ data class Nevent(
                 ?.toHexString()
                 ?: return null
             if (!isValidPubkey(eventId)) return null
+            // TODO: Remove trailing slashes with util function
             val relays = tlvEntries.filterIsInstance<TLVRelay>()
-                .map { it.value.decodeToString() }
+                .map { it.value.decodeToString().removeSuffix("/") }
                 .filter { UrlUtils.isWebsocketUrl(it) }
             val pubkey = tlvEntries.find { it is TLVAuthor }?.value?.toHexString()?.let {
                 if (!isValidPubkey(it)) null else it
