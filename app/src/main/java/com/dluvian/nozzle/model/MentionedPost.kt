@@ -8,6 +8,7 @@ data class MentionedPost(
     val picture: String,
     val createdAt: Long,
 ) {
+    // TODO: Delete?
     fun toPostIds(): PostIds {
         return PostIds(id = id, replyToId = null)
     }

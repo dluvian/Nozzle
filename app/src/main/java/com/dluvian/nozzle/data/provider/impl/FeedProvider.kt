@@ -70,6 +70,7 @@ class FeedProvider(
         )
         // TODO: Subscribe replies in read relays
 
+        // TODO: Refactor! Same in threadProvider
         val contents = basePosts.map { it.content }
         val mentionedNprofiles = extractNprofilesAndNpubs(contents = contents)
         mentionedNprofiles.forEach {
@@ -78,7 +79,9 @@ class FeedProvider(
                 relays = it.relays.ifEmpty { feedSettings.relaySelection.getSelectedRelays() }
             )
         }
-        extractNeventsAndNoteIds(contents = contents).forEach {
+        // TODO: Refactor! Same in threadProvider
+        val mentionedPosts = extractNeventsAndNoteIds(contents = contents)
+        mentionedPosts.forEach {
             nostrSubscriber.subscribePost(
                 postId = it.eventId,
                 relays = it.relays.ifEmpty { feedSettings.relaySelection.getSelectedRelays() })
@@ -87,7 +90,8 @@ class FeedProvider(
         return postWithMetaProvider.getPostsWithMetaFlow(
             postIds = basePosts.map { it.id }.distinct(),
             authorPubkeys = foundAuthorPubkeys,
-            mentionedPubkeys = mentionedNprofiles.map { it.pubkey }
+            mentionedPubkeys = mentionedNprofiles.map { it.pubkey },
+            mentionedPostIds = mentionedPosts.map { it.eventId }
         )
     }
 

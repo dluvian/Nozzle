@@ -16,6 +16,7 @@ import com.dluvian.nozzle.data.utils.SHORT_DEBOUNCE
 import com.dluvian.nozzle.data.utils.firstThenDistinctDebounce
 import com.dluvian.nozzle.model.MentionedPost
 import com.dluvian.nozzle.model.PostWithMeta
+import com.dluvian.nozzle.model.helper.MentionedNamesAndPosts
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -34,6 +35,7 @@ class PostWithMetaProvider(
         postIds: Collection<String>,
         authorPubkeys: Collection<String>,
         mentionedPubkeys: Collection<String>,
+        mentionedPostIds: Collection<String>,
     ): Flow<List<PostWithMeta>> {
         if (postIds.isEmpty()) return flow { emit(emptyList()) }
 
@@ -59,16 +61,36 @@ class PostWithMetaProvider(
             )
             .firstThenDistinctDebounce(NORMAL_DEBOUNCE)
 
-        val mentionedNamesFlow = profileDao.getPubkeyToNameMapFlow(pubkeys = mentionedPubkeys)
-            .firstThenDistinctDebounce(NORMAL_DEBOUNCE)
+        val mentionedNamesAndPostsFlow = getMentionedNamesAndPostsFlow(
+            mentionedPubkeys = mentionedPubkeys,
+            mentionedPostIds = mentionedPostIds
+        ).firstThenDistinctDebounce(NORMAL_DEBOUNCE)
 
         return getFinalFlow(
             extendedPostsFlow = extendedPostsFlow,
             contactPubkeysFlow = contactPubkeysFlow,
             relaysFlow = relaysFlow,
             trustScorePerPubkeyFlow = trustScorePerPubkeyFlow,
-            mentionedNamesFlow = mentionedNamesFlow,
+            mentionedNamesAndPostsFlow = mentionedNamesAndPostsFlow,
         ).distinctUntilChanged()
+    }
+
+    private fun getMentionedNamesAndPostsFlow(
+        mentionedPubkeys: Collection<String>,
+        mentionedPostIds: Collection<String>
+    ): Flow<MentionedNamesAndPosts> {
+        val mentionedNamesFlow = profileDao.getPubkeyToNameMapFlow(pubkeys = mentionedPubkeys)
+            .firstThenDistinctDebounce(NORMAL_DEBOUNCE)
+
+        val mentionedPostsFlow = postDao.getMentionedPostsMapFlow(postIds = mentionedPostIds)
+            .firstThenDistinctDebounce(NORMAL_DEBOUNCE)
+
+        return combine(mentionedNamesFlow, mentionedPostsFlow) { names, posts ->
+            MentionedNamesAndPosts(
+                mentionedPubkeyToNameMap = names,
+                mentionedPostIdToPostMap = posts
+            )
+        }
     }
 
     private fun getFinalFlow(
@@ -76,21 +98,21 @@ class PostWithMetaProvider(
         contactPubkeysFlow: Flow<List<String>>,
         relaysFlow: Flow<Map<String, List<String>>>,
         trustScorePerPubkeyFlow: Flow<Map<String, Float>>,
-        mentionedNamesFlow: Flow<Map<String, String>>
+        mentionedNamesAndPostsFlow: Flow<MentionedNamesAndPosts>
     ): Flow<List<PostWithMeta>> {
         return combine(
             extendedPostsFlow,
             contactPubkeysFlow,
             relaysFlow,
             trustScorePerPubkeyFlow,
-            mentionedNamesFlow
-        ) { extended, contacts, relays, trustScore, mentionedNames ->
+            mentionedNamesAndPostsFlow
+        ) { extended, contacts, relays, trustScore, mentionedNamesAndPosts ->
             extended.map {
                 val pubkey = it.postEntity.pubkey
                 val isOneself = pubkeyProvider.isOneself(pubkey)
                 val annotatedContent = annotatedContentHandler.annotateContent(
                     content = it.postEntity.content,
-                    mentionedPubkeyToName = mentionedNames
+                    mentionedPubkeyToName = mentionedNamesAndPosts.mentionedPubkeyToNameMap
                 )
                 PostWithMeta(
                     entity = it.postEntity,
@@ -110,14 +132,15 @@ class PostWithMetaProvider(
                     mediaUrls = annotatedContentHandler.extractMediaLinks(annotatedContent),
                     mentionedPosts = annotatedContentHandler.extractNevents(annotatedContent)
                         .map { nevent ->
-                            MentionedPost(
-                                id = nevent.eventId,
-                                pubkey = nevent.pubkey.orEmpty(),
-                                content = "",
-                                name = "",
-                                picture = "",
-                                createdAt = 0L
-                            )
+                            mentionedNamesAndPosts.mentionedPostIdToPostMap[nevent.eventId]
+                                ?: MentionedPost(
+                                    id = nevent.eventId,
+                                    pubkey = nevent.pubkey.orEmpty(),
+                                    content = "",
+                                    name = "",
+                                    picture = "",
+                                    createdAt = 0L
+                                )
                         },
                 )
             }

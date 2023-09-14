@@ -54,7 +54,9 @@ class ThreadProvider(
                 relays = it.relays.ifEmpty { relays }
             )
         }
-        extractNeventsAndNoteIds(contents = contents).forEach {
+        // TODO: Refactor! Same in feedProvider
+        val mentionedPosts = extractNeventsAndNoteIds(contents = contents)
+        mentionedPosts.forEach {
             nostrSubscriber.subscribePost(
                 postId = it.eventId,
                 relays = it.relays.ifEmpty { relays })
@@ -65,7 +67,8 @@ class ThreadProvider(
             previousIds = previous.ids,
             replyIds = replies.map { it.id },
             authorPubkeys = replyContextList.map { it.pubkey }.toSet() + previous.pubkeys,
-            mentionedPubkeys = mentionedNprofiles.map { it.pubkey }
+            mentionedPubkeys = mentionedNprofiles.map { it.pubkey },
+            mentionedPostIds = mentionedPosts.map { it.eventId }
         )
     }
 
@@ -112,12 +115,14 @@ class ThreadProvider(
         replyIds: List<String>,
         authorPubkeys: Collection<String>,
         mentionedPubkeys: Collection<String>,
+        mentionedPostIds: Collection<String>,
     ): Flow<PostThread> {
         val relevantPostIds = listOf(listOf(currentId), previousIds, replyIds).flatten()
         return postWithMetaProvider.getPostsWithMetaFlow(
             postIds = relevantPostIds,
             authorPubkeys = authorPubkeys,
             mentionedPubkeys = mentionedPubkeys,
+            mentionedPostIds = mentionedPostIds,
         )
             .firstThenDistinctDebounce(NORMAL_DEBOUNCE)
             .map { unsortedPosts ->

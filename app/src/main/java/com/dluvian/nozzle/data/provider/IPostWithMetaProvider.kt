@@ -8,5 +8,6 @@ interface IPostWithMetaProvider {
         postIds: Collection<String>,
         authorPubkeys: Collection<String>,
         mentionedPubkeys: Collection<String>,
+        mentionedPostIds: Collection<String>,
     ): Flow<List<PostWithMeta>>
 }
