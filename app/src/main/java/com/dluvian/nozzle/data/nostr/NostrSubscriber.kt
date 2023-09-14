@@ -174,7 +174,7 @@ class NostrSubscriber(
         currentPostId: String,
         relays: Collection<String>?,
     ): List<String> {
-        Log.i(TAG, "Subscribe to thread")
+        Log.i(TAG, "Subscribe to thread in ${relays?.size} relays")
 
         val postIds = mutableListOf(currentPostId)
 

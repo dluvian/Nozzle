@@ -20,7 +20,7 @@ data class PostEntity(
                 pubkey = event.pubkey,
                 replyToId = event.getReplyId(),
                 replyRelayHint = event.getReplyRelayHint(),
-                content = event.content,
+                content = event.content.trim(),
                 createdAt = event.createdAt,
             )
         }
