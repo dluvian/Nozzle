@@ -3,6 +3,7 @@ package com.dluvian.nozzle.data.provider.impl
 import android.util.Log
 import com.dluvian.nozzle.data.MAX_RELAYS
 import com.dluvian.nozzle.data.nostr.INostrSubscriber
+import com.dluvian.nozzle.data.nostr.utils.EncodingUtils.profileIdToNostrId
 import com.dluvian.nozzle.data.provider.IProfileWithMetaProvider
 import com.dluvian.nozzle.data.provider.IPubkeyProvider
 import com.dluvian.nozzle.data.provider.IRelayProvider
@@ -30,8 +31,14 @@ class ProfileWithMetaProvider(
     private val eventRelayDao: EventRelayDao,
 ) : IProfileWithMetaProvider {
 
-    override fun getProfileFlow(pubkey: String): Flow<ProfileWithMeta> {
-        Log.i(TAG, "Get profile $pubkey")
+    override fun getProfileFlow(profileId: String): Flow<ProfileWithMeta> {
+        Log.i(TAG, "Get profile $profileId")
+
+        val recommendedRelays = mutableListOf<String>()
+        val pubkey = profileIdToNostrId(profileId)?.let {
+            recommendedRelays.addAll(it.getRecommendedRelays())
+            it.getHex()
+        } ?: profileId
 
         makeSubscriptionAvailable()
 
@@ -55,6 +62,7 @@ class ProfileWithMetaProvider(
             profileFlow = profileExtendedFlow,
             relaysFlow = relaysFlow,
             trustScoreFlow = trustScoreFlow,
+            recommendedRelays = recommendedRelays
         ).distinctUntilChanged()
     }
 
@@ -63,13 +71,17 @@ class ProfileWithMetaProvider(
         profileFlow: Flow<ProfileEntityExtended?>,
         relaysFlow: Flow<List<String>>,
         trustScoreFlow: Flow<Float>,
+        recommendedRelays: List<String>,
     ): Flow<ProfileWithMeta> {
         return combine(
             profileFlow,
             relaysFlow,
             trustScoreFlow,
         ) { profile, relays, trustScore ->
-            handleNostrSubscriptions(pubkeyVariations.pubkey)
+            handleNostrSubscriptions(
+                pubkey = pubkeyVariations.pubkey,
+                recommendedRelays = recommendedRelays
+            )
             ProfileWithMeta(
                 pubkey = pubkeyVariations.pubkey,
                 npub = pubkeyVariations.npub, // TODO: Cache npub
@@ -93,7 +105,7 @@ class ProfileWithMetaProvider(
         }
     }
 
-    private suspend fun handleNostrSubscriptions(pubkey: String) {
+    private suspend fun handleNostrSubscriptions(pubkey: String, recommendedRelays: List<String>) {
         synchronized(subscribedToPubkey) {
             if (subscribedToPubkey == pubkey) return
             subscribedToPubkey = pubkey
@@ -105,7 +117,7 @@ class ProfileWithMetaProvider(
         nostrSubscriber.subscribeNip65(listOf(pubkey))
         nostrSubscriber.subscribeToProfileAndContactList(
             pubkeys = listOf(pubkey),
-            relays = relayProvider.getWriteRelaysOfPubkey(pubkey = pubkey)
+            relays = recommendedRelays + relayProvider.getWriteRelaysOfPubkey(pubkey = pubkey)
                 // TODO: Fallback to post relays
                 // TODO: Refactor into util function. Same in Profile view
                 .let {

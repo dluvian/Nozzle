@@ -19,7 +19,6 @@ import com.dluvian.nozzle.data.WAIT_TIME
 import com.dluvian.nozzle.data.cache.IClickedMediaUrlCache
 import com.dluvian.nozzle.data.nostr.INostrSubscriber
 import com.dluvian.nozzle.data.nostr.utils.EncodingUtils.profileIdToNostrId
-import com.dluvian.nozzle.data.nostr.utils.EncodingUtils.startsWithNostrPrefix
 import com.dluvian.nozzle.data.postCardInteractor.IPostCardInteractor
 import com.dluvian.nozzle.data.profileFollower.IProfileFollower
 import com.dluvian.nozzle.data.provider.IFeedProvider
@@ -65,6 +64,8 @@ class ProfileViewModel(
 
     var feedState: StateFlow<List<PostWithMeta>> = MutableStateFlow(emptyList())
 
+    val recommendedRelays = mutableListOf<String>()
+
     init {
         Log.i(TAG, "Initialize ProfileViewModel")
     }
@@ -75,15 +76,9 @@ class ProfileViewModel(
     val onSetProfileId: (String?) -> Unit = { profileId ->
         if (!isSettingPubkey.get()) {
             isSettingPubkey.set(true)
-            val nonNullPubkey = if (profileId == null) {
-                pubkeyProvider.getPubkey()
-            } else if (startsWithNostrPrefix(profileId)) {
-                profileIdToNostrId(profileId = profileId)?.getHex() ?: profileId
-            } else {
-                profileId
-            }
-
-            if (profileId == null) Log.w(TAG, "Tried to set empty pubkey for UI")
+            val nonNullProfileId = profileId ?: pubkeyProvider.getPubkey()
+            val nonNullPubkey = profileIdToNostrId(nonNullProfileId)?.getHex() ?: nonNullProfileId
+            if (profileId.isNullOrEmpty()) Log.w(TAG, "Tried to set empty pubkey for UI")
 
             if (nonNullPubkey == profileState.value.pubkey) {
                 Log.i(TAG, "Profile of $nonNullPubkey is already set. Do nothing")
@@ -92,7 +87,7 @@ class ProfileViewModel(
                 Log.i(TAG, "Set UI for $nonNullPubkey")
                 failedAppendAttempts.set(0)
                 viewModelScope.launch(context = Dispatchers.IO) {
-                    setProfileAndFeed(pubkey = nonNullPubkey)
+                    setProfileAndFeed(profileId = nonNullProfileId)
                 }.invokeOnCompletion {
                     isSettingPubkey.set(false)
                 }
@@ -165,14 +160,22 @@ class ProfileViewModel(
         }
     }
 
-    private suspend fun setProfileAndFeed(pubkey: String) {
-        setProfile(pubkey = pubkey)
+    private suspend fun setProfileAndFeed(profileId: String) {
+        val nostrProfileId = profileIdToNostrId(profileId)
+        val pubkey = nostrProfileId?.getHex() ?: profileId
+        setProfile(profileId = profileId, pubkey = pubkey)
+        setRecommendedRelays(recommended = nostrProfileId?.getRecommendedRelays().orEmpty())
         setFeed(pubkey = pubkey)
     }
 
-    private fun setProfile(pubkey: String) {
-        Log.i(TAG, "Set profile of $pubkey")
-        profileState = profileProvider.getProfileFlow(pubkey)
+    private fun setRecommendedRelays(recommended: List<String>) {
+        recommendedRelays.clear()
+        recommendedRelays.addAll(recommended)
+    }
+
+    private fun setProfile(profileId: String, pubkey: String) {
+        Log.i(TAG, "Set profile of $profileId")
+        profileState = profileProvider.getProfileFlow(profileId = profileId)
             .stateIn(
                 viewModelScope,
                 SharingStarted.WhileSubscribed(stopTimeoutMillis = SCOPE_TIMEOUT),
@@ -225,7 +228,7 @@ class ProfileViewModel(
         isRenewingRef.set(true)
         nostrSubscriber.subscribeToReferencedData(
             posts = feedState.value.takeLast(DB_BATCH_SIZE),
-            relays = getRelays(pubkey)
+            relays = getRelays(pubkey = pubkey)
         )
 
         delay(2 * WAIT_TIME)
@@ -260,7 +263,7 @@ class ProfileViewModel(
 
     private suspend fun getRelays(pubkey: String): List<String> {
         // TODO: Refactor into util function. Same in ProfileWithAdditionalInfoProvider
-        return relayProvider.getWriteRelaysOfPubkey(pubkey)
+        return recommendedRelays + relayProvider.getWriteRelaysOfPubkey(pubkey)
             .let {
                 if (it.size > MAX_RELAYS) it.shuffled()
                     .sortedByDescending { relay -> relayProvider.getReadRelays().contains(relay) }

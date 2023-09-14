@@ -5,7 +5,7 @@ import kotlinx.coroutines.flow.Flow
 
 interface IThreadProvider {
     suspend fun getThreadFlow(
-        currentPostId: String,
+        postId: String,
         relays: List<String>?,
         waitForSubscription: Long? = null
     ): Flow<PostThread>

@@ -2,6 +2,7 @@ package com.dluvian.nozzle.data.provider.impl
 
 import android.util.Log
 import com.dluvian.nozzle.data.nostr.INostrSubscriber
+import com.dluvian.nozzle.data.nostr.utils.EncodingUtils.postIdToNostrId
 import com.dluvian.nozzle.data.nostr.utils.IdExtractorUtils.extractNeventsAndNoteIds
 import com.dluvian.nozzle.data.nostr.utils.IdExtractorUtils.extractNprofilesAndNpubs
 import com.dluvian.nozzle.data.provider.IPostWithMetaProvider
@@ -26,19 +27,25 @@ class ThreadProvider(
     private val postDao: PostDao,
 ) : IThreadProvider {
     override suspend fun getThreadFlow(
-        currentPostId: String,
+        postId: String,
         relays: List<String>?,
         waitForSubscription: Long?
     ): Flow<PostThread> {
+        val recommendedRelays = mutableListOf<String>()
+        val hexId = postIdToNostrId(postId)?.let {
+            recommendedRelays.addAll(it.getRecommendedRelays())
+            it.getHex()
+        } ?: postId
+
         renewThreadSubscription(
-            currentPostId = currentPostId,
-            relays = relays
+            currentPostId = hexId,
+            relays = relays?.let { it + recommendedRelays }
         )
         // TODO: Use a channel
         waitForSubscription?.let { delay(it) }
 
-        val replyContextList = postDao.listReplyContext(currentPostId = currentPostId)
-        val current = replyContextList.find { it.id == currentPostId }
+        val replyContextList = postDao.listReplyContext(currentPostId = hexId)
+        val current = replyContextList.find { it.id == hexId }
             ?: return flow { emit(PostThread.createEmpty()) }
         val replies = replyContextList.filter { it.replyToId == current.id }
         val previous = listPrevious(currentId = current.id, replyToId = current.replyToId)

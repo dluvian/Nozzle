@@ -49,13 +49,11 @@ class RelayProvider(
     }
 
     override fun getPostRelays(posts: List<PostWithMeta>): List<String> {
-        val result = mutableSetOf<String>().apply {
+        return mutableListOf<String>().apply {
             addAll(getReadRelays())
             addAll(posts.flatMap { it.relays })
             addAll(posts.mapNotNull { it.entity.replyRelayHint })
         }
-
-        return result.toList()
     }
 
     override suspend fun getAutopilotRelays(): Map<String, Set<String>> {

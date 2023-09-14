@@ -14,9 +14,7 @@ private const val TAG = "NozzleNavActions"
 class NozzleNavActions(private val navController: NavHostController) {
     val navigateToProfile: (String) -> Unit = { pubkey ->
         if (pubkey.isNotEmpty()) {
-            navController.navigate("${NozzleRoute.PROFILE}/$pubkey") {
-                setSimpleNavOptions(optionsBuilder = this)
-            }
+            navController.navigate("${NozzleRoute.PROFILE}/$pubkey")
         }
     }
 
@@ -45,9 +43,7 @@ class NozzleNavActions(private val navController: NavHostController) {
     }
 
     val navigateToThread: (String) -> Unit = { postId ->
-        navController.navigate("${NozzleRoute.THREAD}/$postId") {
-            setSimpleNavOptions(optionsBuilder = this)
-        }
+        navController.navigate("${NozzleRoute.THREAD}/$postId")
     }
 
     val navigateToReply: () -> Unit = {
@@ -81,9 +77,7 @@ class NozzleNavActions(private val navController: NavHostController) {
                 NozzleRoute.FEED
             }
         }
-        navController.navigate(route) {
-            setSimpleNavOptions(optionsBuilder = this)
-        }
+        navController.navigate(route)
     }
 
 

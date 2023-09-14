@@ -7,6 +7,7 @@ import androidx.lifecycle.viewModelScope
 import com.dluvian.nozzle.data.SCOPE_TIMEOUT
 import com.dluvian.nozzle.data.cache.IClickedMediaUrlCache
 import com.dluvian.nozzle.data.nostr.INostrSubscriber
+import com.dluvian.nozzle.data.nostr.utils.EncodingUtils.postIdToNostrId
 import com.dluvian.nozzle.data.postCardInteractor.IPostCardInteractor
 import com.dluvian.nozzle.data.provider.IRelayProvider
 import com.dluvian.nozzle.data.provider.IThreadProvider
@@ -48,7 +49,8 @@ class ThreadViewModel(
     // TODO: Prevent redundant subscriptions
     private val isSettingThread = AtomicBoolean(false)
     val onOpenThread: (String) -> Unit = { postId ->
-        if (!isSettingThread.get() && postId != threadState.value.current?.entity?.id) {
+        val hexId = postIdToNostrId(postId)?.getHex() ?: postId
+        if (!isSettingThread.get() && hexId != threadState.value.current?.entity?.id) {
             isSettingThread.set(true)
             isRefreshingFlow.update { true }
             Log.i(TAG, "Open thread of post $postId")
@@ -60,7 +62,6 @@ class ThreadViewModel(
                 delay(WAIT_TIME)
                 isSettingThread.set(false)
                 renewReferencedDataSubscription(threadState.value)
-                updateCurrentPostIds(threadState.value)
             }
         }
     }
@@ -77,7 +78,6 @@ class ThreadViewModel(
             isRefreshingFlow.update { false }
             delay(WAIT_TIME)
             renewReferencedDataSubscription(threadState.value)
-            updateCurrentPostIds(threadState.value)
         }
     }
 
@@ -88,7 +88,7 @@ class ThreadViewModel(
     ) {
         Log.i(TAG, "Set new thread of post $postId")
         threadState = threadProvider.getThreadFlow(
-            currentPostId = postId,
+            postId = postId,
             waitForSubscription = waitForSubscription,
             relays = relayProvider.getPostRelays(posts = initValue.getList())
         )
@@ -97,12 +97,6 @@ class ThreadViewModel(
                 SharingStarted.WhileSubscribed(stopTimeoutMillis = SCOPE_TIMEOUT),
                 initValue,
             )
-    }
-
-    private fun updateCurrentPostIds(thread: PostThread) {
-        thread.current?.let {
-            currentPostId = it.entity.id
-        }
     }
 
     private fun renewReferencedDataSubscription(thread: PostThread) {
