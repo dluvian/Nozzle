@@ -133,13 +133,19 @@ class AnnotatedContentHandler : IAnnotatedContentHandler {
     override fun extractNevents(annotatedContent: AnnotatedString): List<Nevent> {
         val nevents = annotatedContent
             .getStringAnnotations(tag = NEVENT_TAG, start = 0, end = annotatedContent.length)
-            .mapNotNull { readNevent(it.item) }
+            .mapNotNull { readNevent(it.item)?.let { nevent -> Pair(it.start, nevent) } }
         val note1s = annotatedContent
             .getStringAnnotations(tag = NOTE1_TAG, start = 0, end = annotatedContent.length)
-            .mapNotNull { note1ToHex(it.item) }
-            .map { Nevent(eventId = it, relays = emptyList(), pubkey = null) }
+            .mapNotNull {
+                note1ToHex(it.item)?.let { hex ->
+                    Pair(
+                        it.start,
+                        Nevent(eventId = hex, relays = emptyList(), pubkey = null)
+                    )
+                }
+            }
 
-        return nevents + note1s
+        return (nevents + note1s).sortedBy { it.first }.map { it.second }
     }
 
     private fun extractNostrUris(extractFrom: String) = nostrUriPattern.findAll(extractFrom)
