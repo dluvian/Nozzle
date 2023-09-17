@@ -2,13 +2,12 @@ package com.dluvian.nozzle.data.provider.impl
 
 import android.util.Log
 import com.dluvian.nozzle.data.nostr.INostrSubscriber
-import com.dluvian.nozzle.data.nostr.utils.IdExtractorUtils.extractNeventsAndNoteIds
-import com.dluvian.nozzle.data.nostr.utils.IdExtractorUtils.extractNprofilesAndNpubs
 import com.dluvian.nozzle.data.provider.IContactListProvider
 import com.dluvian.nozzle.data.provider.IFeedProvider
 import com.dluvian.nozzle.data.provider.IPostWithMetaProvider
 import com.dluvian.nozzle.data.room.dao.PostDao
 import com.dluvian.nozzle.data.room.helper.BasePost
+import com.dluvian.nozzle.data.subscriber.IMentionSubscriber
 import com.dluvian.nozzle.data.utils.getCurrentTimeInSeconds
 import com.dluvian.nozzle.model.AllRelays
 import com.dluvian.nozzle.model.AuthorSelection
@@ -28,6 +27,7 @@ private const val TAG = "FeedProvider"
 class FeedProvider(
     private val postWithMetaProvider: IPostWithMetaProvider,
     private val nostrSubscriber: INostrSubscriber,
+    private val mentionSubscriber: IMentionSubscriber,
     private val postDao: PostDao,
     private val contactListProvider: IContactListProvider,
 ) : IFeedProvider {
@@ -50,7 +50,8 @@ class FeedProvider(
             relaySelection = feedSettings.relaySelection
         )
 
-        // TODO: Use channel
+        // TODO: Don't resub all the time
+        // TODO: Subscribe replies in read relays
         waitForSubscription?.let { delay(it) }
 
         val basePosts = listBasePosts(
@@ -62,35 +63,14 @@ class FeedProvider(
             limit = limit,
         )
 
-        // TODO: Don't resub all the time
-        val foundAuthorPubkeys = basePosts.map { it.pubkey }.distinct()
-        nostrSubscriber.subscribeProfiles(
-            pubkeys = foundAuthorPubkeys,
-            relays = feedSettings.relaySelection.getSelectedRelays()
-        )
-        // TODO: Subscribe replies in read relays
-
-        // TODO: Refactor! Same in threadProvider
-        val contents = basePosts.map { it.content }
-        val mentionedNprofiles = extractNprofilesAndNpubs(contents = contents)
-        mentionedNprofiles.forEach {
-            nostrSubscriber.subscribeProfile(
-                pubkey = it.pubkey,
-                relays = it.relays.ifEmpty { feedSettings.relaySelection.getSelectedRelays() }
-            )
-        }
-        // TODO: Refactor! Same in threadProvider
-        val mentionedPosts = extractNeventsAndNoteIds(contents = contents)
-        mentionedPosts.forEach {
-            nostrSubscriber.subscribePost(
-                postId = it.eventId,
-                relays = it.relays.ifEmpty { feedSettings.relaySelection.getSelectedRelays() })
-        }
+        val mentionedPubkeysAndAuthorPubkeys = mentionSubscriber
+            .subscribeMentionedProfiles(basePosts = basePosts)
+        val mentionedPosts = mentionSubscriber.subscribeMentionedPosts(basePosts = basePosts)
 
         return postWithMetaProvider.getPostsWithMetaFlow(
-            postIds = basePosts.map { it.id }.distinct(),
-            authorPubkeys = foundAuthorPubkeys,
-            mentionedPubkeys = mentionedNprofiles.map { it.pubkey },
+            postIds = basePosts.map { it.id },
+            authorPubkeys = mentionedPubkeysAndAuthorPubkeys.authorPubkeys,
+            mentionedPubkeys = mentionedPubkeysAndAuthorPubkeys.pubkeys,
             mentionedPostIds = mentionedPosts.map { it.eventId }
         )
     }

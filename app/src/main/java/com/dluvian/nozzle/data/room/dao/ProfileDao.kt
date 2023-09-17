@@ -78,7 +78,6 @@ interface ProfileDao {
     )
     suspend fun deleteOrphaned(exclude: Collection<String>): Int
 
-
     @MapInfo(keyColumn = "pubkey", valueColumn = "name")
     @Query("SELECT pubkey, name FROM profile WHERE pubkey IN (:pubkeys)")
     fun getPubkeyToNameMapFlow(pubkeys: Collection<String>): Flow<Map<String, String>>

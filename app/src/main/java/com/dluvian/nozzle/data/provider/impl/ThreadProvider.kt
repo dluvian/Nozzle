@@ -3,17 +3,16 @@ package com.dluvian.nozzle.data.provider.impl
 import android.util.Log
 import com.dluvian.nozzle.data.nostr.INostrSubscriber
 import com.dluvian.nozzle.data.nostr.utils.EncodingUtils.postIdToNostrId
-import com.dluvian.nozzle.data.nostr.utils.IdExtractorUtils.extractNeventsAndNoteIds
-import com.dluvian.nozzle.data.nostr.utils.IdExtractorUtils.extractNprofilesAndNpubs
 import com.dluvian.nozzle.data.provider.IPostWithMetaProvider
 import com.dluvian.nozzle.data.provider.IThreadProvider
 import com.dluvian.nozzle.data.room.dao.PostDao
+import com.dluvian.nozzle.data.room.helper.BasePost
 import com.dluvian.nozzle.data.room.helper.ReplyContext
+import com.dluvian.nozzle.data.subscriber.IMentionSubscriber
 import com.dluvian.nozzle.data.utils.NORMAL_DEBOUNCE
 import com.dluvian.nozzle.data.utils.firstThenDistinctDebounce
 import com.dluvian.nozzle.model.PostThread
 import com.dluvian.nozzle.model.PostWithMeta
-import com.dluvian.nozzle.model.helper.IdsAndPubkeys
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
@@ -24,6 +23,7 @@ private const val TAG = "ThreadProvider"
 class ThreadProvider(
     private val postWithMetaProvider: IPostWithMetaProvider,
     private val nostrSubscriber: INostrSubscriber,
+    private val mentionSubscriber: IMentionSubscriber,
     private val postDao: PostDao,
 ) : IThreadProvider {
     override suspend fun getThreadFlow(
@@ -48,31 +48,26 @@ class ThreadProvider(
         val current = replyContextList.find { it.id == hexId }
             ?: return flow { emit(PostThread.createEmpty()) }
         val replies = replyContextList.filter { it.replyToId == current.id }
-        val previous = listPrevious(currentId = current.id, replyToId = current.replyToId)
+        val previous = listPrevious(current = current)
 
-        // TODO: Refactor! Same in feedProvider
-        val contents = replyContextList.map { it.content }
-        val mentionedNprofiles = extractNprofilesAndNpubs(contents = contents)
-        mentionedNprofiles.forEach {
-            nostrSubscriber.subscribeProfile(
+        val allPosts = (replyContextList + previous).map {
+            BasePost(
+                id = it.id,
                 pubkey = it.pubkey,
-                relays = it.relays.ifEmpty { relays }
+                content = it.content
             )
         }
-        // TODO: Refactor! Same in feedProvider
-        val mentionedPosts = extractNeventsAndNoteIds(contents = contents)
-        mentionedPosts.forEach {
-            nostrSubscriber.subscribePost(
-                postId = it.eventId,
-                relays = it.relays.ifEmpty { relays })
-        }
+
+        val mentionedPubkeysAndAuthorPubkeys = mentionSubscriber
+            .subscribeMentionedProfiles(basePosts = allPosts)
+        val mentionedPosts = mentionSubscriber.subscribeMentionedPosts(basePosts = allPosts)
 
         return getMappedThreadFlow(
             currentId = current.id,
-            previousIds = previous.ids,
+            previousIds = previous.map { it.id },
             replyIds = replies.map { it.id },
-            authorPubkeys = replyContextList.map { it.pubkey }.toSet() + previous.pubkeys,
-            mentionedPubkeys = mentionedNprofiles.map { it.pubkey },
+            authorPubkeys = mentionedPubkeysAndAuthorPubkeys.authorPubkeys,
+            mentionedPubkeys = mentionedPubkeysAndAuthorPubkeys.pubkeys,
             mentionedPostIds = mentionedPosts.map { it.eventId }
         )
     }
@@ -88,28 +83,21 @@ class ThreadProvider(
         )
     }
 
-    private suspend fun listPrevious(currentId: String, replyToId: String?): IdsAndPubkeys {
-        if (replyToId == null) return IdsAndPubkeys()
+    private suspend fun listPrevious(current: ReplyContext): List<ReplyContext> {
+        if (current.replyToId == null) return emptyList()
 
-        val first = ReplyContext(id = currentId, replyToId = replyToId, pubkey = "")
-        val previous = mutableListOf(first)
-        while (previous.last().replyToId != null) {
+        val previous = mutableListOf(current)
+        while (true) {
             val currentReplyToId = previous.last().replyToId ?: break
-            val previousReplyToIdAndPubkey = postDao.getReplyToIdAndPubkey(id = currentReplyToId)
-            val mapped = ReplyContext(
-                id = currentReplyToId,
-                replyToId = previousReplyToIdAndPubkey?.replyToId,
-                pubkey = previousReplyToIdAndPubkey?.pubkey.orEmpty()
-            )
-            previous.add(mapped)
+            val previousReplyContext = postDao.getReplyContext(id = currentReplyToId)
+            if (previousReplyContext == null) break
+            else previous.add(previousReplyContext)
         }
 
         previous.reverse() // Root first
         previous.removeLast() // Removing 'current'
 
-        return IdsAndPubkeys(
-            ids = previous.map { it.id },
-            pubkeys = previous.filter { it.pubkey.isNotEmpty() }.map { it.pubkey })
+        return previous
     }
 
     private suspend fun getMappedThreadFlow(

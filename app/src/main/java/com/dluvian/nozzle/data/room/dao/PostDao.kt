@@ -4,7 +4,6 @@ import androidx.room.*
 import com.dluvian.nozzle.data.room.entity.PostEntity
 import com.dluvian.nozzle.data.room.helper.BasePost
 import com.dluvian.nozzle.data.room.helper.ReplyContext
-import com.dluvian.nozzle.data.room.helper.ReplyToIdAndPubkey
 import com.dluvian.nozzle.data.room.helper.extended.PostEntityExtended
 import com.dluvian.nozzle.model.MentionedPost
 import kotlinx.coroutines.flow.Flow
@@ -94,13 +93,6 @@ interface PostDao {
     ): List<BasePost>
 
     @Query(
-        "SELECT post.replyToId, post.pubkey " +
-                "FROM post " +
-                "WHERE id = :id "
-    )
-    suspend fun getReplyToIdAndPubkey(id: String): ReplyToIdAndPubkey?
-
-    @Query(
         // SELECT PostEntity
         "SELECT mainPost.*, " +
                 // SELECT likedByMe
@@ -145,6 +137,13 @@ interface PostDao {
     @Query(
         "SELECT post.id, post.replyToId, post.pubkey, post.content " +
                 "FROM post " +
+                "WHERE id = :id "
+    )
+    suspend fun getReplyContext(id: String): ReplyContext?
+
+    @Query(
+        "SELECT post.id, post.replyToId, post.pubkey, post.content " +
+                "FROM post " +
                 "WHERE replyToId = :currentPostId " + // All replies to current post
                 "OR id = :currentPostId" // Current post
     )
@@ -167,6 +166,12 @@ interface PostDao {
     )
     suspend fun getMentionedPost(postId: String): MentionedPost?
 
+    @Query(
+        "SELECT id " +
+                "FROM post " +
+                "WHERE id IN (:postIds)"
+    )
+    suspend fun filterExistingIds(postIds: Collection<String>): List<String>
 
     @Query(
         "DELETE FROM post " +
