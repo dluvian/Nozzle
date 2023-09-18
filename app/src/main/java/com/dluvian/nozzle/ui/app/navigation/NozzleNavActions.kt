@@ -64,22 +64,21 @@ class NozzleNavActions(private val navController: NavHostController) {
         }
     }
 
-    // TODO: This can replace navigateToProfile and navigateToThread
     val navigateToId: (String) -> Unit = { id ->
-        nostrStrToNostrId(id)
-        val route = when (nostrStrToNostrId(id)) {
-            is NoteNostrId -> "${NozzleRoute.THREAD}/${id}"
-            is NeventNostrId -> "${NozzleRoute.THREAD}/${id}"
-            is NpubNostrId -> "${NozzleRoute.PROFILE}/${id}"
-            is NprofileNostrId -> "${NozzleRoute.PROFILE}/${id}"
-            null -> {
-                Log.w(TAG, "Failed to resolve $id")
-                NozzleRoute.FEED
+        if (id.isNotEmpty()) {
+            val route = when (nostrStrToNostrId(nostrStr = id)) {
+                is NoteNostrId -> "${NozzleRoute.THREAD}/${id}"
+                is NeventNostrId -> "${NozzleRoute.THREAD}/${id}"
+                is NpubNostrId -> "${NozzleRoute.PROFILE}/${id}"
+                is NprofileNostrId -> "${NozzleRoute.PROFILE}/${id}"
+                null -> {
+                    Log.w(TAG, "Failed to resolve $id")
+                    NozzleRoute.FEED
+                }
             }
+            navController.navigate(route)
         }
-        navController.navigate(route)
     }
-
 
     val popStack: () -> Unit = {
         navController.popBackStack()

@@ -57,7 +57,6 @@ fun NozzleNavGraph(
         modifier = modifier
     ) {
         composable(NozzleRoute.FEED) {
-            // TODO: navigateToId instead of navigateToThread + navigateToProfile
             FeedRoute(
                 feedViewModel = vmContainer.feedViewModel,
                 onPrepareReply = vmContainer.replyViewModel.onPrepareReply,
