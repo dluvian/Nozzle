@@ -61,10 +61,14 @@ class DatabaseSweeper(
         val deleteProfileCount = database.profileDao().deleteOrphaned(exclude = excludeProfiles)
         Log.i(TAG, "Deleted $deleteProfileCount profiles")
 
-        val deleteContactCount = database.contactDao().deleteOrphaned()
+        val deleteContactCount = database.contactDao().deleteOrphaned(
+            except = pubkeyProvider.getPubkey()
+        )
         Log.i(TAG, "Deleted $deleteContactCount contact entries")
 
-        val deleteNip65Count = database.nip65Dao().deleteOrphaned()
+        val deleteNip65Count = database.nip65Dao().deleteOrphaned(
+            except = pubkeyProvider.getPubkey()
+        )
         Log.i(TAG, "Deleted $deleteNip65Count nip65 entries")
     }
 }

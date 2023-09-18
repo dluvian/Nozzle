@@ -184,9 +184,11 @@ interface ContactDao {
         return minOf(percentage * TRUST_SCORE_BOOST, 1f)
     }
 
+    // TODO: No except. This should exclude pubkeys in user acc table
     @Query(
         "DELETE FROM contact " +
-                "WHERE pubkey NOT IN (SELECT pubkey FROM profile)"
+                "WHERE pubkey NOT IN (SELECT pubkey FROM profile) " +
+                "AND pubkey IS NOT :except"
     )
-    suspend fun deleteOrphaned(): Int
+    suspend fun deleteOrphaned(except: String): Int
 }
