@@ -2,6 +2,7 @@ package com.dluvian.nozzle.data.databaseSweeper
 
 import android.util.Log
 import com.dluvian.nozzle.data.cache.IIdCache
+import com.dluvian.nozzle.data.provider.IContactListProvider
 import com.dluvian.nozzle.data.provider.IPubkeyProvider
 import com.dluvian.nozzle.data.room.AppDatabase
 import com.dluvian.nozzle.data.utils.getCurrentTimeInSeconds
@@ -12,6 +13,7 @@ class DatabaseSweeper(
     private val keepPosts: Int,
     private val thresholdFactor: Float,
     private val pubkeyProvider: IPubkeyProvider,
+    private val contactListProvider: IContactListProvider,
     private val dbSweepExcludingCache: IIdCache,
     private val database: AppDatabase
 ) : IDatabaseSweeper {
@@ -22,7 +24,9 @@ class DatabaseSweeper(
             return
         }
         val excludePostIds = dbSweepExcludingCache.getPostIds()
-        val excludeProfiles = dbSweepExcludingCache.getPubkeys()
+        val excludeProfiles = dbSweepExcludingCache.getPubkeys() +
+                pubkeyProvider.getPubkey() +
+                contactListProvider.listPersonalContactPubkeys()
         Log.i(
             TAG,
             "Sweep database leaving $keepPosts, " +
@@ -54,9 +58,7 @@ class DatabaseSweeper(
         Log.i(TAG, "Deleted $deleteReactionCount reactions")
 
         // TODO: pubkeyProvider not needed once user accounts are saved in roomDb
-        val deleteProfileCount = database.profileDao().deleteOrphaned(
-            exclude = excludeProfiles + pubkeyProvider.getPubkey()
-        )
+        val deleteProfileCount = database.profileDao().deleteOrphaned(exclude = excludeProfiles)
         Log.i(TAG, "Deleted $deleteProfileCount profiles")
 
         val deleteContactCount = database.contactDao().deleteOrphaned()

@@ -169,6 +169,7 @@ class AppContainer(context: Context) {
         keepPosts = SWEEP_THRESHOLD,
         thresholdFactor = SWEEP_THRESHOLD_FACTOR,
         pubkeyProvider = keyManager,
+        contactListProvider = contactListProvider,
         dbSweepExcludingCache = dbSweepExcludingCache,
         database = roomDb,
     )
