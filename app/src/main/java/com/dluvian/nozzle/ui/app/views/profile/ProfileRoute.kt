@@ -41,7 +41,7 @@ fun ProfileRoute(
             profileViewModel.clickedMediaUrlCache.contains(mediaUrl)
         },
         onRefreshProfileView = profileViewModel.onRefreshProfileView,
-        onCopyNpub = profileViewModel.onCopyNpub,
+        onCopyNprofile = profileViewModel.onCopyNprofile,
         onLoadMore = profileViewModel.onLoadMore,
         onNavigateToThread = onNavigateToThread,
         onNavigateToReply = onNavigateToReply,

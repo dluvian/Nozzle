@@ -4,7 +4,7 @@ import com.dluvian.nozzle.model.nostr.Metadata
 
 data class ProfileWithMeta(
     val pubkey: String,
-    val npub: String,
+    val nprofile: String,
     val metadata: Metadata,
     val numOfFollowing: Int,
     val numOfFollowers: Int,
@@ -16,7 +16,7 @@ data class ProfileWithMeta(
     companion object {
         fun createEmpty() = ProfileWithMeta(
             pubkey = "",
-            npub = "",
+            nprofile = "",
             metadata = Metadata(),
             numOfFollowing = 0,
             numOfFollowers = 0,

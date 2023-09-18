@@ -89,6 +89,16 @@ object EncodingUtils {
         else null
     }
 
+    fun createNprofileStr(pubkey: String, relays: Collection<String>): String? {
+        if (!KeyUtils.isValidPubkey(pubkey)) return null
+        val bytes = mutableListOf<ByteArray>()
+        bytes.add(TLVUtils.createTLVDefaultBytes(pubkey.decodeHex()))
+        bytes.addAll(relays.map { TLVUtils.createTLVRelayBytes(it.encodeToByteArray()) })
+        val allBytes = bytes.reduce { acc, newBytes -> acc + newBytes }
+
+        return runCatching { Bech32.encode(NPROFILE, allBytes) }.getOrNull()
+    }
+
     fun profileIdToNostrId(profileId: String): NostrId? {
         val npubHex = npubToHex(profileId)
         if (npubHex != null) {

@@ -36,7 +36,7 @@
     <string name="invalid_private_key">Invalid private key</string>
     <string name="key_pair_updated">Key pair updated</string>
     <string name="enter_a_private_key">Enter nsec or hex private key</string>
-    <string name="pubkey_copied">Public key copied</string>
+    <string name="profile_id_copied">Profile ID copied</string>
     <string name="enter_your_username">Enter your username</string>
     <string name="invalid_username">Invalid username</string>
     <string name="username">Username</string>

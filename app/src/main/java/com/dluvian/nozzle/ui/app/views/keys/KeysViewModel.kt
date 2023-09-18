@@ -54,7 +54,11 @@ class KeysViewModel(
         uiState.value.npub.let {
             Log.i(TAG, "Copy npub $it")
             clip.setText(AnnotatedString(it))
-            Toast.makeText(context, context.getString(R.string.pubkey_copied), Toast.LENGTH_SHORT)
+            Toast.makeText(
+                context,
+                context.getString(R.string.profile_id_copied),
+                Toast.LENGTH_SHORT
+            )
                 .show()
         }
     }

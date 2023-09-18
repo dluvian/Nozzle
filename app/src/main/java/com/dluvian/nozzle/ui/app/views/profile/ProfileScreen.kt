@@ -55,7 +55,7 @@ fun ProfileScreen(
     onShowMedia: (String) -> Unit,
     onShouldShowMedia: (String) -> Boolean,
     onRefreshProfileView: () -> Unit,
-    onCopyNpub: () -> Unit,
+    onCopyNprofile: () -> Unit,
     onLoadMore: () -> Unit,
     onNavigateToThread: (String) -> Unit,
     onNavigateToReply: () -> Unit,
@@ -68,7 +68,7 @@ fun ProfileScreen(
             profile = profile,
             onFollow = onFollow,
             onUnfollow = onUnfollow,
-            onCopyNpub = onCopyNpub,
+            onCopyNprofile = onCopyNprofile,
             onNavToEditProfile = onNavigateToEditProfile,
             onNavigateToId = onNavigateToId,
         )
@@ -105,7 +105,7 @@ private fun ProfileData(
     profile: ProfileWithMeta,
     onFollow: (String) -> Unit,
     onUnfollow: (String) -> Unit,
-    onCopyNpub: () -> Unit,
+    onCopyNprofile: () -> Unit,
     onNavToEditProfile: () -> Unit,
     onNavigateToId: (String) -> Unit
 ) {
@@ -123,11 +123,11 @@ private fun ProfileData(
             onUnfollow = onUnfollow,
             onNavToEditProfile = onNavToEditProfile,
         )
-        NameAndNpub(
+        NameAndNprofile(
             name = profile.metadata.name.orEmpty()
                 .ifEmpty { getShortenedNpubFromPubkey(profile.pubkey) ?: profile.pubkey },
-            npub = profile.npub,
-            onCopyNpub = onCopyNpub,
+            nprofile = profile.nprofile,
+            onCopyNprofile = onCopyNprofile,
         )
         Spacer(Modifier.height(spacing.medium))
         profile.metadata.about?.let { about ->
@@ -240,10 +240,10 @@ private fun NumberedCategories(
 }
 
 @Composable
-private fun NameAndNpub(
+private fun NameAndNprofile(
     name: String,
-    npub: String,
-    onCopyNpub: () -> Unit,
+    nprofile: String,
+    onCopyNprofile: () -> Unit,
 ) {
     Row(
         modifier = Modifier.fillMaxWidth(),
@@ -256,21 +256,21 @@ private fun NameAndNpub(
                 overflow = TextOverflow.Ellipsis,
                 style = MaterialTheme.typography.h6,
             )
-            CopyableNpub(
-                npub = npub,
-                onCopyNpub = onCopyNpub
+            CopyableNprofile(
+                nprofile = nprofile,
+                onCopyNprofile = onCopyNprofile
             )
         }
     }
 }
 
 @Composable
-private fun CopyableNpub(
-    npub: String,
-    onCopyNpub: () -> Unit,
+private fun CopyableNprofile(
+    nprofile: String,
+    onCopyNprofile: () -> Unit,
 ) {
     Row(
-        Modifier.clickable { onCopyNpub() },
+        Modifier.clickable { onCopyNprofile() },
         verticalAlignment = Alignment.CenterVertically
     ) {
         CopyIcon(
@@ -279,7 +279,7 @@ private fun CopyableNpub(
             tint = Color.LightGray
         )
         Text(
-            text = npub,
+            text = nprofile,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
             color = Color.LightGray,

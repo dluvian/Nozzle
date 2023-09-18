@@ -3,6 +3,7 @@ package com.dluvian.nozzle.data.provider.impl
 import android.util.Log
 import com.dluvian.nozzle.data.MAX_RELAYS
 import com.dluvian.nozzle.data.nostr.INostrSubscriber
+import com.dluvian.nozzle.data.nostr.utils.EncodingUtils.createNprofileStr
 import com.dluvian.nozzle.data.nostr.utils.EncodingUtils.profileIdToNostrId
 import com.dluvian.nozzle.data.provider.IProfileWithMetaProvider
 import com.dluvian.nozzle.data.provider.IPubkeyProvider
@@ -19,6 +20,7 @@ import com.dluvian.nozzle.model.nostr.Metadata
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.map
 
 private const val TAG = "ProfileWithMetaProvider"
 
@@ -51,6 +53,9 @@ class ProfileWithMetaProvider(
         val relaysFlow = eventRelayDao.listUsedRelaysFlow(pubkey)
             .firstThenDistinctDebounce(LONG_DEBOUNCE)
 
+        // TODO: Don't use every relay
+        val nprofileFlow = relaysFlow.map { createNprofileStr(pubkey = pubkey, relays = it) }
+
         // No debounce because of immediate user interaction response
         val trustScoreFlow = contactDao.getTrustScoreFlow(
             pubkey = pubkeyProvider.getPubkey(),
@@ -61,6 +66,7 @@ class ProfileWithMetaProvider(
             pubkeyVariations = PubkeyVariations.fromPubkey(pubkey),
             profileFlow = profileExtendedFlow,
             relaysFlow = relaysFlow,
+            nprofileFlow = nprofileFlow,
             trustScoreFlow = trustScoreFlow,
             recommendedRelays = recommendedRelays
         ).distinctUntilChanged()
@@ -70,21 +76,23 @@ class ProfileWithMetaProvider(
         pubkeyVariations: PubkeyVariations,
         profileFlow: Flow<ProfileEntityExtended?>,
         relaysFlow: Flow<List<String>>,
+        nprofileFlow: Flow<String?>,
         trustScoreFlow: Flow<Float>,
         recommendedRelays: List<String>,
     ): Flow<ProfileWithMeta> {
         return combine(
             profileFlow,
             relaysFlow,
+            nprofileFlow,
             trustScoreFlow,
-        ) { profile, relays, trustScore ->
+        ) { profile, relays, nprofile, trustScore ->
             handleNostrSubscriptions(
                 pubkey = pubkeyVariations.pubkey,
                 recommendedRelays = recommendedRelays
             )
             ProfileWithMeta(
                 pubkey = pubkeyVariations.pubkey,
-                npub = pubkeyVariations.npub, // TODO: Cache npub
+                nprofile = nprofile ?: pubkeyVariations.npub,
                 metadata = profile?.profileEntity?.metadata
                     ?: Metadata(name = pubkeyVariations.shortenedNpub),
                 numOfFollowing = profile?.numOfFollowing ?: 0,
