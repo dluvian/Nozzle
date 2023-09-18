@@ -36,8 +36,8 @@ class ProfileWithMetaProvider(
 
         val recommendedRelays = mutableListOf<String>()
         val pubkey = profileIdToNostrId(profileId)?.let {
-            recommendedRelays.addAll(it.getRecommendedRelays())
-            it.getHex()
+            recommendedRelays.addAll(it.recommendedRelays)
+            it.hex
         } ?: profileId
 
         makeSubscriptionAvailable()

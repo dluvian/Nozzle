@@ -49,7 +49,7 @@ class ThreadViewModel(
     // TODO: Prevent redundant subscriptions
     private val isSettingThread = AtomicBoolean(false)
     val onOpenThread: (String) -> Unit = { postId ->
-        val hexId = postIdToNostrId(postId)?.getHex() ?: postId
+        val hexId = postIdToNostrId(postId)?.hex ?: postId
         if (!isSettingThread.get() && hexId != threadState.value.current?.entity?.id) {
             isSettingThread.set(true)
             isRefreshingFlow.update { true }

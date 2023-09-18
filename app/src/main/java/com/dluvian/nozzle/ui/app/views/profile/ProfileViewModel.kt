@@ -77,7 +77,7 @@ class ProfileViewModel(
         if (!isSettingPubkey.get()) {
             isSettingPubkey.set(true)
             val nonNullProfileId = profileId ?: pubkeyProvider.getPubkey()
-            val nonNullPubkey = profileIdToNostrId(nonNullProfileId)?.getHex() ?: nonNullProfileId
+            val nonNullPubkey = profileIdToNostrId(nonNullProfileId)?.hex ?: nonNullProfileId
             if (profileId.isNullOrEmpty()) Log.w(TAG, "Tried to set empty pubkey for UI")
 
             if (nonNullPubkey == profileState.value.pubkey) {
@@ -162,9 +162,9 @@ class ProfileViewModel(
 
     private suspend fun setProfileAndFeed(profileId: String) {
         val nostrProfileId = profileIdToNostrId(profileId)
-        val pubkey = nostrProfileId?.getHex() ?: profileId
+        val pubkey = nostrProfileId?.hex ?: profileId
         setProfile(profileId = profileId, pubkey = pubkey)
-        setRecommendedRelays(recommended = nostrProfileId?.getRecommendedRelays().orEmpty())
+        setRecommendedRelays(recommended = nostrProfileId?.recommendedRelays.orEmpty())
         setFeed(pubkey = pubkey)
     }
 

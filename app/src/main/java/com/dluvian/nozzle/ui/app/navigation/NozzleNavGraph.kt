@@ -14,8 +14,11 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import androidx.navigation.navDeepLink
 import com.dluvian.nozzle.data.nostr.utils.EncodingUtils.URI
-import com.dluvian.nozzle.data.nostr.utils.EncodingUtils.note1ToHex
-import com.dluvian.nozzle.data.nostr.utils.EncodingUtils.npubToHex
+import com.dluvian.nozzle.data.nostr.utils.EncodingUtils.nostrStrToNostrId
+import com.dluvian.nozzle.model.nostr.NeventNostrId
+import com.dluvian.nozzle.model.nostr.NoteNostrId
+import com.dluvian.nozzle.model.nostr.NprofileNostrId
+import com.dluvian.nozzle.model.nostr.NpubNostrId
 import com.dluvian.nozzle.ui.app.VMContainer
 import com.dluvian.nozzle.ui.app.views.editProfile.EditProfileRoute
 import com.dluvian.nozzle.ui.app.views.feed.FeedRoute
@@ -155,25 +158,15 @@ fun NozzleNavGraph(
             route = NozzleRoute.ROUTER,
             deepLinks = listOf(navDeepLink { uriPattern = "$URI{nip21}" })
         ) { backStackEntry ->
-            val nip21 = backStackEntry.arguments?.getString("nip21")
-            // TODO: Add nevent and nprofile
-            if (nip21?.startsWith("npub1") == true) {
-                val hex = npubToHex(nip21)
-                if (hex != null) navActions.navigateToProfile(hex)
-                else {
-                    Log.i(TAG, "npub $nip21 is invalid")
+            val nip21 = backStackEntry.arguments?.getString("nip21").orEmpty()
+            Log.i(TAG, "Deep link $nip21")
+            when (val nostrId = nostrStrToNostrId(nostrStr = nip21)) {
+                is NpubNostrId, is NprofileNostrId -> navActions.navigateToProfile(nostrId.nostrStr)
+                is NoteNostrId, is NeventNostrId -> navActions.navigateToThread(nostrId.nostrStr)
+                null -> {
+                    Log.i(TAG, "Nostr identifier $nip21 not recognized")
                     navActions.navigateToFeed()
                 }
-            } else if (nip21?.startsWith("note1") == true) {
-                val hex = note1ToHex(nip21)
-                if (hex != null) navActions.navigateToThread(hex)
-                else {
-                    Log.i(TAG, "note1 $nip21 is invalid")
-                    navActions.navigateToFeed()
-                }
-            } else {
-                Log.i(TAG, "Nostr identifier $nip21 not recognized")
-                navActions.navigateToFeed()
             }
         }
     }

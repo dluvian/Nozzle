@@ -12,9 +12,9 @@ import com.dluvian.nozzle.model.nostr.NpubNostrId
 private const val TAG = "NozzleNavActions"
 
 class NozzleNavActions(private val navController: NavHostController) {
-    val navigateToProfile: (String) -> Unit = { pubkey ->
-        if (pubkey.isNotEmpty()) {
-            navController.navigate("${NozzleRoute.PROFILE}/$pubkey")
+    val navigateToProfile: (String) -> Unit = { profileId ->
+        if (profileId.isNotEmpty()) {
+            navController.navigate("${NozzleRoute.PROFILE}/$profileId")
         }
     }
 

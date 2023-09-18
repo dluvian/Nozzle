@@ -33,8 +33,8 @@ class ThreadProvider(
     ): Flow<PostThread> {
         val recommendedRelays = mutableListOf<String>()
         val hexId = postIdToNostrId(postId)?.let {
-            recommendedRelays.addAll(it.getRecommendedRelays())
-            it.getHex()
+            recommendedRelays.addAll(it.recommendedRelays)
+            it.hex
         } ?: postId
 
         renewThreadSubscription(
