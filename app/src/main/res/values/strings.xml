@@ -64,8 +64,8 @@
     <string name="enter_nip05">e.g. user@nozzle.social</string>
     <string name="post_your_thoughts">Post your thoughts</string>
     <string name="add">Add</string>
-    <string name="invalid_npub_or_note">Invalid npub or note ID</string>
-    <string name="search_npub_or_note">Search npub or note ID</string>
+    <string name="invalid_nostr_id">Invalid nostr ID</string>
+    <string name="search_nostr_id">Search nostr ID</string>
     <string name="post_published">Post published</string>
     <string name="time_abbr_now">Now</string>
     <string name="time_abbr_second">s</string>
