@@ -5,6 +5,7 @@ import com.dluvian.nozzle.data.MAX_RELAYS
 import com.dluvian.nozzle.data.nostr.INostrSubscriber
 import com.dluvian.nozzle.data.nostr.utils.EncodingUtils.createNprofileStr
 import com.dluvian.nozzle.data.nostr.utils.EncodingUtils.profileIdToNostrId
+import com.dluvian.nozzle.data.provider.IContactListProvider
 import com.dluvian.nozzle.data.provider.IProfileWithMetaProvider
 import com.dluvian.nozzle.data.provider.IPubkeyProvider
 import com.dluvian.nozzle.data.provider.IRelayProvider
@@ -13,6 +14,7 @@ import com.dluvian.nozzle.data.room.dao.EventRelayDao
 import com.dluvian.nozzle.data.room.dao.ProfileDao
 import com.dluvian.nozzle.data.room.helper.extended.ProfileEntityExtended
 import com.dluvian.nozzle.data.utils.LONG_DEBOUNCE
+import com.dluvian.nozzle.data.utils.SHORT_DEBOUNCE
 import com.dluvian.nozzle.data.utils.firstThenDistinctDebounce
 import com.dluvian.nozzle.model.ProfileWithMeta
 import com.dluvian.nozzle.model.helper.PubkeyVariations
@@ -28,6 +30,7 @@ class ProfileWithMetaProvider(
     private val pubkeyProvider: IPubkeyProvider,
     private val nostrSubscriber: INostrSubscriber,
     private val relayProvider: IRelayProvider,
+    private val contactListProvider: IContactListProvider,
     private val profileDao: ProfileDao,
     private val contactDao: ContactDao,
     private val eventRelayDao: EventRelayDao,
@@ -46,8 +49,12 @@ class ProfileWithMetaProvider(
 
         val profileExtendedFlow = profileDao.getProfileEntityExtendedFlow(
             pubkey = pubkey,
-            personalPubkey = pubkeyProvider.getPubkey()
         ).distinctUntilChanged()
+
+        // This is not joined because you could follow someone without metadata
+        val contactPubkeysFlow = contactListProvider
+            .getPersonalContactPubkeysFlow()
+            .firstThenDistinctDebounce(SHORT_DEBOUNCE)
 
         // TODO: SQL join (?)
         val relaysFlow = eventRelayDao.listUsedRelaysFlow(pubkey)
@@ -65,6 +72,7 @@ class ProfileWithMetaProvider(
         return getFinalFlow(
             pubkeyVariations = PubkeyVariations.fromPubkey(pubkey),
             profileFlow = profileExtendedFlow,
+            contactPubkeysFlow = contactPubkeysFlow,
             relaysFlow = relaysFlow,
             nprofileFlow = nprofileFlow,
             trustScoreFlow = trustScoreFlow,
@@ -75,6 +83,7 @@ class ProfileWithMetaProvider(
     private fun getFinalFlow(
         pubkeyVariations: PubkeyVariations,
         profileFlow: Flow<ProfileEntityExtended?>,
+        contactPubkeysFlow: Flow<List<String>>,
         relaysFlow: Flow<List<String>>,
         nprofileFlow: Flow<String?>,
         trustScoreFlow: Flow<Float>,
@@ -82,10 +91,11 @@ class ProfileWithMetaProvider(
     ): Flow<ProfileWithMeta> {
         return combine(
             profileFlow,
+            contactPubkeysFlow,
             relaysFlow,
             nprofileFlow,
             trustScoreFlow,
-        ) { profile, relays, nprofile, trustScore ->
+        ) { profile, contacts, relays, nprofile, trustScore ->
             handleNostrSubscriptions(
                 pubkey = pubkeyVariations.pubkey,
                 recommendedRelays = recommendedRelays
@@ -99,7 +109,7 @@ class ProfileWithMetaProvider(
                 numOfFollowers = profile?.numOfFollowers ?: 0,
                 relays = relays,
                 isOneself = pubkeyProvider.isOneself(pubkeyVariations.pubkey),
-                isFollowedByMe = profile?.isFollowedByMe ?: false,
+                isFollowedByMe = contacts.contains(pubkeyVariations.pubkey),
                 trustScore = trustScore,
             )
         }

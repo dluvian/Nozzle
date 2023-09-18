@@ -14,10 +14,6 @@ interface ProfileDao {
     @Query(
         // SELECT metadata
         "SELECT mainProfile.*, " +
-                // SELECT isFollowedByMe
-                "(EXISTS (SELECT contactPubkey FROM contact " +
-                "WHERE pubkey = :personalPubkey AND contactPubkey = mainProfile.pubkey)) " +
-                "AS isFollowedByMe, " +
                 // SELECT numOfFollowing
                 "(SELECT COUNT(contactPubkey) FROM contact WHERE pubkey = :pubkey) AS numOfFollowing, " +
                 // SELECT numOfFollowers
@@ -25,10 +21,7 @@ interface ProfileDao {
                 "FROM profile AS mainProfile " +
                 "WHERE mainProfile.pubkey = :pubkey"
     )
-    fun getProfileEntityExtendedFlow(
-        pubkey: String,
-        personalPubkey: String
-    ): Flow<ProfileEntityExtended?>
+    fun getProfileEntityExtendedFlow(pubkey: String): Flow<ProfileEntityExtended?>
 
     @RewriteQueriesToDropUnusedColumns
     @Query("SELECT * FROM profile WHERE pubkey = :pubkey")

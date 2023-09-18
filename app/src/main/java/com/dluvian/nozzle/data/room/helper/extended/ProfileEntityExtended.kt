@@ -6,8 +6,6 @@ import com.dluvian.nozzle.data.room.entity.ProfileEntity
 data class ProfileEntityExtended(
     @Embedded
     val profileEntity: ProfileEntity,
-    val isFollowedByMe: Boolean,
-//  TODO:  val isOneself: Boolean,
     val numOfFollowing: Int,
     val numOfFollowers: Int,
 )
