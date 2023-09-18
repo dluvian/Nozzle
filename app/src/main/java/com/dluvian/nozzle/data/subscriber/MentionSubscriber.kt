@@ -60,9 +60,6 @@ class MentionSubscriber(
         val profilesToSub = mentionedNprofiles.filter { !exludePubkeys.contains(it.pubkey) }
 
         Log.i(TAG, "Subscribe ${profilesToSub.size} mentioned profiles")
-        if (profilesToSub.isEmpty()) {
-            return PubkeysAndAuthorPubkeys(authorPubkeys = foundAuthorPubkeys)
-        }
 
         val pubkeysByRelays = buildRelayMap(
             objs = profilesToSub,
@@ -87,6 +84,7 @@ class MentionSubscriber(
         getId: (T) -> String,
         getRelays: (T) -> List<String>
     ): Map<String, List<String>> {
+        if (objs.isEmpty()) return emptyMap()
         val idsByRelays = mutableMapOf<String, MutableList<String>>()
         objs.forEach { obj ->
             getRelays(obj).forEach { relay ->
