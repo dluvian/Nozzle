@@ -177,12 +177,14 @@ interface PostDao {
         "DELETE FROM post " +
                 "WHERE (" +
                 "id NOT IN (:exclude) " +
+                "AND pubkey IS NOT :excludeAuthor " +
                 "AND id NOT IN (SELECT id FROM post ORDER BY createdAt DESC LIMIT :amountToKeep)" +
                 ") OR createdAt > :currentTimestamp"
     )
     suspend fun deleteAllExceptNewest(
         amountToKeep: Int,
         exclude: Collection<String>,
+        excludeAuthor: String,
         currentTimestamp: Long
     ): Int
 

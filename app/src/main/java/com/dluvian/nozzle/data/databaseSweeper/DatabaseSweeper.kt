@@ -24,9 +24,7 @@ class DatabaseSweeper(
             return
         }
         val excludePostIds = dbSweepExcludingCache.getPostIds()
-        val excludeProfiles = dbSweepExcludingCache.getPubkeys() +
-                pubkeyProvider.getPubkey() +
-                contactListProvider.listPersonalContactPubkeys()
+        val excludeProfiles = dbSweepExcludingCache.getPubkeys()
         Log.i(
             TAG,
             "Sweep database leaving $keepPosts, " +
@@ -43,9 +41,13 @@ class DatabaseSweeper(
         excludePostIds: Collection<String>,
         excludeProfiles: Collection<String>
     ) {
+        // TODO: Exclude contacts via db table of user acc
+        val contacts = contactListProvider.listPersonalContactPubkeys() + pubkeyProvider.getPubkey()
+        // TODO: Exclude author via db table of user acc
         val deletePostCount = database.postDao().deleteAllExceptNewest(
             amountToKeep = keepPosts,
             exclude = excludePostIds,
+            excludeAuthor = pubkeyProvider.getPubkey(),
             currentTimestamp = getCurrentTimeInSeconds()
         )
         Log.i(TAG, "Deleted $deletePostCount posts")
@@ -57,18 +59,16 @@ class DatabaseSweeper(
         val deleteReactionCount = database.reactionDao().deleteOrphaned()
         Log.i(TAG, "Deleted $deleteReactionCount reactions")
 
-        // TODO: pubkeyProvider not needed once user accounts are saved in roomDb
-        val deleteProfileCount = database.profileDao().deleteOrphaned(exclude = excludeProfiles)
+        val deleteProfileCount = database.profileDao().deleteOrphaned(
+            exclude = excludeProfiles + contacts
+        )
         Log.i(TAG, "Deleted $deleteProfileCount profiles")
 
-        val deleteContactCount = database.contactDao().deleteOrphaned(
-            except = pubkeyProvider.getPubkey()
-        )
+        val deleteContactCount = database.contactDao().deleteOrphaned(exclude = contacts)
         Log.i(TAG, "Deleted $deleteContactCount contact entries")
 
-        val deleteNip65Count = database.nip65Dao().deleteOrphaned(
-            except = pubkeyProvider.getPubkey()
-        )
+        // TODO: Exclude author via db table of user acc
+        val deleteNip65Count = database.nip65Dao().deleteOrphaned(exclude = contacts)
         Log.i(TAG, "Deleted $deleteNip65Count nip65 entries")
     }
 }

@@ -188,7 +188,7 @@ interface ContactDao {
     @Query(
         "DELETE FROM contact " +
                 "WHERE pubkey NOT IN (SELECT pubkey FROM profile) " +
-                "AND pubkey IS NOT :except"
+                "AND pubkey NOT IN (:exclude)"
     )
-    suspend fun deleteOrphaned(except: String): Int
+    suspend fun deleteOrphaned(exclude: Collection<String>): Int
 }
