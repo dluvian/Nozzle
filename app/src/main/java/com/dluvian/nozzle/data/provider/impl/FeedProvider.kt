@@ -7,7 +7,7 @@ import com.dluvian.nozzle.data.provider.IFeedProvider
 import com.dluvian.nozzle.data.provider.IPostWithMetaProvider
 import com.dluvian.nozzle.data.room.dao.PostDao
 import com.dluvian.nozzle.data.room.helper.BasePost
-import com.dluvian.nozzle.data.subscriber.IMentionSubscriber
+import com.dluvian.nozzle.data.subscriber.INozzleSubscriber
 import com.dluvian.nozzle.data.utils.getCurrentTimeInSeconds
 import com.dluvian.nozzle.model.AllRelays
 import com.dluvian.nozzle.model.AuthorSelection
@@ -27,7 +27,7 @@ private const val TAG = "FeedProvider"
 class FeedProvider(
     private val postWithMetaProvider: IPostWithMetaProvider,
     private val nostrSubscriber: INostrSubscriber,
-    private val mentionSubscriber: IMentionSubscriber,
+    private val nozzleSubscriber: INozzleSubscriber,
     private val postDao: PostDao,
     private val contactListProvider: IContactListProvider,
 ) : IFeedProvider {
@@ -58,14 +58,15 @@ class FeedProvider(
             isPosts = feedSettings.isPosts,
             isReplies = feedSettings.isReplies,
             authorPubkeys = authorSelectionPubkeys,
-            relays = feedSettings.relaySelection.getSelectedRelays(),
+            relays = feedSettings.relaySelection.selectedRelays,
             until = until ?: getCurrentTimeInSeconds(),
             limit = limit,
         )
-
-        val mentionedPubkeysAndAuthorPubkeys = mentionSubscriber
+        // TODO Sub to nip65 when not in db yet
+        val mentionedPubkeysAndAuthorPubkeys = nozzleSubscriber
             .subscribeMentionedProfiles(basePosts = basePosts)
-        val mentionedPosts = mentionSubscriber.subscribeMentionedPosts(basePosts = basePosts)
+        val mentionedPosts = nozzleSubscriber.subscribeMentionedPosts(basePosts = basePosts)
+        nozzleSubscriber.subscribeNewProfiles(pubkeys = basePosts.map { it.pubkey }.toSet())
 
         return postWithMetaProvider.getPostsWithMetaFlow(
             postIds = basePosts.map { it.id },
@@ -95,7 +96,7 @@ class FeedProvider(
                     authorPubkeys = authorPubkeys,
                     limit = adjustedLimit,
                     until = until,
-                    relays = relaySelection.getSelectedRelays()
+                    relays = relaySelection.selectedRelays
                 )
             }
 
@@ -105,7 +106,7 @@ class FeedProvider(
                         authorPubkeys = null,
                         limit = adjustedLimit,
                         until = until,
-                        relays = relaySelection.getSelectedRelays()
+                        relays = relaySelection.selectedRelays
                     )
                 } else {
                     relaySelection.pubkeysPerRelay.forEach { (relay, pubkeys) ->

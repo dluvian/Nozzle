@@ -2,6 +2,8 @@ package com.dluvian.nozzle.data.room.dao
 
 import androidx.room.*
 import com.dluvian.nozzle.data.room.entity.Nip65Entity
+import com.dluvian.nozzle.model.helper.Pubkey
+import com.dluvian.nozzle.model.helper.Relay
 import kotlinx.coroutines.flow.Flow
 
 
@@ -38,6 +40,15 @@ interface Nip65Dao {
     )
     suspend fun getPubkeysPerWriteRelayMap(pubkeys: Collection<String>): Map<String, Set<String>>
 
+    @MapInfo(keyColumn = "pubkey", valueColumn = "url")
+    @Query(
+        "SELECT pubkey, url " +
+                "FROM nip65 " +
+                "WHERE isWrite = '1' " +
+                "AND pubkey IN (:pubkeys)"
+    )
+    suspend fun getWriteRelaysOfPubkeys(pubkeys: Collection<String>): Map<Pubkey, List<Relay>>
+
     @Query(
         "SELECT url " +
                 "FROM nip65 " +
@@ -68,5 +79,4 @@ interface Nip65Dao {
                 "AND pubkey NOT IN (:exclude)"
     )
     suspend fun deleteOrphaned(exclude: Collection<String>): Int
-
 }

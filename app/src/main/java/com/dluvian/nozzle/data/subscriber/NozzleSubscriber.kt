@@ -11,14 +11,14 @@ import com.dluvian.nozzle.model.helper.PubkeysAndAuthorPubkeys
 import com.dluvian.nozzle.model.nostr.Nevent
 import com.dluvian.nozzle.model.nostr.Nprofile
 
-private const val TAG = "MentionSubscriber"
+private const val TAG = "NozzleSubscriber"
 
-class MentionSubscriber(
+class NozzleSubscriber(
     private val nostrSubscriber: INostrSubscriber,
     private val relayProvider: IRelayProvider,
     private val idCache: IIdCache,
     private val postDao: PostDao,
-) : IMentionSubscriber {
+) : INozzleSubscriber {
     override suspend fun subscribeMentionedPosts(basePosts: Collection<BasePost>): List<Nevent> {
         if (basePosts.isEmpty()) return emptyList()
 
@@ -30,7 +30,7 @@ class MentionSubscriber(
         return mentionedPosts
     }
 
-    override suspend fun subscribeMentionedProfiles(
+    override fun subscribeMentionedProfiles(
         basePosts: Collection<BasePost>
     ): PubkeysAndAuthorPubkeys {
         if (basePosts.isEmpty()) return PubkeysAndAuthorPubkeys()
@@ -45,6 +45,33 @@ class MentionSubscriber(
             pubkeys = mentionedPubkeys,
             authorPubkeys = basePosts.map { it.pubkey }
         )
+    }
+
+    override suspend fun subscribeNewProfiles(pubkeys: Set<String>) {
+        if (pubkeys.isEmpty()) return
+
+        val existingPubkeys = idCache.getPubkeys().intersect(pubkeys)
+        val exludePubkeys = getRandomHalf(existingPubkeys).toSet()
+        val pubkeysToSub = pubkeys.minus(exludePubkeys)
+
+        if (pubkeysToSub.isEmpty()) return
+
+        Log.i(TAG, "Subscribe ${pubkeysToSub.size} new profiles")
+        val nip65 = relayProvider.getWriteRelaysOfPubkeys(pubkeys = pubkeysToSub)
+        Log.d(TAG, "Found nip65 for ${nip65.size}/${pubkeysToSub.size} pubkeys")
+
+        val pubkeysByRelays = buildRelayMap(
+            objs = pubkeysToSub,
+            getId = { pubkey -> pubkey },
+            getRelays = { pubkey -> nip65[pubkey].orEmpty() }
+        )
+        pubkeysByRelays.forEach { entry ->
+            nostrSubscriber.subscribeProfiles(
+                pubkeys = entry.value.distinct(),
+                relays = listOf(entry.key)
+            )
+        }
+
     }
 
     private suspend fun subscribeNewPosts(mentionedPosts: List<Nevent>) {
@@ -69,6 +96,10 @@ class MentionSubscriber(
         }
     }
 
+    private fun getRandomHalf(strs: Collection<String>): Collection<String> {
+        return strs.shuffled().take(maxOf(1, strs.size / 2))
+    }
+
     private fun subscribeNewProfilesReturnMentionedPubkeys(
         mentionedProfiles: List<Nprofile>
     ): Set<String> {
@@ -76,9 +107,7 @@ class MentionSubscriber(
 
         val mentionedPubkeys = mentionedProfiles.map { it.pubkey }.toSet()
         val existingPubkeys = idCache.getPubkeys().intersect(mentionedPubkeys)
-        val exludePubkeys = existingPubkeys
-            .shuffled()
-            .take(maxOf(1, existingPubkeys.size / 2))
+        val exludePubkeys = getRandomHalf(existingPubkeys)
         val profilesToSub = mentionedProfiles.filter { !exludePubkeys.contains(it.pubkey) }
 
         Log.i(TAG, "Subscribe ${profilesToSub.size} mentioned profiles")
@@ -99,7 +128,7 @@ class MentionSubscriber(
     }
 
     private fun <T> buildRelayMap(
-        objs: List<T>,
+        objs: Collection<T>,
         getId: (T) -> String,
         getRelays: (T) -> List<String>
     ): Map<String, List<String>> {

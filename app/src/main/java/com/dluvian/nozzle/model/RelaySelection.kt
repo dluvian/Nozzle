@@ -1,19 +1,11 @@
 package com.dluvian.nozzle.model
 
-sealed class RelaySelection {
-    abstract fun getSelectedRelays(): Collection<String>?
-}
+sealed class RelaySelection(val selectedRelays: Collection<String>?)
 
-data object AllRelays : RelaySelection() {
-    override fun getSelectedRelays(): List<String>? = null
-}
+data object AllRelays : RelaySelection(selectedRelays = null)
 
-class MultipleRelays(private val relays: List<String>) : RelaySelection() {
-    override fun getSelectedRelays(): List<String> = relays
-}
+class MultipleRelays(relays: List<String>) : RelaySelection(selectedRelays = relays)
 
-class UserSpecific(val pubkeysPerRelay: Map<String, Set<String>>) : RelaySelection() {
-    override fun getSelectedRelays(): Set<String> {
-        return pubkeysPerRelay.filter { it.value.isNotEmpty() }.keys
-    }
-}
+class UserSpecific(val pubkeysPerRelay: Map<String, Set<String>>) : RelaySelection(
+    selectedRelays = pubkeysPerRelay.filter { it.value.isNotEmpty() }.keys
+)

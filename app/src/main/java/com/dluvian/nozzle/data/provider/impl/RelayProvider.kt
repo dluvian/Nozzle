@@ -10,6 +10,8 @@ import com.dluvian.nozzle.data.room.entity.Nip65Entity
 import com.dluvian.nozzle.data.utils.NORMAL_DEBOUNCE
 import com.dluvian.nozzle.data.utils.firstThenDistinctDebounce
 import com.dluvian.nozzle.model.PostWithMeta
+import com.dluvian.nozzle.model.helper.Pubkey
+import com.dluvian.nozzle.model.helper.Relay
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.SharingStarted
@@ -67,6 +69,10 @@ class RelayProvider(
 
     override suspend fun getWriteRelaysOfPubkey(pubkey: String): List<String> {
         return nip65Dao.getWriteRelaysOfPubkey(pubkey = pubkey)
+    }
+
+    override suspend fun getWriteRelaysOfPubkeys(pubkeys: Collection<String>): Map<Pubkey, List<Relay>> {
+        return nip65Dao.getWriteRelaysOfPubkeys(pubkeys = pubkeys)
     }
 
     private fun updateFlow() {

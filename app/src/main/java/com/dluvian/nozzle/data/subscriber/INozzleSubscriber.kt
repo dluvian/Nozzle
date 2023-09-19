@@ -4,10 +4,12 @@ import com.dluvian.nozzle.data.room.helper.BasePost
 import com.dluvian.nozzle.model.helper.PubkeysAndAuthorPubkeys
 import com.dluvian.nozzle.model.nostr.Nevent
 
-interface IMentionSubscriber {
+interface INozzleSubscriber {
     suspend fun subscribeMentionedPosts(basePosts: Collection<BasePost>): List<Nevent>
 
-    suspend fun subscribeMentionedProfiles(
+    fun subscribeMentionedProfiles(
         basePosts: Collection<BasePost>
     ): PubkeysAndAuthorPubkeys
+
+    suspend fun subscribeNewProfiles(pubkeys: Set<String>)
 }

@@ -23,7 +23,7 @@ fun FeedSettingsDropdownMenu(
     ) {
         val padding = PaddingValues(start = spacing.medium, end = spacing.xl)
         CheckboxDropdownMenuItem(
-            isChecked = feedSettings.authorSelection.isContactsOnly(),
+            isChecked = feedSettings.authorSelection.isContactsOnly,
             text = stringResource(id = R.string.contacts_only),
             contentPadding = padding,
             onToggle = onToggleContactsOnly,

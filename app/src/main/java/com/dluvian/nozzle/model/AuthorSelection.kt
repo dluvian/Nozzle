@@ -1,17 +1,9 @@
 package com.dluvian.nozzle.model
 
-sealed class AuthorSelection {
-    abstract fun isContactsOnly(): Boolean
-}
+sealed class AuthorSelection(val isContactsOnly: Boolean)
 
-object Everyone : AuthorSelection() {
-    override fun isContactsOnly() = false
-}
+data object Everyone : AuthorSelection(isContactsOnly = false)
 
-object Contacts : AuthorSelection() {
-    override fun isContactsOnly() = true
-}
+data object Contacts : AuthorSelection(isContactsOnly = true)
 
-class SingleAuthor(val pubkey: String) : AuthorSelection() {
-    override fun isContactsOnly() = false
-}
+class SingleAuthor(val pubkey: String) : AuthorSelection(isContactsOnly = false)

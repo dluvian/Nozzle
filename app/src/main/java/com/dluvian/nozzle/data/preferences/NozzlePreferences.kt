@@ -39,7 +39,7 @@ class NozzlePreferences(context: Context) : IFeedSettingsPreferences {
         preferences.edit()
             .putBoolean(
                 FEED_SETTINGS_IS_CONTACTS_ONLY,
-                feedSettings.authorSelection.isContactsOnly()
+                feedSettings.authorSelection.isContactsOnly
             )
             .putBoolean(FEED_SETTINGS_IS_POSTS, feedSettings.isPosts)
             .putBoolean(FEED_SETTINGS_IS_REPLIES, feedSettings.isReplies)

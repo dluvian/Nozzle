@@ -1,6 +1,8 @@
 package com.dluvian.nozzle.data.provider
 
 import com.dluvian.nozzle.model.PostWithMeta
+import com.dluvian.nozzle.model.helper.Pubkey
+import com.dluvian.nozzle.model.helper.Relay
 
 
 interface IRelayProvider {
@@ -10,4 +12,5 @@ interface IRelayProvider {
     suspend fun getAutopilotRelays(): Map<String, Set<String>>
     suspend fun getReadRelaysOfPubkey(pubkey: String): List<String>
     suspend fun getWriteRelaysOfPubkey(pubkey: String): List<String>
+    suspend fun getWriteRelaysOfPubkeys(pubkeys: Collection<String>): Map<Pubkey, List<Relay>>
 }

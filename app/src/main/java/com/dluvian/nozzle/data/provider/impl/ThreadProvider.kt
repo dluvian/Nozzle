@@ -8,7 +8,7 @@ import com.dluvian.nozzle.data.provider.IThreadProvider
 import com.dluvian.nozzle.data.room.dao.PostDao
 import com.dluvian.nozzle.data.room.helper.BasePost
 import com.dluvian.nozzle.data.room.helper.ReplyContext
-import com.dluvian.nozzle.data.subscriber.IMentionSubscriber
+import com.dluvian.nozzle.data.subscriber.INozzleSubscriber
 import com.dluvian.nozzle.data.utils.NORMAL_DEBOUNCE
 import com.dluvian.nozzle.data.utils.firstThenDistinctDebounce
 import com.dluvian.nozzle.model.PostThread
@@ -23,7 +23,7 @@ private const val TAG = "ThreadProvider"
 class ThreadProvider(
     private val postWithMetaProvider: IPostWithMetaProvider,
     private val nostrSubscriber: INostrSubscriber,
-    private val mentionSubscriber: IMentionSubscriber,
+    private val nozzleSubscriber: INozzleSubscriber,
     private val postDao: PostDao,
 ) : IThreadProvider {
     override suspend fun getThreadFlow(
@@ -58,9 +58,9 @@ class ThreadProvider(
             )
         }
 
-        val mentionedPubkeysAndAuthorPubkeys = mentionSubscriber
+        val mentionedPubkeysAndAuthorPubkeys = nozzleSubscriber
             .subscribeMentionedProfiles(basePosts = allPosts)
-        val mentionedPosts = mentionSubscriber.subscribeMentionedPosts(basePosts = allPosts)
+        val mentionedPosts = nozzleSubscriber.subscribeMentionedPosts(basePosts = allPosts)
 
         return getMappedThreadFlow(
             currentId = current.id,

@@ -328,7 +328,7 @@ class FeedViewModel(
     }
 
     private fun getSelectedRelays(): Collection<String>? {
-        return viewModelState.value.feedSettings.relaySelection.getSelectedRelays()
+        return viewModelState.value.feedSettings.relaySelection.selectedRelays
     }
 
     private suspend fun getAndCacheAutopilotRelays(): Map<String, Set<String>> {

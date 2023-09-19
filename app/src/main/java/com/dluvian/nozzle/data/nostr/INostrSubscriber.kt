@@ -15,10 +15,6 @@ interface INostrSubscriber {
         relays: Collection<String>? = null,
     ): List<String>
 
-
-    fun subscribePost(postId: String, relays: Collection<String>? = null) =
-        subscribePosts(postIds = listOf(postId), relays = relays)
-
     fun subscribePosts(
         postIds: List<String>,
         relays: Collection<String>? = null
@@ -33,9 +29,6 @@ interface INostrSubscriber {
         currentPostId: String,
         relays: Collection<String>? = null,
     ): List<String>
-
-    fun subscribeProfile(pubkey: String, relays: Collection<String>? = null) =
-        subscribeProfiles(pubkeys = listOf(pubkey), relays = relays)
 
     fun subscribeProfiles(
         pubkeys: Collection<String>,

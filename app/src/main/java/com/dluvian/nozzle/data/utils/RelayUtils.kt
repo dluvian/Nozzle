@@ -20,10 +20,10 @@ fun listRelayStatuses(
         var count = 0
         val isActive = when (relaySelection) {
             is AllRelays -> true
-            is MultipleRelays -> relaySelection.getSelectedRelays().contains(it)
+            is MultipleRelays -> relaySelection.selectedRelays?.contains(it) ?: false
             is UserSpecific -> {
                 count = relaySelection.pubkeysPerRelay[it].orEmpty().size
-                relaySelection.getSelectedRelays().contains(it)
+                relaySelection.selectedRelays?.contains(it) ?: false
             }
         }
         RelayActive(relayUrl = it, isActive = isActive, count = count)

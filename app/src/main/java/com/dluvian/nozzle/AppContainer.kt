@@ -42,8 +42,8 @@ import com.dluvian.nozzle.data.provider.impl.ProfileWithMetaProvider
 import com.dluvian.nozzle.data.provider.impl.RelayProvider
 import com.dluvian.nozzle.data.provider.impl.ThreadProvider
 import com.dluvian.nozzle.data.room.AppDatabase
-import com.dluvian.nozzle.data.subscriber.IMentionSubscriber
-import com.dluvian.nozzle.data.subscriber.MentionSubscriber
+import com.dluvian.nozzle.data.subscriber.INozzleSubscriber
+import com.dluvian.nozzle.data.subscriber.NozzleSubscriber
 
 class AppContainer(context: Context) {
     val roomDb: AppDatabase by lazy {
@@ -96,7 +96,7 @@ class AppContainer(context: Context) {
         nip65Dao = roomDb.nip65Dao(),
     )
 
-    val mentionSubscriber: IMentionSubscriber = MentionSubscriber(
+    private val nozzleSubscriber: INozzleSubscriber = NozzleSubscriber(
         nostrSubscriber = nostrSubscriber,
         relayProvider = relayProvider,
         idCache = dbSweepExcludingCache,
@@ -138,7 +138,7 @@ class AppContainer(context: Context) {
     val feedProvider: IFeedProvider = FeedProvider(
         postWithMetaProvider = postWithMetaProvider,
         nostrSubscriber = nostrSubscriber,
-        mentionSubscriber = mentionSubscriber,
+        nozzleSubscriber = nozzleSubscriber,
         contactListProvider = contactListProvider,
         postDao = roomDb.postDao(),
     )
@@ -162,7 +162,7 @@ class AppContainer(context: Context) {
     val threadProvider: IThreadProvider = ThreadProvider(
         postWithMetaProvider = postWithMetaProvider,
         nostrSubscriber = nostrSubscriber,
-        mentionSubscriber = mentionSubscriber,
+        nozzleSubscriber = nozzleSubscriber,
         postDao = roomDb.postDao()
     )
 
