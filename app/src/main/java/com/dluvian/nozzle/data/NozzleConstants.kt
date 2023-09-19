@@ -17,5 +17,5 @@ const val MAX_RELAYS = 7
 
 const val MAX_APPEND_ATTEMPTS = 3
 
-const val SWEEP_THRESHOLD = 2048
+const val SWEEP_THRESHOLD = 3000
 const val SWEEP_THRESHOLD_FACTOR = 1.5f
