@@ -74,7 +74,9 @@ class AnnotatedContentHandler : IAnnotatedContentHandler {
                         pushStringAnnotation(tag = NPUB_TAG, annotation = nostrId.npub)
                         pushStyle(style = mentionStyle)
                         val name = "@" + (mentionedPubkeyToName[nostrId.pubkeyHex]
-                            ?: getShortenedNpub(nostrId.npub))
+                            ?.ifBlank { getShortenedNpub(nostrId.npub) }
+                            ?: getShortenedNpub(nostrId.npub)
+                            ?: nostrId.npub)
                         append(name)
                         pop()
                         pop()
@@ -87,6 +89,7 @@ class AnnotatedContentHandler : IAnnotatedContentHandler {
                         )
                         pushStyle(style = mentionStyle)
                         val name = "@" + (mentionedPubkeyToName[nostrId.pubkeyHex]
+                            ?.ifBlank { getShortenedNprofile(nostrId.nprofile) }
                             ?: getShortenedNprofile(nostrId.nprofile)
                             ?: nostrId.nprofile)
                         append(name)
