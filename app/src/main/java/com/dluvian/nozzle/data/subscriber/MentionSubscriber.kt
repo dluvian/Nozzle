@@ -9,6 +9,7 @@ import com.dluvian.nozzle.data.room.dao.PostDao
 import com.dluvian.nozzle.data.room.helper.BasePost
 import com.dluvian.nozzle.model.helper.PubkeysAndAuthorPubkeys
 import com.dluvian.nozzle.model.nostr.Nevent
+import com.dluvian.nozzle.model.nostr.Nprofile
 
 private const val TAG = "MentionSubscriber"
 
@@ -23,11 +24,37 @@ class MentionSubscriber(
 
         val mentionedPosts = IdExtractorUtils
             .extractNeventsAndNoteIds(contents = basePosts.map { it.content })
+
+        subscribeNewPosts(mentionedPosts = mentionedPosts)
+
+        return mentionedPosts
+    }
+
+    override suspend fun subscribeMentionedProfiles(
+        basePosts: Collection<BasePost>
+    ): PubkeysAndAuthorPubkeys {
+        if (basePosts.isEmpty()) return PubkeysAndAuthorPubkeys()
+
+        val contents = basePosts.map { it.content }
+        val mentionedNprofiles = IdExtractorUtils.extractNprofilesAndNpubs(contents = contents)
+        val mentionedPubkeys = subscribeNewProfilesReturnMentionedPubkeys(
+            mentionedProfiles = mentionedNprofiles
+        )
+
+        return PubkeysAndAuthorPubkeys(
+            pubkeys = mentionedPubkeys,
+            authorPubkeys = basePosts.map { it.pubkey }
+        )
+    }
+
+    private suspend fun subscribeNewPosts(mentionedPosts: List<Nevent>) {
+        if (mentionedPosts.isEmpty()) return
+
         val existingIds = postDao.filterExistingIds(postIds = mentionedPosts.map { it.eventId })
         val newMentionedPosts = mentionedPosts.filter { !existingIds.contains(it.eventId) }
 
         Log.i(TAG, "Subscribe ${newMentionedPosts.size} new mentioned posts")
-        if (newMentionedPosts.isEmpty()) return emptyList()
+        if (newMentionedPosts.isEmpty()) return
 
         val postIdsByRelays = buildRelayMap(
             objs = newMentionedPosts,
@@ -40,24 +67,19 @@ class MentionSubscriber(
                 relays = listOf(entry.key)
             )
         }
-
-        return mentionedPosts
     }
 
-    override suspend fun subscribeMentionedProfiles(
-        basePosts: Collection<BasePost>
-    ): PubkeysAndAuthorPubkeys {
-        if (basePosts.isEmpty()) return PubkeysAndAuthorPubkeys()
+    private fun subscribeNewProfilesReturnMentionedPubkeys(
+        mentionedProfiles: List<Nprofile>
+    ): Set<String> {
+        if (mentionedProfiles.isEmpty()) return emptySet()
 
-        val foundAuthorPubkeys = basePosts.map { it.pubkey }
-        val contents = basePosts.map { it.content }
-        val mentionedNprofiles = IdExtractorUtils.extractNprofilesAndNpubs(contents = contents)
-        val mentionedPubkeys = mentionedNprofiles.map { it.pubkey }.toSet()
-        val existingPubkeys = idCache.getPubkeys().filter { mentionedPubkeys.contains(it) }
+        val mentionedPubkeys = mentionedProfiles.map { it.pubkey }.toSet()
+        val existingPubkeys = idCache.getPubkeys().intersect(mentionedPubkeys)
         val exludePubkeys = existingPubkeys
             .shuffled()
             .take(maxOf(1, existingPubkeys.size / 2))
-        val profilesToSub = mentionedNprofiles.filter { !exludePubkeys.contains(it.pubkey) }
+        val profilesToSub = mentionedProfiles.filter { !exludePubkeys.contains(it.pubkey) }
 
         Log.i(TAG, "Subscribe ${profilesToSub.size} mentioned profiles")
 
@@ -73,10 +95,7 @@ class MentionSubscriber(
             )
         }
 
-        return PubkeysAndAuthorPubkeys(
-            pubkeys = mentionedPubkeys,
-            authorPubkeys = foundAuthorPubkeys
-        )
+        return mentionedPubkeys
     }
 
     private fun <T> buildRelayMap(
