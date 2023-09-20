@@ -1,5 +1,6 @@
 package com.dluvian.nozzle.data.provider.impl
 
+import androidx.compose.ui.text.AnnotatedString
 import com.dluvian.nozzle.data.annotatedContent.IAnnotatedContentHandler
 import com.dluvian.nozzle.data.nostr.utils.ShortenedNameUtils.getShortenedNpubFromPubkey
 import com.dluvian.nozzle.data.provider.IContactListProvider
@@ -88,8 +89,8 @@ class PostWithMetaProvider(
 
         return combine(mentionedNamesFlow, mentionedPostsFlow) { names, posts ->
             MentionedNamesAndPosts(
-                mentionedPubkeyToNameMap = names,
-                mentionedPostIdToPostMap = posts
+                mentionedNamesByPubkey = names,
+                mentionedPostsById = posts
             )
         }
     }
@@ -113,7 +114,7 @@ class PostWithMetaProvider(
                 val isOneself = pubkeyProvider.isOneself(pubkey)
                 val annotatedContent = annotatedContentHandler.annotateContent(
                     content = it.postEntity.content,
-                    mentionedPubkeyToName = mentionedNamesAndPosts.mentionedPubkeyToNameMap
+                    mentionedPubkeyToName = mentionedNamesAndPosts.mentionedNamesByPubkey
                 )
                 PostWithMeta(
                     entity = it.postEntity,
@@ -131,21 +132,35 @@ class PostWithMetaProvider(
                     trustScore = if (isOneself) null else trustScore[pubkey],
                     annotatedContent = annotatedContent,
                     mediaUrls = annotatedContentHandler.extractMediaLinks(annotatedContent),
-                    mentionedPosts = annotatedContentHandler.extractNevents(annotatedContent)
-                        .map { nevent ->
-                            mentionedNamesAndPosts.mentionedPostIdToPostMap[nevent.eventId]
-                                ?: MentionedPost(
-                                    id = nevent.eventId,
-                                    pubkey = nevent.pubkey.orEmpty(),
-                                    content = "",
-                                    name = "",
-                                    picture = "",
-                                    createdAt = 0L
-                                )
-                        },
+                    mentionedPosts = getMentionedPosts(
+                        annotatedContent = annotatedContent,
+                        mentionedPostsById = mentionedNamesAndPosts.mentionedPostsById
+                    ),
                 )
             }
         }
+    }
+
+    private fun getMentionedPosts(
+        annotatedContent: AnnotatedString,
+        mentionedPostsById: Map<String, MentionedPost>
+    ): List<MentionedPost> {
+        return annotatedContentHandler.extractNevents(annotatedContent)
+            .map { nevent ->
+                mentionedPostsById[nevent.eventId]?.let { post ->
+                    if (post.name.isNullOrEmpty()) {
+                        post.copy(name = getShortenedNpubFromPubkey(post.pubkey))
+                    } else post
+                }
+                    ?: MentionedPost(
+                        id = nevent.eventId,
+                        pubkey = nevent.pubkey.orEmpty(),
+                        content = "",
+                        name = getShortenedNpubFromPubkey(nevent.pubkey.orEmpty()).orEmpty(),
+                        picture = "",
+                        createdAt = 0L
+                    )
+            }
     }
 
     private fun getReplyToName(post: PostEntityExtended): String? {
