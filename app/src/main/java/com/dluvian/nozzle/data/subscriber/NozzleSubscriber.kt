@@ -29,7 +29,7 @@ class NozzleSubscriber(
         val mentionedPosts = IdExtractorUtils
             .extractNeventsAndNoteIds(contents = basePosts.map { it.content })
 
-        subscribeNewPosts(mentionedPosts = mentionedPosts)
+        subscribeNewPostsAndAuthors(mentionedPosts = mentionedPosts)
 
         return mentionedPosts
     }
@@ -55,24 +55,10 @@ class NozzleSubscriber(
         if (pubkeys.isEmpty()) return
 
         val pubkeysToSub = pubkeys.minus(getExistingPubkeys(pubkeys = pubkeys))
-        Log.i(TAG, "Subscribe ${pubkeysToSub.size} new profiles")
         if (pubkeysToSub.isEmpty()) return
 
-        val nip65 = relayProvider.getWriteRelaysOfPubkeys(pubkeys = pubkeysToSub)
-        Log.d(TAG, "Found nip65 for ${nip65.size}/${pubkeysToSub.size} pubkeys")
-
-        val pubkeysByRelays = buildRelayMap(
-            objs = pubkeysToSub,
-            getId = { pubkey -> pubkey },
-            getRelays = { pubkey -> nip65[pubkey].orEmpty() }
-        )
-        pubkeysByRelays.forEach { entry ->
-            nostrSubscriber.subscribeProfiles(
-                pubkeys = entry.value.distinct(),
-                relays = listOf(entry.key)
-            )
-        }
-
+        Log.i(TAG, "Subscribe ${pubkeysToSub.size} new profiles")
+        subscribePubkeysWithNip65(pubkeys = pubkeysToSub)
     }
 
     override fun subscribePersonalProfiles() {
@@ -84,26 +70,50 @@ class NozzleSubscriber(
         )
     }
 
-    private suspend fun subscribeNewPosts(mentionedPosts: List<Nevent>) {
+    private suspend fun subscribeNewPostsAndAuthors(mentionedPosts: List<Nevent>) {
         if (mentionedPosts.isEmpty()) return
 
-        val existingIds = postDao.filterExistingIds(postIds = mentionedPosts.map { it.eventId })
+        val postIds = mentionedPosts.map { it.eventId }
+        subscribeNewAuthors(postIds = postIds)
+        val existingIds = postDao.filterExistingIds(postIds = postIds)
         val newMentionedPosts = mentionedPosts.filter { !existingIds.contains(it.eventId) }
 
-        Log.i(TAG, "Subscribe ${newMentionedPosts.size} new mentioned posts")
         if (newMentionedPosts.isEmpty()) return
+        Log.i(TAG, "Subscribe ${newMentionedPosts.size} new mentioned posts")
 
-        val postIdsByRelays = buildRelayMap(
+        subscribeByRelay(
             objs = newMentionedPosts,
             getId = { nevent -> nevent.eventId },
-            getRelays = { nevent -> nevent.relays }
+            getRelays = { nevent -> nevent.relays },
+            isProfiles = false
         )
-        postIdsByRelays.forEach { entry ->
-            nostrSubscriber.subscribePosts(
-                postIds = entry.value.distinct(),
-                relays = listOf(entry.key)
-            )
-        }
+    }
+
+    private suspend fun subscribeNewAuthors(postIds: Collection<String>) {
+        if (postIds.isEmpty()) return
+
+        val pubkeysToSub = postDao.getUnknownAuthors(postIds = postIds)
+        if (pubkeysToSub.isEmpty()) return
+        Log.i(TAG, "Subscribe ${pubkeysToSub.size} new authors of mentioned posts")
+
+        subscribeByRelay(
+            objs = pubkeysToSub,
+            getId = { pubkey -> pubkey },
+            getRelays = { _ -> emptyList() },
+            isProfiles = true
+        )
+    }
+
+    private suspend fun subscribePubkeysWithNip65(pubkeys: Collection<String>) {
+        val nip65 = relayProvider.getWriteRelaysOfPubkeys(pubkeys = pubkeys)
+        Log.d(TAG, "Found nip65 for ${nip65.size}/${pubkeys.size} pubkeys")
+
+        subscribeByRelay(
+            objs = pubkeys,
+            getId = { pubkey -> pubkey },
+            getRelays = { pubkey -> nip65[pubkey].orEmpty() },
+            isProfiles = true
+        )
     }
 
     private suspend fun subscribeNewProfilesReturnMentionedPubkeys(
@@ -115,19 +125,15 @@ class NozzleSubscriber(
         val excludePubkeys = getExistingPubkeys(pubkeys = mentionedPubkeys)
         val profilesToSub = mentionedProfiles.filter { !excludePubkeys.contains(it.pubkey) }
 
-        Log.i(TAG, "Subscribe ${profilesToSub.size} new mentioned profiles")
+        if (profilesToSub.isEmpty()) return mentionedPubkeys
 
-        val pubkeysByRelays = buildRelayMap(
+        Log.i(TAG, "Subscribe ${profilesToSub.size} new mentioned profiles")
+        subscribeByRelay(
             objs = profilesToSub,
             getId = { nprofile -> nprofile.pubkey },
-            getRelays = { nprofile -> nprofile.relays }
+            getRelays = { nprofile -> nprofile.relays },
+            isProfiles = true
         )
-        pubkeysByRelays.forEach { entry ->
-            nostrSubscriber.subscribeProfiles(
-                pubkeys = entry.value.distinct(),
-                relays = listOf(entry.key)
-            )
-        }
 
         return mentionedPubkeys
     }
@@ -140,6 +146,8 @@ class NozzleSubscriber(
         if (pubkeys.isEmpty()) return emptyList()
 
         val existingPubkeys = profileDao.filterExistingPubkeys(pubkeys)
+        if (existingPubkeys.isEmpty()) return emptyList()
+
         val take80Percent = maxOf(1.0, existingPubkeys.size * 0.8).toInt()
         Log.i(
             TAG,
@@ -148,12 +156,13 @@ class NozzleSubscriber(
         return existingPubkeys.shuffled().take(take80Percent)
     }
 
-    private fun <T> buildRelayMap(
+    private fun <T> subscribeByRelay(
         objs: Collection<T>,
         getId: (T) -> String,
-        getRelays: (T) -> List<String>
-    ): Map<String, List<String>> {
-        if (objs.isEmpty()) return emptyMap()
+        getRelays: (T) -> List<String>,
+        isProfiles: Boolean
+    ) {
+        if (objs.isEmpty()) return
         val idsByRelays = mutableMapOf<String, MutableList<String>>()
         objs.forEach { obj ->
             getRelays(obj).forEach { relay ->
@@ -168,6 +177,18 @@ class NozzleSubscriber(
             ids?.addAll(allIds)
         }
 
-        return idsByRelays
+        idsByRelays.forEach { entry ->
+            val values = entry.value.distinct()
+            val relays = listOf(entry.key)
+            if (isProfiles) nostrSubscriber.subscribeProfiles(
+                pubkeys = values,
+                relays = relays
+            )
+            else nostrSubscriber.subscribePosts(
+                postIds = values,
+                relays = relays
+            )
+
+        }
     }
 }

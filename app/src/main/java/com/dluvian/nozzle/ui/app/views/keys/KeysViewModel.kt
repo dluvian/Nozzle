@@ -12,8 +12,8 @@ import androidx.lifecycle.viewModelScope
 import com.dluvian.nozzle.R
 import com.dluvian.nozzle.data.manager.IKeyManager
 import com.dluvian.nozzle.data.manager.IPersonalProfileManager
-import com.dluvian.nozzle.data.nostr.INostrSubscriber
 import com.dluvian.nozzle.data.nostr.utils.KeyUtils.isValidPrivkey
+import com.dluvian.nozzle.data.subscriber.INozzleSubscriber
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.stateIn
@@ -31,7 +31,7 @@ data class KeysViewModelState(
 class KeysViewModel(
     private val keyManager: IKeyManager,
     private val personalProfileManager: IPersonalProfileManager,
-    private val nostrSubscriber: INostrSubscriber,
+    private val nozzleSubscriber: INozzleSubscriber,
     context: Context,
     clip: ClipboardManager,
 ) : ViewModel() {
@@ -75,10 +75,7 @@ class KeysViewModel(
                 Log.i(TAG, "Saving new privkey")
                 keyManager.setPrivkey(state.privkeyInput)
                 personalProfileManager.updateMetadata()
-                // TODO: Move this to personalProfileManager
-                nostrSubscriber.subscribeToProfileAndContactList(
-                    pubkeys = listOf(keyManager.getPubkey())
-                )
+                nozzleSubscriber.subscribePersonalProfiles()
                 useCachedValues()
                 focusManager.clearFocus()
                 Toast.makeText(
@@ -130,7 +127,7 @@ class KeysViewModel(
         fun provideFactory(
             keyManager: IKeyManager,
             personalProfileManager: IPersonalProfileManager,
-            nostrSubscriber: INostrSubscriber,
+            nozzleSubscriber: INozzleSubscriber,
             context: Context,
             clip: ClipboardManager,
         ): ViewModelProvider.Factory =
@@ -140,7 +137,7 @@ class KeysViewModel(
                     return KeysViewModel(
                         keyManager = keyManager,
                         personalProfileManager = personalProfileManager,
-                        nostrSubscriber = nostrSubscriber,
+                        nozzleSubscriber = nozzleSubscriber,
                         context = context,
                         clip = clip
                     ) as T

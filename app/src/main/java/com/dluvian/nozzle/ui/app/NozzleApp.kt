@@ -72,7 +72,7 @@ fun NozzleApp(appContainer: AppContainer) {
                     factory = KeysViewModel.provideFactory(
                         keyManager = appContainer.keyManager,
                         personalProfileManager = appContainer.personalProfileManager,
-                        nostrSubscriber = appContainer.nostrSubscriber,
+                        nozzleSubscriber = appContainer.nozzleSubscriber,
                         context = LocalContext.current,
                         clip = LocalClipboardManager.current,
                     )

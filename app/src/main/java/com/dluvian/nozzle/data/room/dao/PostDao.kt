@@ -190,4 +190,12 @@ interface PostDao {
 
     @Query("SELECT COUNT(*) FROM post")
     suspend fun countPosts(): Int
+
+    @Query(
+        "SELECT pubkey " +
+                "FROM post " +
+                "WHERE id IN (:postIds) " +
+                "AND pubkey NOT IN (SELECT pubkey FROM profile)"
+    )
+    suspend fun getUnknownAuthors(postIds: Collection<String>): List<String>
 }
