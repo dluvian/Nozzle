@@ -58,16 +58,16 @@ class ThreadProvider(
             )
         }
 
-        val mentionedPubkeysAndAuthorPubkeys = nozzleSubscriber
-            .subscribeMentionedProfiles(basePosts = allPosts)
+        val allPubkeys = nozzleSubscriber.subscribeMentionedProfiles(basePosts = allPosts)
         val mentionedPosts = nozzleSubscriber.subscribeMentionedPosts(basePosts = allPosts)
+        nozzleSubscriber.subscribeNewProfiles(pubkeys = allPubkeys.authorPubkeys.toSet())
 
         return getMappedThreadFlow(
             currentId = current.id,
             previousIds = previous.map { it.id },
             replyIds = replies.map { it.id },
-            authorPubkeys = mentionedPubkeysAndAuthorPubkeys.authorPubkeys,
-            mentionedPubkeys = mentionedPubkeysAndAuthorPubkeys.pubkeys,
+            authorPubkeys = allPubkeys.authorPubkeys,
+            mentionedPubkeys = allPubkeys.pubkeys,
             mentionedPostIds = mentionedPosts.map { it.eventId }
         )
     }

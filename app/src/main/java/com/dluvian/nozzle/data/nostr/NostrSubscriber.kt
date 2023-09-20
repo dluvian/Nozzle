@@ -180,6 +180,7 @@ class NostrSubscriber(
 
         val filters = mutableListOf<Filter>()
         filters.add(Filter.createPostFilter(e = postIds))
+        // TODO: Resubbing event makes sense??
         filters.add(Filter.createPostFilter(ids = postIds))
 
         val ids = nostrService.subscribe(
