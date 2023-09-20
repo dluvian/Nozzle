@@ -34,6 +34,7 @@ class DatabaseSweeper(
 
         val start = System.currentTimeMillis()
         delete(excludePostIds = excludePostIds, excludeProfiles = excludeProfiles)
+        dbSweepExcludingCache.clearAll()
         Log.i(TAG, "Execution time ${System.currentTimeMillis() - start}ms")
     }
 

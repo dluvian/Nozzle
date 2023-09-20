@@ -21,4 +21,9 @@ class IdCache : IIdCache {
     override fun getPubkeys(): Set<String> {
         return pubkeys.toSet()
     }
+
+    override fun clearAll() {
+        postIds.clear()
+        pubkeys.clear()
+    }
 }

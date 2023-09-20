@@ -50,13 +50,10 @@ class NozzleSubscriber(
     override suspend fun subscribeNewProfiles(pubkeys: Set<String>) {
         if (pubkeys.isEmpty()) return
 
-        val existingPubkeys = idCache.getPubkeys().intersect(pubkeys)
-        val exludePubkeys = getRandomHalf(existingPubkeys).toSet()
-        val pubkeysToSub = pubkeys.minus(exludePubkeys)
-
+        val pubkeysToSub = pubkeys.minus(idCache.getPubkeys())
+        Log.i(TAG, "Subscribe ${pubkeysToSub.size} new profiles")
         if (pubkeysToSub.isEmpty()) return
 
-        Log.i(TAG, "Subscribe ${pubkeysToSub.size} new profiles")
         val nip65 = relayProvider.getWriteRelaysOfPubkeys(pubkeys = pubkeysToSub)
         Log.d(TAG, "Found nip65 for ${nip65.size}/${pubkeysToSub.size} pubkeys")
 
@@ -96,21 +93,16 @@ class NozzleSubscriber(
         }
     }
 
-    private fun getRandomHalf(strs: Collection<String>): Collection<String> {
-        return strs.shuffled().take(maxOf(1, strs.size / 2))
-    }
-
     private fun subscribeNewProfilesReturnMentionedPubkeys(
         mentionedProfiles: List<Nprofile>
     ): Set<String> {
         if (mentionedProfiles.isEmpty()) return emptySet()
 
         val mentionedPubkeys = mentionedProfiles.map { it.pubkey }.toSet()
-        val existingPubkeys = idCache.getPubkeys().intersect(mentionedPubkeys)
-        val exludePubkeys = getRandomHalf(existingPubkeys)
+        val exludePubkeys = idCache.getPubkeys()
         val profilesToSub = mentionedProfiles.filter { !exludePubkeys.contains(it.pubkey) }
 
-        Log.i(TAG, "Subscribe ${profilesToSub.size} mentioned profiles")
+        Log.i(TAG, "Subscribe ${profilesToSub.size} new mentioned profiles")
 
         val pubkeysByRelays = buildRelayMap(
             objs = profilesToSub,
