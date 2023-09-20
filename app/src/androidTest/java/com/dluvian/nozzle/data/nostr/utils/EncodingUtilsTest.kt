@@ -1,5 +1,11 @@
 package com.dluvian.nozzle.data.nostr.utils
 
+import com.dluvian.nozzle.data.nostr.utils.EncodingUtils.hexToNpub
+import com.dluvian.nozzle.data.nostr.utils.EncodingUtils.hexToNsec
+import com.dluvian.nozzle.data.nostr.utils.EncodingUtils.note1ToHex
+import com.dluvian.nozzle.data.nostr.utils.EncodingUtils.npubToHex
+import com.dluvian.nozzle.data.nostr.utils.EncodingUtils.nsecToHex
+import com.dluvian.nozzle.data.nostr.utils.EncodingUtils.readNevent
 import org.junit.Test
 
 internal class EncodingUtilsTest {
@@ -31,8 +37,7 @@ internal class EncodingUtilsTest {
 
         val result = npubToHex(npub)
 
-        assert(result.isSuccess)
-        assert(result.getOrNull() == expectedHex)
+        assert(result == expectedHex)
     }
 
     @Test
@@ -41,7 +46,7 @@ internal class EncodingUtilsTest {
 
         val result = npubToHex(npub)
 
-        assert(result.isFailure)
+        assert(result == null)
     }
 
     @Test
@@ -51,8 +56,7 @@ internal class EncodingUtilsTest {
 
         val result = nsecToHex(nsec)
 
-        assert(result.isSuccess)
-        assert(result.getOrNull() == expectedHex)
+        assert(result == expectedHex)
     }
 
     @Test
@@ -61,7 +65,7 @@ internal class EncodingUtilsTest {
 
         val result = nsecToHex(nsec)
 
-        assert(result.isFailure)
+        assert(result == null)
     }
 
     @Test
@@ -71,8 +75,7 @@ internal class EncodingUtilsTest {
 
         val result = note1ToHex(note1)
 
-        assert(result.isSuccess)
-        assert(result.getOrNull() == expectedHex)
+        assert(result == expectedHex)
     }
 
     @Test
@@ -81,7 +84,7 @@ internal class EncodingUtilsTest {
 
         val result = note1ToHex(note1)
 
-        assert(result.isFailure)
+        assert(result == null)
     }
 
     @Test
@@ -93,6 +96,6 @@ internal class EncodingUtilsTest {
 
         assert(result != null)
         assert(result?.eventId == "ac5b3cad39a58c464de8023f3e9bff837de889258f174f0ed8f3775badcd02f5")
-        assert(result?.relays == listOf("wss://relay.nostr.band/", "wss://relay.nos.lol"))
+        assert(result?.relays == listOf("wss://relay.nostr.band", "wss://relay.nos.lol"))
     }
 }

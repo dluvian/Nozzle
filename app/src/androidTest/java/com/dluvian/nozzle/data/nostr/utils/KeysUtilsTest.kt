@@ -1,5 +1,7 @@
 package com.dluvian.nozzle.data.nostr.utils
 
+import com.dluvian.nozzle.data.nostr.utils.KeyUtils.derivePubkey
+import com.dluvian.nozzle.data.nostr.utils.KeyUtils.generatePrivkey
 import com.dluvian.nozzle.data.utils.isHex
 import org.junit.Test
 
