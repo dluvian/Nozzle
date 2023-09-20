@@ -262,7 +262,15 @@ private fun PostCardActions(
             modifier = Modifier
                 .fillMaxWidth()
                 .weight(1f),
-            onNavigateToQuote = { onNavigateToQuote(post.entity.id) }
+            onNavigateToQuote = {
+                // TODO: Move this out of UI layer
+                onNavigateToQuote(
+                    createNeventStr(
+                        postId = post.entity.id,
+                        relays = post.relays
+                    ).orEmpty()
+                )
+            }
         )
         LikeAction(
             modifier = Modifier

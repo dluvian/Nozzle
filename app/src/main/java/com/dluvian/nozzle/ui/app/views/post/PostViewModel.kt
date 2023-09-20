@@ -8,7 +8,8 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.dluvian.nozzle.R
 import com.dluvian.nozzle.data.nostr.INostrService
-import com.dluvian.nozzle.data.nostr.utils.EncodingUtils.hexToNote1
+import com.dluvian.nozzle.data.nostr.utils.EncodingUtils.createNeventUri
+import com.dluvian.nozzle.data.nostr.utils.EncodingUtils.nostrStrToNostrId
 import com.dluvian.nozzle.data.provider.IPersonalProfileProvider
 import com.dluvian.nozzle.data.provider.IRelayProvider
 import com.dluvian.nozzle.data.room.dao.PostDao
@@ -34,6 +35,7 @@ data class PostViewModelState(
     val relayStatuses: List<RelayActive> = emptyList(),
     val isSendable: Boolean = false,
     val postToQuote: MentionedPost? = null,
+    val quoteRelays: Collection<String> = emptyList(),
 )
 
 class PostViewModel(
@@ -66,17 +68,19 @@ class PostViewModel(
     private val isPreparing = AtomicBoolean(false)
     val onPrepareQuote: (String) -> Unit = { postIdToQuote ->
         if (!isPreparing.get() && uiState.value.postToQuote?.id != postIdToQuote) {
-            Log.i(TAG, "Prepare quoting $postIdToQuote")
-            isPreparing.set(true)
-            viewModelState.update { it.copy(postToQuote = null) }
-            viewModelScope.launch(context = Dispatchers.IO) {
-                val postToQuote = postDao.getMentionedPost(postId = postIdToQuote)
-                preparePost(postToQuote = postToQuote)
-            }.invokeOnCompletion { isPreparing.set(false) }
+            nostrStrToNostrId(postIdToQuote)?.let { nostrId ->
+                Log.i(TAG, "Prepare quoting $postIdToQuote")
+                isPreparing.set(true)
+                viewModelState.update { it.copy(postToQuote = null) }
+                viewModelScope.launch(context = Dispatchers.IO) {
+                    val postToQuote = postDao.getMentionedPost(postId = nostrId.hex)
+                    preparePost(postToQuote = postToQuote, relays = nostrId.recommendedRelays)
+                }.invokeOnCompletion { isPreparing.set(false) }
+            }
         }
     }
 
-    private fun preparePost(postToQuote: MentionedPost?) {
+    private fun preparePost(postToQuote: MentionedPost?, relays: Collection<String> = emptyList()) {
         updateMetadataState()
         Log.i(TAG, "Prepare new ${postToQuote?.let { "quoted " } ?: ""}post")
         viewModelState.update {
@@ -85,7 +89,8 @@ class PostViewModel(
                 content = "",
                 isSendable = postToQuote != null,
                 relayStatuses = getRelayStatuses(),
-                postToQuote = postToQuote
+                postToQuote = postToQuote,
+                quoteRelays = relays
             )
         }
     }
@@ -133,7 +138,8 @@ class PostViewModel(
                 relayStatuses = getRelayStatuses(),
                 isSendable = false,
                 pubkey = personalProfileProvider.getPubkey(),
-                postToQuote = null
+                postToQuote = null,
+                quoteRelays = emptyList(),
             )
         }
     }
@@ -157,14 +163,18 @@ class PostViewModel(
     )
 
     private fun getContentToPublish(state: PostViewModelState): String {
-        return (state.content + getNewLineQuoteUri(state.postToQuote?.id)).trim()
+        val quote = getNewLineQuoteUri(
+            postIdToQuote = state.postToQuote?.id,
+            relays = state.quoteRelays
+        )
+        return state.content.trim() + quote
     }
 
-    // TODO: Move to utils
-    private fun getNewLineQuoteUri(postIdToQuote: String?): String {
+    private fun getNewLineQuoteUri(postIdToQuote: String?, relays: Collection<String>): String {
         return if (postIdToQuote == null) ""
-        // TODO: nostr: URI from utils
-        else hexToNote1(postId = postIdToQuote).let { noteId -> "\nnostr:$noteId" }
+        else createNeventUri(postId = postIdToQuote, relays = relays)
+            ?.let { "\n\n$it" }
+            .orEmpty()
     }
 
     companion object {

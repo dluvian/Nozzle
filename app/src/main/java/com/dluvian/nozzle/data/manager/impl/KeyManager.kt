@@ -46,6 +46,7 @@ class KeyManager(context: Context) : IKeyManager {
 
     override fun getPubkey() = pubkey
 
+    // TODO: nprofile instead of npub
     override fun getNpub() = npub
 
     override fun getPrivkey() = preferences.getString(PRIVKEY, "") ?: ""

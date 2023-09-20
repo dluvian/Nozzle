@@ -62,8 +62,8 @@ class NozzleNavActions(private val navController: NavHostController) {
         }
     }
 
-    val navigateToQuote: (String) -> Unit = { id ->
-        navController.navigate("${NozzleRoute.QUOTE}/${id}") {
+    val navigateToQuote: (String) -> Unit = { postId ->
+        navController.navigate("${NozzleRoute.QUOTE}/${postId}") {
             setSimpleNavOptions(optionsBuilder = this)
         }
     }

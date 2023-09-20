@@ -28,10 +28,6 @@ object EncodingUtils {
         return Bech32.encode(NSEC, privkey.decodeHex())
     }
 
-    fun hexToNote1(postId: String): String {
-        return Bech32.encode(NOTE, postId.decodeHex())
-    }
-
     fun npubToHex(npub: String): String? {
         if (!npub.startsWith(NPUB + 1)) return null
         return runCatching { Hex.encode(Bech32.decodeBytes(npub).second) }.getOrNull()
@@ -95,6 +91,11 @@ object EncodingUtils {
 
     fun createNeventStr(postId: String, relays: Collection<String>): String? {
         return createRelayEncodedStr(prefix = NEVENT, id = postId, relays = relays)
+    }
+
+    fun createNeventUri(postId: String, relays: Collection<String>): String? {
+        val nevent = createNeventStr(postId = postId, relays = relays)
+        return nevent?.let { URI + it }
     }
 
     private fun createRelayEncodedStr(
