@@ -66,6 +66,7 @@ fun PostCard(
             enabled = !isCurrent,
             onClick = { onNavigateToThread(post.entity.id) },
             onLongClick = {
+                // TODO: Move this out of UI layer
                 val nevent = createNeventStr(
                     postId = post.entity.id,
                     relays = post.relays
@@ -74,7 +75,7 @@ fun PostCard(
                 Toast
                     .makeText(
                         context,
-                        context.getString(R.string.note_id_copied) + " $nevent",
+                        context.getString(R.string.note_id_copied),
                         Toast.LENGTH_SHORT
                     )
                     .show()

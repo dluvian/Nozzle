@@ -64,7 +64,7 @@ class ProfileViewModel(
 
     var feedState: StateFlow<List<PostWithMeta>> = MutableStateFlow(emptyList())
 
-    val recommendedRelays = mutableListOf<String>()
+    private val recommendedRelays = mutableListOf<String>()
 
     init {
         Log.i(TAG, "Initialize ProfileViewModel")
