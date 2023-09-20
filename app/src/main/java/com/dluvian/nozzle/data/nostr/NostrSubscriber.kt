@@ -21,6 +21,8 @@ class NostrSubscriber(
     private val additionalFeedDataSubscriptions =
         Collections.synchronizedList(mutableListOf<String>())
     private val profileSubscriptions = Collections.synchronizedList(mutableListOf<String>())
+    private val profileAndContactsSubscriptions =
+        Collections.synchronizedList(mutableListOf<String>())
     private val nip65Subscriptions = Collections.synchronizedList(mutableListOf<String>())
 
     override fun subscribeToProfileAndContactList(
@@ -36,7 +38,7 @@ class NostrSubscriber(
             unsubOnEOSE = true,
             relays = relays
         )
-        profileSubscriptions.addAll(ids)
+        profileAndContactsSubscriptions.addAll(ids)
 
         return ids
     }
@@ -234,6 +236,8 @@ class NostrSubscriber(
     override fun unsubscribeFeeds() {
         val snapshot = feedSubscriptions.toList()
         Log.i(TAG, "Unsubscribe ${snapshot.size} feeds")
+        if (snapshot.isEmpty()) return
+
         nostrService.unsubscribe(snapshot)
         feedSubscriptions.removeAll(snapshot)
     }
@@ -241,6 +245,7 @@ class NostrSubscriber(
     override fun unsubscribeReferencedPostsData() {
         val snapshot = additionalFeedDataSubscriptions.toList()
         Log.i(TAG, "Unsubscribe ${snapshot.size} referenced posts data")
+        if (snapshot.isEmpty()) return
         nostrService.unsubscribe(snapshot)
         additionalFeedDataSubscriptions.removeAll(snapshot)
     }
@@ -248,20 +253,26 @@ class NostrSubscriber(
     override fun unsubscribeThread() {
         val snapshot = threadSubscriptions.toList()
         Log.i(TAG, "Unsubscribe ${snapshot.size} thread")
+        if (snapshot.isEmpty()) return
+
         nostrService.unsubscribe(snapshot)
         threadSubscriptions.removeAll(snapshot)
     }
 
     override fun unsubscribeProfileMetadataAndContactLists() {
-        val snapshot = profileSubscriptions.toList()
+        val snapshot = profileAndContactsSubscriptions.toList()
         Log.i(TAG, "Unsubscribe ${snapshot.size} profiles")
+        if (snapshot.isEmpty()) return
+
         nostrService.unsubscribe(snapshot)
-        profileSubscriptions.removeAll(snapshot)
+        profileAndContactsSubscriptions.removeAll(snapshot)
     }
 
     override fun unsubscribeNip65() {
         val snapshot = nip65Subscriptions.toList()
         Log.i(TAG, "Unsubscribe ${snapshot.size} nip65")
+        if (snapshot.isEmpty()) return
+
         nostrService.unsubscribe(snapshot)
         nip65Subscriptions.removeAll(snapshot)
     }

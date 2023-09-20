@@ -96,9 +96,10 @@ class AppContainer(context: Context) {
         nip65Dao = roomDb.nip65Dao(),
     )
 
-    private val nozzleSubscriber: INozzleSubscriber = NozzleSubscriber(
+    val nozzleSubscriber: INozzleSubscriber = NozzleSubscriber(
         nostrSubscriber = nostrSubscriber,
         relayProvider = relayProvider,
+        pubkeyProvider = keyManager,
         idCache = dbSweepExcludingCache,
         postDao = roomDb.postDao(),
         profileDao = roomDb.profileDao()

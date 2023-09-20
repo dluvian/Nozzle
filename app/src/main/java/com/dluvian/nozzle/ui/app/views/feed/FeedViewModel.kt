@@ -57,7 +57,6 @@ class FeedViewModel(
         Collections.synchronizedMap(mutableMapOf<String, Set<String>>())
 
     private val isAppending = AtomicBoolean(false)
-    private var lastPubkeyToSubPersonalProfile = ""
 
     init {
         Log.i(TAG, "Initialize FeedViewModel")
@@ -203,7 +202,6 @@ class FeedViewModel(
 
     private suspend fun handleRefresh(delayBeforeUpdate: Boolean) {
         setUIRefresh(true)
-        subscribeToPersonalProfile()
         // TODO: Update screen with latest. Freeze post ids once loading indicator is gone
         if (delayBeforeUpdate) delay(WAIT_TIME)
         updateScreen()
@@ -242,16 +240,6 @@ class FeedViewModel(
         }
         delay(WAIT_TIME)
         setUIRefresh(false)
-    }
-
-    private fun subscribeToPersonalProfile() {
-        if (lastPubkeyToSubPersonalProfile != personalProfileProvider.getPubkey()) {
-            lastPubkeyToSubPersonalProfile = personalProfileProvider.getPubkey()
-            nostrSubscriber.subscribeToProfileAndContactList(
-                pubkeys = listOf(personalProfileProvider.getPubkey()),
-                relays = relayProvider.getWriteRelays(),
-            )
-        }
     }
 
     private val isRenewingRef = AtomicBoolean(false)

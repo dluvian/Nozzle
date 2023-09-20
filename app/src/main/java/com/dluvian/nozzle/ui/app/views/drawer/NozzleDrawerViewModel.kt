@@ -6,12 +6,11 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.dluvian.nozzle.data.provider.IPersonalProfileProvider
-import kotlinx.coroutines.Dispatchers
+import com.dluvian.nozzle.data.subscriber.INozzleSubscriber
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
-import kotlinx.coroutines.launch
 
 private const val TAG = "NozzleDrawerViewModel"
 
@@ -23,6 +22,7 @@ data class DrawerViewModelState(
 
 class NozzleDrawerViewModel(
     private val personalProfileProvider: IPersonalProfileProvider,
+    nozzleSubscriber: INozzleSubscriber,
 ) : ViewModel() {
     private val drawerViewModelState = MutableStateFlow(DrawerViewModelState())
 
@@ -37,9 +37,8 @@ class NozzleDrawerViewModel(
 
     init {
         Log.i(TAG, "Initialize NozzleDrawerViewModel")
-        viewModelScope.launch(context = Dispatchers.IO) {
-            useCachedValues()
-        }
+        useCachedValues()
+        nozzleSubscriber.subscribePersonalProfiles()
     }
 
     val onResetUiState: () -> Unit = {
@@ -60,12 +59,16 @@ class NozzleDrawerViewModel(
     }
 
     companion object {
-        fun provideFactory(personalProfileProvider: IPersonalProfileProvider): ViewModelProvider.Factory =
+        fun provideFactory(
+            personalProfileProvider: IPersonalProfileProvider,
+            nozzleSubscriber: INozzleSubscriber
+        ): ViewModelProvider.Factory =
             object : ViewModelProvider.Factory {
                 @Suppress("UNCHECKED_CAST")
                 override fun <T : ViewModel> create(modelClass: Class<T>): T {
                     return NozzleDrawerViewModel(
                         personalProfileProvider = personalProfileProvider,
+                        nozzleSubscriber = nozzleSubscriber
                     ) as T
                 }
             }

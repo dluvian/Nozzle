@@ -12,4 +12,6 @@ interface INozzleSubscriber {
     ): PubkeysAndAuthorPubkeys
 
     suspend fun subscribeNewProfiles(pubkeys: Set<String>)
+
+    fun subscribePersonalProfiles()
 }

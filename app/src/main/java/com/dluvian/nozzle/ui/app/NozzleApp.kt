@@ -44,6 +44,7 @@ fun NozzleApp(appContainer: AppContainer) {
                 drawerViewModel = viewModel(
                     factory = NozzleDrawerViewModel.provideFactory(
                         personalProfileProvider = appContainer.personalProfileManager,
+                        nozzleSubscriber = appContainer.nozzleSubscriber
                     )
                 ),
                 editProfileViewModel = viewModel(

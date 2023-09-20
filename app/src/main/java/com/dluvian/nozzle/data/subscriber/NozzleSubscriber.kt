@@ -4,6 +4,7 @@ import android.util.Log
 import com.dluvian.nozzle.data.cache.IIdCache
 import com.dluvian.nozzle.data.nostr.INostrSubscriber
 import com.dluvian.nozzle.data.nostr.utils.IdExtractorUtils
+import com.dluvian.nozzle.data.provider.IPubkeyProvider
 import com.dluvian.nozzle.data.provider.IRelayProvider
 import com.dluvian.nozzle.data.room.dao.PostDao
 import com.dluvian.nozzle.data.room.dao.ProfileDao
@@ -17,6 +18,7 @@ private const val TAG = "NozzleSubscriber"
 class NozzleSubscriber(
     private val nostrSubscriber: INostrSubscriber,
     private val relayProvider: IRelayProvider,
+    private val pubkeyProvider: IPubkeyProvider,
     private val idCache: IIdCache,
     private val postDao: PostDao,
     private val profileDao: ProfileDao,
@@ -71,6 +73,15 @@ class NozzleSubscriber(
             )
         }
 
+    }
+
+    override fun subscribePersonalProfiles() {
+        Log.i(TAG, "Subscribe personal profiles")
+        nostrSubscriber.unsubscribeProfileMetadataAndContactLists()
+        nostrSubscriber.subscribeToProfileAndContactList(
+            pubkeys = listOf(pubkeyProvider.getPubkey()),
+            relays = relayProvider.getWriteRelays()
+        )
     }
 
     private suspend fun subscribeNewPosts(mentionedPosts: List<Nevent>) {
