@@ -7,7 +7,7 @@ import com.dluvian.nozzle.model.nostr.Nevent
 interface INozzleSubscriber {
     suspend fun subscribeMentionedPosts(basePosts: Collection<BasePost>): List<Nevent>
 
-    fun subscribeMentionedProfiles(
+    suspend fun subscribeMentionedProfiles(
         basePosts: Collection<BasePost>
     ): PubkeysAndAuthorPubkeys
 

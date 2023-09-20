@@ -101,6 +101,7 @@ class AppContainer(context: Context) {
         relayProvider = relayProvider,
         idCache = dbSweepExcludingCache,
         postDao = roomDb.postDao(),
+        profileDao = roomDb.profileDao()
     )
 
     init {

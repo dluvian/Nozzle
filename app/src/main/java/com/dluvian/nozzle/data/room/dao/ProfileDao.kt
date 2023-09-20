@@ -74,4 +74,11 @@ interface ProfileDao {
     @MapInfo(keyColumn = "pubkey", valueColumn = "name")
     @Query("SELECT pubkey, name FROM profile WHERE pubkey IN (:pubkeys)")
     fun getPubkeyToNameMapFlow(pubkeys: Collection<String>): Flow<Map<String, String>>
+
+    @Query(
+        "SELECT pubkey " +
+                "FROM profile " +
+                "WHERE pubkey IN (:pubkeys)"
+    )
+    suspend fun filterExistingPubkeys(pubkeys: Collection<String>): List<String>
 }
