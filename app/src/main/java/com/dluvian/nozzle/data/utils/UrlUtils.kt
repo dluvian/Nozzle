@@ -6,7 +6,7 @@ object UrlUtils {
         Regex(pattern = "https?://[^\\s]+")
     }
 
-    val mediaSuffixes = listOf(".jpg", ".jpeg", ".png", ".gif")
+    val mediaSuffixes = listOf(".jpg", ".jpeg", ".png", ".gif", ".webp")
 
 
     fun extractUrls(extractFrom: String): List<MatchResult> {
