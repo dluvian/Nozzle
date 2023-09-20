@@ -23,7 +23,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.style.TextAlign
 import com.dluvian.nozzle.R
-import com.dluvian.nozzle.data.nostr.utils.EncodingUtils.hexToNote1
+import com.dluvian.nozzle.data.nostr.utils.EncodingUtils.createNeventStr
 import com.dluvian.nozzle.model.PostWithMeta
 import com.dluvian.nozzle.model.ThreadPosition
 import com.dluvian.nozzle.model.TrustType
@@ -66,11 +66,15 @@ fun PostCard(
             enabled = !isCurrent,
             onClick = { onNavigateToThread(post.entity.id) },
             onLongClick = {
-                clipboard.setText(AnnotatedString(hexToNote1(post.entity.id)))
+                val nevent = createNeventStr(
+                    postId = post.entity.id,
+                    relays = post.relays
+                ).orEmpty()
+                clipboard.setText(AnnotatedString(nevent))
                 Toast
                     .makeText(
                         context,
-                        context.getString(R.string.note_id_copied),
+                        context.getString(R.string.note_id_copied) + " $nevent",
                         Toast.LENGTH_SHORT
                     )
                     .show()

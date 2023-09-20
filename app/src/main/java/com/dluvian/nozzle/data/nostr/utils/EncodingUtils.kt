@@ -90,13 +90,25 @@ object EncodingUtils {
     }
 
     fun createNprofileStr(pubkey: String, relays: Collection<String>): String? {
-        if (!KeyUtils.isValidPubkey(pubkey)) return null
+        return createRelayEncodedStr(prefix = NPROFILE, id = pubkey, relays = relays)
+    }
+
+    fun createNeventStr(postId: String, relays: Collection<String>): String? {
+        return createRelayEncodedStr(prefix = NEVENT, id = postId, relays = relays)
+    }
+
+    private fun createRelayEncodedStr(
+        prefix: String,
+        id: String,
+        relays: Collection<String>
+    ): String? {
+        if (prefix != NEVENT && prefix != NPROFILE || !KeyUtils.isValidPubkey(id)) return null
         val bytes = mutableListOf<ByteArray>()
-        bytes.add(TLVUtils.createTLVDefaultBytes(pubkey.decodeHex()))
+        bytes.add(TLVUtils.createTLVDefaultBytes(id.decodeHex()))
         bytes.addAll(relays.map { TLVUtils.createTLVRelayBytes(it.encodeToByteArray()) })
         val allBytes = bytes.reduce { acc, newBytes -> acc + newBytes }
 
-        return runCatching { Bech32.encode(NPROFILE, allBytes) }.getOrNull()
+        return runCatching { Bech32.encode(prefix, allBytes) }.getOrNull()
     }
 
     fun profileIdToNostrId(profileId: String): NostrId? {
