@@ -6,7 +6,9 @@ import com.dluvian.nozzle.data.room.AppDatabase
 import com.dluvian.nozzle.data.room.entity.Nip65Entity
 import com.dluvian.nozzle.data.room.entity.PostEntity
 import com.dluvian.nozzle.data.room.entity.ProfileEntity
+import com.dluvian.nozzle.data.utils.TimeConstants
 import com.dluvian.nozzle.data.utils.UrlUtils.removeTrailingSlashes
+import com.dluvian.nozzle.data.utils.getCurrentTimeInSeconds
 import com.dluvian.nozzle.model.nostr.Event
 import com.dluvian.nozzle.model.nostr.Metadata
 import com.dluvian.nozzle.model.nostr.Tag
@@ -26,8 +28,13 @@ class EventProcessor(
     private val scope = CoroutineScope(Dispatchers.IO)
     private val gson: Gson = GsonBuilder().disableHtmlEscaping().create()
     private val otherIdsCache = Collections.synchronizedSet(mutableSetOf<String>())
+    private var upperTimeBoundary = getUpperTimeBoundary()
 
     override fun process(event: Event, relayUrl: String?) {
+        if (isFromFuture(event)) {
+            Log.w(TAG, "Discard event from the future ${event.id}")
+            return
+        }
         if (event.isPost()) {
             processPost(event = event, relayUrl = relayUrl)
             return
@@ -184,5 +191,17 @@ class EventProcessor(
         scope.launch {
             database.eventRelayDao().insertOrIgnore(eventId = eventId, relayUrl = relayUrl)
         }
+    }
+
+    private fun getUpperTimeBoundary(): Long {
+        return getCurrentTimeInSeconds() + TimeConstants.MINUTE_IN_SECONDS
+    }
+
+    private fun isFromFuture(event: Event): Boolean {
+        if (event.createdAt > upperTimeBoundary) {
+            upperTimeBoundary = getUpperTimeBoundary()
+            return event.createdAt > upperTimeBoundary
+        }
+        return false
     }
 }
