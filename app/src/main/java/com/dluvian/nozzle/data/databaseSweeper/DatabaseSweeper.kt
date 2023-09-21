@@ -5,7 +5,6 @@ import com.dluvian.nozzle.data.cache.IIdCache
 import com.dluvian.nozzle.data.provider.IContactListProvider
 import com.dluvian.nozzle.data.provider.IPubkeyProvider
 import com.dluvian.nozzle.data.room.AppDatabase
-import com.dluvian.nozzle.data.utils.getCurrentTimeInSeconds
 
 private const val TAG = "DatabaseSweeper"
 
@@ -48,8 +47,7 @@ class DatabaseSweeper(
         val deletePostCount = database.postDao().deleteAllExceptNewest(
             amountToKeep = keepPosts,
             exclude = excludePostIds,
-            excludeAuthor = pubkeyProvider.getPubkey(),
-            currentTimestamp = getCurrentTimeInSeconds()
+            excludeAuthor = pubkeyProvider.getPubkey()
         )
         Log.i(TAG, "Deleted $deletePostCount posts")
         if (deletePostCount == 0) return
