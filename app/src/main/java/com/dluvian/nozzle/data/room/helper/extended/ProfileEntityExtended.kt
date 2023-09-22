@@ -8,4 +8,5 @@ data class ProfileEntityExtended(
     val profileEntity: ProfileEntity,
     val numOfFollowing: Int,
     val numOfFollowers: Int,
+    val isFollowedByMe: Boolean
 )

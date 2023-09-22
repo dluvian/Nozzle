@@ -45,6 +45,7 @@ class PostWithMetaProvider(
             .listExtendedPostsFlow(postIds = postIds, personalPubkey = pubkeyProvider.getPubkey())
             .firstThenDistinctDebounce(NORMAL_DEBOUNCE)
 
+        // TODO: JOIN isFollowedByMe
         val contactPubkeysFlow = contactListProvider
             .getPersonalContactPubkeysFlow()
             .firstThenDistinctDebounce(SHORT_DEBOUNCE)

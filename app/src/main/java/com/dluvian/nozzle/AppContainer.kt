@@ -150,7 +150,6 @@ class AppContainer(context: Context) {
             pubkeyProvider = keyManager,
             nostrSubscriber = nostrSubscriber,
             relayProvider = relayProvider,
-            contactListProvider = contactListProvider,
             profileDao = roomDb.profileDao(),
             contactDao = roomDb.contactDao(),
             eventRelayDao = roomDb.eventRelayDao(),

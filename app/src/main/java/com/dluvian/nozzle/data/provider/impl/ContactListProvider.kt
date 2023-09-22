@@ -23,7 +23,6 @@ class ContactListProvider(
     // TODO: Don't track it. Use extra DB table for current user
     private var personalPubkey = pubkeyProvider.getPubkey()
     private var personalContactListState = contactDao.listContactPubkeysFlow(personalPubkey)
-        .firstThenDistinctDebounce(NORMAL_DEBOUNCE)
         .stateIn(scope, SharingStarted.Eagerly, emptyList())
 
     override suspend fun listPersonalContactPubkeys(): List<String> {
