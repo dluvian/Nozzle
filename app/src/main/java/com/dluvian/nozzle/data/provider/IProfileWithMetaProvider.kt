@@ -4,5 +4,5 @@ import com.dluvian.nozzle.model.ProfileWithMeta
 import kotlinx.coroutines.flow.Flow
 
 interface IProfileWithMetaProvider {
-    fun getProfileFlow(profileId: String): Flow<ProfileWithMeta>
+    suspend fun getProfileFlow(profileId: String): Flow<ProfileWithMeta>
 }

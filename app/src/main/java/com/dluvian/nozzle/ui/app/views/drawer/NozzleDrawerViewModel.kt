@@ -38,7 +38,7 @@ class NozzleDrawerViewModel(
     init {
         Log.i(TAG, "Initialize NozzleDrawerViewModel")
         useCachedValues()
-        nozzleSubscriber.subscribePersonalProfiles()
+        nozzleSubscriber.subscribePersonalProfile()
     }
 
     val onResetUiState: () -> Unit = {

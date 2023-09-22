@@ -2,8 +2,6 @@ package com.dluvian.nozzle.data.room.dao
 
 import androidx.room.*
 import com.dluvian.nozzle.data.room.entity.PostEntity
-import com.dluvian.nozzle.data.room.helper.BasePost
-import com.dluvian.nozzle.data.room.helper.ReplyContext
 import com.dluvian.nozzle.data.room.helper.extended.PostEntityExtended
 import com.dluvian.nozzle.model.MentionedPost
 import kotlinx.coroutines.flow.Flow
@@ -16,7 +14,7 @@ interface PostDao {
      * Sorted from newest to oldest
      */
     @Query(
-        "SELECT post.id, post.pubkey, post.content " +
+        "SELECT * " +
                 "FROM post " +
                 "WHERE ((:isReplies AND replyToId IS NOT NULL) OR (:isPosts AND replyToId IS NULL)) " +
                 "AND pubkey IN (:authorPubkeys) " +
@@ -32,13 +30,13 @@ interface PostDao {
         relays: Collection<String>,
         until: Long,
         limit: Int,
-    ): List<BasePost>
+    ): List<PostEntity>
 
     /**
      * Sorted from newest to oldest
      */
     @Query(
-        "SELECT post.id, post.pubkey, post.content " +
+        "SELECT * " +
                 "FROM post " +
                 "WHERE ((:isReplies AND replyToId IS NOT NULL) OR (:isPosts AND replyToId IS NULL)) " +
                 "AND pubkey IN (:authorPubkeys) " +
@@ -52,13 +50,13 @@ interface PostDao {
         authorPubkeys: Collection<String>,
         until: Long,
         limit: Int,
-    ): List<BasePost>
+    ): List<PostEntity>
 
     /**
      * Sorted from newest to oldest
      */
     @Query(
-        "SELECT post.id, post.pubkey, post.content " +
+        "SELECT * " +
                 "FROM post " +
                 "WHERE ((:isReplies AND replyToId IS NOT NULL) OR (:isPosts AND replyToId IS NULL)) " +
                 "AND id IN (SELECT DISTINCT eventId FROM eventRelay WHERE relayUrl IN (:relays)) " +
@@ -72,13 +70,13 @@ interface PostDao {
         relays: Collection<String>,
         until: Long,
         limit: Int,
-    ): List<BasePost>
+    ): List<PostEntity>
 
     /**
      * Sorted from newest to oldest
      */
     @Query(
-        "SELECT post.id, post.pubkey, post.content " +
+        "SELECT * " +
                 "FROM post " +
                 "WHERE ((:isReplies AND replyToId IS NOT NULL) OR (:isPosts AND replyToId IS NULL)) " +
                 "AND createdAt < :until " +
@@ -90,7 +88,7 @@ interface PostDao {
         isReplies: Boolean,
         until: Long,
         limit: Int,
-    ): List<BasePost>
+    ): List<PostEntity>
 
     @Query(
         // SELECT PostEntity
@@ -134,20 +132,16 @@ interface PostDao {
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insertIfNotPresent(vararg post: PostEntity)
 
-    @Query(
-        "SELECT post.id, post.replyToId, post.pubkey, post.content " +
-                "FROM post " +
-                "WHERE id = :id "
-    )
-    suspend fun getReplyContext(id: String): ReplyContext?
+    @Query("SELECT * FROM post WHERE id = :id")
+    suspend fun getPost(id: String): PostEntity?
 
     @Query(
-        "SELECT post.id, post.replyToId, post.pubkey, post.content " +
+        "SELECT * " +
                 "FROM post " +
                 "WHERE replyToId = :currentPostId " + // All replies to current post
                 "OR id = :currentPostId" // Current post
     )
-    suspend fun listReplyContext(currentPostId: String): List<ReplyContext>
+    suspend fun getPostAndReplies(currentPostId: String): List<PostEntity>
 
     @MapInfo(keyColumn = "id")
     @Query(
@@ -156,7 +150,7 @@ interface PostDao {
                 "LEFT JOIN profile ON post.pubkey = profile.pubkey " +
                 "WHERE id IN (:postIds) "
     )
-    fun getMentionedPostsMapFlow(postIds: Collection<String>): Flow<Map<String, MentionedPost>>
+    fun getMentionedPostsByIdFlow(postIds: Collection<String>): Flow<Map<String, MentionedPost>>
 
     @Query(
         "SELECT id, post.pubkey, content, name, picture, post.createdAt " +

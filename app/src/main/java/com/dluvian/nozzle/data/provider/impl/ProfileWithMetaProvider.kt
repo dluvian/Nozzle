@@ -1,17 +1,15 @@
 package com.dluvian.nozzle.data.provider.impl
 
 import android.util.Log
-import com.dluvian.nozzle.data.MAX_RELAYS
-import com.dluvian.nozzle.data.nostr.INostrSubscriber
 import com.dluvian.nozzle.data.nostr.utils.EncodingUtils.createNprofileStr
 import com.dluvian.nozzle.data.nostr.utils.EncodingUtils.profileIdToNostrId
 import com.dluvian.nozzle.data.provider.IProfileWithMetaProvider
 import com.dluvian.nozzle.data.provider.IPubkeyProvider
-import com.dluvian.nozzle.data.provider.IRelayProvider
 import com.dluvian.nozzle.data.room.dao.ContactDao
 import com.dluvian.nozzle.data.room.dao.EventRelayDao
 import com.dluvian.nozzle.data.room.dao.ProfileDao
 import com.dluvian.nozzle.data.room.helper.extended.ProfileEntityExtended
+import com.dluvian.nozzle.data.subscriber.INozzleSubscriber
 import com.dluvian.nozzle.data.utils.LONG_DEBOUNCE
 import com.dluvian.nozzle.data.utils.firstThenDistinctDebounce
 import com.dluvian.nozzle.model.ProfileWithMeta
@@ -26,23 +24,19 @@ private const val TAG = "ProfileWithMetaProvider"
 
 class ProfileWithMetaProvider(
     private val pubkeyProvider: IPubkeyProvider,
-    private val nostrSubscriber: INostrSubscriber,
-    private val relayProvider: IRelayProvider,
+    private val nozzleSubscriber: INozzleSubscriber,
     private val profileDao: ProfileDao,
     private val contactDao: ContactDao,
     private val eventRelayDao: EventRelayDao,
 ) : IProfileWithMetaProvider {
 
-    override fun getProfileFlow(profileId: String): Flow<ProfileWithMeta> {
+    override suspend fun getProfileFlow(profileId: String): Flow<ProfileWithMeta> {
         Log.i(TAG, "Get profile $profileId")
 
-        val recommendedRelays = mutableListOf<String>()
-        val pubkey = profileIdToNostrId(profileId)?.let {
-            recommendedRelays.addAll(it.recommendedRelays)
-            it.hex
-        } ?: profileId
+        nozzleSubscriber.subscribeFullProfile(profileId = profileId)
 
-        makeSubscriptionAvailable()
+        val pubkey = profileIdToNostrId(profileId)?.hex ?: profileId
+
 
         val profileExtendedFlow = profileDao.getProfileEntityExtendedFlow(pubkey = pubkey)
             .distinctUntilChanged()
@@ -66,7 +60,6 @@ class ProfileWithMetaProvider(
             relaysFlow = relaysFlow,
             nprofileFlow = nprofileFlow,
             trustScoreFlow = trustScoreFlow,
-            recommendedRelays = recommendedRelays
         ).distinctUntilChanged()
     }
 
@@ -76,7 +69,6 @@ class ProfileWithMetaProvider(
         relaysFlow: Flow<List<String>>,
         nprofileFlow: Flow<String?>,
         trustScoreFlow: Flow<Float>,
-        recommendedRelays: List<String>,
     ): Flow<ProfileWithMeta> {
         return combine(
             profileFlow,
@@ -84,10 +76,6 @@ class ProfileWithMetaProvider(
             nprofileFlow,
             trustScoreFlow,
         ) { profile, relays, nprofile, trustScore ->
-            handleNostrSubscriptions(
-                pubkey = pubkeyVariations.pubkey,
-                recommendedRelays = recommendedRelays
-            )
             ProfileWithMeta(
                 pubkey = pubkeyVariations.pubkey,
                 nprofile = nprofile ?: pubkeyVariations.npub,
@@ -100,40 +88,5 @@ class ProfileWithMetaProvider(
                 trustScore = trustScore,
             )
         }
-    }
-
-    private var subscribedToPubkey = ""
-
-    private fun makeSubscriptionAvailable() {
-        synchronized(subscribedToPubkey) {
-            subscribedToPubkey = ""
-        }
-    }
-
-    private suspend fun handleNostrSubscriptions(pubkey: String, recommendedRelays: List<String>) {
-        synchronized(subscribedToPubkey) {
-            if (subscribedToPubkey == pubkey) return
-            subscribedToPubkey = pubkey
-        }
-        if (pubkey.isEmpty()) return
-
-        nostrSubscriber.unsubscribeNip65()
-        nostrSubscriber.unsubscribeProfileMetadataAndContactLists()
-        nostrSubscriber.subscribeNip65(listOf(pubkey))
-        nostrSubscriber.subscribeToProfileAndContactList(
-            pubkeys = listOf(pubkey),
-            relays = recommendedRelays + relayProvider.getWriteRelaysOfPubkey(pubkey = pubkey)
-                // TODO: Fallback to post relays
-                // TODO: Refactor into util function. Same in Profile view
-                .let {
-                    if (it.size > MAX_RELAYS) it.shuffled()
-                        .sortedByDescending { relay ->
-                            relayProvider.getReadRelays().contains(relay)
-                        }
-                        .take(MAX_RELAYS)
-                    else it
-                }
-                .ifEmpty { relayProvider.getReadRelays() }
-        )
     }
 }

@@ -8,7 +8,6 @@ import com.dluvian.nozzle.data.utils.toHexString
 data class Nevent(
     val eventId: String,
     val relays: List<String> = emptyList(),
-    val pubkey: String? = null,
 ) {
     companion object {
         fun fromTLVEntries(tlvEntries: List<TLVEntry>): Nevent? {
@@ -21,11 +20,8 @@ data class Nevent(
             val relays = tlvEntries.filterIsInstance<TLVRelay>()
                 .map { it.value.decodeToString().removeTrailingSlashes() }
                 .filter { it.isWebsocketUrl() }
-            val pubkey = tlvEntries.find { it is TLVAuthor }?.value?.toHexString()?.let {
-                if (!isValidPubkey(it)) null else it
-            }
 
-            return Nevent(eventId = eventId, relays = relays, pubkey = pubkey)
+            return Nevent(eventId = eventId, relays = relays)
         }
     }
 }

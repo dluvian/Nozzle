@@ -17,7 +17,6 @@ import com.dluvian.nozzle.data.MAX_RELAYS
 import com.dluvian.nozzle.data.SCOPE_TIMEOUT
 import com.dluvian.nozzle.data.WAIT_TIME
 import com.dluvian.nozzle.data.cache.IClickedMediaUrlCache
-import com.dluvian.nozzle.data.nostr.INostrSubscriber
 import com.dluvian.nozzle.data.nostr.utils.EncodingUtils.profileIdToNostrId
 import com.dluvian.nozzle.data.postCardInteractor.IPostCardInteractor
 import com.dluvian.nozzle.data.profileFollower.IProfileFollower
@@ -26,7 +25,6 @@ import com.dluvian.nozzle.data.provider.IFeedProvider
 import com.dluvian.nozzle.data.provider.IProfileWithMetaProvider
 import com.dluvian.nozzle.data.provider.IPubkeyProvider
 import com.dluvian.nozzle.data.provider.IRelayProvider
-import com.dluvian.nozzle.data.utils.hasUnknownParentAuthor
 import com.dluvian.nozzle.model.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -50,7 +48,6 @@ class ProfileViewModel(
     private val profileFollower: IProfileFollower,
     private val pubkeyProvider: IPubkeyProvider,
     private val contactListProvider: IContactListProvider,
-    private val nostrSubscriber: INostrSubscriber,
     context: Context,
     clip: ClipboardManager,
 ) : ViewModel() {
@@ -133,7 +130,6 @@ class ProfileViewModel(
                     Log.w(TAG, "Failed to append profile feed. Attempt $attempt")
                 }
                 isAppending.set(false)
-                renewReferencedDataSubscription(pubkey)
             }
         }
     }
@@ -219,8 +215,6 @@ class ProfileViewModel(
             SharingStarted.WhileSubscribed(stopTimeoutMillis = SCOPE_TIMEOUT),
             if (profileState.value.pubkey == pubkey) feedState.value else emptyList()
         )
-        delay(WAIT_TIME)
-        renewReferencedDataSubscription(pubkey)
     }
 
     // TODO: Append in FeedProvider to reduce duplicate code in ProvileVM and FeedVM
@@ -242,38 +236,7 @@ class ProfileViewModel(
                     currentFeed,
                 )
         }
-        delay(WAIT_TIME)
         isRefreshingFlow.update { (false) }
-    }
-
-    // TODO: Handle sub in FeedProvider. This is copy&paste from FeedVM
-    private val isRenewingRef = AtomicBoolean(false)
-    private suspend fun renewReferencedDataSubscription(pubkey: String) {
-        if (isRenewingRef.get()) return
-        isRenewingRef.set(true)
-        nostrSubscriber.subscribeToReferencedData(
-            posts = feedState.value.takeLast(DB_BATCH_SIZE),
-            relays = getRelays(pubkey = pubkey)
-        )
-
-        delay(2 * WAIT_TIME)
-        if (isAppending.get() || isRefreshingFlow.value) {
-            isRenewingRef.set(false)
-            return
-        }
-
-        val postsWithUnknowns = feedState.value
-            .takeLast(DB_BATCH_SIZE)
-            .filter { hasUnknownParentAuthor(it) }
-        if (postsWithUnknowns.isNotEmpty()) {
-            Log.i(TAG, "Resubscribe missing posts and profiles of ${postsWithUnknowns.size} posts")
-            nostrSubscriber.unsubscribeReferencedPostsData()
-            nostrSubscriber.subscribeToReferencedData(
-                posts = postsWithUnknowns,
-                relays = null
-            )
-        }
-        isRenewingRef.set(false)
     }
 
     private fun getCurrentFeedSettings(pubkey: String, relays: List<String>): FeedSettings {
@@ -308,7 +271,6 @@ class ProfileViewModel(
             pubkeyProvider: IPubkeyProvider,
             clickedMediaUrlCache: IClickedMediaUrlCache,
             contactListProvider: IContactListProvider,
-            nostrSubscriber: INostrSubscriber,
             context: Context,
             clip: ClipboardManager,
         ): ViewModelProvider.Factory =
@@ -324,7 +286,6 @@ class ProfileViewModel(
                         profileFollower = profileFollower,
                         pubkeyProvider = pubkeyProvider,
                         contactListProvider = contactListProvider,
-                        nostrSubscriber = nostrSubscriber,
                         context = context,
                         clip = clip,
                     ) as T

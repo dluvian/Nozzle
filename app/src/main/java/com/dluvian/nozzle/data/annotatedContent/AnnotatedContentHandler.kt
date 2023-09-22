@@ -143,7 +143,7 @@ class AnnotatedContentHandler : IAnnotatedContentHandler {
                 note1ToHex(it.item)?.let { hex ->
                     Pair(
                         it.start,
-                        Nevent(eventId = hex, relays = emptyList(), pubkey = null)
+                        Nevent(eventId = hex, relays = emptyList())
                     )
                 }
             }
@@ -152,5 +152,4 @@ class AnnotatedContentHandler : IAnnotatedContentHandler {
     }
 
     private fun extractNostrUris(extractFrom: String) = nostrUriPattern.findAll(extractFrom)
-
 }

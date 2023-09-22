@@ -2,8 +2,8 @@ package com.dluvian.nozzle.data.room.dao
 
 import androidx.room.*
 import com.dluvian.nozzle.data.room.entity.Nip65Entity
-import com.dluvian.nozzle.model.helper.Pubkey
-import com.dluvian.nozzle.model.helper.Relay
+import com.dluvian.nozzle.model.Pubkey
+import com.dluvian.nozzle.model.Relay
 import kotlinx.coroutines.flow.Flow
 
 
@@ -38,7 +38,7 @@ interface Nip65Dao {
                 "WHERE isWrite = '1' " +
                 "AND pubkey IN (:pubkeys)"
     )
-    suspend fun getPubkeysPerWriteRelayMap(pubkeys: Collection<String>): Map<String, Set<String>>
+    suspend fun getPubkeysByWriteRelays(pubkeys: Collection<String>): Map<Relay, Set<Pubkey>>
 
     @MapInfo(keyColumn = "pubkey", valueColumn = "url")
     @Query(
@@ -72,11 +72,14 @@ interface Nip65Dao {
     )
     fun getRelaysOfPubkeyFlow(pubkey: String): Flow<List<Nip65Entity>>
 
-    // TODO: No except. This should exclude pubkeys in user acc table
+    // TODO: No exclude. This should exclude pubkeys in user acc table
     @Query(
         "DELETE FROM nip65 " +
                 "WHERE pubkey NOT IN (SELECT pubkey FROM profile) " +
-                "AND pubkey NOT IN (:exclude)"
+                "AND pubkey NOT IN (:excludePubkeys)"
     )
-    suspend fun deleteOrphaned(exclude: Collection<String>): Int
+    suspend fun deleteOrphaned(excludePubkeys: Collection<String>): Int
+
+    @Query("SELECT pubkey FROM nip65 WHERE pubkey IN (:pubkeys)")
+    suspend fun filterPubkeysWithNip65(pubkeys: Collection<String>): List<String>
 }

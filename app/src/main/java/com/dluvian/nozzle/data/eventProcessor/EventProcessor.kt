@@ -77,6 +77,7 @@ class EventProcessor(
         if (!verify(event)) return
 
         otherIdsCache.add(event.id)
+        dbSweepExcludingCache.addContactListAuthor(event.pubkey)
 
         scope.launch {
             database.contactDao().insertAndDeleteOutdated(
@@ -124,6 +125,7 @@ class EventProcessor(
         if (!verify(event)) return
 
         otherIdsCache.add(event.id)
+        dbSweepExcludingCache.addNip65Author(event.pubkey)
 
         Log.d(TAG, "Process ${nip65Entries.size} nip65 entries from ${event.pubkey}")
         scope.launch {

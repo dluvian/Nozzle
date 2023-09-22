@@ -1,10 +1,11 @@
 package com.dluvian.nozzle.data.nostr
 
-import com.dluvian.nozzle.model.PostWithMeta
+import com.dluvian.nozzle.model.Pubkey
+import com.dluvian.nozzle.model.Relay
 
 interface INostrSubscriber {
-    fun subscribeToProfileAndContactList(
-        pubkeys: Collection<String>,
+    fun subscribeFullProfile(
+        pubkey: String,
         relays: Collection<String>? = null
     ): List<String>
 
@@ -15,35 +16,22 @@ interface INostrSubscriber {
         relays: Collection<String>? = null,
     ): List<String>
 
+    fun subscribeFeedInfo(
+        nip65PubkeysByRelay: Map<Relay, List<Pubkey>>,
+        profilePubkeysByRelay: Map<Relay, List<Pubkey>>,
+        contactListPubkeysByRelay: Map<Relay, List<Pubkey>>,
+        postIdsByRelay: Map<Relay, List<String>>,
+        repliesByRelay: Map<Relay, List<String>>,
+        reactionPostIdsByRelay: Map<Relay, List<String>>,
+        reactorPubkey: String, // TODO: Move this to Map above
+    ): List<String>
+
     fun subscribePosts(
         postIds: List<String>,
         relays: Collection<String>? = null
     ): List<String>
 
-    fun subscribeToReferencedData(
-        posts: Collection<PostWithMeta>,
-        relays: Collection<String>? = null
-    ): List<String>
+    fun subscribeNip65(pubkeys: List<String>): List<String>
 
-    fun subscribeThread(
-        currentPostId: String,
-        relays: Collection<String>? = null,
-    ): List<String>
-
-    fun subscribeProfiles(
-        pubkeys: Collection<String>,
-        relays: Collection<String>? = null
-    ): List<String>
-
-    fun subscribeNip65(pubkeys: Collection<String>): List<String>
-
-    fun unsubscribeFeeds()
-
-    fun unsubscribeReferencedPostsData()
-
-    fun unsubscribeThread()
-
-    fun unsubscribeProfileMetadataAndContactLists()
-
-    fun unsubscribeNip65()
+    fun unsubscribe(subscriptionIds: Collection<String>)
 }

@@ -77,21 +77,9 @@ class AppContainer(context: Context) {
         eventProcessor = eventProcessor
     )
 
-    val nostrSubscriber: INostrSubscriber = NostrSubscriber(
-        nostrService = nostrService,
-        pubkeyProvider = keyManager,
-    )
-
-    private val autopilotProvider: IAutopilotProvider = AutopilotProvider(
-        pubkeyProvider = keyManager,
-        nip65Dao = roomDb.nip65Dao(),
-        eventRelayDao = roomDb.eventRelayDao(),
-        nostrSubscriber = nostrSubscriber,
-    )
+    val nostrSubscriber: INostrSubscriber = NostrSubscriber(nostrService = nostrService)
 
     val relayProvider: IRelayProvider = RelayProvider(
-        contactListProvider = contactListProvider,
-        autopilotProvider = autopilotProvider,
         pubkeyProvider = keyManager,
         nip65Dao = roomDb.nip65Dao(),
     )
@@ -101,8 +89,15 @@ class AppContainer(context: Context) {
         relayProvider = relayProvider,
         pubkeyProvider = keyManager,
         idCache = dbSweepExcludingCache,
-        postDao = roomDb.postDao(),
-        profileDao = roomDb.profileDao()
+        database = roomDb,
+    )
+
+    val autopilotProvider: IAutopilotProvider = AutopilotProvider(
+        relayProvider = relayProvider,
+        contactListProvider = contactListProvider,
+        nip65Dao = roomDb.nip65Dao(),
+        eventRelayDao = roomDb.eventRelayDao(),
+        nozzleSubscriber = nozzleSubscriber,
     )
 
     init {
@@ -139,7 +134,6 @@ class AppContainer(context: Context) {
 
     val feedProvider: IFeedProvider = FeedProvider(
         postWithMetaProvider = postWithMetaProvider,
-        nostrSubscriber = nostrSubscriber,
         nozzleSubscriber = nozzleSubscriber,
         contactListProvider = contactListProvider,
         postDao = roomDb.postDao(),
@@ -148,8 +142,7 @@ class AppContainer(context: Context) {
     val profileWithMetaProvider: IProfileWithMetaProvider =
         ProfileWithMetaProvider(
             pubkeyProvider = keyManager,
-            nostrSubscriber = nostrSubscriber,
-            relayProvider = relayProvider,
+            nozzleSubscriber = nozzleSubscriber,
             profileDao = roomDb.profileDao(),
             contactDao = roomDb.contactDao(),
             eventRelayDao = roomDb.eventRelayDao(),
@@ -162,7 +155,6 @@ class AppContainer(context: Context) {
 
     val threadProvider: IThreadProvider = ThreadProvider(
         postWithMetaProvider = postWithMetaProvider,
-        nostrSubscriber = nostrSubscriber,
         nozzleSubscriber = nozzleSubscriber,
         postDao = roomDb.postDao()
     )

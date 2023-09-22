@@ -9,7 +9,6 @@ import com.dluvian.nozzle.data.DB_BATCH_SIZE
 import com.dluvian.nozzle.data.MAX_FEED_LENGTH
 import com.dluvian.nozzle.data.WAIT_TIME
 import com.dluvian.nozzle.data.cache.IClickedMediaUrlCache
-import com.dluvian.nozzle.data.nostr.INostrSubscriber
 import com.dluvian.nozzle.data.postCardInteractor.IPostCardInteractor
 import com.dluvian.nozzle.data.preferences.IFeedSettingsPreferences
 import com.dluvian.nozzle.data.provider.*
@@ -42,7 +41,7 @@ class FeedViewModel(
     private val personalProfileProvider: IPersonalProfileProvider,
     private val feedProvider: IFeedProvider,
     private val relayProvider: IRelayProvider,
-    private val nostrSubscriber: INostrSubscriber,
+    private val autopilotProvider: IAutopilotProvider,
     private val feedSettingsPreferences: IFeedSettingsPreferences,
 ) : ViewModel() {
     private val viewModelState = MutableStateFlow(FeedViewModelState())
@@ -85,7 +84,6 @@ class FeedViewModel(
                 Log.i(TAG, "Load more")
                 appendFeed(currentFeed = feedState.value)
                 isAppending.set(false)
-                delayAndRenewReferencedDataSubscription()
             }
         }
     }
@@ -206,7 +204,6 @@ class FeedViewModel(
         if (delayBeforeUpdate) delay(WAIT_TIME)
         updateScreen()
         setUIRefresh(false)
-        delayAndRenewReferencedDataSubscription()
     }
 
     private suspend fun updateScreen() {
@@ -240,42 +237,6 @@ class FeedViewModel(
         }
         delay(WAIT_TIME)
         setUIRefresh(false)
-    }
-
-    private val isRenewingRef = AtomicBoolean(false)
-    private suspend fun delayAndRenewReferencedDataSubscription() {
-        if (isRenewingRef.get()) return
-        isRenewingRef.set(true)
-        delay(WAIT_TIME)
-        // TODO: Split method into separate ones
-        nostrSubscriber.subscribeToReferencedData(
-            posts = feedState.value.takeLast(DB_BATCH_SIZE),
-            relays = getSelectedRelays()
-        )
-
-        // TODO: Retryer that resubs unknown stuff. Use here, profile page and thread view
-        // TODO: Resub only what does not exist. Reduce unnecessary data traffic
-        // TODO: Filter conditions as helper functions
-        // TODO: Resub mentioned post from mention-author's read relays
-        // TODO: Sub nip65 of unknown pubkeys, then their profiles
-        delay(3 * WAIT_TIME)
-        if (isAppending.get() || viewModelState.value.isRefreshing) {
-            isRenewingRef.set(false)
-            return
-        }
-
-        val postsWithUnknowns = feedState.value
-            .takeLast(DB_BATCH_SIZE)
-            .filter { hasUnknownParentAuthor(it) }
-        if (postsWithUnknowns.isNotEmpty()) {
-            Log.i(TAG, "Resubscribe missing posts and profiles of ${postsWithUnknowns.size} posts")
-            nostrSubscriber.unsubscribeReferencedPostsData()
-            nostrSubscriber.subscribeToReferencedData(
-                posts = postsWithUnknowns,
-                relays = null
-            )
-        }
-        isRenewingRef.set(false)
     }
 
     private fun setUIRefresh(value: Boolean) {
@@ -315,12 +276,8 @@ class FeedViewModel(
         }
     }
 
-    private fun getSelectedRelays(): Collection<String>? {
-        return viewModelState.value.feedSettings.relaySelection.selectedRelays
-    }
-
     private suspend fun getAndCacheAutopilotRelays(): Map<String, Set<String>> {
-        val result = relayProvider.getAutopilotRelays()
+        val result = autopilotProvider.getAutopilotRelays()
         lastAutopilotResult.clear()
         lastAutopilotResult.putAll(result)
 
@@ -334,7 +291,7 @@ class FeedViewModel(
             personalProfileProvider: IPersonalProfileProvider,
             feedProvider: IFeedProvider,
             relayProvider: IRelayProvider,
-            nostrSubscriber: INostrSubscriber,
+            autopilotProvider: IAutopilotProvider,
             feedSettingsPreferences: IFeedSettingsPreferences,
         ): ViewModelProvider.Factory = object : ViewModelProvider.Factory {
             @Suppress("UNCHECKED_CAST")
@@ -345,7 +302,7 @@ class FeedViewModel(
                     personalProfileProvider = personalProfileProvider,
                     feedProvider = feedProvider,
                     relayProvider = relayProvider,
-                    nostrSubscriber = nostrSubscriber,
+                    autopilotProvider = autopilotProvider,
                     feedSettingsPreferences = feedSettingsPreferences,
                 ) as T
             }

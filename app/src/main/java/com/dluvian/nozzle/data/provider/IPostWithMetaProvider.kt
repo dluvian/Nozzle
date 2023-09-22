@@ -1,13 +1,9 @@
 package com.dluvian.nozzle.data.provider
 
 import com.dluvian.nozzle.model.PostWithMeta
+import com.dluvian.nozzle.model.helper.FeedInfo
 import kotlinx.coroutines.flow.Flow
 
 interface IPostWithMetaProvider {
-    suspend fun getPostsWithMetaFlow(
-        postIds: Collection<String>,
-        authorPubkeys: Collection<String>,
-        mentionedPubkeys: Collection<String>,
-        mentionedPostIds: Collection<String>,
-    ): Flow<List<PostWithMeta>>
+    suspend fun getPostsWithMetaFlow(feedInfo: FeedInfo): Flow<List<PostWithMeta>>
 }

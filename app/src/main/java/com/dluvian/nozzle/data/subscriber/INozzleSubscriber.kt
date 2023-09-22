@@ -1,17 +1,27 @@
 package com.dluvian.nozzle.data.subscriber
 
-import com.dluvian.nozzle.data.room.helper.BasePost
-import com.dluvian.nozzle.model.helper.PubkeysAndAuthorPubkeys
-import com.dluvian.nozzle.model.nostr.Nevent
+import com.dluvian.nozzle.data.room.entity.PostEntity
+import com.dluvian.nozzle.model.RelaySelection
+import com.dluvian.nozzle.model.helper.FeedInfo
 
 interface INozzleSubscriber {
-    suspend fun subscribeMentionedPosts(basePosts: Collection<BasePost>): List<Nevent>
 
-    suspend fun subscribeMentionedProfiles(
-        basePosts: Collection<BasePost>
-    ): PubkeysAndAuthorPubkeys
+    fun subscribePersonalProfile()
 
-    suspend fun subscribeNewProfiles(pubkeys: Set<String>)
+    fun subscribeToFeedPosts(
+        authorPubkeys: List<String>?,
+        isReplies: Boolean,
+        limit: Int,
+        until: Long?,
+        relaySelection: RelaySelection
+    )
 
-    fun subscribePersonalProfiles()
+    suspend fun subscribeFullProfile(profileId: String)
+
+    suspend fun subscribeFeedInfo(posts: List<PostEntity>): FeedInfo
+
+    suspend fun subscribeParentPost(postId: String, relayHint: String?)
+    suspend fun unsubscribeParentPosts()
+
+    suspend fun subscribeNip65(pubkeys: List<String>)
 }

@@ -104,7 +104,7 @@ class Event(
         fun createTextNoteEvent(post: Post, keys: Keys): Event {
             val tags = mutableListOf<List<String>>()
 
-            post.replyTo?.let { tags.add(listOf("e", it.replyTo, it.relayUrl, "reply")) }
+            post.replyTo?.let { tags.add(listOf("e", it.replyTo, it.relayUrl.orEmpty(), "reply")) }
 
             if (post.mentions.isNotEmpty()) {
                 val mentionTag = mutableListOf("p")

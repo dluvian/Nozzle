@@ -127,16 +127,17 @@ class NostrService(
         relays: Collection<String>?,
     ): List<String> {
         val subscriptionIds = client.subscribe(filters = filters, relays = relays)
-        if (subscriptionIds.isNotEmpty() && unsubOnEOSE) unsubOnEOSECache.addAll(subscriptionIds)
+        if (subscriptionIds.isEmpty()) return emptyList()
+        if (unsubOnEOSE) unsubOnEOSECache.addAll(subscriptionIds)
 
         return subscriptionIds
     }
 
-    override fun unsubscribe(subscriptionIds: List<String>) {
-        if (subscriptionIds.isNotEmpty()) {
-            subscriptionIds.forEach {
-                client.unsubscribe(it)
-            }
+    override fun unsubscribe(subscriptionIds: Collection<String>) {
+        if (subscriptionIds.isEmpty()) return
+
+        subscriptionIds.forEach {
+            client.unsubscribe(it)
         }
     }
 

@@ -117,8 +117,7 @@ class ReplyViewModel(
                         relayUrl = parentPost.relays
                             .filter { relayProvider.getWriteRelays().contains(it) }
                             .randomOrNull()
-                            ?: parentPost.relays.randomOrNull()
-                            ?: "",
+                            ?: parentPost.relays.randomOrNull(),
                     )
                     val selectedRelays = state.relaySelection
                         .filter { it.isActive }

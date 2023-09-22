@@ -1,46 +1,35 @@
 package com.dluvian.nozzle.data.nostr
 
 import android.util.Log
-import com.dluvian.nozzle.data.provider.IPubkeyProvider
 import com.dluvian.nozzle.data.utils.getCurrentTimeInSeconds
-import com.dluvian.nozzle.data.utils.getIdsPerRelayHintMap
-import com.dluvian.nozzle.data.utils.hasUnknownParentAuthor
-import com.dluvian.nozzle.data.utils.listReferencedPostIds
-import com.dluvian.nozzle.model.PostWithMeta
+import com.dluvian.nozzle.model.Pubkey
+import com.dluvian.nozzle.model.Relay
 import com.dluvian.nozzle.model.nostr.Filter
-import java.util.Collections
 
 private const val TAG = "NostrSubscriber"
 
-class NostrSubscriber(
-    private val nostrService: INostrService,
-    private val pubkeyProvider: IPubkeyProvider,
-) : INostrSubscriber {
-    private val feedSubscriptions = Collections.synchronizedList(mutableListOf<String>())
-    private val threadSubscriptions = Collections.synchronizedList(mutableListOf<String>())
-    private val additionalFeedDataSubscriptions =
-        Collections.synchronizedList(mutableListOf<String>())
-    private val profileSubscriptions = Collections.synchronizedList(mutableListOf<String>())
-    private val profileAndContactsSubscriptions =
-        Collections.synchronizedList(mutableListOf<String>())
-    private val nip65Subscriptions = Collections.synchronizedList(mutableListOf<String>())
-
-    override fun subscribeToProfileAndContactList(
-        pubkeys: Collection<String>,
+class NostrSubscriber(private val nostrService: INostrService) : INostrSubscriber {
+    override fun subscribeFullProfile(
+        pubkey: String,
         relays: Collection<String>?
     ): List<String> {
-        Log.i(TAG, "Subscribe metadata and contact list for ${pubkeys.size} pubkeys")
-        val profileFilter = Filter.createProfileFilter(pubkeys = pubkeys.toList())
-        val contactListFilter = Filter.createContactListFilter(pubkeys = pubkeys.toList())
+        Log.i(TAG, "Subscribe full profile of $pubkey")
+        val pubkeys = listOf(pubkey)
+        val nip65Filter = Filter.createNip65Filter(pubkeys = pubkeys)
+        val profileFilter = Filter.createProfileFilter(pubkeys = pubkeys)
+        val contactListFilter = Filter.createContactListFilter(pubkeys = pubkeys)
 
-        val ids = nostrService.subscribe(
+        val mainSubIds = nostrService.subscribe(
             filters = listOf(profileFilter, contactListFilter),
             unsubOnEOSE = true,
             relays = relays
         )
-        profileAndContactsSubscriptions.addAll(ids)
 
-        return ids
+        return mainSubIds + nostrService.subscribe(
+            filters = listOf(nip65Filter),
+            unsubOnEOSE = true,
+            relays = null
+        )
     }
 
     override fun subscribeToFeedPosts(
@@ -55,14 +44,94 @@ class NostrSubscriber(
             until = until ?: getCurrentTimeInSeconds(),
             limit = limit
         )
-        val ids = nostrService.subscribe(
+
+        return nostrService.subscribe(
             filters = listOf(postFilter),
             unsubOnEOSE = true,
             relays = relays,
         )
-        feedSubscriptions.addAll(ids)
+    }
 
-        return ids
+    override fun subscribeFeedInfo(
+        nip65PubkeysByRelay: Map<Relay, List<Pubkey>>,
+        profilePubkeysByRelay: Map<Relay, List<Pubkey>>,
+        contactListPubkeysByRelay: Map<Relay, List<Pubkey>>,
+        postIdsByRelay: Map<Relay, List<Pubkey>>,
+        repliesByRelay: Map<Relay, List<String>>,
+        reactionPostIdsByRelay: Map<Relay, List<String>>,
+        reactorPubkey: String
+    ): List<String> {
+        val allRelays = nip65PubkeysByRelay.keys +
+                profilePubkeysByRelay.keys +
+                contactListPubkeysByRelay.keys +
+                postIdsByRelay.keys +
+                repliesByRelay.keys +
+                reactionPostIdsByRelay.keys
+        if (allRelays.isEmpty()) return emptyList()
+
+        val allSubIds = mutableListOf<String>()
+        for (relay in allRelays) {
+            val allFilters = createFeedInfoFilters(
+                nip65Pubkeys = nip65PubkeysByRelay[relay],
+                profilePubkeys = profilePubkeysByRelay[relay],
+                contactListPubkeys = contactListPubkeysByRelay[relay],
+                postIds = postIdsByRelay[relay],
+                replies = repliesByRelay[relay],
+                reactionPostIds = reactionPostIdsByRelay[relay],
+                reactorPubkey = reactorPubkey
+            )
+            if (allFilters.isEmpty()) continue
+
+            val ids = nostrService.subscribe(
+                filters = allFilters,
+                unsubOnEOSE = true,
+                relays = listOf(relay),
+            )
+            allSubIds.addAll(ids)
+        }
+
+        return allSubIds
+    }
+
+    private fun createFeedInfoFilters(
+        nip65Pubkeys: List<String>?,
+        profilePubkeys: List<String>?,
+        contactListPubkeys: List<String>?,
+        postIds: List<String>?,
+        replies: List<String>?,
+        reactionPostIds: List<String>?,
+        reactorPubkey: String
+    ): List<Filter> {
+        val allFilters = mutableListOf<Filter>()
+        nip65Pubkeys?.let {
+            if (it.isNotEmpty()) allFilters.add(Filter.createNip65Filter(pubkeys = it))
+        }
+        profilePubkeys?.let {
+            if (it.isNotEmpty()) allFilters.add(Filter.createProfileFilter(pubkeys = it))
+
+        }
+        contactListPubkeys?.let {
+            if (it.isNotEmpty()) allFilters.add(Filter.createContactListFilter(pubkeys = it))
+
+        }
+        postIds?.let {
+            if (it.isNotEmpty()) allFilters.add(Filter.createPostFilter(ids = it))
+
+        }
+        replies?.let {
+            if (it.isNotEmpty()) allFilters.add(Filter.createPostFilter(e = it))
+
+        }
+        reactionPostIds?.let {
+            if (it.isNotEmpty()) allFilters.add(
+                Filter.createReactionFilter(
+                    e = it,
+                    pubkeys = listOf(reactorPubkey)
+                )
+            )
+        }
+
+        return allFilters
     }
 
     override fun subscribePosts(
@@ -74,206 +143,29 @@ class NostrSubscriber(
             ids = postIds,
             until = getCurrentTimeInSeconds(),
         )
-        val ids = nostrService.subscribe(
+
+        return nostrService.subscribe(
             filters = listOf(postFilter),
             unsubOnEOSE = true,
             relays = relays,
         )
-        feedSubscriptions.addAll(ids)
-
-        return ids
-    }
-
-    override fun subscribeToReferencedData(
-        posts: Collection<PostWithMeta>,
-        relays: Collection<String>?,
-    ): List<String> {
-        Log.i(TAG, "Subscribe to referenced data of ${posts.size} posts")
-        if (posts.isEmpty()) return emptyList()
-
-        // TODO: First referenced posts, then referenced authors.
-        // At the same time does not make sense bc we don't know which pubkeys to sub yet
-        // TODO: Show shortened npub after referenced post is found
-
-        val postIds = posts.map { it.entity.id }
-        val postsWithUnknownRefAuthors = posts.filter { hasUnknownParentAuthor(it) }
-        val unknownReferencedPostIds = listReferencedPostIds(postsWithUnknownRefAuthors)
-        val unknownAuthors = posts.filter { it.name.isEmpty() }.map { it.entity.id }
-        val unknownParentAuthors = postsWithUnknownRefAuthors
-            .filter { hasUnknownParentAuthor(it) }
-            .mapNotNull { it.replyToPubkey }
-        val unknownPubkeys = unknownAuthors.toSet() +
-                unknownParentAuthors
-
-        val filters = mutableListOf<Filter>()
-
-        // My likes
-        filters.add(
-            Filter.createReactionFilter(
-                e = posts.map { it.entity.id },
-                pubkeys = listOf(pubkeyProvider.getPubkey())
-            )
-        )
-
-        // Replies
-        filters.add(Filter.createPostFilter(e = postIds))
-
-        // Unknown parent and mentioned posts
-        if (unknownReferencedPostIds.isNotEmpty()) {
-            filters.add(Filter.createPostFilter(ids = unknownReferencedPostIds))
-        }
-
-        // Authors with empty name of main, parent, mentioned posts
-        if (unknownPubkeys.isNotEmpty()) {
-            filters.add(Filter.createProfileFilter(pubkeys = unknownPubkeys.toList()))
-        }
-
-        // Contactlists of those I follow to improve trustscore
-        val followedAuthorPubkeys = posts.filter { it.isFollowedByMe }.map { it.pubkey }.distinct()
-        if (followedAuthorPubkeys.isNotEmpty()) {
-            // TODO: Cache which ones you already fetched and don't fetch it again
-            filters.add(Filter.createContactListFilter(pubkeys = followedAuthorPubkeys))
-        }
-
-        val ids = nostrService.subscribe(
-            filters = filters,
-            unsubOnEOSE = true,
-            relays = relays,
-        ) + subscribeReplyRelayHint(posts, relays)
-        additionalFeedDataSubscriptions.addAll(ids)
-
-        return ids
-    }
-
-    private fun subscribeReplyRelayHint(
-        posts: Collection<PostWithMeta>,
-        relays: Collection<String>?,
-    ): List<String> {
-        val ids = mutableListOf<String>()
-        getIdsPerRelayHintMap(posts = posts).forEach { (relayHint, hintedPostIds) ->
-            // TODO: Relay URL utils for checking this
-            if (relays?.contains(relayHint) == false
-                && relayHint.startsWith("wss://")
-                && hintedPostIds.isNotEmpty()
-            ) {
-                Log.i(
-                    TAG,
-                    "Subscribe to reply relay hint of ${hintedPostIds.size} posts in $relayHint"
-                )
-                val relayHintIds = nostrService.subscribe(
-                    filters = listOf(Filter.createPostFilter(ids = hintedPostIds)),
-                    unsubOnEOSE = true,
-                    relays = listOf(relayHint),
-                )
-                ids.addAll(relayHintIds)
-            }
-        }
-
-        return ids
-    }
-
-    override fun subscribeThread(
-        currentPostId: String,
-        relays: Collection<String>?,
-    ): List<String> {
-        Log.i(TAG, "Subscribe to thread in ${relays?.size} relays")
-
-        val postIds = mutableListOf(currentPostId)
-
-        val filters = mutableListOf<Filter>()
-        filters.add(Filter.createPostFilter(e = postIds))
-        // TODO: Resubbing event makes sense??
-        filters.add(Filter.createPostFilter(ids = postIds))
-
-        val ids = nostrService.subscribe(
-            filters = filters,
-            unsubOnEOSE = true,
-            relays = relays,
-        )
-        threadSubscriptions.addAll(ids)
-
-        return ids
-    }
-
-    override fun subscribeProfiles(
-        pubkeys: Collection<String>,
-        relays: Collection<String>?,
-    ): List<String> {
-        Log.i(TAG, "Subscribe to ${pubkeys.size} profiles")
-
-        if (pubkeys.isEmpty()) return emptyList()
-
-        val profileFilter = Filter.createProfileFilter(pubkeys = pubkeys.toList())
-
-        val ids = nostrService.subscribe(
-            filters = listOf(profileFilter),
-            unsubOnEOSE = true,
-            relays = relays
-        )
-        profileSubscriptions.addAll(ids)
-
-        return ids
     }
 
     // No relaySelection needed because nip65 could be anywhere
-    override fun subscribeNip65(pubkeys: Collection<String>): List<String> {
-        Log.i(TAG, "Subscribe to ${pubkeys.size} nip65s")
-
+    override fun subscribeNip65(pubkeys: List<String>): List<String> {
         if (pubkeys.isEmpty()) return emptyList()
 
-        val nip65Filter = Filter.createNip65Filter(pubkeys = pubkeys.toList())
+        Log.i(TAG, "Subscribe to ${pubkeys.size} nip65s")
+        val nip65Filter = Filter.createNip65Filter(pubkeys = pubkeys)
 
-        val ids = nostrService.subscribe(
+        return nostrService.subscribe(
             filters = listOf(nip65Filter),
             unsubOnEOSE = true,
             relays = null
         )
-        nip65Subscriptions.addAll(ids)
-
-        return ids
     }
 
-    override fun unsubscribeFeeds() {
-        val snapshot = feedSubscriptions.toList()
-        Log.i(TAG, "Unsubscribe ${snapshot.size} feeds")
-        if (snapshot.isEmpty()) return
-
-        nostrService.unsubscribe(snapshot)
-        feedSubscriptions.removeAll(snapshot)
-    }
-
-    override fun unsubscribeReferencedPostsData() {
-        val snapshot = additionalFeedDataSubscriptions.toList()
-        Log.i(TAG, "Unsubscribe ${snapshot.size} referenced posts data")
-        if (snapshot.isEmpty()) return
-        nostrService.unsubscribe(snapshot)
-        additionalFeedDataSubscriptions.removeAll(snapshot)
-    }
-
-    override fun unsubscribeThread() {
-        val snapshot = threadSubscriptions.toList()
-        Log.i(TAG, "Unsubscribe ${snapshot.size} thread")
-        if (snapshot.isEmpty()) return
-
-        nostrService.unsubscribe(snapshot)
-        threadSubscriptions.removeAll(snapshot)
-    }
-
-    override fun unsubscribeProfileMetadataAndContactLists() {
-        val snapshot = profileAndContactsSubscriptions.toList()
-        Log.i(TAG, "Unsubscribe ${snapshot.size} profiles")
-        if (snapshot.isEmpty()) return
-
-        nostrService.unsubscribe(snapshot)
-        profileAndContactsSubscriptions.removeAll(snapshot)
-    }
-
-    override fun unsubscribeNip65() {
-        val snapshot = nip65Subscriptions.toList()
-        Log.i(TAG, "Unsubscribe ${snapshot.size} nip65")
-        if (snapshot.isEmpty()) return
-
-        nostrService.unsubscribe(snapshot)
-        nip65Subscriptions.removeAll(snapshot)
+    override fun unsubscribe(subscriptionIds: Collection<String>) {
+        nostrService.unsubscribe(subscriptionIds)
     }
 }

@@ -75,7 +75,7 @@ class KeysViewModel(
                 Log.i(TAG, "Saving new privkey")
                 keyManager.setPrivkey(state.privkeyInput)
                 personalProfileManager.updateMetadata()
-                nozzleSubscriber.subscribePersonalProfiles()
+                nozzleSubscriber.subscribePersonalProfile()
                 useCachedValues()
                 focusManager.clearFocus()
                 Toast.makeText(

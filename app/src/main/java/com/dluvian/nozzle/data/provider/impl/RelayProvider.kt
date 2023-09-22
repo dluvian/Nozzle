@@ -1,17 +1,14 @@
 package com.dluvian.nozzle.data.provider.impl
 
 import com.dluvian.nozzle.data.getDefaultRelays
-import com.dluvian.nozzle.data.provider.IAutopilotProvider
-import com.dluvian.nozzle.data.provider.IContactListProvider
 import com.dluvian.nozzle.data.provider.IPubkeyProvider
 import com.dluvian.nozzle.data.provider.IRelayProvider
 import com.dluvian.nozzle.data.room.dao.Nip65Dao
 import com.dluvian.nozzle.data.room.entity.Nip65Entity
 import com.dluvian.nozzle.data.utils.NORMAL_DEBOUNCE
 import com.dluvian.nozzle.data.utils.firstThenDistinctDebounce
-import com.dluvian.nozzle.model.PostWithMeta
-import com.dluvian.nozzle.model.helper.Pubkey
-import com.dluvian.nozzle.model.helper.Relay
+import com.dluvian.nozzle.model.Pubkey
+import com.dluvian.nozzle.model.Relay
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.SharingStarted
@@ -19,8 +16,6 @@ import kotlinx.coroutines.flow.stateIn
 
 
 class RelayProvider(
-    private val autopilotProvider: IAutopilotProvider,
-    private val contactListProvider: IContactListProvider,
     private val pubkeyProvider: IPubkeyProvider,
     private val nip65Dao: Nip65Dao,
 ) : IRelayProvider {
@@ -48,19 +43,6 @@ class RelayProvider(
             .filter { it.isWrite }
             .map { it.url }
             .ifEmpty { getDefaultRelays() }
-    }
-
-    override fun getPostRelays(posts: List<PostWithMeta>): List<String> {
-        return mutableListOf<String>().apply {
-            addAll(getReadRelays())
-            addAll(posts.flatMap { it.relays })
-            addAll(posts.mapNotNull { it.entity.replyRelayHint })
-        }
-    }
-
-    override suspend fun getAutopilotRelays(): Map<String, Set<String>> {
-        val contacts = contactListProvider.listPersonalContactPubkeys().toSet()
-        return autopilotProvider.getAutopilotRelays(pubkeys = contacts)
     }
 
     override suspend fun getReadRelaysOfPubkey(pubkey: String): List<String> {

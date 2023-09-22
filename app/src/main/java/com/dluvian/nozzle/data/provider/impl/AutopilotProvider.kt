@@ -1,41 +1,39 @@
 package com.dluvian.nozzle.data.provider.impl
 
 import android.util.Log
-import com.dluvian.nozzle.data.getDefaultRelays
-import com.dluvian.nozzle.data.nostr.INostrSubscriber
 import com.dluvian.nozzle.data.provider.IAutopilotProvider
-import com.dluvian.nozzle.data.provider.IPubkeyProvider
+import com.dluvian.nozzle.data.provider.IContactListProvider
+import com.dluvian.nozzle.data.provider.IRelayProvider
 import com.dluvian.nozzle.data.room.dao.EventRelayDao
 import com.dluvian.nozzle.data.room.dao.Nip65Dao
-import java.util.Collections
+import com.dluvian.nozzle.data.subscriber.INozzleSubscriber
+import com.dluvian.nozzle.model.Pubkey
+import com.dluvian.nozzle.model.Relay
 
 private const val TAG = "AutopilotProvider"
 
 class AutopilotProvider(
-    private val pubkeyProvider: IPubkeyProvider,
+    private val relayProvider: IRelayProvider,
+    private val contactListProvider: IContactListProvider,
     private val nip65Dao: Nip65Dao,
     private val eventRelayDao: EventRelayDao,
-    private val nostrSubscriber: INostrSubscriber,
+    private val nozzleSubscriber: INozzleSubscriber,
 ) : IAutopilotProvider {
 
     // TODO: Dismiss relays you have trouble to connecting
     // java.net.ProtocolException: Expected HTTP 101 response but was '502 Bad Gateway'
     // javax.net.ssl.SSLPeerUnverifiedException: Hostname relay.nostr.vision not verified:
 
-    override suspend fun getAutopilotRelays(pubkeys: Set<String>): Map<String, Set<String>> {
+    override suspend fun getAutopilotRelays(): Map<Relay, Set<Pubkey>> {
+        val pubkeys = contactListProvider.listPersonalContactPubkeys()
         Log.i(TAG, "Get autopilot relays of ${pubkeys.size} pubkeys")
         if (pubkeys.isEmpty()) return emptyMap()
 
-        subscribeNip65(pubkeys = pubkeys)
+        nozzleSubscriber.subscribeNip65(pubkeys = pubkeys)
 
         val result = mutableListOf<Pair<String, Set<String>>>()
         val processedPubkeys = mutableSetOf<String>()
-
-        // We don't use relayProvider here because it depends on AutopilotProvider
-        val myReadRelays = nip65Dao
-            .getReadRelaysOfPubkey(pubkey = pubkeyProvider.getPubkey())
-            .ifEmpty { getDefaultRelays() }
-            .toSet()
+        val myReadRelays = relayProvider.getReadRelays().toSet()
 
         processNip65(
             myReadRelays = myReadRelays,
@@ -58,7 +56,7 @@ class AutopilotProvider(
                 myReadRelays = myReadRelays,
                 result = result,
                 processedPubkeys = processedPubkeys,
-                pubkeys = pubkeys.minus(processedPubkeys)
+                pubkeys = pubkeys.minus(processedPubkeys).toSet()
             )
         }
 
@@ -75,7 +73,7 @@ class AutopilotProvider(
         processedPubkeys: MutableSet<String>,
         pubkeys: Collection<String>
     ) {
-        nip65Dao.getPubkeysPerWriteRelayMap(pubkeys = pubkeys)
+        nip65Dao.getPubkeysByWriteRelays(pubkeys = pubkeys)
             .toList()
             .sortedByDescending { it.second.size }
             .sortedByDescending { myReadRelays.contains(it.first) } // Prefer my relays
@@ -158,16 +156,5 @@ class AutopilotProvider(
         }
 
         return result
-    }
-
-    private val pubkeysAlreadySubbedNip65 = Collections.synchronizedSet(mutableSetOf<String>())
-    private fun subscribeNip65(pubkeys: Set<String>) {
-        // TODO: Don't sub if nip65 already in DB. Or at least not all of them
-        val newPubkeys = pubkeys - pubkeysAlreadySubbedNip65
-        if (newPubkeys.isNotEmpty()) {
-            nostrSubscriber.unsubscribeNip65()
-            nostrSubscriber.subscribeNip65(pubkeys = newPubkeys)
-            pubkeysAlreadySubbedNip65.addAll(newPubkeys)
-        }
     }
 }

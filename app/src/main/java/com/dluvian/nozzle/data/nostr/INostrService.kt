@@ -29,7 +29,7 @@ interface INostrService {
         relays: Collection<String>?,
     ): List<String>
 
-    fun unsubscribe(subscriptionIds: List<String>)
+    fun unsubscribe(subscriptionIds: Collection<String>)
 
     fun close()
 }

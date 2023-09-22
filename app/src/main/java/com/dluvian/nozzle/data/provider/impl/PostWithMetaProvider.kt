@@ -17,6 +17,7 @@ import com.dluvian.nozzle.data.utils.SHORT_DEBOUNCE
 import com.dluvian.nozzle.data.utils.firstThenDistinctDebounce
 import com.dluvian.nozzle.model.MentionedPost
 import com.dluvian.nozzle.model.PostWithMeta
+import com.dluvian.nozzle.model.helper.FeedInfo
 import com.dluvian.nozzle.model.helper.MentionedNamesAndPosts
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
@@ -32,17 +33,15 @@ class PostWithMetaProvider(
     private val contactDao: ContactDao,
     private val profileDao: ProfileDao,
 ) : IPostWithMetaProvider {
-    override suspend fun getPostsWithMetaFlow(
-        postIds: Collection<String>,
-        authorPubkeys: Collection<String>,
-        mentionedPubkeys: Collection<String>,
-        mentionedPostIds: Collection<String>,
-    ): Flow<List<PostWithMeta>> {
-        if (postIds.isEmpty()) return flow { emit(emptyList()) }
+    override suspend fun getPostsWithMetaFlow(feedInfo: FeedInfo): Flow<List<PostWithMeta>> {
+        if (feedInfo.postIds.isEmpty()) return flow { emit(emptyList()) }
 
         // TODO: No PersonalPubkey. Use extra DB Table for current user
         val extendedPostsFlow = postDao
-            .listExtendedPostsFlow(postIds = postIds, personalPubkey = pubkeyProvider.getPubkey())
+            .listExtendedPostsFlow(
+                postIds = feedInfo.postIds,
+                personalPubkey = pubkeyProvider.getPubkey()
+            )
             .firstThenDistinctDebounce(NORMAL_DEBOUNCE)
 
         // TODO: JOIN isFollowedByMe
@@ -52,20 +51,20 @@ class PostWithMetaProvider(
 
         // TODO: In initial SQL query possible?
         val relaysFlow = eventRelayDao
-            .getRelaysPerEventIdMapFlow(postIds)
+            .getRelaysPerEventIdMapFlow(feedInfo.postIds)
             .firstThenDistinctDebounce(LONG_DEBOUNCE)
 
         // TODO: No pubkey. Use extra DB Table for current user
         val trustScorePerPubkeyFlow = contactDao
-            .getTrustScorePerPubkeyFlow(
+            .getTrustScoreByPubkeyFlow(
                 pubkey = pubkeyProvider.getPubkey(),
-                contactPubkeys = authorPubkeys
+                contactPubkeys = feedInfo.authorPubkeys
             )
             .firstThenDistinctDebounce(NORMAL_DEBOUNCE)
 
         val mentionedNamesAndPostsFlow = getMentionedNamesAndPostsFlow(
-            mentionedPubkeys = mentionedPubkeys,
-            mentionedPostIds = mentionedPostIds
+            mentionedPubkeys = feedInfo.mentionedPubkeys,
+            mentionedPostIds = feedInfo.mentionedPostIds
         ).firstThenDistinctDebounce(NORMAL_DEBOUNCE)
 
         return getFinalFlow(
@@ -81,11 +80,12 @@ class PostWithMetaProvider(
         mentionedPubkeys: Collection<String>,
         mentionedPostIds: Collection<String>
     ): Flow<MentionedNamesAndPosts> {
-        val mentionedNamesFlow = profileDao.getPubkeyToNameMapFlow(pubkeys = mentionedPubkeys)
+        val mentionedNamesFlow = if (mentionedPubkeys.isEmpty()) flow { emit(emptyMap()) }
+        else profileDao.getPubkeyToNameMapFlow(pubkeys = mentionedPubkeys)
             .firstThenDistinctDebounce(NORMAL_DEBOUNCE)
 
-        val mentionedPostsFlow = postDao
-            .getMentionedPostsMapFlow(postIds = mentionedPostIds)
+        val mentionedPostsFlow = if (mentionedPubkeys.isEmpty()) flow { emit(emptyMap()) }
+        else postDao.getMentionedPostsByIdFlow(postIds = mentionedPostIds)
             .firstThenDistinctDebounce(NORMAL_DEBOUNCE)
 
         return combine(mentionedNamesFlow, mentionedPostsFlow) { names, posts ->
@@ -155,9 +155,9 @@ class PostWithMetaProvider(
                 }
                     ?: MentionedPost(
                         id = nevent.eventId,
-                        pubkey = nevent.pubkey.orEmpty(),
+                        pubkey = "",
                         content = "",
-                        name = getShortenedNpubFromPubkey(nevent.pubkey.orEmpty()).orEmpty(),
+                        name = "",
                         picture = "",
                         createdAt = 0L
                     )

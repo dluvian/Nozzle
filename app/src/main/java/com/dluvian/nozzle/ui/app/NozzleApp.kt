@@ -63,7 +63,6 @@ fun NozzleApp(appContainer: AppContainer) {
                         profileProvider = appContainer.profileWithMetaProvider,
                         pubkeyProvider = appContainer.keyManager,
                         clickedMediaUrlCache = appContainer.clickedMediaUrlCache,
-                        nostrSubscriber = appContainer.nostrSubscriber,
                         contactListProvider = appContainer.contactListProvider,
                         context = LocalContext.current,
                         clip = LocalClipboardManager.current,
@@ -85,7 +84,7 @@ fun NozzleApp(appContainer: AppContainer) {
                         personalProfileProvider = appContainer.personalProfileManager,
                         feedProvider = appContainer.feedProvider,
                         relayProvider = appContainer.relayProvider,
-                        nostrSubscriber = appContainer.nostrSubscriber,
+                        autopilotProvider = appContainer.autopilotProvider,
                         feedSettingsPreferences = appContainer.feedSettingsPreferences,
                     )
                 ),
@@ -95,7 +94,6 @@ fun NozzleApp(appContainer: AppContainer) {
                         relayProvider = appContainer.relayProvider,
                         clickedMediaUrlCache = appContainer.clickedMediaUrlCache,
                         postCardInteractor = appContainer.postCardInteractor,
-                        nostrSubscriber = appContainer.nostrSubscriber,
                     )
                 ),
                 replyViewModel = viewModel(

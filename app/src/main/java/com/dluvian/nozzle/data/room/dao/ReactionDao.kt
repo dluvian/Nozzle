@@ -16,4 +16,12 @@ interface ReactionDao {
                 "WHERE eventId NOT IN (SELECT id FROM post)"
     )
     suspend fun deleteOrphaned(): Int
+
+    @Query(
+        "SELECT eventId " +
+                "FROM reaction " +
+                "WHERE pubkey = :pubkey " +
+                "AND eventId IN (:postIds)"
+    )
+    suspend fun filterLikedPostIds(postIds: Collection<String>, pubkey: String): List<String>
 }

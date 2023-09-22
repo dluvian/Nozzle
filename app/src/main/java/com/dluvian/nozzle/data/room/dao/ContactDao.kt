@@ -3,6 +3,7 @@ package com.dluvian.nozzle.data.room.dao
 import androidx.room.*
 import com.dluvian.nozzle.data.TRUST_SCORE_BOOST
 import com.dluvian.nozzle.data.room.entity.ContactEntity
+import com.dluvian.nozzle.model.Pubkey
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -123,7 +124,7 @@ interface ContactDao {
                 "AND pubkey IN (SELECT contactPubkey FROM contact WHERE pubkey = :pubkey) " +
                 "GROUP BY contactPubkey"
     )
-    fun getRawTrustScorePerPubkeyFlow(
+    fun getRawTrustScoreByPubkeyFlow(
         pubkey: String,
         contactPubkeys: Collection<String>
     ): Flow<Map<String, Int>>
@@ -154,14 +155,14 @@ interface ContactDao {
             }
     }
 
-    fun getTrustScorePerPubkeyFlow(
+    fun getTrustScoreByPubkeyFlow(
         pubkey: String,
         contactPubkeys: Collection<String>
-    ): Flow<Map<String, Float>> {
+    ): Flow<Map<Pubkey, Float>> {
         if (contactPubkeys.isEmpty()) return flow { emit(emptyMap()) }
 
         val trustScoreDividerFlow = getTrustScoreDividerFlow(pubkey).distinctUntilChanged()
-        val rawTrustScorePerPubkeyFlow = getRawTrustScorePerPubkeyFlow(
+        val rawTrustScorePerPubkeyFlow = getRawTrustScoreByPubkeyFlow(
             pubkey = pubkey,
             contactPubkeys = contactPubkeys
         ).distinctUntilChanged()
@@ -191,4 +192,15 @@ interface ContactDao {
                 "AND pubkey NOT IN (:exclude)"
     )
     suspend fun deleteOrphaned(exclude: Collection<String>): Int
+
+    @Query(
+        "SELECT contactPubkey " +
+                "FROM contact " +
+                "WHERE contactPubkey IN (:contactPubkeys) " +
+                "AND pubkey = :myPubkey"
+    )
+    suspend fun filterFriendsWithList(
+        contactPubkeys: Collection<String>,
+        myPubkey: String
+    ): List<String>
 }

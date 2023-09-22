@@ -67,7 +67,7 @@ class DatabaseSweeper(
         Log.i(TAG, "Deleted $deleteContactCount contact entries")
 
         // TODO: Exclude author via db table of user acc
-        val deleteNip65Count = database.nip65Dao().deleteOrphaned(exclude = contacts)
+        val deleteNip65Count = database.nip65Dao().deleteOrphaned(excludePubkeys = contacts)
         Log.i(TAG, "Deleted $deleteNip65Count nip65 entries")
     }
 }
