@@ -23,7 +23,8 @@ fun ProfileRoute(
 
     ProfileScreen(
         isRefreshing = isRefreshing,
-        profile = profile.copy(isFollowedByMe = isFollowedByMe),
+        profile = profile,
+        isFollowedByMe = isFollowedByMe,
         feed = feed.map { it.copy(isFollowedByMe = isFollowedByMe) },
         onPrepareReply = onPrepareReply,
         onLike = { post ->

@@ -10,7 +10,6 @@ data class ProfileWithMeta(
     val numOfFollowers: Int,
     val relays: List<String>,
     val isOneself: Boolean,
-    val isFollowedByMe: Boolean,
     val trustScore: Float?,
 ) {
     companion object {
@@ -22,7 +21,6 @@ data class ProfileWithMeta(
             numOfFollowers = 0,
             relays = emptyList(),
             isOneself = false,
-            isFollowedByMe = false,
             trustScore = null,
         )
     }

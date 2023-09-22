@@ -47,6 +47,7 @@ import com.dluvian.nozzle.ui.theme.spacing
 fun ProfileScreen(
     isRefreshing: Boolean,
     profile: ProfileWithMeta,
+    isFollowedByMe: Boolean,
     feed: List<PostWithMeta>,
     onPrepareReply: (PostWithMeta) -> Unit,
     onLike: (PostWithMeta) -> Unit,
@@ -66,6 +67,7 @@ fun ProfileScreen(
     Column {
         ProfileData(
             profile = profile,
+            isFollowedByMe = isFollowedByMe,
             onFollow = onFollow,
             onUnfollow = onUnfollow,
             onCopyNprofile = onCopyNprofile,
@@ -103,6 +105,7 @@ fun ProfileScreen(
 @Composable
 private fun ProfileData(
     profile: ProfileWithMeta,
+    isFollowedByMe: Boolean,
     onFollow: (String) -> Unit,
     onUnfollow: (String) -> Unit,
     onCopyNprofile: () -> Unit,
@@ -117,7 +120,7 @@ private fun ProfileData(
             pictureUrl = profile.metadata.picture.orEmpty(),
             pubkey = profile.pubkey,
             isOneself = profile.isOneself,
-            isFollowed = profile.isFollowedByMe,
+            isFollowed = isFollowedByMe,
             trustScore = profile.trustScore,
             onFollow = onFollow,
             onUnfollow = onUnfollow,

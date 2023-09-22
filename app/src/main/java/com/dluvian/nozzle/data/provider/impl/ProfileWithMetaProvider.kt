@@ -44,10 +44,8 @@ class ProfileWithMetaProvider(
 
         makeSubscriptionAvailable()
 
-        val profileExtendedFlow = profileDao.getProfileEntityExtendedFlow(
-            pubkey = pubkey,
-            myPubkey = pubkeyProvider.getPubkey()
-        ).distinctUntilChanged()
+        val profileExtendedFlow = profileDao.getProfileEntityExtendedFlow(pubkey = pubkey)
+            .distinctUntilChanged()
 
         // TODO: SQL join (?)
         val relaysFlow = eventRelayDao.listUsedRelaysFlow(pubkey)
@@ -99,7 +97,6 @@ class ProfileWithMetaProvider(
                 numOfFollowers = profile?.numOfFollowers ?: 0,
                 relays = relays,
                 isOneself = pubkeyProvider.isOneself(pubkeyVariations.pubkey),
-                isFollowedByMe = profile?.isFollowedByMe ?: false,
                 trustScore = trustScore,
             )
         }

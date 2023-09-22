@@ -153,27 +153,27 @@ class ProfileViewModel(
 
     private var followProcess: Job? = null
     val onFollow: (String) -> Unit = { pubkeyToFollow ->
-        if (!profileState.value.isFollowedByMe) {
+        if (!isFollowedByMeState.value) {
             followProcess?.cancel(CancellationException("Cancelled to start follow process"))
             isFollowedByMeFlow.update { true }
             followProcess = viewModelScope.launch(context = Dispatchers.IO) {
                 profileFollower.follow(pubkeyToFollow = pubkeyToFollow)
             }
             followProcess?.invokeOnCompletion { ex ->
-                Log.i(TAG, "Follow process completed: ${ex?.localizedMessage}")
+                Log.i(TAG, "Follow process completed: error=${ex?.localizedMessage}")
             }
         }
     }
 
     val onUnfollow: (String) -> Unit = { pubkeyToUnfollow ->
-        if (profileState.value.isFollowedByMe) {
+        if (isFollowedByMeState.value) {
             followProcess?.cancel(CancellationException("Cancelled to start unfollow process"))
             isFollowedByMeFlow.update { false }
             followProcess = viewModelScope.launch(context = Dispatchers.IO) {
                 profileFollower.unfollow(pubkeyToUnfollow = pubkeyToUnfollow)
             }
             followProcess?.invokeOnCompletion { ex ->
-                Log.i(TAG, "Unfollow process completed: ${ex?.localizedMessage}")
+                Log.i(TAG, "Unfollow process completed: error=${ex?.localizedMessage}")
             }
         }
     }
