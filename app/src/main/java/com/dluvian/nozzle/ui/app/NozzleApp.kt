@@ -64,6 +64,7 @@ fun NozzleApp(appContainer: AppContainer) {
                         pubkeyProvider = appContainer.keyManager,
                         clickedMediaUrlCache = appContainer.clickedMediaUrlCache,
                         nostrSubscriber = appContainer.nostrSubscriber,
+                        contactListProvider = appContainer.contactListProvider,
                         context = LocalContext.current,
                         clip = LocalClipboardManager.current,
                     )

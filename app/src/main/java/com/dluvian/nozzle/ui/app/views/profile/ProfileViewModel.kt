@@ -21,6 +21,7 @@ import com.dluvian.nozzle.data.nostr.INostrSubscriber
 import com.dluvian.nozzle.data.nostr.utils.EncodingUtils.profileIdToNostrId
 import com.dluvian.nozzle.data.postCardInteractor.IPostCardInteractor
 import com.dluvian.nozzle.data.profileFollower.IProfileFollower
+import com.dluvian.nozzle.data.provider.IContactListProvider
 import com.dluvian.nozzle.data.provider.IFeedProvider
 import com.dluvian.nozzle.data.provider.IProfileWithMetaProvider
 import com.dluvian.nozzle.data.provider.IPubkeyProvider
@@ -28,9 +29,11 @@ import com.dluvian.nozzle.data.provider.IRelayProvider
 import com.dluvian.nozzle.data.utils.hasUnknownParentAuthor
 import com.dluvian.nozzle.model.*
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
+import java.util.concurrent.CancellationException
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicInteger
 
@@ -46,6 +49,7 @@ class ProfileViewModel(
     private val relayProvider: IRelayProvider,
     private val profileFollower: IProfileFollower,
     private val pubkeyProvider: IPubkeyProvider,
+    private val contactListProvider: IContactListProvider,
     private val nostrSubscriber: INostrSubscriber,
     context: Context,
     clip: ClipboardManager,
@@ -63,6 +67,14 @@ class ProfileViewModel(
     )
 
     var feedState: StateFlow<List<PostWithMeta>> = MutableStateFlow(emptyList())
+
+    private val isFollowedByMeFlow = MutableStateFlow(false)
+    val isFollowedByMeState = isFollowedByMeFlow
+        .stateIn(
+            viewModelScope,
+            SharingStarted.WhileSubscribed(),
+            false
+        )
 
     private val recommendedRelays = mutableListOf<String>()
 
@@ -139,27 +151,29 @@ class ProfileViewModel(
         }
     }
 
-    private val isInFollowProcess = AtomicBoolean(false)
+    private var followProcess: Job? = null
     val onFollow: (String) -> Unit = { pubkeyToFollow ->
-        if (!isInFollowProcess.get() && !profileState.value.isFollowedByMe) {
-            isInFollowProcess.set(true)
-            viewModelScope.launch(context = Dispatchers.IO) {
-                profileFollower.follow(
-                    pubkeyToFollow = pubkeyToFollow
-                )
-            }.invokeOnCompletion {
-                isInFollowProcess.set(false)
+        if (!profileState.value.isFollowedByMe) {
+            followProcess?.cancel(CancellationException("Cancelled to start follow process"))
+            isFollowedByMeFlow.update { true }
+            followProcess = viewModelScope.launch(context = Dispatchers.IO) {
+                profileFollower.follow(pubkeyToFollow = pubkeyToFollow)
+            }
+            followProcess?.invokeOnCompletion { ex ->
+                Log.i(TAG, "Follow process completed: ${ex?.localizedMessage}")
             }
         }
     }
 
     val onUnfollow: (String) -> Unit = { pubkeyToUnfollow ->
-        if (!isInFollowProcess.get() && profileState.value.isFollowedByMe) {
-            isInFollowProcess.set(true)
-            viewModelScope.launch(context = Dispatchers.IO) {
+        if (profileState.value.isFollowedByMe) {
+            followProcess?.cancel(CancellationException("Cancelled to start unfollow process"))
+            isFollowedByMeFlow.update { false }
+            followProcess = viewModelScope.launch(context = Dispatchers.IO) {
                 profileFollower.unfollow(pubkeyToUnfollow = pubkeyToUnfollow)
-            }.invokeOnCompletion {
-                isInFollowProcess.set(false)
+            }
+            followProcess?.invokeOnCompletion { ex ->
+                Log.i(TAG, "Unfollow process completed: ${ex?.localizedMessage}")
             }
         }
     }
@@ -177,8 +191,9 @@ class ProfileViewModel(
         recommendedRelays.addAll(recommended)
     }
 
-    private fun setProfile(profileId: String, pubkey: String) {
+    private suspend fun setProfile(profileId: String, pubkey: String) {
         Log.i(TAG, "Set profile of $profileId")
+        updateFollowFlow(newPubkey = pubkey)
         profileState = profileProvider.getProfileFlow(profileId = profileId)
             .stateIn(
                 viewModelScope,
@@ -186,6 +201,12 @@ class ProfileViewModel(
                 if (profileState.value.pubkey == pubkey) profileState.value
                 else ProfileWithMeta.createEmpty(),
             )
+    }
+
+    private suspend fun updateFollowFlow(newPubkey: String) {
+        isFollowedByMeFlow.update {
+            contactListProvider.listPersonalContactPubkeys().contains(newPubkey)
+        }
     }
 
     private suspend fun setFeed(pubkey: String) {
@@ -286,6 +307,7 @@ class ProfileViewModel(
             profileProvider: IProfileWithMetaProvider,
             pubkeyProvider: IPubkeyProvider,
             clickedMediaUrlCache: IClickedMediaUrlCache,
+            contactListProvider: IContactListProvider,
             nostrSubscriber: INostrSubscriber,
             context: Context,
             clip: ClipboardManager,
@@ -301,6 +323,7 @@ class ProfileViewModel(
                         relayProvider = relayProvider,
                         profileFollower = profileFollower,
                         pubkeyProvider = pubkeyProvider,
+                        contactListProvider = contactListProvider,
                         nostrSubscriber = nostrSubscriber,
                         context = context,
                         clip = clip,

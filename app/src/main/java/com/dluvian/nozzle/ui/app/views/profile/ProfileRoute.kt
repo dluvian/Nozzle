@@ -19,11 +19,12 @@ fun ProfileRoute(
     val isRefreshing by profileViewModel.isRefreshingState.collectAsState()
     val profile by profileViewModel.profileState.collectAsState()
     val feed by profileViewModel.feedState.collectAsState()
+    val isFollowedByMe by profileViewModel.isFollowedByMeState.collectAsState()
 
     ProfileScreen(
         isRefreshing = isRefreshing,
-        profile = profile,
-        feed = feed,
+        profile = profile.copy(isFollowedByMe = isFollowedByMe),
+        feed = feed.map { it.copy(isFollowedByMe = isFollowedByMe) },
         onPrepareReply = onPrepareReply,
         onLike = { post ->
             profileViewModel.postCardInteractor.like(

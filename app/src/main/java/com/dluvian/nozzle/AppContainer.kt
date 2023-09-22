@@ -56,7 +56,7 @@ class AppContainer(context: Context) {
 
     val keyManager: IKeyManager = KeyManager(context = context)
 
-    private val contactListProvider: IContactListProvider = ContactListProvider(
+    val contactListProvider: IContactListProvider = ContactListProvider(
         pubkeyProvider = keyManager,
         contactDao = roomDb.contactDao()
     )
