@@ -22,6 +22,7 @@ import com.dluvian.nozzle.model.helper.IdAndRelays
 import com.dluvian.nozzle.model.nostr.Nevent
 import com.dluvian.nozzle.model.nostr.Nprofile
 import com.dluvian.nozzle.model.nostr.ReplyTo
+import java.util.Collections
 
 private const val TAG = "NozzleSubscriber"
 
@@ -32,23 +33,21 @@ class NozzleSubscriber(
     private val idCache: IIdCache,
     private val database: AppDatabase,
 ) : INozzleSubscriber {
-    private val personalProfileSubs = mutableListOf<String>()
-    private val fullProfileSubs = mutableListOf<String>()
-    private val feedInfoSubs = mutableListOf<String>()
-    private val nip65Subs = mutableListOf<String>()
-    private val parentPostSubs = mutableListOf<String>()
+    private val personalProfileSubs = Collections.synchronizedList(mutableListOf<String>())
+    private val fullProfileSubs = Collections.synchronizedList(mutableListOf<String>())
+    private val feedPostSubs = Collections.synchronizedList(mutableListOf<String>())
+    private val feedInfoSubs = Collections.synchronizedList(mutableListOf<String>())
+    private val nip65Subs = Collections.synchronizedList(mutableListOf<String>())
+    private val parentPostSubs = Collections.synchronizedList(mutableListOf<String>())
 
     override fun subscribePersonalProfile() {
         Log.i(TAG, "Subscribe personal profile")
-        synchronized(personalProfileSubs) {
-            nostrSubscriber.unsubscribe(personalProfileSubs)
-            personalProfileSubs.clear()
-            val subIds = nostrSubscriber.subscribeFullProfile(
-                pubkey = pubkeyProvider.getPubkey(),
-                relays = relayProvider.getWriteRelays()
-            )
-            personalProfileSubs.addAll(subIds)
-        }
+        unsub(personalProfileSubs)
+        val subIds = nostrSubscriber.subscribeFullProfile(
+            pubkey = pubkeyProvider.getPubkey(),
+            relays = relayProvider.getWriteRelays()
+        )
+        personalProfileSubs.addAll(subIds)
     }
 
     override suspend fun subscribeFullProfile(profileId: String) {
@@ -60,12 +59,9 @@ class NozzleSubscriber(
                 relayProvider.getWriteRelaysOfPubkey(pubkey = hex) +
                 recommendedRelays
 
-        synchronized(fullProfileSubs) {
-            nostrSubscriber.unsubscribe(fullProfileSubs)
-            fullProfileSubs.clear()
-            val subIds = nostrSubscriber.subscribeFullProfile(pubkey = hex, relays = relays)
-            fullProfileSubs.addAll(subIds)
-        }
+        unsub(fullProfileSubs)
+        val subIds = nostrSubscriber.subscribeFullProfile(pubkey = hex, relays = relays)
+        fullProfileSubs.addAll(subIds)
     }
 
     override fun subscribeToFeedPosts(
@@ -77,13 +73,14 @@ class NozzleSubscriber(
     ) {
         Log.i(TAG, "Subscribe feed posts")
         if (authorPubkeys != null && authorPubkeys.isEmpty()) return
+        unsub(feedPostSubs)
 
         // We can't exclude replies in relay subscriptions,
         // so we increase the limit for post-only settings
         // to increase the chance of receiving more posts.
         val adjustedLimit = if (isReplies) 2 * limit else 3 * limit
 
-        when (relaySelection) {
+        val subIds = when (relaySelection) {
             is AllRelays, is MultipleRelays -> {
                 nostrSubscriber.subscribeToFeedPosts(
                     authorPubkeys = authorPubkeys,
@@ -102,7 +99,7 @@ class NozzleSubscriber(
                         relays = relaySelection.selectedRelays
                     )
                 } else {
-                    relaySelection.pubkeysPerRelay.forEach { (relay, pubkeys) ->
+                    relaySelection.pubkeysPerRelay.flatMap { (relay, pubkeys) ->
                         // We ignore authorPubkeys because relaySelection should contain them
                         if (pubkeys.isNotEmpty()) {
                             nostrSubscriber.subscribeToFeedPosts(
@@ -111,12 +108,12 @@ class NozzleSubscriber(
                                 until = until,
                                 relays = listOf(relay)
                             )
-                        }
+                        } else emptyList()
                     }
                 }
-
             }
         }
+        feedPostSubs.addAll(subIds)
     }
 
     override suspend fun subscribeFeedInfo(posts: List<PostEntity>): FeedInfo {
@@ -148,20 +145,17 @@ class NozzleSubscriber(
 
         // TODO: Sub unknown authors of replyTo IDs
 
-        synchronized(feedInfoSubs) {
-            nostrSubscriber.unsubscribe(feedInfoSubs)
-            feedInfoSubs.clear()
-            val subIds = nostrSubscriber.subscribeFeedInfo(
-                nip65PubkeysByRelay = nip65PubkeysByRelay,
-                profilePubkeysByRelay = profilePubkeysByRelay,
-                contactListPubkeysByRelay = contactListPubkeysByRelay,
-                postIdsByRelay = postIdsByRelay,
-                repliesByRelay = repliesByRelay,
-                reactionPostIdsByRelay = reactionPostIdsByRelay,
-                reactorPubkey = pubkeyProvider.getPubkey()
-            )
-            feedInfoSubs.addAll(subIds)
-        }
+        unsub(feedInfoSubs)
+        val subIds = nostrSubscriber.subscribeFeedInfo(
+            nip65PubkeysByRelay = nip65PubkeysByRelay,
+            profilePubkeysByRelay = profilePubkeysByRelay,
+            contactListPubkeysByRelay = contactListPubkeysByRelay,
+            postIdsByRelay = postIdsByRelay,
+            repliesByRelay = repliesByRelay,
+            reactionPostIdsByRelay = reactionPostIdsByRelay,
+            reactorPubkey = pubkeyProvider.getPubkey()
+        )
+        feedInfoSubs.addAll(subIds)
 
         return FeedInfo(
             postIds = postIds,
@@ -183,7 +177,7 @@ class NozzleSubscriber(
 
     override suspend fun unsubscribeParentPosts() {
         Log.i(TAG, "Unsubscribe parent posts")
-        parentPostSubs.clear()
+        unsub(parentPostSubs)
     }
 
     override suspend fun subscribeNip65(pubkeys: List<String>) {
@@ -197,12 +191,9 @@ class NozzleSubscriber(
         val toSub = filteredPubkeys.minus(pubkeysInDb.takeRandom80percent().toSet())
         if (toSub.isEmpty()) return
 
-        synchronized(nip65Subs) {
-            nostrSubscriber.unsubscribe(nip65Subs)
-            nip65Subs.clear()
-            val subIds = nostrSubscriber.subscribeNip65(pubkeys = toSub)
-            nip65Subs.addAll(subIds)
-        }
+        unsub(nip65Subs)
+        val subIds = nostrSubscriber.subscribeNip65(pubkeys = toSub)
+        nip65Subs.addAll(subIds)
     }
 
     private suspend fun getNip65PubkeysToSub(
@@ -374,5 +365,11 @@ class NozzleSubscriber(
         }
 
         return this
+    }
+
+    private fun unsub(subIds: MutableList<String>) {
+        val snapshot = subIds.toList()
+        nostrSubscriber.unsubscribe(snapshot)
+        subIds.clear()
     }
 }
