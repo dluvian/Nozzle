@@ -13,6 +13,7 @@ import com.dluvian.nozzle.data.room.entity.PostEntity
 import com.dluvian.nozzle.data.utils.takeRandom80percent
 import com.dluvian.nozzle.model.AllRelays
 import com.dluvian.nozzle.model.MultipleRelays
+import com.dluvian.nozzle.model.PostWithMeta
 import com.dluvian.nozzle.model.Pubkey
 import com.dluvian.nozzle.model.Relay
 import com.dluvian.nozzle.model.RelaySelection
@@ -39,14 +40,15 @@ class NozzleSubscriber(
     private val feedInfoSubs = Collections.synchronizedList(mutableListOf<String>())
     private val nip65Subs = Collections.synchronizedList(mutableListOf<String>())
     private val parentPostSubs = Collections.synchronizedList(mutableListOf<String>())
+    private val unknownPubkeySubs = Collections.synchronizedList(mutableListOf<String>())
 
     override fun subscribePersonalProfile() {
         Log.i(TAG, "Subscribe personal profile")
-        unsub(personalProfileSubs)
         val subIds = nostrSubscriber.subscribeFullProfile(
             pubkey = pubkeyProvider.getPubkey(),
             relays = relayProvider.getWriteRelays()
         )
+        unsub(personalProfileSubs)
         personalProfileSubs.addAll(subIds)
     }
 
@@ -59,8 +61,8 @@ class NozzleSubscriber(
                 relayProvider.getWriteRelaysOfPubkey(pubkey = hex) +
                 recommendedRelays
 
-        unsub(fullProfileSubs)
         val subIds = nostrSubscriber.subscribeFullProfile(pubkey = hex, relays = relays)
+        unsub(fullProfileSubs)
         fullProfileSubs.addAll(subIds)
     }
 
@@ -73,7 +75,6 @@ class NozzleSubscriber(
     ) {
         Log.i(TAG, "Subscribe feed posts")
         if (authorPubkeys != null && authorPubkeys.isEmpty()) return
-        unsub(feedPostSubs)
 
         // We can't exclude replies in relay subscriptions,
         // so we increase the limit for post-only settings
@@ -113,6 +114,7 @@ class NozzleSubscriber(
                 }
             }
         }
+        unsub(feedPostSubs)
         feedPostSubs.addAll(subIds)
     }
 
@@ -135,17 +137,28 @@ class NozzleSubscriber(
                 )
             }
         }
+        val unknownParentAuthors = getUnknownParentAuthors(
+            replyTos = replyTos,
+            mentionedPostIds = mentionedPostIds
+        )
+        val allPubkeys = authorPubkeys + mentionedPubkeys + unknownParentAuthors
 
-        val nip65PubkeysByRelay = getNip65PubkeysToSub(authorPubkeys, mentionedProfiles)
-        val profilePubkeysByRelay = getProfilePubkeysToSub(authorPubkeys, mentionedProfiles)
-        val contactListPubkeysByRelay = getContactListPubkeysToSub(authorPubkeys, mentionedProfiles)
-        val postIdsByRelay = getPostIdsToSub(replyTos, mentionedPosts)
+        val nip65PubkeysByRelay = getNip65PubkeysToSub(
+            pubkeys = allPubkeys,
+            nprofiles = mentionedProfiles
+        )
+        val profilePubkeysByRelay = getProfilePubkeysToSub(
+            authorPubkeys = allPubkeys,
+            mentionedProfiles = mentionedProfiles
+        )
+        val contactListPubkeysByRelay = getContactListPubkeysToSub(
+            authorPubkeys = authorPubkeys,
+            mentionedProfiles = mentionedProfiles
+        )
+        val postIdsByRelay = getPostIdsToSub(replyTos = replyTos, mentionedPosts = mentionedPosts)
         val repliesByRelay = getPostIdsToSubReplies(postIds = postIds)
         val reactionPostIdsByRelay = getReactionPostIdsToSub(postIds = postIds)
 
-        // TODO: Sub unknown authors of replyTo IDs
-
-        unsub(feedInfoSubs)
         val subIds = nostrSubscriber.subscribeFeedInfo(
             nip65PubkeysByRelay = nip65PubkeysByRelay,
             profilePubkeysByRelay = profilePubkeysByRelay,
@@ -155,6 +168,7 @@ class NozzleSubscriber(
             reactionPostIdsByRelay = reactionPostIdsByRelay,
             reactorPubkey = pubkeyProvider.getPubkey()
         )
+        unsub(feedInfoSubs)
         feedInfoSubs.addAll(subIds)
 
         return FeedInfo(
@@ -163,6 +177,37 @@ class NozzleSubscriber(
             mentionedPubkeys = mentionedPubkeys,
             mentionedPostIds = mentionedPostIds,
         )
+    }
+
+    override suspend fun subscribeUnknowns(posts: List<PostWithMeta>) {
+        Log.d(TAG, "Enter subscribeUnknowns")
+        if (posts.isEmpty()) return
+
+        val replyParentPubkeys = posts.mapNotNull { it.replyToPubkey }
+        val mentionedPostPubkeys = posts.flatMap { it.mentionedPosts }.map { it.pubkey }
+        val allPubkeys = (replyParentPubkeys + mentionedPostPubkeys).distinct()
+        if (allPubkeys.isEmpty()) return
+
+        val existingPubkeys = database.profileDao().filterExistingPubkeys(pubkeys = allPubkeys)
+        val unknownPubkeys = allPubkeys.minus(existingPubkeys.toSet())
+        Log.i(TAG, "Subscribe ${unknownPubkeys.size} unknown pubkeys")
+        if (unknownPubkeys.isEmpty()) return
+
+        val nip65RelayMapping = relayProvider.getWriteRelaysOfPubkeys(unknownPubkeys)
+            .map { IdAndRelays(id = it.key, relays = it.value) }
+
+        val subIds = nostrSubscriber.subscribeNip65AndProfiles(
+            nip65PubkeysByRelay = getNip65PubkeysToSub(
+                pubkeys = unknownPubkeys,
+                nprofiles = emptyList()
+            ),
+            pubkeysByRelay = relayProvider.getReadRelays()
+                .associateWith { _ -> unknownPubkeys.toMutableList() }
+                .toMutableMap()
+                .addSpecialRelayMapping(nip65RelayMapping)
+        )
+        unsub(unknownPubkeySubs)
+        unknownPubkeySubs.addAll(subIds)
     }
 
     override suspend fun subscribeParentPost(postId: String, relayHint: String?) {
@@ -191,8 +236,8 @@ class NozzleSubscriber(
         val toSub = filteredPubkeys.minus(pubkeysInDb.takeRandom80percent().toSet())
         if (toSub.isEmpty()) return
 
-        unsub(nip65Subs)
         val subIds = nostrSubscriber.subscribeNip65(pubkeys = toSub)
+        unsub(nip65Subs)
         nip65Subs.addAll(subIds)
     }
 
@@ -291,7 +336,21 @@ class NozzleSubscriber(
         val toSub = postIds.minus(alreadyLiked.toSet())
         if (toSub.isEmpty()) return emptyMap()
 
+        Log.i(TAG, "Return ${toSub.size} postIds to sub reactions")
         return relayProvider.getReadRelays().associateWith { _ -> toSub }
+    }
+
+    private suspend fun getUnknownParentAuthors(
+        replyTos: List<ReplyTo>,
+        mentionedPostIds: List<String>
+    ): List<String> {
+        if (replyTos.isEmpty() && mentionedPostIds.isEmpty()) return emptyList()
+
+        val postIds = replyTos.map { it.replyTo } + mentionedPostIds
+        val unknown = database.postDao().getUnknownAuthors(postIds = postIds)
+
+        Log.i(TAG, "Return ${unknown.size} unknown author pubkeys")
+        return unknown
     }
 
     private fun getIdAndRelays(mentionedProfiles: List<Nprofile>): List<IdAndRelays> {

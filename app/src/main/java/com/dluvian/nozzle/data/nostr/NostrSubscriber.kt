@@ -93,6 +93,39 @@ class NostrSubscriber(private val nostrService: INostrService) : INostrSubscribe
         return allSubIds
     }
 
+    override fun subscribeNip65AndProfiles(
+        nip65PubkeysByRelay: Map<Relay, List<Pubkey>>,
+        pubkeysByRelay: Map<Relay, List<Pubkey>>
+    ): List<String> {
+        val subIds = mutableListOf<String>()
+        if (nip65PubkeysByRelay.isNotEmpty()) {
+            nip65PubkeysByRelay.forEach {
+                if (it.value.isNotEmpty()) {
+                    val ids = nostrService.subscribe(
+                        filters = listOf(Filter.createNip65Filter(it.value)),
+                        unsubOnEOSE = true,
+                        relays = listOf(it.key),
+                    )
+                    subIds.addAll(ids)
+                }
+            }
+        }
+        if (pubkeysByRelay.isNotEmpty()) {
+            pubkeysByRelay.forEach {
+                if (it.value.isNotEmpty()) {
+                    val ids = nostrService.subscribe(
+                        filters = listOf(Filter.createProfileFilter(it.value)),
+                        unsubOnEOSE = true,
+                        relays = listOf(it.key),
+                    )
+                    subIds.addAll(ids)
+                }
+            }
+        }
+
+        return subIds
+    }
+
     private fun createFeedInfoFilters(
         nip65Pubkeys: List<String>?,
         profilePubkeys: List<String>?,

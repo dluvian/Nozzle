@@ -1,6 +1,7 @@
 package com.dluvian.nozzle.data.provider.impl
 
 import androidx.compose.ui.text.AnnotatedString
+import com.dluvian.nozzle.data.RESUB_AFTER
 import com.dluvian.nozzle.data.annotatedContent.IAnnotatedContentHandler
 import com.dluvian.nozzle.data.nostr.utils.ShortenedNameUtils.getShortenedNpubFromPubkey
 import com.dluvian.nozzle.data.provider.IContactListProvider
@@ -11,6 +12,7 @@ import com.dluvian.nozzle.data.room.dao.EventRelayDao
 import com.dluvian.nozzle.data.room.dao.PostDao
 import com.dluvian.nozzle.data.room.dao.ProfileDao
 import com.dluvian.nozzle.data.room.helper.extended.PostEntityExtended
+import com.dluvian.nozzle.data.subscriber.INozzleSubscriber
 import com.dluvian.nozzle.data.utils.LONG_DEBOUNCE
 import com.dluvian.nozzle.data.utils.NORMAL_DEBOUNCE
 import com.dluvian.nozzle.data.utils.SHORT_DEBOUNCE
@@ -19,15 +21,18 @@ import com.dluvian.nozzle.model.MentionedPost
 import com.dluvian.nozzle.model.PostWithMeta
 import com.dluvian.nozzle.model.helper.FeedInfo
 import com.dluvian.nozzle.model.helper.MentionedNamesAndPosts
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flow
+import java.util.concurrent.atomic.AtomicInteger
 
 class PostWithMetaProvider(
     private val pubkeyProvider: IPubkeyProvider,
     private val contactListProvider: IContactListProvider,
     private val annotatedContentHandler: IAnnotatedContentHandler,
+    private val nozzleSubscriber: INozzleSubscriber,
     private val postDao: PostDao,
     private val eventRelayDao: EventRelayDao,
     private val contactDao: ContactDao,
@@ -67,13 +72,22 @@ class PostWithMetaProvider(
             mentionedPostIds = feedInfo.mentionedPostIds
         ).firstThenDistinctDebounce(NORMAL_DEBOUNCE)
 
+        val intervalCounter = AtomicInteger(0)
         return getFinalFlow(
             extendedPostsFlow = extendedPostsFlow,
             contactPubkeysFlow = contactPubkeysFlow,
             relaysFlow = relaysFlow,
             trustScorePerPubkeyFlow = trustScorePerPubkeyFlow,
             mentionedNamesAndPostsFlow = mentionedNamesAndPostsFlow,
-        ).distinctUntilChanged()
+        )
+            .distinctUntilChanged()
+            .combine(getIntervalFlow()) { posts, count ->
+                if (intervalCounter.compareAndSet(count - 1, count)) {
+                    nozzleSubscriber.subscribeUnknowns(posts = posts)
+                }
+                posts
+            }
+
     }
 
     private fun getMentionedNamesAndPostsFlow(
@@ -139,6 +153,14 @@ class PostWithMetaProvider(
                     ),
                 )
             }
+        }
+    }
+
+    private fun getIntervalFlow(): Flow<Int> {
+        return flow {
+            emit(0)
+            delay(RESUB_AFTER)
+            emit(1)
         }
     }
 

@@ -126,6 +126,7 @@ class AppContainer(context: Context) {
         pubkeyProvider = keyManager,
         contactListProvider = contactListProvider,
         annotatedContentHandler = annotatedContentHandler,
+        nozzleSubscriber = nozzleSubscriber,
         postDao = roomDb.postDao(),
         eventRelayDao = roomDb.eventRelayDao(),
         contactDao = roomDb.contactDao(),

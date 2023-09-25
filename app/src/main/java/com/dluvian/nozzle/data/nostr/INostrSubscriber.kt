@@ -26,6 +26,11 @@ interface INostrSubscriber {
         reactorPubkey: String, // TODO: Move this to Map above
     ): List<String>
 
+    fun subscribeNip65AndProfiles(
+        nip65PubkeysByRelay: Map<Relay, List<Pubkey>>,
+        pubkeysByRelay: Map<Relay, List<Pubkey>>,
+    ): List<String>
+
     fun subscribePosts(
         postIds: List<String>,
         relays: Collection<String>? = null
