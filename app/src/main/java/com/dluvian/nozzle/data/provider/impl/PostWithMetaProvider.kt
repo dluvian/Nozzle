@@ -98,7 +98,7 @@ class PostWithMetaProvider(
         else profileDao.getPubkeyToNameMapFlow(pubkeys = mentionedPubkeys)
             .firstThenDistinctDebounce(NORMAL_DEBOUNCE)
 
-        val mentionedPostsFlow = if (mentionedPubkeys.isEmpty()) flow { emit(emptyMap()) }
+        val mentionedPostsFlow = if (mentionedPostIds.isEmpty()) flow { emit(emptyMap()) }
         else postDao.getMentionedPostsByIdFlow(postIds = mentionedPostIds)
             .firstThenDistinctDebounce(NORMAL_DEBOUNCE)
 
