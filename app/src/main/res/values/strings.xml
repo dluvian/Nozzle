@@ -38,7 +38,6 @@
     <string name="enter_a_private_key">Enter nsec or hex private key</string>
     <string name="profile_id_copied">Profile ID copied</string>
     <string name="enter_your_username">Enter your username</string>
-    <string name="invalid_username">Invalid username</string>
     <string name="username">Username</string>
     <string name="about_you">About you</string>
     <string name="describe_yourself">Describe yourself</string>
@@ -61,7 +60,7 @@
     <string name="your_reply_is_empty">Your reply is empty</string>
     <string name="update">Update</string>
     <string name="nip05_identifier">nip-05 identifier</string>
-    <string name="enter_nip05">e.g. user@nozzle.social</string>
+    <string name="enter_nip05">e.g. user@domain.com</string>
     <string name="post_your_thoughts">Post your thoughts</string>
     <string name="add">Add</string>
     <string name="invalid_nostr_id">Invalid nostr ID</string>

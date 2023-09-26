@@ -67,7 +67,6 @@ fun EditProfileScreen(
         ) {
             Username(
                 username = uiState.nameInput,
-                isInvalid = uiState.isInvalidUsername,
                 onChangeName = onChangeName
             )
             Spacer(modifier = Modifier.height(spacing.xxl))
@@ -102,16 +101,13 @@ fun EditProfileScreen(
 @Composable
 private fun Username(
     username: String,
-    isInvalid: Boolean,
     onChangeName: (String) -> Unit,
 ) {
     Text(text = stringResource(id = R.string.username), fontWeight = FontWeight.Bold)
     ChangeableTextField(
         modifier = Modifier.fillMaxWidth(),
         value = username,
-        isError = isInvalid,
         placeholder = stringResource(id = R.string.enter_your_username),
-        errorLabel = stringResource(id = R.string.invalid_username),
         onChangeValue = onChangeName,
     )
 }
@@ -127,7 +123,6 @@ private fun About(
         value = about,
         maxLines = 3,
         placeholder = stringResource(id = R.string.describe_yourself),
-        errorLabel = stringResource(id = R.string.invalid_username),
         onChangeValue = onChangeAbout,
     )
 }

@@ -10,7 +10,6 @@ import androidx.lifecycle.viewModelScope
 import com.dluvian.nozzle.R
 import com.dluvian.nozzle.data.manager.IPersonalProfileManager
 import com.dluvian.nozzle.data.nostr.INostrService
-import com.dluvian.nozzle.data.nostr.utils.UsernameUtils.isValidUsername
 import com.dluvian.nozzle.model.nostr.Metadata
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.*
@@ -25,7 +24,6 @@ data class EditProfileViewModelState(
     val nip05Input: String = "",
     val lud16Input: String = "",
     val hasChanges: Boolean = false,
-    val isInvalidUsername: Boolean = false,
     val isInvalidPictureUrl: Boolean = false,
 )
 
@@ -56,13 +54,12 @@ class EditProfileViewModel(
                 Log.i(TAG, "Profile editor has no changes")
                 return@let
             }
-            val isValidUsername = isValidUsername(it.nameInput)
             val isValidUrl = isValidUrl(it.pictureInput)
-            if (isValidUsername && isValidUrl) {
+            if (isValidUrl) {
                 Log.i(TAG, "New values are valid. Update profile")
                 viewModelScope.launch(context = Dispatchers.IO) {
-                    updateMetadataInDb(it)
-                    updateMetadataOverNostr(it)
+                    val newMetadata = updateMetadataOverNostr(it)
+                    updateMetadataInDb(metadata = newMetadata)
                     useCachedValues()
                 }
                 Toast.makeText(
@@ -73,10 +70,7 @@ class EditProfileViewModel(
             } else {
                 Log.i(TAG, "New values are invalid")
                 viewModelState.update { state ->
-                    state.copy(
-                        isInvalidUsername = !isValidUsername,
-                        isInvalidPictureUrl = !isValidUrl
-                    )
+                    state.copy(isInvalidPictureUrl = false)
                 }
             }
         }
@@ -88,11 +82,6 @@ class EditProfileViewModel(
                 it.copy(nameInput = input)
             }
             setUIHasChanges()
-            if (state.isInvalidUsername && isValidUsername(input)) {
-                viewModelState.update {
-                    it.copy(isInvalidUsername = false)
-                }
-            }
         }
     }
 
@@ -134,10 +123,7 @@ class EditProfileViewModel(
     }
 
     val onCanGoBack: () -> Boolean = {
-        val canGoBack = uiState.value.let { state ->
-            !state.isInvalidUsername && !state.isInvalidPictureUrl
-        }
-        canGoBack
+        uiState.value.let { !it.isInvalidPictureUrl }
     }
 
     val onResetUiState: () -> Unit = {
@@ -145,27 +131,28 @@ class EditProfileViewModel(
         useCachedValues()
     }
 
-    private suspend fun updateMetadataInDb(state: EditProfileViewModelState) {
+    private suspend fun updateMetadataInDb(metadata: Metadata) {
         Log.i(TAG, "Update profile in DB")
         personalProfileManager.setMeta(
-            name = state.nameInput,
-            about = state.aboutInput,
-            picture = state.pictureInput,
-            nip05 = state.nip05Input,
-            lud16 = state.lud16Input,
+            name = metadata.name.orEmpty(),
+            about = metadata.about.orEmpty(),
+            picture = metadata.picture.orEmpty(),
+            nip05 = metadata.nip05.orEmpty(),
+            lud16 = metadata.lud16.orEmpty(),
         )
     }
 
-    private fun updateMetadataOverNostr(state: EditProfileViewModelState) {
+    private fun updateMetadataOverNostr(state: EditProfileViewModelState): Metadata {
         Log.i(TAG, "Update profile over nostr")
         val metadata = Metadata(
-            name = state.nameInput,
-            about = state.aboutInput,
-            picture = state.pictureInput,
-            nip05 = state.nip05Input,
-            lud16 = state.lud16Input,
+            name = state.nameInput.trim(),
+            about = state.aboutInput.trim(),
+            picture = state.pictureInput.trim(),
+            nip05 = state.nip05Input.trim(),
+            lud16 = state.lud16Input.trim(),
         )
         nostrService.publishProfile(metadata = metadata)
+        return metadata
     }
 
     private fun isValidUrl(url: String) = url.isEmpty() || URLUtil.isValidUrl(url)
@@ -199,7 +186,6 @@ class EditProfileViewModel(
                     nip05Input = metadata?.nip05.orEmpty(),
                     lud16Input = metadata?.lud16.orEmpty(),
                     hasChanges = false,
-                    isInvalidUsername = false,
                     isInvalidPictureUrl = false
                 )
             }
