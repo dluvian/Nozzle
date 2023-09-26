@@ -38,7 +38,7 @@ object KeyUtils {
         return isValidHexKey(pubkey) || npubToHex(pubkey) != null
     }
 
-    private fun isValidHexKey(hexKey: String): Boolean {
+    fun isValidHexKey(hexKey: String): Boolean {
         return hexKey.length == 64 && hexKey.isHex()
     }
 

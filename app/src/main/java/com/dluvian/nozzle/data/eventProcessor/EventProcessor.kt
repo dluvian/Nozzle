@@ -2,6 +2,7 @@ package com.dluvian.nozzle.data.eventProcessor
 
 import android.util.Log
 import com.dluvian.nozzle.data.cache.IIdCache
+import com.dluvian.nozzle.data.nostr.utils.KeyUtils
 import com.dluvian.nozzle.data.room.AppDatabase
 import com.dluvian.nozzle.data.room.entity.Nip65Entity
 import com.dluvian.nozzle.data.room.entity.PostEntity
@@ -77,7 +78,6 @@ class EventProcessor(
         if (!verify(event)) return
 
         otherIdsCache.add(event.id)
-        dbSweepExcludingCache.addContactListAuthor(event.pubkey)
 
         scope.launch {
             database.contactDao().insertAndDeleteOutdated(
@@ -85,6 +85,7 @@ class EventProcessor(
                 newTimestamp = event.createdAt,
                 contactPubkeys = getContactPubkeys(event.tags),
             )
+            dbSweepExcludingCache.addContactListAuthor(event.pubkey)
         }
     }
 
@@ -93,7 +94,6 @@ class EventProcessor(
         if (!verify(event)) return
 
         otherIdsCache.add(event.id)
-        dbSweepExcludingCache.addPubkey(event.pubkey)
 
         Log.d(TAG, "Process profile event ${event.content}")
         deserializeMetadata(event.content)?.let {
@@ -113,6 +113,7 @@ class EventProcessor(
                         createdAt = event.createdAt,
                     )
                 )
+                dbSweepExcludingCache.addPubkey(event.pubkey)
             }
         }
     }
@@ -125,7 +126,6 @@ class EventProcessor(
         if (!verify(event)) return
 
         otherIdsCache.add(event.id)
-        dbSweepExcludingCache.addNip65Author(event.pubkey)
 
         Log.d(TAG, "Process ${nip65Entries.size} nip65 entries from ${event.pubkey}")
         scope.launch {
@@ -143,6 +143,7 @@ class EventProcessor(
                 timestamp = event.createdAt,
                 nip65Entities = entities.toTypedArray()
             )
+            dbSweepExcludingCache.addNip65Author(event.pubkey)
         }
     }
 
@@ -181,6 +182,7 @@ class EventProcessor(
         return tags
             .filter { tag -> tag.size >= 2 && tag[0] == "p" }
             .map { tag -> tag[1] }
+            .filter { KeyUtils.isValidHexKey(hexKey = it) }
             .distinct()
     }
 
