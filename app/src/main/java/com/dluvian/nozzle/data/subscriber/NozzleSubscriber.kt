@@ -143,29 +143,22 @@ class NozzleSubscriber(
         )
         val allPubkeys = authorPubkeys + mentionedPubkeys + unknownParentAuthors
 
-        val nip65PubkeysByRelay = getNip65PubkeysToSub(
-            pubkeys = allPubkeys,
-            nprofiles = mentionedProfiles
-        )
-        val profilePubkeysByRelay = getProfilePubkeysToSub(
-            authorPubkeys = allPubkeys,
-            mentionedProfiles = mentionedProfiles
-        )
-        val contactListPubkeysByRelay = getContactListPubkeysToSub(
-            authorPubkeys = authorPubkeys,
-            mentionedProfiles = mentionedProfiles
-        )
-        val postIdsByRelay = getPostIdsToSub(replyTos = replyTos, mentionedPosts = mentionedPosts)
-        val repliesByRelay = getPostIdsToSubReplies(postIds = postIds)
-        val reactionPostIdsByRelay = getReactionPostIdsToSub(postIds = postIds)
-
         val subIds = nostrSubscriber.subscribeFeedInfo(
-            nip65PubkeysByRelay = nip65PubkeysByRelay,
-            profilePubkeysByRelay = profilePubkeysByRelay,
-            contactListPubkeysByRelay = contactListPubkeysByRelay,
-            postIdsByRelay = postIdsByRelay,
-            repliesByRelay = repliesByRelay,
-            reactionPostIdsByRelay = reactionPostIdsByRelay,
+            nip65PubkeysByRelay = getNip65PubkeysToSub(
+                pubkeys = allPubkeys,
+                nprofiles = mentionedProfiles
+            ),
+            profilePubkeysByRelay = getProfilePubkeysToSub(
+                authorPubkeys = allPubkeys,
+                mentionedProfiles = mentionedProfiles
+            ),
+            contactListPubkeysByRelay = getContactListPubkeysToSub(
+                authorPubkeys = authorPubkeys,
+                mentionedProfiles = mentionedProfiles
+            ),
+            postIdsByRelay = getPostIdsToSub(replyTos = replyTos, mentionedPosts = mentionedPosts),
+            repliesByRelay = getPostIdsToSubReplies(postIds = postIds),
+            reactionPostIdsByRelay = getReactionPostIdsToSub(postIds = postIds),
             reactorPubkey = pubkeyProvider.getPubkey()
         )
         unsub(feedInfoSubs)
