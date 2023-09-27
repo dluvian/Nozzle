@@ -21,6 +21,8 @@ import com.dluvian.nozzle.data.nostr.INostrService
 import com.dluvian.nozzle.data.nostr.INostrSubscriber
 import com.dluvian.nozzle.data.nostr.NostrService
 import com.dluvian.nozzle.data.nostr.NostrSubscriber
+import com.dluvian.nozzle.data.nostr.nip05.INip05Resolver
+import com.dluvian.nozzle.data.nostr.nip05.Nip05Resolver
 import com.dluvian.nozzle.data.postCardInteractor.IPostCardInteractor
 import com.dluvian.nozzle.data.postCardInteractor.PostCardInteractor
 import com.dluvian.nozzle.data.preferences.IFeedSettingsPreferences
@@ -72,12 +74,14 @@ class AppContainer(context: Context) {
         database = roomDb,
     )
 
+    val nip05Resolver: INip05Resolver = Nip05Resolver()
+
     val nostrService: INostrService = NostrService(
         keyManager = keyManager,
         eventProcessor = eventProcessor
     )
 
-    val nostrSubscriber: INostrSubscriber = NostrSubscriber(nostrService = nostrService)
+    private val nostrSubscriber: INostrSubscriber = NostrSubscriber(nostrService = nostrService)
 
     val relayProvider: IRelayProvider = RelayProvider(
         pubkeyProvider = keyManager,

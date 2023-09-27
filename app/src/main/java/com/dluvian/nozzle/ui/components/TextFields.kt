@@ -32,7 +32,7 @@ fun ChangeableTextField(
     isPassword: Boolean = false,
     colors: TextFieldColors = TextFieldDefaults.textFieldColors(),
     onChangeValue: (String) -> Unit,
-    onGo: (() -> Unit)? = null,
+    onImeAction: (() -> Unit)? = null,
     trailingIcon: @Composable (() -> Unit)? = null,
 ) {
     val focusManager = LocalFocusManager.current
@@ -63,7 +63,8 @@ fun ChangeableTextField(
         ),
         keyboardActions = KeyboardActions(
             onDone = { focusManager.clearFocus() },
-            onGo = { onGo?.let { it() } }
+            onGo = { onImeAction?.let { it() } },
+            onSearch = { onImeAction?.let { it() } },
         ),
         visualTransformation = if (isPassword) {
             PasswordVisualTransformation()

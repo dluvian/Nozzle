@@ -95,6 +95,7 @@
     <string name="quote">Quote post</string>
     <string name="click_to_show_media">Click to show media</string>
     <string name="loaded_media">Loaded media</string>
+    <string name="failed_to_resolve_nip05">Failed to resolve nip05</string>
     <plurals name="other_relays">
         <item quantity="one">other</item>
         <item quantity="other">others</item>
