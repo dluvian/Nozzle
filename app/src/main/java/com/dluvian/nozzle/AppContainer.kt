@@ -21,6 +21,8 @@ import com.dluvian.nozzle.data.nostr.INostrService
 import com.dluvian.nozzle.data.nostr.INostrSubscriber
 import com.dluvian.nozzle.data.nostr.NostrService
 import com.dluvian.nozzle.data.nostr.NostrSubscriber
+import com.dluvian.nozzle.data.nostr.nip05.INip05Resolver
+import com.dluvian.nozzle.data.nostr.nip05.Nip05Resolver
 import com.dluvian.nozzle.data.postCardInteractor.IPostCardInteractor
 import com.dluvian.nozzle.data.postCardInteractor.PostCardInteractor
 import com.dluvian.nozzle.data.preferences.IFeedSettingsPreferences
@@ -44,6 +46,7 @@ import com.dluvian.nozzle.data.provider.impl.ThreadProvider
 import com.dluvian.nozzle.data.room.AppDatabase
 import com.dluvian.nozzle.data.subscriber.INozzleSubscriber
 import com.dluvian.nozzle.data.subscriber.NozzleSubscriber
+import okhttp3.OkHttpClient
 
 class AppContainer(context: Context) {
     val roomDb: AppDatabase by lazy {
@@ -72,12 +75,17 @@ class AppContainer(context: Context) {
         database = roomDb,
     )
 
+    private val httpClient = OkHttpClient()
+
+    val nip05Resolver: INip05Resolver = Nip05Resolver(httpClient = httpClient)
+
     val nostrService: INostrService = NostrService(
+        httpClient = httpClient,
         keyManager = keyManager,
         eventProcessor = eventProcessor
     )
 
-    val nostrSubscriber: INostrSubscriber = NostrSubscriber(nostrService = nostrService)
+    private val nostrSubscriber: INostrSubscriber = NostrSubscriber(nostrService = nostrService)
 
     val relayProvider: IRelayProvider = RelayProvider(
         pubkeyProvider = keyManager,

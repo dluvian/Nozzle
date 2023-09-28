@@ -15,9 +15,8 @@ fun SearchRoute(
     SearchScreen(
         uiState = uiState,
         onChangeInput = searchViewModel.onChangeInput,
-        onValidateAndNavigateToDestination = {
-            searchViewModel.onValidateAndNavigateToDestination(onNavigateToId)
-        },
+        onSearch = searchViewModel.onSearch,
+        onNavigateToId = onNavigateToId,
         onResetUI = searchViewModel.onResetUI,
         onGoBack = onGoBack,
     )

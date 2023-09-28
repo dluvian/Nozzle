@@ -1,10 +1,15 @@
 package com.dluvian.nozzle.ui.app.views.search
 
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import com.dluvian.nozzle.R
@@ -17,7 +22,8 @@ import com.dluvian.nozzle.ui.components.SearchTopBarButton
 fun SearchScreen(
     uiState: SearchViewModelState,
     onChangeInput: (String) -> Unit,
-    onValidateAndNavigateToDestination: () -> Unit,
+    onSearch: () -> Unit,
+    onNavigateToId: (String) -> Unit,
     onResetUI: () -> Unit,
     onGoBack: () -> Unit,
 ) {
@@ -26,19 +32,30 @@ fun SearchScreen(
             text = stringResource(id = R.string.search),
             onGoBack = onGoBack,
             trailingIcon = {
-                SearchTopBarButton(
+                if (uiState.isLoading) CircularProgressIndicator(
+                    modifier = Modifier
+                        .fillMaxHeight(0.5f)
+                        .aspectRatio(1f),
+                    color = Color.White
+                )
+                else SearchTopBarButton(
                     hasChanges = uiState.input.isNotBlank(),
-                    onSearch = onValidateAndNavigateToDestination,
+                    onSearch = onSearch,
                 )
             }
         )
         SearchBar(
             input = uiState.input,
-            isInvalid = uiState.isInvalid,
+            isInvalidNostrId = uiState.isInvalidNostrId,
+            isInvalidNip05 = uiState.isInvalidNip05,
             onChangeInput = onChangeInput,
-            onNavigateToProfile = onValidateAndNavigateToDestination,
+            onSearch = onSearch
         )
     }
+
+    val finalIdIsNotEmpty = remember(uiState.finalId) { uiState.finalId.isNotEmpty() }
+    if (finalIdIsNotEmpty) onNavigateToId(uiState.finalId)
+
     DisposableEffect(true) {
         onDispose { onResetUI() }
     }
@@ -47,19 +64,21 @@ fun SearchScreen(
 @Composable
 private fun SearchBar(
     input: String,
-    isInvalid: Boolean,
+    isInvalidNostrId: Boolean,
+    isInvalidNip05: Boolean,
     onChangeInput: (String) -> Unit,
-    onNavigateToProfile: () -> Unit,
+    onSearch: () -> Unit,
 ) {
     ChangeableTextField(
         modifier = Modifier.fillMaxWidth(),
         value = input,
-        isError = isInvalid,
+        isError = isInvalidNostrId || isInvalidNip05,
         maxLines = Int.MAX_VALUE,
         placeholder = stringResource(id = R.string.search_nostr_id),
-        errorLabel = stringResource(id = R.string.invalid_nostr_id),
-        keyboardImeAction = ImeAction.Go,
-        onGo = onNavigateToProfile,
+        errorLabel = if (isInvalidNostrId) stringResource(id = R.string.invalid_nostr_id)
+        else stringResource(id = R.string.failed_to_resolve_nip05),
+        keyboardImeAction = ImeAction.Search,
+        onImeAction = onSearch,
         onChangeValue = onChangeInput,
     )
 }

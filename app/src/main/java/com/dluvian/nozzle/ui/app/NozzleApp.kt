@@ -115,7 +115,9 @@ fun NozzleApp(appContainer: AppContainer) {
                     )
                 ),
                 searchViewModel = viewModel(
-                    factory = SearchViewModel.provideFactory()
+                    factory = SearchViewModel.provideFactory(
+                        nip05Resolver = appContainer.nip05Resolver
+                    )
                 ),
             )
 
