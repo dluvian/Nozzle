@@ -1,4 +1,4 @@
-package com.dluvian.nozzle.data.nostr.nip05
+package com.dluvian.nozzle.model.nostr.nip05
 
 import com.dluvian.nozzle.model.Pubkey
 import com.dluvian.nozzle.model.Relay

@@ -1,4 +1,4 @@
-package com.dluvian.nozzle.data.nostr.nip05
+package com.dluvian.nozzle.model.nostr.nip05
 
 data class Nip05Result(
     val pubkey: String,

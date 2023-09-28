@@ -2,6 +2,8 @@ package com.dluvian.nozzle.data.nostr.nip05
 
 import android.util.Log
 import com.dluvian.nozzle.data.utils.JsonUtils
+import com.dluvian.nozzle.model.nostr.nip05.Nip05Response
+import com.dluvian.nozzle.model.nostr.nip05.Nip05Result
 import okhttp3.OkHttpClient
 import okhttp3.Request
 
