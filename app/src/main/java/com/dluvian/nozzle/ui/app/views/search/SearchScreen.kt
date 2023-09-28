@@ -16,6 +16,7 @@ import com.dluvian.nozzle.R
 import com.dluvian.nozzle.ui.components.ChangeableTextField
 import com.dluvian.nozzle.ui.components.ReturnableTopBar
 import com.dluvian.nozzle.ui.components.SearchTopBarButton
+import com.dluvian.nozzle.ui.theme.sizing
 
 
 @Composable
@@ -36,7 +37,8 @@ fun SearchScreen(
                     modifier = Modifier
                         .fillMaxHeight(0.5f)
                         .aspectRatio(1f),
-                    color = Color.White
+                    color = Color.White,
+                    strokeWidth = sizing.smallProgressIndicator
                 )
                 else SearchTopBarButton(
                     hasChanges = uiState.input.isNotBlank(),

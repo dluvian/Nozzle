@@ -9,6 +9,10 @@ import androidx.compose.ui.unit.dp
 
 data class Sizing(
     /**
+     * 3 dp
+     */
+    val smallProgressIndicator: Dp = 3.dp,
+    /**
      * 16 dp
      */
     val smallIcon: Dp = 16.dp,
