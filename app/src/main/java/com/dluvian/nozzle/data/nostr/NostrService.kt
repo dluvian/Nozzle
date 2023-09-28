@@ -8,15 +8,17 @@ import com.dluvian.nozzle.model.nostr.Filter
 import com.dluvian.nozzle.model.nostr.Metadata
 import com.dluvian.nozzle.model.nostr.Post
 import com.dluvian.nozzle.model.nostr.ReplyTo
+import okhttp3.OkHttpClient
 import java.util.Collections
 
 private const val TAG = "NostrService"
 
 class NostrService(
+    httpClient: OkHttpClient,
     private val keyManager: IKeyManager,
     private val eventProcessor: IEventProcessor,
 ) : INostrService {
-    private val client = Client()
+    private val client = Client(httpClient = httpClient)
     private val unsubOnEOSECache = Collections.synchronizedSet(mutableSetOf<String>())
     private val listener = object : NostrListener {
         override fun onOpen(msg: String) {

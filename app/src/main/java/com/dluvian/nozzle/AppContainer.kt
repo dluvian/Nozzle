@@ -46,6 +46,7 @@ import com.dluvian.nozzle.data.provider.impl.ThreadProvider
 import com.dluvian.nozzle.data.room.AppDatabase
 import com.dluvian.nozzle.data.subscriber.INozzleSubscriber
 import com.dluvian.nozzle.data.subscriber.NozzleSubscriber
+import okhttp3.OkHttpClient
 
 class AppContainer(context: Context) {
     val roomDb: AppDatabase by lazy {
@@ -74,9 +75,12 @@ class AppContainer(context: Context) {
         database = roomDb,
     )
 
-    val nip05Resolver: INip05Resolver = Nip05Resolver()
+    private val httpClient = OkHttpClient()
+
+    val nip05Resolver: INip05Resolver = Nip05Resolver(httpClient = httpClient)
 
     val nostrService: INostrService = NostrService(
+        httpClient = httpClient,
         keyManager = keyManager,
         eventProcessor = eventProcessor
     )
