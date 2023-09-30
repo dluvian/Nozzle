@@ -8,7 +8,6 @@ import com.dluvian.nozzle.data.SCOPE_TIMEOUT
 import com.dluvian.nozzle.data.cache.IClickedMediaUrlCache
 import com.dluvian.nozzle.data.nostr.utils.EncodingUtils.postIdToNostrId
 import com.dluvian.nozzle.data.postCardInteractor.IPostCardInteractor
-import com.dluvian.nozzle.data.provider.IRelayProvider
 import com.dluvian.nozzle.data.provider.IThreadProvider
 import com.dluvian.nozzle.data.utils.*
 import com.dluvian.nozzle.model.PostThread
@@ -25,7 +24,6 @@ class ThreadViewModel(
     val postCardInteractor: IPostCardInteractor,
     val clickedMediaUrlCache: IClickedMediaUrlCache,
     private val threadProvider: IThreadProvider,
-    private val relayProvider: IRelayProvider,
 ) : ViewModel() {
     var threadState: StateFlow<PostThread> = MutableStateFlow(PostThread.createEmpty())
 
@@ -44,7 +42,6 @@ class ThreadViewModel(
     }
 
     // TODO: Why is this called multiple times?
-    // TODO: Prevent redundant subscriptions
     private val isSettingThread = AtomicBoolean(false)
     val onOpenThread: (String) -> Unit = { postId ->
         val hexId = postIdToNostrId(postId)?.hex ?: postId
@@ -85,8 +82,7 @@ class ThreadViewModel(
         Log.i(TAG, "Set new thread of post $postId")
         threadState = threadProvider.getThreadFlow(
             postId = postId,
-            waitForSubscription = waitForSubscription,
-            relays = relayProvider.getReadRelays()
+            waitForSubscription = waitForSubscription
         )
             .stateIn(
                 viewModelScope,
@@ -98,7 +94,6 @@ class ThreadViewModel(
     companion object {
         fun provideFactory(
             threadProvider: IThreadProvider,
-            relayProvider: IRelayProvider,
             postCardInteractor: IPostCardInteractor,
             clickedMediaUrlCache: IClickedMediaUrlCache,
         ): ViewModelProvider.Factory = object : ViewModelProvider.Factory {
@@ -108,7 +103,6 @@ class ThreadViewModel(
                     postCardInteractor = postCardInteractor,
                     clickedMediaUrlCache = clickedMediaUrlCache,
                     threadProvider = threadProvider,
-                    relayProvider = relayProvider,
                 ) as T
             }
         }

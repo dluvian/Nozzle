@@ -74,14 +74,13 @@ class Client(private val httpClient: OkHttpClient) {
         relays?.let { addRelays(relays) }
         sockets.entries
             .filter { relays?.contains(it.key) ?: true }
-            .map { it.value }
             .forEach {
                 val subscriptionId = UUID.randomUUID().toString()
                 ids.add(subscriptionId)
-                subscriptions[subscriptionId] = it
+                subscriptions[subscriptionId] = it.value
                 val request = createSubscriptionRequest(subscriptionId, filters)
-                Log.d(TAG, "Subscribe $request")
-                it.send(request)
+                Log.d(TAG, "Subscribe in ${it.key}: $request")
+                it.value.send(request)
             }
 
         return ids
