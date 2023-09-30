@@ -8,6 +8,7 @@ import com.dluvian.nozzle.data.nostr.nip05.INip05Resolver
 import com.dluvian.nozzle.data.nostr.utils.EncodingUtils.URI
 import com.dluvian.nozzle.data.nostr.utils.EncodingUtils.createNprofileStr
 import com.dluvian.nozzle.data.nostr.utils.EncodingUtils.nostrStrToNostrId
+import com.dluvian.nozzle.data.utils.HashtagUtils
 import com.dluvian.nozzle.model.nostr.NeventNostrId
 import com.dluvian.nozzle.model.nostr.NoteNostrId
 import com.dluvian.nozzle.model.nostr.NprofileNostrId
@@ -47,17 +48,20 @@ class SearchViewModel(private val nip05Resolver: INip05Resolver) : ViewModel() {
     val onSearch: () -> Unit = {
         if (uiState.value.input.isNotBlank()) {
             val trimmed = uiState.value.input.trim().removePrefix(URI)
-            when (val nostrId = nostrStrToNostrId(nostrStr = trimmed)) {
+            if (HashtagUtils.isHashtag(trimmed)) setFinalId(trimmed)
+            else if (nip05Resolver.isNip05(trimmed)) resolveNip05(trimmed)
+            else when (val nostrId = nostrStrToNostrId(nostrStr = trimmed)) {
                 is NpubNostrId,
                 is NprofileNostrId,
                 is NoteNostrId,
                 is NeventNostrId -> setFinalId(nostrId.nostrStr)
 
                 null -> {
-                    if (nip05Resolver.isNip05(trimmed)) resolveNip05(trimmed)
-                    else setNostrIdInvalid()
+                    Log.i(TAG, "Failed to resolve $trimmed")
+                    setNostrIdInvalid()
                 }
             }
+
         }
     }
 
