@@ -27,9 +27,6 @@ fun PostCardList(
     lazyListState: LazyListState = rememberLazyListState(),
     onOpenProfile: ((String) -> Unit)? = null,
 ) {
-    if (posts.isEmpty()) {
-        NoPostsHint()
-    }
     PullRefreshBox(isRefreshing = isRefreshing, onRefresh = onRefresh) {
         LazyColumn(
             modifier = Modifier.fillMaxSize(), state = lazyListState

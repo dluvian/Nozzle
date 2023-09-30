@@ -37,6 +37,7 @@ import com.dluvian.nozzle.ui.components.AddIcon
 import com.dluvian.nozzle.ui.components.ChooseRelayButton
 import com.dluvian.nozzle.ui.components.FeedSettingsButton
 import com.dluvian.nozzle.ui.components.media.ProfilePicture
+import com.dluvian.nozzle.ui.components.postCard.NoPostsHint
 import com.dluvian.nozzle.ui.components.postCard.PostCardList
 import com.dluvian.nozzle.ui.theme.sizing
 import com.dluvian.nozzle.ui.theme.spacing
@@ -117,6 +118,9 @@ fun FeedScreen(
                 onOpenProfile = onNavigateToProfile,
                 onNavigateToId = onNavigateToId,
             )
+        }
+        if (feedState.isEmpty()) {
+            NoPostsHint()
         }
     }
 }
