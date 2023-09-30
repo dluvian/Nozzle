@@ -14,6 +14,7 @@ import com.dluvian.nozzle.data.provider.IPersonalProfileProvider
 import com.dluvian.nozzle.data.provider.IRelayProvider
 import com.dluvian.nozzle.data.room.dao.PostDao
 import com.dluvian.nozzle.data.room.entity.PostEntity
+import com.dluvian.nozzle.data.utils.HashtagUtils
 import com.dluvian.nozzle.data.utils.listRelayStatuses
 import com.dluvian.nozzle.data.utils.toggleRelay
 import com.dluvian.nozzle.model.AllRelays
@@ -120,10 +121,13 @@ class PostViewModel(
             Log.i(TAG, "Send post to ${selectedRelays.size} relays")
             val event = nostrService.sendPost(
                 content = getContentToPublish(state = state),
+                mentions = emptyList(), // TODO: Set mentions
+                hashtags = HashtagUtils.extractHashtagValues(state.content),
                 relays = selectedRelays
             )
             viewModelScope.launch(context = Dispatchers.IO) {
                 postDao.insertIfNotPresent(PostEntity.fromEvent(event))
+                // TODO: Insert hashtags in tx
             }
             showPostPublishedToast()
             resetUI()

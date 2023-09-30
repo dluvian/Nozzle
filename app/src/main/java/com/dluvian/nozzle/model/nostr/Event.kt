@@ -101,21 +101,29 @@ class Event(
             )
         }
 
-        fun createTextNoteEvent(post: Post, keys: Keys): Event {
+        fun createTextNoteEvent(
+            content: String,
+            replyTo: ReplyTo?,
+            mentions: List<String>,
+            hashtags: List<String>,
+            keys: Keys
+        ): Event {
             val tags = mutableListOf<List<String>>()
 
-            post.replyTo?.let { tags.add(listOf("e", it.replyTo, it.relayUrl.orEmpty(), "reply")) }
+            replyTo?.let { tags.add(listOf("e", it.replyTo, it.relayUrl.orEmpty(), "reply")) }
 
-            if (post.mentions.isNotEmpty()) {
-                val mentionTag = mutableListOf("p")
-                post.mentions.forEach { mentionTag.add(it) }
-                tags.add(mentionTag)
+            if (mentions.isNotEmpty()) {
+                tags.add(mutableListOf("p") + mentions)
+            }
+
+            if (hashtags.isNotEmpty()) {
+                tags.addAll(hashtags.map { listOf("t", it) })
             }
 
             return create(
                 kind = Kind.TEXT_NOTE,
                 tags = tags,
-                content = post.msg,
+                content = content,
                 keys = keys
             )
         }

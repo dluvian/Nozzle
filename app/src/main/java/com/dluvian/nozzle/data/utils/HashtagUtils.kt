@@ -5,5 +5,11 @@ object HashtagUtils {
 
     fun extractHashtags(extractFrom: String) = hashtagPattern.findAll(extractFrom).toList()
 
+    fun extractHashtagValues(extractFrom: String) = hashtagPattern.findAll(extractFrom)
+        .map { it.value.removeHashtagPrefix() }
+        .toList()
+
     fun isHashtag(toCheck: String) = hashtagPattern.matches(toCheck)
+
+    fun String.removeHashtagPrefix() = this.removePrefix("#")
 }

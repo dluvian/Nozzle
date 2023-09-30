@@ -73,12 +73,12 @@ class EventProcessor(
 
         scope.launch {
             database.postDao().insertIfNotPresent(PostEntity.fromEvent(event))
+            // TODO: Insert hashtags in tx
             val hashtags = event.getHashtags()
                 .map { HashtagEntity(eventId = event.id, hashtag = it) }
             if (hashtags.isNotEmpty()) {
-                database.hashtagDao().insertOrIgnore(*hashtags.toTypedArray())
                 Log.d(TAG, "Insert hashtags: $hashtags")
-
+                database.hashtagDao().insertOrIgnore(*hashtags.toTypedArray())
             }
         }
     }
@@ -190,10 +190,12 @@ class EventProcessor(
 
     private fun getContactPubkeys(tags: List<Tag>): List<String> {
         return tags
+            .asSequence()
             .filter { tag -> tag.size >= 2 && tag[0] == "p" }
             .map { tag -> tag[1] }
             .filter { KeyUtils.isValidHexKey(hexKey = it) }
             .distinct()
+            .toList()
     }
 
     private fun insertEventRelay(eventId: String, relayUrl: String?) {

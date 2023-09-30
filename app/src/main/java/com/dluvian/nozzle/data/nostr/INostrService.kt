@@ -10,14 +10,20 @@ interface INostrService {
 
     fun publishProfile(metadata: Metadata): Event
 
-    fun sendPost(content: String, relays: Collection<String>?): Event
+    fun sendPost(
+        content: String,
+        mentions: List<String>,
+        hashtags: List<String>,
+        relays: Collection<String>?
+    ): Event
 
     fun sendLike(postId: String, postPubkey: String, relays: Collection<String>?): Event
 
     fun sendReply(
         replyTo: ReplyTo,
-        replyToPubkey: String,
         content: String,
+        mentions: List<String>,
+        hashtags: List<String>,
         relays: Collection<String>?
     ): Event
 

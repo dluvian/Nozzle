@@ -11,6 +11,7 @@ import com.dluvian.nozzle.data.postCardInteractor.IPostCardInteractor
 import com.dluvian.nozzle.data.provider.IFeedProvider
 import com.dluvian.nozzle.data.provider.IRelayProvider
 import com.dluvian.nozzle.data.utils.*
+import com.dluvian.nozzle.data.utils.HashtagUtils.removeHashtagPrefix
 import com.dluvian.nozzle.model.Everyone
 import com.dluvian.nozzle.model.FeedSettings
 import com.dluvian.nozzle.model.MultipleRelays
@@ -48,7 +49,7 @@ class HashtagViewModel(
     var feedState: StateFlow<List<PostWithMeta>> = MutableStateFlow(emptyList())
 
     val onOpenHashtag: (String) -> Unit = { hashtag ->
-        val lowerCaseHashtag = hashtag.lowercase().removePrefix("#")
+        val lowerCaseHashtag = hashtag.lowercase().removeHashtagPrefix()
         if (lowerCaseHashtag != uiState.value.feedSettings.hashtag) {
             viewModelScope.launch(context = Dispatchers.IO) {
                 updateScreen(hashtag = lowerCaseHashtag)
