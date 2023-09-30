@@ -49,8 +49,12 @@ class AnnotatedContentHandler : IAnnotatedContentHandler {
     ): AnnotatedString {
         val urls = UrlUtils.extractUrls(content)
         val nostrUris = extractNostrUris(content)
-        val hashtags = HashtagUtils.extractHashtags(content)
-        val tokens = (urls + nostrUris + hashtags).sortedBy { it.range.first }.toList()
+        val tokens = (urls + nostrUris).toMutableList()
+        val hashtags = HashtagUtils.extractHashtags(content).filter { hashtag ->
+            tokens.none { isOverlappingHashtag(hashtag.range, it.range) }
+        }
+        tokens.addAll(hashtags)
+
         if (tokens.isEmpty()) return AnnotatedString(text = content)
 
         val editedContent = StringBuilder(content)
@@ -155,6 +159,11 @@ class AnnotatedContentHandler : IAnnotatedContentHandler {
             }
 
         return (nevents + note1s).sortedBy { it.first }.map { it.second }
+    }
+
+    private fun isOverlappingHashtag(hashtagRange: IntRange, otherRange: IntRange): Boolean {
+        return hashtagRange.first < otherRange.first
+                && hashtagRange.last > otherRange.first
     }
 
     private fun extractNostrUris(extractFrom: String) =
