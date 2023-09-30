@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import com.dluvian.nozzle.model.PostWithMeta
 import com.dluvian.nozzle.ui.components.ReturnableTopBar
@@ -28,7 +29,10 @@ fun HashtagScreen(
 ) {
     val lazyListState = rememberLazyListState()
     Column {
-        ReturnableTopBar(text = uiState.feedSettings.hashtag.orEmpty(), onGoBack = onGoBack)
+        val title = remember(uiState.feedSettings.hashtag) {
+            "#${uiState.feedSettings.hashtag.orEmpty()}"
+        }
+        ReturnableTopBar(text = title, onGoBack = onGoBack)
         Column(modifier = Modifier.fillMaxSize()) {
             PostCardList(
                 posts = feedState,

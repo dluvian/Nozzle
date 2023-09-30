@@ -12,6 +12,12 @@ private val defaultRelays = listOf(
 
     // JP
     "wss://relay.nostr.wirednet.jp",
-)
+
+    "wss://nostr.mikedilger.com",
+    "wss://relay.verified-nostr.com",
+    "wss://bitcoiner.social",
+
+
+    )
 
 fun getDefaultRelays(): List<String> = defaultRelays

@@ -10,11 +10,12 @@ interface INozzleSubscriber {
     fun subscribePersonalProfile()
 
     fun subscribeToFeedPosts(
-        authorPubkeys: List<String>?,
         isReplies: Boolean,
+        hashtag: String?,
+        authorPubkeys: List<String>?,
         limit: Int,
         until: Long?,
-        relaySelection: RelaySelection
+        relaySelection: RelaySelection,
     )
 
     suspend fun subscribeFullProfile(profileId: String)

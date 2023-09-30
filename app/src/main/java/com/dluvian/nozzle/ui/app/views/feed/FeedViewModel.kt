@@ -29,9 +29,9 @@ data class FeedViewModelState(
     val feedSettings: FeedSettings = FeedSettings(
         isPosts = true,
         isReplies = true,
+        hashtag = null,
         authorSelection = Contacts,
-        relaySelection = UserSpecific(emptyMap()),
-        hashtag = null
+        relaySelection = UserSpecific(emptyMap())
     ),
     val relayStatuses: List<RelayActive> = emptyList(),
 )

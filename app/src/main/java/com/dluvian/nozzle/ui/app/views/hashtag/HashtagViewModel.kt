@@ -26,9 +26,9 @@ data class HashtagViewModelState(
     val feedSettings: FeedSettings = FeedSettings(
         isPosts = true,
         isReplies = true,
+        hashtag = null,
         authorSelection = Everyone,
-        relaySelection = MultipleRelays(emptyList()),
-        hashtag = null
+        relaySelection = MultipleRelays(emptyList())
     ),
 )
 
@@ -48,7 +48,7 @@ class HashtagViewModel(
     var feedState: StateFlow<List<PostWithMeta>> = MutableStateFlow(emptyList())
 
     val onOpenHashtag: (String) -> Unit = { hashtag ->
-        val lowerCaseHashtag = hashtag.lowercase()
+        val lowerCaseHashtag = hashtag.lowercase().removePrefix("#")
         if (lowerCaseHashtag != uiState.value.feedSettings.hashtag) {
             viewModelScope.launch(context = Dispatchers.IO) {
                 updateScreen(hashtag = lowerCaseHashtag)
@@ -76,7 +76,7 @@ class HashtagViewModel(
         }
         updateRelays()
         updateFeed(isRefresh = isRefresh)
-        if (isRefresh || feedState.value.isEmpty()) delay(WAIT_TIME)
+        if (isRefresh) delay(WAIT_TIME)
         uiFlow.update { it.copy(isRefreshing = false) }
     }
 

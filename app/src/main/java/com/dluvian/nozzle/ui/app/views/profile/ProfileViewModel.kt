@@ -243,9 +243,9 @@ class ProfileViewModel(
         return FeedSettings(
             isPosts = true,
             isReplies = true,
+            hashtag = null,
             authorSelection = SingleAuthor(pubkey = pubkey),
-            relaySelection = MultipleRelays(relays = relays),
-            hashtag = null
+            relaySelection = MultipleRelays(relays = relays)
         )
     }
 

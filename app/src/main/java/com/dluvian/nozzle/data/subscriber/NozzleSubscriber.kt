@@ -67,8 +67,9 @@ class NozzleSubscriber(
     }
 
     override fun subscribeToFeedPosts(
-        authorPubkeys: List<String>?,
         isReplies: Boolean,
+        hashtag: String?,
+        authorPubkeys: List<String>?,
         limit: Int,
         until: Long?,
         relaySelection: RelaySelection
@@ -85,6 +86,7 @@ class NozzleSubscriber(
             is AllRelays, is MultipleRelays -> {
                 nostrSubscriber.subscribeToFeedPosts(
                     authorPubkeys = authorPubkeys,
+                    hashtag = hashtag,
                     limit = adjustedLimit,
                     until = until,
                     relays = relaySelection.selectedRelays
@@ -95,6 +97,7 @@ class NozzleSubscriber(
                 if (authorPubkeys == null) {
                     nostrSubscriber.subscribeToFeedPosts(
                         authorPubkeys = null,
+                        hashtag = hashtag,
                         limit = adjustedLimit,
                         until = until,
                         relays = relaySelection.selectedRelays
@@ -105,6 +108,7 @@ class NozzleSubscriber(
                         if (pubkeys.isNotEmpty()) {
                             nostrSubscriber.subscribeToFeedPosts(
                                 authorPubkeys = pubkeys.toList(),
+                                hashtag = hashtag,
                                 limit = adjustedLimit,
                                 until = until,
                                 relays = listOf(relay)

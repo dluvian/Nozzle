@@ -56,6 +56,7 @@ class AnnotatedContentHandler : IAnnotatedContentHandler {
         tokens.addAll(hashtags)
 
         if (tokens.isEmpty()) return AnnotatedString(text = content)
+        tokens.sortBy { it.range.first }
 
         val editedContent = StringBuilder(content)
         return buildAnnotatedString {

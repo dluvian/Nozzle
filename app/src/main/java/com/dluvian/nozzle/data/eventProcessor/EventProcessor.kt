@@ -4,6 +4,7 @@ import android.util.Log
 import com.dluvian.nozzle.data.cache.IIdCache
 import com.dluvian.nozzle.data.nostr.utils.KeyUtils
 import com.dluvian.nozzle.data.room.AppDatabase
+import com.dluvian.nozzle.data.room.entity.HashtagEntity
 import com.dluvian.nozzle.data.room.entity.Nip65Entity
 import com.dluvian.nozzle.data.room.entity.PostEntity
 import com.dluvian.nozzle.data.room.entity.ProfileEntity
@@ -30,6 +31,8 @@ class EventProcessor(
     private val gson: Gson = GsonBuilder().disableHtmlEscaping().create()
     private val otherIdsCache = Collections.synchronizedSet(mutableSetOf<String>())
     private var upperTimeBoundary = getUpperTimeBoundary()
+
+    // TODO: Remove from cache if fails
 
     override fun process(event: Event, relayUrl: String?) {
         if (isFromFuture(event)) {
@@ -70,6 +73,13 @@ class EventProcessor(
 
         scope.launch {
             database.postDao().insertIfNotPresent(PostEntity.fromEvent(event))
+            val hashtags = event.getHashtags()
+                .map { HashtagEntity(eventId = event.id, hashtag = it) }
+            if (hashtags.isNotEmpty()) {
+                database.hashtagDao().insertOrIgnore(*hashtags.toTypedArray())
+                Log.d(TAG, "Insert hashtags: $hashtags")
+
+            }
         }
     }
 

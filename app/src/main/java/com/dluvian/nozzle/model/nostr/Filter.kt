@@ -9,6 +9,7 @@ class Filter(
     val kinds: List<Int>? = null,
     @SerializedName("#e") val e: List<String>? = null,
     @SerializedName("#p") val p: List<String>? = null,
+    @SerializedName("#t") val t: List<String>? = null,
     val since: Long? = null,
     val until: Long? = null,
     val limit: Int? = null
@@ -27,6 +28,7 @@ class Filter(
             ids: List<String>? = null,
             pubkeys: List<String>? = null,
             e: List<String>? = null,
+            t: List<String>? = null,
             since: Long? = null,
             until: Long? = null,
             limit: Int? = null
@@ -35,6 +37,7 @@ class Filter(
                 ids = ids,
                 authors = pubkeys,
                 e = e,
+                t = t,
                 kinds = listOf(Event.Kind.TEXT_NOTE),
                 since = since,
                 until = until,
