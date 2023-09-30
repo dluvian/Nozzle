@@ -31,6 +31,7 @@ data class FeedViewModelState(
         isReplies = true,
         authorSelection = Contacts,
         relaySelection = UserSpecific(emptyMap()),
+        hashtag = null
     ),
     val relayStatuses: List<RelayActive> = emptyList(),
 )
@@ -58,7 +59,6 @@ class FeedViewModel(
     private val isAppending = AtomicBoolean(false)
 
     init {
-        Log.i(TAG, "Initialize FeedViewModel")
         viewModelState.update {
             it.copy(
                 pubkey = personalProfileProvider.getPubkey(),
@@ -72,7 +72,6 @@ class FeedViewModel(
 
     val onRefreshFeedView: () -> Unit = {
         viewModelScope.launch(context = IO) {
-            Log.i(TAG, "Refresh feed view")
             handleRefresh(delayBeforeUpdate = true)
         }
     }
@@ -116,10 +115,7 @@ class FeedViewModel(
                     is Everyone -> Contacts
                     is Contacts -> Everyone
                     is SingleAuthor -> {
-                        Log.w(
-                            TAG,
-                            "ContactsOnly is set to SingleAuthor, which shouldn't be possible"
-                        )
+                        Log.w(TAG, "ContactsOnly is set to SingleAuthor")
                         Contacts
                     }
                 }
@@ -200,9 +196,8 @@ class FeedViewModel(
 
     private suspend fun handleRefresh(delayBeforeUpdate: Boolean) {
         setUIRefresh(true)
-        // TODO: Update screen with latest. Freeze post ids once loading indicator is gone
-        if (delayBeforeUpdate) delay(WAIT_TIME)
         updateScreen()
+        if (delayBeforeUpdate) delay(WAIT_TIME)
         setUIRefresh(false)
     }
 

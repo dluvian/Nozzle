@@ -31,7 +31,8 @@ class NozzlePreferences(context: Context) : IFeedSettingsPreferences {
             isPosts = isPosts,
             isReplies = isReplies,
             authorSelection = if (isContactsOnly) Contacts else Everyone,
-            relaySelection = if (isContactsOnly) UserSpecific(emptyMap()) else AllRelays
+            relaySelection = if (isContactsOnly) UserSpecific(emptyMap()) else AllRelays,
+            hashtag = null,
         )
     }
 

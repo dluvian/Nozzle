@@ -72,7 +72,6 @@ class AnnotatedContentHandler : IAnnotatedContentHandler {
                     pushStyle(style = hashtagStyle)
                     append(token.value)
                     pop()
-                    Log.i("LOLOL", "2 " + token.value)
                     pop()
                 } else {
                     when (val nostrId = nostrUriToNostrId(token.value)) {

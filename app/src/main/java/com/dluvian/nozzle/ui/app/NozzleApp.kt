@@ -122,6 +122,10 @@ fun NozzleApp(appContainer: AppContainer) {
                 ),
                 hashtagViewModel = viewModel(
                     factory = HashtagViewModel.provideFactory(
+                        clickedMediaUrlCache = appContainer.clickedMediaUrlCache,
+                        postCardInteractor = appContainer.postCardInteractor,
+                        feedProvider = appContainer.feedProvider,
+                        relayProvider = appContainer.relayProvider,
                     )
                 ),
             )

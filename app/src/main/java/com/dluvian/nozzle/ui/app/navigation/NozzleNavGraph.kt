@@ -158,7 +158,16 @@ fun NozzleNavGraph(
         ) { backStackEntry ->
             val hashtag = backStackEntry.arguments?.getString("hashtag")
             if (hashtag != null) {
-                HashtagRoute(HashtagViewModel = vmContainer.hashtagViewModel)
+                vmContainer.hashtagViewModel.onOpenHashtag(hashtag)
+                HashtagRoute(
+                    hashtagViewModel = vmContainer.hashtagViewModel,
+                    onNavigateToProfile = navActions.navigateToProfile,
+                    onNavigateToThread = navActions.navigateToThread,
+                    onNavigateToReply = { _ -> navActions.navigateToReply },
+                    onNavigateToQuote = navActions.navigateToQuote,
+                    onNavigateToId = navActions.navigateToId,
+                    onGoBack = navActions.popStack,
+                )
             }
         }
         composable(
