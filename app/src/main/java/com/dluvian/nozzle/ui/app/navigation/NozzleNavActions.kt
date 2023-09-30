@@ -71,17 +71,15 @@ class NozzleNavActions(private val navController: NavHostController) {
 
     val navigateToId: (String) -> Unit = { id ->
         if (id.isNotEmpty()) {
-            val route = when (nostrStrToNostrId(nostrStr = id)) {
+            val route = if (HashtagUtils.isHashtag(id)) "${NozzleRoute.HASHTAG}/${id}"
+            else when (nostrStrToNostrId(nostrStr = id)) {
                 is NoteNostrId -> "${NozzleRoute.THREAD}/${id}"
                 is NeventNostrId -> "${NozzleRoute.THREAD}/${id}"
                 is NpubNostrId -> "${NozzleRoute.PROFILE}/${id}"
                 is NprofileNostrId -> "${NozzleRoute.PROFILE}/${id}"
                 null -> {
-                    if (HashtagUtils.isHashtag(id)) "${NozzleRoute.HASHTAG}/${id}"
-                    else {
-                        Log.w(TAG, "Failed to resolve $id")
-                        NozzleRoute.FEED
-                    }
+                    Log.w(TAG, "Failed to resolve $id")
+                    NozzleRoute.FEED
                 }
             }
             navController.navigate(route) {
