@@ -23,6 +23,7 @@ import com.dluvian.nozzle.ui.app.views.drawer.NozzleDrawerRoute
 import com.dluvian.nozzle.ui.app.views.drawer.NozzleDrawerViewModel
 import com.dluvian.nozzle.ui.app.views.editProfile.EditProfileViewModel
 import com.dluvian.nozzle.ui.app.views.feed.FeedViewModel
+import com.dluvian.nozzle.ui.app.views.hashtag.HashtagViewModel
 import com.dluvian.nozzle.ui.app.views.keys.KeysViewModel
 import com.dluvian.nozzle.ui.app.views.post.PostViewModel
 import com.dluvian.nozzle.ui.app.views.profile.ProfileViewModel
@@ -117,6 +118,10 @@ fun NozzleApp(appContainer: AppContainer) {
                 searchViewModel = viewModel(
                     factory = SearchViewModel.provideFactory(
                         nip05Resolver = appContainer.nip05Resolver
+                    )
+                ),
+                hashtagViewModel = viewModel(
+                    factory = HashtagViewModel.provideFactory(
                     )
                 ),
             )

@@ -4,6 +4,7 @@ import android.util.Log
 import androidx.navigation.NavHostController
 import androidx.navigation.NavOptionsBuilder
 import com.dluvian.nozzle.data.nostr.utils.EncodingUtils.nostrStrToNostrId
+import com.dluvian.nozzle.data.utils.HashtagUtils
 import com.dluvian.nozzle.model.nostr.NeventNostrId
 import com.dluvian.nozzle.model.nostr.NoteNostrId
 import com.dluvian.nozzle.model.nostr.NprofileNostrId
@@ -76,8 +77,11 @@ class NozzleNavActions(private val navController: NavHostController) {
                 is NpubNostrId -> "${NozzleRoute.PROFILE}/${id}"
                 is NprofileNostrId -> "${NozzleRoute.PROFILE}/${id}"
                 null -> {
-                    Log.w(TAG, "Failed to resolve $id")
-                    NozzleRoute.FEED
+                    if (HashtagUtils.isHashtag(id)) "${NozzleRoute.HASHTAG}/${id}"
+                    else {
+                        Log.w(TAG, "Failed to resolve $id")
+                        NozzleRoute.FEED
+                    }
                 }
             }
             navController.navigate(route) {

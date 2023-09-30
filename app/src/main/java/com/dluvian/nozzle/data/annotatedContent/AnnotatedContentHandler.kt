@@ -16,6 +16,7 @@ import com.dluvian.nozzle.data.nostr.utils.ShortenedNameUtils.getShortenedNevent
 import com.dluvian.nozzle.data.nostr.utils.ShortenedNameUtils.getShortenedNote1
 import com.dluvian.nozzle.data.nostr.utils.ShortenedNameUtils.getShortenedNprofile
 import com.dluvian.nozzle.data.nostr.utils.ShortenedNameUtils.getShortenedNpub
+import com.dluvian.nozzle.data.utils.HashtagUtils
 import com.dluvian.nozzle.data.utils.UrlUtils
 import com.dluvian.nozzle.model.nostr.Nevent
 import com.dluvian.nozzle.model.nostr.NeventNostrId
@@ -40,8 +41,6 @@ class AnnotatedContentHandler : IAnnotatedContentHandler {
     private val hashtagStyle = SpanStyle(color = Color.Blue)
 
     private val nostrUriPattern = Regex("nostr:(npub1|note1|nevent1|nprofile1)[a-zA-Z0-9]+")
-    private val hashtagPattern = Regex("#\\w+")
-
 
     @OptIn(ExperimentalTextApi::class)
     override fun annotateContent(
@@ -50,7 +49,7 @@ class AnnotatedContentHandler : IAnnotatedContentHandler {
     ): AnnotatedString {
         val urls = UrlUtils.extractUrls(content)
         val nostrUris = extractNostrUris(content)
-        val hashtags = extractHashtags(content)
+        val hashtags = HashtagUtils.extractHashtags(content)
         val tokens = (urls + nostrUris + hashtags).sortedBy { it.range.first }.toList()
         if (tokens.isEmpty()) return AnnotatedString(text = content)
 
@@ -161,7 +160,4 @@ class AnnotatedContentHandler : IAnnotatedContentHandler {
 
     private fun extractNostrUris(extractFrom: String) =
         nostrUriPattern.findAll(extractFrom).toList()
-
-    private fun extractHashtags(extractFrom: String) =
-        hashtagPattern.findAll(extractFrom).toList()
 }
