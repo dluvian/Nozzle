@@ -8,13 +8,14 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import com.dluvian.nozzle.model.PostWithMeta
 import com.dluvian.nozzle.ui.components.ReturnableTopBar
+import com.dluvian.nozzle.ui.components.postCard.NoPostsHint
 import com.dluvian.nozzle.ui.components.postCard.PostCardList
 
 
 @Composable
 fun HashtagScreen(
     uiState: HashtagViewModelState,
-    feedState: List<PostWithMeta>,
+    feed: List<PostWithMeta>,
     onLike: (PostWithMeta) -> Unit,
     onShowMedia: (String) -> Unit,
     onShouldShowMedia: (String) -> Boolean,
@@ -36,7 +37,7 @@ fun HashtagScreen(
         ReturnableTopBar(text = title, onGoBack = onGoBack)
         Column(modifier = Modifier.fillMaxSize()) {
             PostCardList(
-                posts = feedState,
+                posts = feed,
                 isRefreshing = uiState.isRefreshing,
                 onRefresh = onRefresh,
                 onLike = onLike,
@@ -52,5 +53,8 @@ fun HashtagScreen(
                 onOpenProfile = onNavigateToProfile,
             )
         }
+    }
+    if (feed.isEmpty()) {
+        NoPostsHint()
     }
 }

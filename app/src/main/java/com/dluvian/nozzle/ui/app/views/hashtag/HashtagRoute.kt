@@ -21,7 +21,8 @@ fun HashtagRoute(
     val feedState by hashtagViewModel.feedState.collectAsState()
 
     HashtagScreen(
-        uiState, feedState,
+        uiState = uiState,
+        feed = feedState,
         onLike = { post ->
             hashtagViewModel.postCardInteractor.like(
                 scope = hashtagViewModel.viewModelScope,
