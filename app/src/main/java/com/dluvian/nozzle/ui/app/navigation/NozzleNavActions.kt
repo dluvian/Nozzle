@@ -51,11 +51,12 @@ class NozzleNavActions(private val navController: NavHostController) {
         }
     }
 
-    val navigateToReply: () -> Unit = {
-        navController.navigate(NozzleRoute.REPLY) {
-            setSimpleNavOptions(optionsBuilder = this)
+    val navigateToReply: () -> Unit =
+        { // TODO: PostWithMeta as input and call replyViewModel.onPrepareReply
+            navController.navigate(NozzleRoute.REPLY) {
+                setSimpleNavOptions(optionsBuilder = this)
+            }
         }
-    }
 
     val navigateToPost: () -> Unit = {
         navController.navigate(NozzleRoute.POST) {

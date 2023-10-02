@@ -161,9 +161,10 @@ fun NozzleNavGraph(
                 vmContainer.hashtagViewModel.onOpenHashtag(hashtag)
                 HashtagRoute(
                     hashtagViewModel = vmContainer.hashtagViewModel,
+                    onPrepareReply = vmContainer.replyViewModel.onPrepareReply,
                     onNavigateToProfile = navActions.navigateToProfile,
                     onNavigateToThread = navActions.navigateToThread,
-                    onNavigateToReply = { _ -> navActions.navigateToReply },
+                    onNavigateToReply = navActions.navigateToReply,
                     onNavigateToQuote = navActions.navigateToQuote,
                     onNavigateToId = navActions.navigateToId,
                     onGoBack = navActions.popStack,

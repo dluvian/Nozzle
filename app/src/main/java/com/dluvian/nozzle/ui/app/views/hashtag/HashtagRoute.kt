@@ -4,13 +4,15 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.lifecycle.viewModelScope
+import com.dluvian.nozzle.model.PostWithMeta
 
 @Composable
 fun HashtagRoute(
     hashtagViewModel: HashtagViewModel,
+    onPrepareReply: (PostWithMeta) -> Unit,
     onNavigateToThread: (String) -> Unit,
     onNavigateToProfile: (String) -> Unit,
-    onNavigateToReply: (String) -> Unit,
+    onNavigateToReply: () -> Unit,
     onNavigateToQuote: (String) -> Unit,
     onNavigateToId: (String) -> Unit,
     onGoBack: () -> Unit,
@@ -35,6 +37,7 @@ fun HashtagRoute(
         },
         onRefresh = hashtagViewModel.onRefresh,
         onLoadMore = hashtagViewModel.onLoadMore,
+        onPrepareReply = onPrepareReply,
         onNavigateToThread = onNavigateToThread,
         onNavigateToProfile = onNavigateToProfile,
         onNavigateToReply = onNavigateToReply,

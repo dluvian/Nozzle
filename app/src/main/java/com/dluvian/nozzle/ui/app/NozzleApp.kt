@@ -37,10 +37,6 @@ import kotlinx.coroutines.launch
 fun NozzleApp(appContainer: AppContainer) {
     NozzleTheme {
         Surface(modifier = Modifier.fillMaxSize()) {
-            val navController = rememberNavController()
-            val navActions = remember(navController) {
-                NozzleNavActions(navController)
-            }
             val vmContainer = VMContainer(
                 drawerViewModel = viewModel(
                     factory = NozzleDrawerViewModel.provideFactory(
@@ -128,6 +124,11 @@ fun NozzleApp(appContainer: AppContainer) {
                     )
                 ),
             )
+
+            val navController = rememberNavController()
+            val navActions = remember(navController) {
+                NozzleNavActions(navController)
+            }
 
             val coroutineScope = rememberCoroutineScope()
             val drawerState = rememberDrawerState(DrawerValue.Closed)
