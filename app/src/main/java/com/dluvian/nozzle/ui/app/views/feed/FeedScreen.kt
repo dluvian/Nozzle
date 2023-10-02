@@ -119,9 +119,7 @@ fun FeedScreen(
                 onNavigateToId = onNavigateToId,
             )
         }
-        if (feedState.isEmpty()) {
-            NoPostsHint()
-        }
+        if (feedState.isEmpty()) NoPostsHint()
     }
 }
 

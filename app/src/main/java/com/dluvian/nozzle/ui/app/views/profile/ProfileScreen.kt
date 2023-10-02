@@ -97,9 +97,7 @@ fun ProfileScreen(
             onNavigateToId = onNavigateToId,
         )
     }
-    if (feed.isEmpty()) {
-        NoPostsHint()
-    }
+    if (feed.isEmpty()) NoPostsHint()
 }
 
 @Composable

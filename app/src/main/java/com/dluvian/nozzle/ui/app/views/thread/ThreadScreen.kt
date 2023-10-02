@@ -22,6 +22,7 @@ import com.dluvian.nozzle.model.PostWithMeta
 import com.dluvian.nozzle.model.ThreadPosition
 import com.dluvian.nozzle.ui.components.PullRefreshBox
 import com.dluvian.nozzle.ui.components.ReturnableTopBar
+import com.dluvian.nozzle.ui.components.postCard.NoPostsHint
 import com.dluvian.nozzle.ui.components.postCard.PostCard
 import com.dluvian.nozzle.ui.components.postCard.PostNotFound
 import com.dluvian.nozzle.ui.theme.spacing
@@ -62,6 +63,7 @@ fun ThreadScreen(
             )
         }
     }
+    if (thread.current == null) NoPostsHint()
 }
 
 @Composable

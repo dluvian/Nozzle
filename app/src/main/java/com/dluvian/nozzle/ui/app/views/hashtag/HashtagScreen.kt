@@ -54,7 +54,5 @@ fun HashtagScreen(
             )
         }
     }
-    if (feed.isEmpty()) {
-        NoPostsHint()
-    }
+    if (feed.isEmpty()) NoPostsHint()
 }
