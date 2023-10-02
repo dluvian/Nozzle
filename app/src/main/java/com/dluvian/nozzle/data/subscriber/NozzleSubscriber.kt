@@ -48,7 +48,7 @@ class NozzleSubscriber(
             pubkey = pubkeyProvider.getPubkey(),
             relays = relayProvider.getWriteRelays()
         )
-        unsub(personalProfileSubs)
+        personalProfileSubs.unsub()
         personalProfileSubs.addAll(subIds)
     }
 
@@ -62,7 +62,7 @@ class NozzleSubscriber(
                 recommendedRelays
 
         val subIds = nostrSubscriber.subscribeFullProfile(pubkey = hex, relays = relays)
-        unsub(fullProfileSubs)
+        fullProfileSubs.unsub()
         fullProfileSubs.addAll(subIds)
     }
 
@@ -118,7 +118,7 @@ class NozzleSubscriber(
                 }
             }
         }
-        unsub(feedPostSubs)
+        feedPostSubs.unsub()
         feedPostSubs.addAll(subIds)
     }
 
@@ -165,7 +165,7 @@ class NozzleSubscriber(
             reactionPostIdsByRelay = getReactionPostIdsToSub(postIds = postIds),
             reactorPubkey = pubkeyProvider.getPubkey()
         )
-        unsub(feedInfoSubs)
+        feedInfoSubs.unsub()
         feedInfoSubs.addAll(subIds)
 
         return FeedInfo(
@@ -203,7 +203,7 @@ class NozzleSubscriber(
                 .toMutableMap()
                 .addSpecialRelayMapping(nip65RelayMapping)
         )
-        unsub(unknownPubkeySubs)
+        unknownPubkeySubs.unsub()
         unknownPubkeySubs.addAll(subIds)
     }
 
@@ -219,7 +219,7 @@ class NozzleSubscriber(
 
     override suspend fun unsubscribeParentPosts() {
         Log.i(TAG, "Unsubscribe parent posts")
-        unsub(parentPostSubs)
+        parentPostSubs.unsub()
     }
 
     override suspend fun subscribeNip65(pubkeys: List<String>) {
@@ -234,7 +234,7 @@ class NozzleSubscriber(
         if (toSub.isEmpty()) return
 
         val subIds = nostrSubscriber.subscribeNip65(pubkeys = toSub)
-        unsub(nip65Subs)
+        nip65Subs.unsub()
         nip65Subs.addAll(subIds)
     }
 
@@ -423,9 +423,9 @@ class NozzleSubscriber(
         return this
     }
 
-    private fun unsub(subIds: MutableList<String>) {
-        val snapshot = subIds.toList()
+    private fun MutableList<String>.unsub() {
+        val snapshot = this.toList()
+        this.clear()
         nostrSubscriber.unsubscribe(snapshot)
-        subIds.clear()
     }
 }
