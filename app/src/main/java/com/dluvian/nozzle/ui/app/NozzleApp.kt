@@ -98,6 +98,7 @@ fun NozzleApp(appContainer: AppContainer) {
                         personalProfileProvider = appContainer.personalProfileManager,
                         relayProvider = appContainer.relayProvider,
                         postDao = appContainer.roomDb.postDao(),
+                        hashtagDao = appContainer.roomDb.hashtagDao(),
                         context = LocalContext.current,
                     )
                 ),
@@ -107,6 +108,7 @@ fun NozzleApp(appContainer: AppContainer) {
                         personalProfileProvider = appContainer.personalProfileManager,
                         relayProvider = appContainer.relayProvider,
                         postDao = appContainer.roomDb.postDao(),
+                        hashtagDao = appContainer.roomDb.hashtagDao(),
                         context = LocalContext.current,
                     )
                 ),

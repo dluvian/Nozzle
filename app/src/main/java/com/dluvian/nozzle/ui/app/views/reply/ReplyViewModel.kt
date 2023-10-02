@@ -11,7 +11,9 @@ import com.dluvian.nozzle.data.nostr.INostrService
 import com.dluvian.nozzle.data.nostr.utils.ShortenedNameUtils.getShortenedNpubFromPubkey
 import com.dluvian.nozzle.data.provider.IPersonalProfileProvider
 import com.dluvian.nozzle.data.provider.IRelayProvider
+import com.dluvian.nozzle.data.room.dao.HashtagDao
 import com.dluvian.nozzle.data.room.dao.PostDao
+import com.dluvian.nozzle.data.room.entity.HashtagEntity
 import com.dluvian.nozzle.data.room.entity.PostEntity
 import com.dluvian.nozzle.data.utils.HashtagUtils
 import com.dluvian.nozzle.data.utils.listRelayStatuses
@@ -42,6 +44,7 @@ class ReplyViewModel(
     private val personalProfileProvider: IPersonalProfileProvider,
     private val relayProvider: IRelayProvider,
     private val postDao: PostDao,
+    private val hashtagDao: HashtagDao,
     context: Context,
 ) : ViewModel() {
     private val viewModelState = MutableStateFlow(ReplyViewModelState())
@@ -133,6 +136,12 @@ class ReplyViewModel(
                     viewModelScope.launch(context = Dispatchers.IO) {
                         postDao.insertIfNotPresent(PostEntity.fromEvent(event))
                         // TODO: Insert hashtags in tx
+                        // TODO: dbSweepExcludingCache.addPostId(event.id)
+                        val hashtags = event.getHashtags()
+                            .map { HashtagEntity(eventId = event.id, hashtag = it) }
+                        if (hashtags.isNotEmpty()) {
+                            hashtagDao.insertOrIgnore(*hashtags.toTypedArray())
+                        }
                     }
                 }
                 resetUI()
@@ -176,6 +185,7 @@ class ReplyViewModel(
             personalProfileProvider: IPersonalProfileProvider,
             relayProvider: IRelayProvider,
             postDao: PostDao,
+            hashtagDao: HashtagDao,
             context: Context
         ): ViewModelProvider.Factory = object : ViewModelProvider.Factory {
             @Suppress("UNCHECKED_CAST")
@@ -185,6 +195,7 @@ class ReplyViewModel(
                     personalProfileProvider = personalProfileProvider,
                     relayProvider = relayProvider,
                     postDao = postDao,
+                    hashtagDao = hashtagDao,
                     context = context,
                 ) as T
             }
