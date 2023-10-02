@@ -6,7 +6,6 @@ import com.dluvian.nozzle.data.manager.IKeyManager
 import com.dluvian.nozzle.model.nostr.Event
 import com.dluvian.nozzle.model.nostr.Filter
 import com.dluvian.nozzle.model.nostr.Metadata
-import com.dluvian.nozzle.model.nostr.Post
 import com.dluvian.nozzle.model.nostr.ReplyTo
 import okhttp3.OkHttpClient
 import java.util.Collections
@@ -73,10 +72,17 @@ class NostrService(
         return event
     }
 
-    override fun sendPost(content: String, relays: Collection<String>?): Event {
-        Log.i(TAG, "Send post '${content.take(50)}'")
+    override fun sendPost(
+        content: String,
+        mentions: List<String>,
+        hashtags: List<String>,
+        relays: Collection<String>?
+    ): Event {
         val event = Event.createTextNoteEvent(
-            post = Post(msg = content),
+            content = content,
+            replyTo = null,
+            mentions = mentions,
+            hashtags = hashtags,
             keys = keyManager.getKeys(),
         )
         client.publishToRelays(event = event, relays = relays)
@@ -98,13 +104,16 @@ class NostrService(
 
     override fun sendReply(
         replyTo: ReplyTo,
-        replyToPubkey: String,
         content: String,
+        mentions: List<String>,
+        hashtags: List<String>,
         relays: Collection<String>?
     ): Event {
-        Log.i(TAG, "Send reply to ${replyTo.replyTo} from author $replyToPubkey")
         val event = Event.createTextNoteEvent(
-            post = Post(replyTo = replyTo, msg = content, mentions = listOf(replyToPubkey)),
+            content = content,
+            replyTo = replyTo,
+            mentions = mentions,
+            hashtags = hashtags,
             keys = keyManager.getKeys(),
         )
         client.publishToRelays(event = event, relays = relays)

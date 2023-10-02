@@ -4,6 +4,7 @@ import android.util.Log
 import androidx.navigation.NavHostController
 import androidx.navigation.NavOptionsBuilder
 import com.dluvian.nozzle.data.nostr.utils.EncodingUtils.nostrStrToNostrId
+import com.dluvian.nozzle.data.utils.HashtagUtils
 import com.dluvian.nozzle.model.nostr.NeventNostrId
 import com.dluvian.nozzle.model.nostr.NoteNostrId
 import com.dluvian.nozzle.model.nostr.NprofileNostrId
@@ -50,11 +51,12 @@ class NozzleNavActions(private val navController: NavHostController) {
         }
     }
 
-    val navigateToReply: () -> Unit = {
-        navController.navigate(NozzleRoute.REPLY) {
-            setSimpleNavOptions(optionsBuilder = this)
+    val navigateToReply: () -> Unit =
+        { // TODO: PostWithMeta as input and call replyViewModel.onPrepareReply
+            navController.navigate(NozzleRoute.REPLY) {
+                setSimpleNavOptions(optionsBuilder = this)
+            }
         }
-    }
 
     val navigateToPost: () -> Unit = {
         navController.navigate(NozzleRoute.POST) {
@@ -70,7 +72,8 @@ class NozzleNavActions(private val navController: NavHostController) {
 
     val navigateToId: (String) -> Unit = { id ->
         if (id.isNotEmpty()) {
-            val route = when (nostrStrToNostrId(nostrStr = id)) {
+            val route = if (HashtagUtils.isHashtag(id)) "${NozzleRoute.HASHTAG}/${id}"
+            else when (nostrStrToNostrId(nostrStr = id)) {
                 is NoteNostrId -> "${NozzleRoute.THREAD}/${id}"
                 is NeventNostrId -> "${NozzleRoute.THREAD}/${id}"
                 is NpubNostrId -> "${NozzleRoute.PROFILE}/${id}"

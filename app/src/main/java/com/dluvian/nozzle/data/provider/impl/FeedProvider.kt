@@ -36,9 +36,10 @@ class FeedProvider(
         val authorSelectionPubkeys = listPubkeys(authorSelection = feedSettings.authorSelection)
         nozzleSubscriber.subscribeToFeedPosts(
             isReplies = feedSettings.isReplies,
+            hashtag = feedSettings.hashtag,
+            authorPubkeys = authorSelectionPubkeys,
             limit = limit,
             until = until,
-            authorPubkeys = authorSelectionPubkeys,
             relaySelection = feedSettings.relaySelection
         )
 
@@ -47,6 +48,7 @@ class FeedProvider(
         val posts = listPosts(
             isPosts = feedSettings.isPosts,
             isReplies = feedSettings.isReplies,
+            hashtag = feedSettings.hashtag,
             authorPubkeys = authorSelectionPubkeys,
             relays = feedSettings.relaySelection.selectedRelays,
             until = until ?: getCurrentTimeInSeconds(),
@@ -69,6 +71,7 @@ class FeedProvider(
     private suspend fun listPosts(
         isPosts: Boolean,
         isReplies: Boolean,
+        hashtag: String?,
         authorPubkeys: List<String>?,
         relays: Collection<String>?,
         until: Long,
@@ -76,11 +79,13 @@ class FeedProvider(
     ): List<PostEntity> {
         if (!isPosts && !isReplies) return emptyList()
 
+        // TODO: Check if nullable Collection can be used in queries. Refac into one query if possible
         return if (authorPubkeys == null && relays == null) {
             Log.d(TAG, "Get global feed")
             postDao.getGlobalFeedBasePosts(
                 isPosts = isPosts,
                 isReplies = isReplies,
+                hashtag = hashtag,
                 until = until,
                 limit = limit,
             )
@@ -90,6 +95,7 @@ class FeedProvider(
             else postDao.getGlobalFeedBasePostsByRelays(
                 isPosts = isPosts,
                 isReplies = isReplies,
+                hashtag = hashtag,
                 relays = relays,
                 until = until,
                 limit = limit,
@@ -100,6 +106,7 @@ class FeedProvider(
             else postDao.getAuthoredFeedBasePosts(
                 isPosts = isPosts,
                 isReplies = isReplies,
+                hashtag = hashtag,
                 authorPubkeys = authorPubkeys,
                 until = until,
                 limit = limit,
@@ -110,6 +117,7 @@ class FeedProvider(
             else postDao.getAuthoredFeedBasePostsByRelays(
                 isPosts = isPosts,
                 isReplies = isReplies,
+                hashtag = hashtag,
                 authorPubkeys = authorPubkeys,
                 relays = relays,
                 until = until,

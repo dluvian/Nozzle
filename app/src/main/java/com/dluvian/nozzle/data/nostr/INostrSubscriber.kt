@@ -11,6 +11,7 @@ interface INostrSubscriber {
 
     fun subscribeToFeedPosts(
         authorPubkeys: List<String>?,
+        hashtag: String?,
         limit: Int,
         until: Long?,
         relays: Collection<String>? = null,

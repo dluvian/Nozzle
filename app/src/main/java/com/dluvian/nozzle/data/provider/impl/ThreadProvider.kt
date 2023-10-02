@@ -25,10 +25,9 @@ class ThreadProvider(
 ) : IThreadProvider {
     override suspend fun getThreadFlow(
         postId: String,
-        relays: List<String>?,
         waitForSubscription: Long?
     ): Flow<PostThread> {
-        nozzleSubscriber.unsubscribeParentPosts()
+        nozzleSubscriber.subscribeThreadPost(postId = postId)
         val hexId = postIdToNostrId(postId)?.hex ?: postId
         val replyContextList = postDao.getPostAndReplies(currentPostId = hexId)
         val current = replyContextList.find { it.id == hexId }
@@ -36,7 +35,7 @@ class ThreadProvider(
         val replies = replyContextList.filter { it.replyToId == current.id }
         val previous = listAndSubPrevious(current = current)
 
-        val allPosts = (replyContextList + previous)
+        val allPosts = (replies + previous + current)
         val feedInfo = nozzleSubscriber.subscribeFeedInfo(posts = allPosts)
 
         return getMappedThreadFlow(

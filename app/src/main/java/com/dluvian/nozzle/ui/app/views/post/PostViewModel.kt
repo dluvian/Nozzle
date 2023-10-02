@@ -12,8 +12,11 @@ import com.dluvian.nozzle.data.nostr.utils.EncodingUtils.createNeventUri
 import com.dluvian.nozzle.data.nostr.utils.EncodingUtils.nostrStrToNostrId
 import com.dluvian.nozzle.data.provider.IPersonalProfileProvider
 import com.dluvian.nozzle.data.provider.IRelayProvider
+import com.dluvian.nozzle.data.room.dao.HashtagDao
 import com.dluvian.nozzle.data.room.dao.PostDao
+import com.dluvian.nozzle.data.room.entity.HashtagEntity
 import com.dluvian.nozzle.data.room.entity.PostEntity
+import com.dluvian.nozzle.data.utils.HashtagUtils
 import com.dluvian.nozzle.data.utils.listRelayStatuses
 import com.dluvian.nozzle.data.utils.toggleRelay
 import com.dluvian.nozzle.model.AllRelays
@@ -43,6 +46,7 @@ class PostViewModel(
     private val nostrService: INostrService,
     private val relayProvider: IRelayProvider,
     private val postDao: PostDao,
+    private val hashtagDao: HashtagDao,
     context: Context,
 ) : ViewModel() {
     private val viewModelState = MutableStateFlow(PostViewModelState())
@@ -120,10 +124,19 @@ class PostViewModel(
             Log.i(TAG, "Send post to ${selectedRelays.size} relays")
             val event = nostrService.sendPost(
                 content = getContentToPublish(state = state),
+                mentions = emptyList(), // TODO: Set mentions
+                hashtags = HashtagUtils.extractHashtagValues(state.content),
                 relays = selectedRelays
             )
             viewModelScope.launch(context = Dispatchers.IO) {
                 postDao.insertIfNotPresent(PostEntity.fromEvent(event))
+                // TODO: Insert hashtags in tx
+                // TODO: dbSweepExcludingCache.addPostId(event.id)
+                val hashtags = event.getHashtags()
+                    .map { HashtagEntity(eventId = event.id, hashtag = it) }
+                if (hashtags.isNotEmpty()) {
+                    hashtagDao.insertOrIgnore(*hashtags.toTypedArray())
+                }
             }
             showPostPublishedToast()
             resetUI()
@@ -183,6 +196,7 @@ class PostViewModel(
             nostrService: INostrService,
             relayProvider: IRelayProvider,
             postDao: PostDao,
+            hashtagDao: HashtagDao,
             context: Context
         ): ViewModelProvider.Factory = object : ViewModelProvider.Factory {
             @Suppress("UNCHECKED_CAST")
@@ -190,8 +204,9 @@ class PostViewModel(
                 return PostViewModel(
                     nostrService = nostrService,
                     personalProfileProvider = personalProfileProvider,
-                    postDao = postDao,
                     relayProvider = relayProvider,
+                    postDao = postDao,
+                    hashtagDao = hashtagDao,
                     context = context,
                 ) as T
             }

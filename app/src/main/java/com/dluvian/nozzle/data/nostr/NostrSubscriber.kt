@@ -34,6 +34,7 @@ class NostrSubscriber(private val nostrService: INostrService) : INostrSubscribe
 
     override fun subscribeToFeedPosts(
         authorPubkeys: List<String>?,
+        hashtag: String?,
         limit: Int,
         until: Long?,
         relays: Collection<String>?
@@ -41,6 +42,7 @@ class NostrSubscriber(private val nostrService: INostrService) : INostrSubscribe
         Log.i(TAG, "Subscribe to feed of ${authorPubkeys?.size} pubkeys in ${relays?.size} relays")
         val postFilter = Filter.createPostFilter(
             pubkeys = authorPubkeys,
+            t = hashtag?.let { listOf(hashtag) },
             until = until ?: getCurrentTimeInSeconds(),
             limit = limit
         )

@@ -22,6 +22,7 @@ import com.dluvian.nozzle.model.nostr.NpubNostrId
 import com.dluvian.nozzle.ui.app.VMContainer
 import com.dluvian.nozzle.ui.app.views.editProfile.EditProfileRoute
 import com.dluvian.nozzle.ui.app.views.feed.FeedRoute
+import com.dluvian.nozzle.ui.app.views.hashtag.HashtagRoute
 import com.dluvian.nozzle.ui.app.views.keys.KeysRoute
 import com.dluvian.nozzle.ui.app.views.post.PostRoute
 import com.dluvian.nozzle.ui.app.views.profile.ProfileRoute
@@ -113,9 +114,7 @@ fun NozzleNavGraph(
         }
         composable(
             route = "${NozzleRoute.THREAD}/{postId}",
-            arguments = listOf(
-                navArgument("postId") { type = NavType.StringType },
-            )
+            arguments = listOf(navArgument("postId") { type = NavType.StringType })
         ) { backStackEntry ->
             vmContainer.threadViewModel.onOpenThread(
                 backStackEntry.arguments?.getString("postId").orEmpty()
@@ -152,6 +151,25 @@ fun NozzleNavGraph(
                 postViewModel = vmContainer.postViewModel,
                 onGoBack = navActions.popStack,
             )
+        }
+        composable(
+            route = "${NozzleRoute.HASHTAG}/{hashtag}",
+            arguments = listOf(navArgument("hashtag") { type = NavType.StringType })
+        ) { backStackEntry ->
+            val hashtag = backStackEntry.arguments?.getString("hashtag")
+            if (hashtag != null) {
+                vmContainer.hashtagViewModel.onOpenHashtag(hashtag)
+                HashtagRoute(
+                    hashtagViewModel = vmContainer.hashtagViewModel,
+                    onPrepareReply = vmContainer.replyViewModel.onPrepareReply,
+                    onNavigateToProfile = navActions.navigateToProfile,
+                    onNavigateToThread = navActions.navigateToThread,
+                    onNavigateToReply = navActions.navigateToReply,
+                    onNavigateToQuote = navActions.navigateToQuote,
+                    onNavigateToId = navActions.navigateToId,
+                    onGoBack = navActions.popStack,
+                )
+            }
         }
         composable(
             route = NozzleRoute.ROUTER,

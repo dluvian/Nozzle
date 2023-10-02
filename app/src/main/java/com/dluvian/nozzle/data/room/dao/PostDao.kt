@@ -20,12 +20,14 @@ interface PostDao {
                 "AND pubkey IN (:authorPubkeys) " +
                 "AND id IN (SELECT DISTINCT eventId FROM eventRelay WHERE relayUrl IN (:relays)) " +
                 "AND createdAt < :until " +
+                "AND (:hashtag IS NULL OR id IN (SELECT eventId FROM hashtag WHERE hashtag = :hashtag)) " +
                 "ORDER BY createdAt DESC " +
                 "LIMIT :limit"
     )
     suspend fun getAuthoredFeedBasePostsByRelays(
         isPosts: Boolean,
         isReplies: Boolean,
+        hashtag: String?,
         authorPubkeys: Collection<String>,
         relays: Collection<String>,
         until: Long,
@@ -41,12 +43,14 @@ interface PostDao {
                 "WHERE ((:isReplies AND replyToId IS NOT NULL) OR (:isPosts AND replyToId IS NULL)) " +
                 "AND pubkey IN (:authorPubkeys) " +
                 "AND createdAt < :until " +
+                "AND (:hashtag IS NULL OR id IN (SELECT eventId FROM hashtag WHERE hashtag = :hashtag)) " +
                 "ORDER BY createdAt DESC " +
                 "LIMIT :limit"
     )
     suspend fun getAuthoredFeedBasePosts(
         isPosts: Boolean,
         isReplies: Boolean,
+        hashtag: String?,
         authorPubkeys: Collection<String>,
         until: Long,
         limit: Int,
@@ -61,12 +65,14 @@ interface PostDao {
                 "WHERE ((:isReplies AND replyToId IS NOT NULL) OR (:isPosts AND replyToId IS NULL)) " +
                 "AND id IN (SELECT DISTINCT eventId FROM eventRelay WHERE relayUrl IN (:relays)) " +
                 "AND createdAt < :until " +
+                "AND (:hashtag IS NULL OR id IN (SELECT eventId FROM hashtag WHERE hashtag = :hashtag)) " +
                 "ORDER BY createdAt DESC " +
                 "LIMIT :limit"
     )
     suspend fun getGlobalFeedBasePostsByRelays(
         isPosts: Boolean,
         isReplies: Boolean,
+        hashtag: String?,
         relays: Collection<String>,
         until: Long,
         limit: Int,
@@ -80,12 +86,14 @@ interface PostDao {
                 "FROM post " +
                 "WHERE ((:isReplies AND replyToId IS NOT NULL) OR (:isPosts AND replyToId IS NULL)) " +
                 "AND createdAt < :until " +
+                "AND (:hashtag IS NULL OR id IN (SELECT eventId FROM hashtag WHERE hashtag = :hashtag)) " +
                 "ORDER BY createdAt DESC " +
                 "LIMIT :limit"
     )
     suspend fun getGlobalFeedBasePosts(
         isPosts: Boolean,
         isReplies: Boolean,
+        hashtag: String?,
         until: Long,
         limit: Int,
     ): List<PostEntity>

@@ -55,6 +55,9 @@ class DatabaseSweeper(
         val deleteRelayCount = database.eventRelayDao().deleteOrphaned()
         Log.i(TAG, "Deleted $deleteRelayCount event relay entries")
 
+        val deleteHashtagCount = database.hashtagDao().deleteOrphaned()
+        Log.i(TAG, "Deleted $deleteHashtagCount hashtag entries")
+
         val deleteReactionCount = database.reactionDao().deleteOrphaned()
         Log.i(TAG, "Deleted $deleteReactionCount reactions")
 

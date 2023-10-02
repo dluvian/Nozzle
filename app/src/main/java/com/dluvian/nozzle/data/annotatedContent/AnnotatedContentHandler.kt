@@ -5,7 +5,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.compose.ui.text.SpanStyle
-import androidx.compose.ui.text.UrlAnnotation
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.style.TextDecoration
 import com.dluvian.nozzle.data.nostr.utils.EncodingUtils.URI
@@ -16,6 +15,9 @@ import com.dluvian.nozzle.data.nostr.utils.ShortenedNameUtils.getShortenedNevent
 import com.dluvian.nozzle.data.nostr.utils.ShortenedNameUtils.getShortenedNote1
 import com.dluvian.nozzle.data.nostr.utils.ShortenedNameUtils.getShortenedNprofile
 import com.dluvian.nozzle.data.nostr.utils.ShortenedNameUtils.getShortenedNpub
+import com.dluvian.nozzle.data.utils.AnnotatedStringUtils.pushAnnotatedString
+import com.dluvian.nozzle.data.utils.AnnotatedStringUtils.pushStyledUrlAnnotation
+import com.dluvian.nozzle.data.utils.HashtagUtils
 import com.dluvian.nozzle.data.utils.UrlUtils
 import com.dluvian.nozzle.model.nostr.Nevent
 import com.dluvian.nozzle.model.nostr.NeventNostrId
@@ -30,27 +32,31 @@ class AnnotatedContentHandler : IAnnotatedContentHandler {
     private val NOTE1_TAG = "NOTE1"
     private val NPROFILE_TAG = "NPROFILE"
     private val NPUB_TAG = "NPUB"
+    private val HASHTAG = "HASHTAG"
 
     private val hyperlinkStyle = SpanStyle(
         color = Color.Blue,
         textDecoration = TextDecoration.Underline
     )
-
     private val mentionStyle = SpanStyle(color = Color.Blue)
+    private val hashtagStyle = SpanStyle(color = Color.Blue)
 
-    private val nostrUriPattern by lazy {
-        Regex(pattern = "nostr:(npub1|note1|nevent1|nprofile1)[a-zA-Z0-9]+")
-    }
+    private val nostrUriPattern = Regex("nostr:(npub1|note1|nevent1|nprofile1)[a-zA-Z0-9]+")
 
-    @OptIn(ExperimentalTextApi::class)
     override fun annotateContent(
         content: String,
         mentionedPubkeyToName: Map<String, String>
     ): AnnotatedString {
         val urls = UrlUtils.extractUrls(content)
         val nostrUris = extractNostrUris(content)
-        val tokens = (urls + nostrUris).sortedBy { it.range.first }.toList()
+        val tokens = (urls + nostrUris).toMutableList()
+        val hashtags = HashtagUtils.extractHashtags(content).filter { hashtag ->
+            tokens.none { isOverlappingHashtag(hashtag.range, it.range) }
+        }
+        tokens.addAll(hashtags)
+
         if (tokens.isEmpty()) return AnnotatedString(text = content)
+        tokens.sortBy { it.range.first }
 
         val editedContent = StringBuilder(content)
         return buildAnnotatedString {
@@ -61,63 +67,67 @@ class AnnotatedContentHandler : IAnnotatedContentHandler {
                     editedContent.delete(0, firstIndex)
                 }
                 if (urls.contains(token)) {
-                    pushUrlAnnotation(UrlAnnotation(url = token.value))
-                    pushStyle(style = hyperlinkStyle)
-                    append(token.value)
-                    pop()
-                    pop()
-                    editedContent.delete(0, token.value.length)
-                    continue
-                }
-                when (val nostrId = nostrUriToNostrId(token.value)) {
-                    is NpubNostrId -> {
-                        pushStringAnnotation(tag = NPUB_TAG, annotation = nostrId.npub)
-                        pushStyle(style = mentionStyle)
-                        val name = "@" + (mentionedPubkeyToName[nostrId.pubkeyHex]
-                            ?.ifBlank { getShortenedNpub(nostrId.npub) }
-                            ?: getShortenedNpub(nostrId.npub)
-                            ?: nostrId.npub)
-                        append(name)
-                        pop()
-                        pop()
-                    }
+                    pushStyledUrlAnnotation(
+                        url = token.value,
+                        style = hyperlinkStyle
+                    )
+                } else if (hashtags.contains(token)) {
+                    pushAnnotatedString(
+                        tag = HASHTAG,
+                        annotation = token.value,
+                        style = hashtagStyle,
+                        text = token.value
+                    )
+                } else {
+                    when (val nostrId = nostrUriToNostrId(token.value)) {
+                        is NpubNostrId -> {
+                            val name = "@" + (mentionedPubkeyToName[nostrId.pubkeyHex]
+                                ?.ifBlank { getShortenedNpub(nostrId.npub) }
+                                ?: getShortenedNpub(nostrId.npub)
+                                ?: nostrId.npub)
+                            pushAnnotatedString(
+                                tag = NPUB_TAG,
+                                annotation = nostrId.npub,
+                                style = mentionStyle,
+                                text = name
+                            )
+                        }
 
-                    is NprofileNostrId -> {
-                        pushStringAnnotation(
-                            tag = NPROFILE_TAG,
-                            annotation = nostrId.nprofile
-                        )
-                        pushStyle(style = mentionStyle)
-                        val name = "@" + (mentionedPubkeyToName[nostrId.pubkeyHex]
-                            ?.ifBlank { getShortenedNprofile(nostrId.nprofile) }
-                            ?: getShortenedNprofile(nostrId.nprofile)
-                            ?: nostrId.nprofile)
-                        append(name)
-                        pop()
-                        pop()
-                    }
+                        is NprofileNostrId -> {
+                            val name = "@" + (mentionedPubkeyToName[nostrId.pubkeyHex]
+                                ?.ifBlank { getShortenedNprofile(nostrId.nprofile) }
+                                ?: getShortenedNprofile(nostrId.nprofile)
+                                ?: nostrId.nprofile)
+                            pushAnnotatedString(
+                                tag = NPROFILE_TAG,
+                                annotation = nostrId.nprofile,
+                                style = mentionStyle,
+                                text = name
+                            )
+                        }
 
-                    is NoteNostrId -> {
-                        pushStringAnnotation(tag = NOTE1_TAG, annotation = nostrId.note1)
-                        pushStyle(style = mentionStyle)
-                        val name = URI + (getShortenedNote1(nostrId.note1) ?: nostrId.note1)
-                        append(name)
-                        pop()
-                        pop()
-                    }
+                        is NoteNostrId -> {
+                            pushAnnotatedString(
+                                tag = NOTE1_TAG,
+                                annotation = nostrId.note1,
+                                style = mentionStyle,
+                                text = URI + (getShortenedNote1(nostrId.note1) ?: nostrId.note1)
+                            )
+                        }
 
-                    is NeventNostrId -> {
-                        pushStringAnnotation(tag = NEVENT_TAG, annotation = nostrId.nevent)
-                        pushStyle(style = mentionStyle)
-                        val name = URI + (getShortenedNevent(nostrId.nevent) ?: nostrId.nevent)
-                        append(name)
-                        pop()
-                        pop()
-                    }
+                        is NeventNostrId -> {
+                            pushAnnotatedString(
+                                tag = NEVENT_TAG,
+                                annotation = nostrId.nevent,
+                                style = mentionStyle,
+                                text = URI + (getShortenedNevent(nostrId.nevent) ?: nostrId.nevent)
+                            )
+                        }
 
-                    null -> {
-                        Log.w(TAG, "Failed to identify ${token.value}")
-                        append(token.value)
+                        null -> {
+                            Log.w(TAG, "Failed to identify ${token.value}")
+                            append(token.value)
+                        }
                     }
                 }
                 editedContent.delete(0, token.value.length)
@@ -151,5 +161,11 @@ class AnnotatedContentHandler : IAnnotatedContentHandler {
         return (nevents + note1s).sortedBy { it.first }.map { it.second }
     }
 
-    private fun extractNostrUris(extractFrom: String) = nostrUriPattern.findAll(extractFrom)
+    private fun isOverlappingHashtag(hashtagRange: IntRange, otherRange: IntRange): Boolean {
+        return hashtagRange.first < otherRange.first
+                && hashtagRange.last > otherRange.first
+    }
+
+    private fun extractNostrUris(extractFrom: String) =
+        nostrUriPattern.findAll(extractFrom).toList()
 }

@@ -10,21 +10,25 @@ interface INozzleSubscriber {
     fun subscribePersonalProfile()
 
     fun subscribeToFeedPosts(
-        authorPubkeys: List<String>?,
         isReplies: Boolean,
+        hashtag: String?,
+        authorPubkeys: List<String>?,
         limit: Int,
         until: Long?,
-        relaySelection: RelaySelection
+        relaySelection: RelaySelection,
     )
 
+    // TODO: NostrId instead of String. Prevents parsing nostrStr multiple times
     suspend fun subscribeFullProfile(profileId: String)
 
     suspend fun subscribeFeedInfo(posts: List<PostEntity>): FeedInfo
 
     suspend fun subscribeUnknowns(posts: List<PostWithMeta>)
 
+    // TODO: NostrId instead of String. Prevents parsing nostrStr multiple times
+    suspend fun subscribeThreadPost(postId: String)
+
     suspend fun subscribeParentPost(postId: String, relayHint: String?)
-    suspend fun unsubscribeParentPosts()
 
     suspend fun subscribeNip65(pubkeys: List<String>)
 }

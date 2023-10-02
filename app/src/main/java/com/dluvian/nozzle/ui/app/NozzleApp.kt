@@ -23,6 +23,7 @@ import com.dluvian.nozzle.ui.app.views.drawer.NozzleDrawerRoute
 import com.dluvian.nozzle.ui.app.views.drawer.NozzleDrawerViewModel
 import com.dluvian.nozzle.ui.app.views.editProfile.EditProfileViewModel
 import com.dluvian.nozzle.ui.app.views.feed.FeedViewModel
+import com.dluvian.nozzle.ui.app.views.hashtag.HashtagViewModel
 import com.dluvian.nozzle.ui.app.views.keys.KeysViewModel
 import com.dluvian.nozzle.ui.app.views.post.PostViewModel
 import com.dluvian.nozzle.ui.app.views.profile.ProfileViewModel
@@ -36,10 +37,6 @@ import kotlinx.coroutines.launch
 fun NozzleApp(appContainer: AppContainer) {
     NozzleTheme {
         Surface(modifier = Modifier.fillMaxSize()) {
-            val navController = rememberNavController()
-            val navActions = remember(navController) {
-                NozzleNavActions(navController)
-            }
             val vmContainer = VMContainer(
                 drawerViewModel = viewModel(
                     factory = NozzleDrawerViewModel.provideFactory(
@@ -91,7 +88,6 @@ fun NozzleApp(appContainer: AppContainer) {
                 threadViewModel = viewModel(
                     factory = ThreadViewModel.provideFactory(
                         threadProvider = appContainer.threadProvider,
-                        relayProvider = appContainer.relayProvider,
                         clickedMediaUrlCache = appContainer.clickedMediaUrlCache,
                         postCardInteractor = appContainer.postCardInteractor,
                     )
@@ -102,6 +98,7 @@ fun NozzleApp(appContainer: AppContainer) {
                         personalProfileProvider = appContainer.personalProfileManager,
                         relayProvider = appContainer.relayProvider,
                         postDao = appContainer.roomDb.postDao(),
+                        hashtagDao = appContainer.roomDb.hashtagDao(),
                         context = LocalContext.current,
                     )
                 ),
@@ -111,6 +108,7 @@ fun NozzleApp(appContainer: AppContainer) {
                         personalProfileProvider = appContainer.personalProfileManager,
                         relayProvider = appContainer.relayProvider,
                         postDao = appContainer.roomDb.postDao(),
+                        hashtagDao = appContainer.roomDb.hashtagDao(),
                         context = LocalContext.current,
                     )
                 ),
@@ -119,7 +117,20 @@ fun NozzleApp(appContainer: AppContainer) {
                         nip05Resolver = appContainer.nip05Resolver
                     )
                 ),
+                hashtagViewModel = viewModel(
+                    factory = HashtagViewModel.provideFactory(
+                        clickedMediaUrlCache = appContainer.clickedMediaUrlCache,
+                        postCardInteractor = appContainer.postCardInteractor,
+                        feedProvider = appContainer.feedProvider,
+                        relayProvider = appContainer.relayProvider,
+                    )
+                ),
             )
+
+            val navController = rememberNavController()
+            val navActions = remember(navController) {
+                NozzleNavActions(navController)
+            }
 
             val coroutineScope = rememberCoroutineScope()
             val drawerState = rememberDrawerState(DrawerValue.Closed)

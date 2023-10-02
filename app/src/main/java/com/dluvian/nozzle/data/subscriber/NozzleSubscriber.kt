@@ -6,6 +6,7 @@ import com.dluvian.nozzle.data.nostr.INostrSubscriber
 import com.dluvian.nozzle.data.nostr.utils.EncodingUtils
 import com.dluvian.nozzle.data.nostr.utils.IdExtractorUtils.extractNeventsAndNoteIds
 import com.dluvian.nozzle.data.nostr.utils.IdExtractorUtils.extractNprofilesAndNpubs
+import com.dluvian.nozzle.data.nostr.utils.KeyUtils
 import com.dluvian.nozzle.data.provider.IPubkeyProvider
 import com.dluvian.nozzle.data.provider.IRelayProvider
 import com.dluvian.nozzle.data.room.AppDatabase
@@ -39,6 +40,7 @@ class NozzleSubscriber(
     private val feedPostSubs = Collections.synchronizedList(mutableListOf<String>())
     private val feedInfoSubs = Collections.synchronizedList(mutableListOf<String>())
     private val nip65Subs = Collections.synchronizedList(mutableListOf<String>())
+    private val threadPostSubs = Collections.synchronizedList(mutableListOf<String>())
     private val parentPostSubs = Collections.synchronizedList(mutableListOf<String>())
     private val unknownPubkeySubs = Collections.synchronizedList(mutableListOf<String>())
 
@@ -48,8 +50,7 @@ class NozzleSubscriber(
             pubkey = pubkeyProvider.getPubkey(),
             relays = relayProvider.getWriteRelays()
         )
-        unsub(personalProfileSubs)
-        personalProfileSubs.addAll(subIds)
+        personalProfileSubs.unsubThenAddAll(subIds)
     }
 
     override suspend fun subscribeFullProfile(profileId: String) {
@@ -62,13 +63,13 @@ class NozzleSubscriber(
                 recommendedRelays
 
         val subIds = nostrSubscriber.subscribeFullProfile(pubkey = hex, relays = relays)
-        unsub(fullProfileSubs)
-        fullProfileSubs.addAll(subIds)
+        fullProfileSubs.unsubThenAddAll(subIds)
     }
 
     override fun subscribeToFeedPosts(
-        authorPubkeys: List<String>?,
         isReplies: Boolean,
+        hashtag: String?,
+        authorPubkeys: List<String>?,
         limit: Int,
         until: Long?,
         relaySelection: RelaySelection
@@ -85,6 +86,7 @@ class NozzleSubscriber(
             is AllRelays, is MultipleRelays -> {
                 nostrSubscriber.subscribeToFeedPosts(
                     authorPubkeys = authorPubkeys,
+                    hashtag = hashtag,
                     limit = adjustedLimit,
                     until = until,
                     relays = relaySelection.selectedRelays
@@ -95,6 +97,7 @@ class NozzleSubscriber(
                 if (authorPubkeys == null) {
                     nostrSubscriber.subscribeToFeedPosts(
                         authorPubkeys = null,
+                        hashtag = hashtag,
                         limit = adjustedLimit,
                         until = until,
                         relays = relaySelection.selectedRelays
@@ -105,6 +108,7 @@ class NozzleSubscriber(
                         if (pubkeys.isNotEmpty()) {
                             nostrSubscriber.subscribeToFeedPosts(
                                 authorPubkeys = pubkeys.toList(),
+                                hashtag = hashtag,
                                 limit = adjustedLimit,
                                 until = until,
                                 relays = listOf(relay)
@@ -114,8 +118,7 @@ class NozzleSubscriber(
                 }
             }
         }
-        unsub(feedPostSubs)
-        feedPostSubs.addAll(subIds)
+        feedPostSubs.unsubThenAddAll(subIds)
     }
 
     override suspend fun subscribeFeedInfo(posts: List<PostEntity>): FeedInfo {
@@ -161,8 +164,7 @@ class NozzleSubscriber(
             reactionPostIdsByRelay = getReactionPostIdsToSub(postIds = postIds),
             reactorPubkey = pubkeyProvider.getPubkey()
         )
-        unsub(feedInfoSubs)
-        feedInfoSubs.addAll(subIds)
+        feedInfoSubs.unsubThenAddAll(subIds)
 
         return FeedInfo(
             postIds = postIds,
@@ -199,8 +201,28 @@ class NozzleSubscriber(
                 .toMutableMap()
                 .addSpecialRelayMapping(nip65RelayMapping)
         )
-        unsub(unknownPubkeySubs)
-        unknownPubkeySubs.addAll(subIds)
+        unknownPubkeySubs.unsubThenAddAll(subIds)
+    }
+
+    override suspend fun subscribeThreadPost(postId: String) {
+        parentPostSubs.unsubThenAddAll(emptyList())
+
+        val nostrId = EncodingUtils.postIdToNostrId(postId)
+        val hex = nostrId?.hex ?: postId
+
+        if (!KeyUtils.isValidPubkey(hex)) {
+            Log.w(TAG, "Tried to sub invalid pubkey $hex")
+            return
+        }
+
+        val postIds = listOf(hex)
+        val existingIds = database.postDao().filterExistingIds(postIds = postIds)
+        if (existingIds.contains(hex)) return
+
+        val relays = nostrId?.recommendedRelays.orEmpty() + relayProvider.getReadRelays()
+        val subIds = nostrSubscriber.subscribePosts(postIds = postIds, relays = relays)
+
+        threadPostSubs.unsubThenAddAll(subIds)
     }
 
     override suspend fun subscribeParentPost(postId: String, relayHint: String?) {
@@ -211,11 +233,6 @@ class NozzleSubscriber(
 
         val subIds = nostrSubscriber.subscribePosts(postIds = listOf(postId), relays = relays)
         parentPostSubs.addAll(subIds)
-    }
-
-    override suspend fun unsubscribeParentPosts() {
-        Log.i(TAG, "Unsubscribe parent posts")
-        unsub(parentPostSubs)
     }
 
     override suspend fun subscribeNip65(pubkeys: List<String>) {
@@ -230,8 +247,7 @@ class NozzleSubscriber(
         if (toSub.isEmpty()) return
 
         val subIds = nostrSubscriber.subscribeNip65(pubkeys = toSub)
-        unsub(nip65Subs)
-        nip65Subs.addAll(subIds)
+        nip65Subs.unsubThenAddAll(subIds)
     }
 
     private suspend fun getNip65PubkeysToSub(
@@ -419,9 +435,10 @@ class NozzleSubscriber(
         return this
     }
 
-    private fun unsub(subIds: MutableList<String>) {
-        val snapshot = subIds.toList()
+    private fun MutableList<String>.unsubThenAddAll(newSubIds: Collection<String>) {
+        val snapshot = this.toList()
+        this.clear()
+        this.addAll(newSubIds)
         nostrSubscriber.unsubscribe(snapshot)
-        subIds.clear()
     }
 }
