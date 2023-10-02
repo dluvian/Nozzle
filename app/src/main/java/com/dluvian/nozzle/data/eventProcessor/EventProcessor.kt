@@ -190,11 +190,9 @@ class EventProcessor(
 
     private fun getContactPubkeys(tags: List<Tag>): List<String> {
         return tags
-            .asSequence()
             .filter { tag -> tag.size >= 2 && tag[0] == "p" }
             .map { tag -> tag[1] }
             .filter { KeyUtils.isValidHexKey(hexKey = it) }
-            .distinct()
             .toList()
     }
 

@@ -229,9 +229,11 @@ class Event(
             .distinctBy { it.url }
     }
 
-    fun getHashtags(): List<String> {
-        return tags.filter { it[0] == "t" }.mapNotNull { it.getOrNull(1)?.trim() }.distinct()
-    }
+    fun getHashtags() = tags
+        .filter { it[0] == "t" }
+        .mapNotNull { it.getOrNull(1)?.trim() }
+        .filter { it.isNotEmpty() }
+        .distinct()
 
     fun isReaction() = this.kind == Kind.REACTION
     fun isPost() = this.kind == Kind.TEXT_NOTE

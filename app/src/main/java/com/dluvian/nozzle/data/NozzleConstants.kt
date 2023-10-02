@@ -13,6 +13,8 @@ const val MAX_FEED_LENGTH = 100
 const val SCOPE_TIMEOUT = 7_000L
 const val WAIT_TIME = 1300L
 
+const val APPEND_RETRY_TIME = 3333L
+
 const val MAX_RELAYS = 7
 
 const val MAX_APPEND_ATTEMPTS = 3

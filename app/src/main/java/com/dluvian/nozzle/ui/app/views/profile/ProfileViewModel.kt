@@ -9,13 +9,13 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.dluvian.nozzle.R
+import com.dluvian.nozzle.data.APPEND_RETRY_TIME
 import com.dluvian.nozzle.data.DB_APPEND_BATCH_SIZE
 import com.dluvian.nozzle.data.DB_BATCH_SIZE
 import com.dluvian.nozzle.data.MAX_APPEND_ATTEMPTS
 import com.dluvian.nozzle.data.MAX_FEED_LENGTH
 import com.dluvian.nozzle.data.MAX_RELAYS
 import com.dluvian.nozzle.data.SCOPE_TIMEOUT
-import com.dluvian.nozzle.data.WAIT_TIME
 import com.dluvian.nozzle.data.cache.IClickedMediaUrlCache
 import com.dluvian.nozzle.data.nostr.utils.EncodingUtils.profileIdToNostrId
 import com.dluvian.nozzle.data.postCardInteractor.IPostCardInteractor
@@ -124,7 +124,7 @@ class ProfileViewModel(
                 val pubkey = profileState.value.pubkey
                 val currentFeed = feedState.value
                 appendFeed(pubkey = pubkey, currentFeed = currentFeed)
-                delay(WAIT_TIME)
+                delay(APPEND_RETRY_TIME)
                 if (currentFeed.lastOrNull()?.entity?.id.orEmpty() == feedState.value.lastOrNull()?.entity?.id.orEmpty()) {
                     val attempt = failedAppendAttempts.getAndIncrement()
                     Log.w(TAG, "Failed to append profile feed. Attempt $attempt")
@@ -228,8 +228,7 @@ class ProfileViewModel(
                 ),
                 limit = DB_APPEND_BATCH_SIZE,
                 until = last.entity.createdAt
-            ).distinctUntilChanged()
-                .map { toAppend -> currentFeed.takeLast(MAX_FEED_LENGTH) + toAppend }
+            ).map { toAppend -> currentFeed.takeLast(MAX_FEED_LENGTH) + toAppend }
                 .stateIn(
                     viewModelScope,
                     SharingStarted.WhileSubscribed(stopTimeoutMillis = SCOPE_TIMEOUT),
