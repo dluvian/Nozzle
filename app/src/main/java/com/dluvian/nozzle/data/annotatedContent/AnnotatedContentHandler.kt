@@ -5,7 +5,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.compose.ui.text.SpanStyle
-import androidx.compose.ui.text.UrlAnnotation
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.style.TextDecoration
 import com.dluvian.nozzle.data.nostr.utils.EncodingUtils.URI
@@ -16,6 +15,8 @@ import com.dluvian.nozzle.data.nostr.utils.ShortenedNameUtils.getShortenedNevent
 import com.dluvian.nozzle.data.nostr.utils.ShortenedNameUtils.getShortenedNote1
 import com.dluvian.nozzle.data.nostr.utils.ShortenedNameUtils.getShortenedNprofile
 import com.dluvian.nozzle.data.nostr.utils.ShortenedNameUtils.getShortenedNpub
+import com.dluvian.nozzle.data.utils.AnnotatedStringUtils.pushAnnotatedString
+import com.dluvian.nozzle.data.utils.AnnotatedStringUtils.pushStyledUrlAnnotation
 import com.dluvian.nozzle.data.utils.HashtagUtils
 import com.dluvian.nozzle.data.utils.UrlUtils
 import com.dluvian.nozzle.model.nostr.Nevent
@@ -42,7 +43,6 @@ class AnnotatedContentHandler : IAnnotatedContentHandler {
 
     private val nostrUriPattern = Regex("nostr:(npub1|note1|nevent1|nprofile1)[a-zA-Z0-9]+")
 
-    @OptIn(ExperimentalTextApi::class)
     override fun annotateContent(
         content: String,
         mentionedPubkeyToName: Map<String, String>
@@ -67,62 +67,61 @@ class AnnotatedContentHandler : IAnnotatedContentHandler {
                     editedContent.delete(0, firstIndex)
                 }
                 if (urls.contains(token)) {
-                    pushUrlAnnotation(UrlAnnotation(url = token.value))
-                    pushStyle(style = hyperlinkStyle)
-                    append(token.value)
-                    pop()
-                    pop()
+                    pushStyledUrlAnnotation(
+                        url = token.value,
+                        style = hyperlinkStyle
+                    )
                 } else if (hashtags.contains(token)) {
-                    pushStringAnnotation(tag = HASHTAG, annotation = token.value)
-                    pushStyle(style = hashtagStyle)
-                    append(token.value)
-                    pop()
-                    pop()
+                    pushAnnotatedString(
+                        tag = HASHTAG,
+                        annotation = token.value,
+                        style = hashtagStyle,
+                        text = token.value
+                    )
                 } else {
                     when (val nostrId = nostrUriToNostrId(token.value)) {
                         is NpubNostrId -> {
-                            pushStringAnnotation(tag = NPUB_TAG, annotation = nostrId.npub)
-                            pushStyle(style = mentionStyle)
                             val name = "@" + (mentionedPubkeyToName[nostrId.pubkeyHex]
                                 ?.ifBlank { getShortenedNpub(nostrId.npub) }
                                 ?: getShortenedNpub(nostrId.npub)
                                 ?: nostrId.npub)
-                            append(name)
-                            pop()
-                            pop()
+                            pushAnnotatedString(
+                                tag = NPUB_TAG,
+                                annotation = nostrId.npub,
+                                style = mentionStyle,
+                                text = name
+                            )
                         }
 
                         is NprofileNostrId -> {
-                            pushStringAnnotation(
-                                tag = NPROFILE_TAG,
-                                annotation = nostrId.nprofile
-                            )
-                            pushStyle(style = mentionStyle)
                             val name = "@" + (mentionedPubkeyToName[nostrId.pubkeyHex]
                                 ?.ifBlank { getShortenedNprofile(nostrId.nprofile) }
                                 ?: getShortenedNprofile(nostrId.nprofile)
                                 ?: nostrId.nprofile)
-                            append(name)
-                            pop()
-                            pop()
+                            pushAnnotatedString(
+                                tag = NPROFILE_TAG,
+                                annotation = nostrId.nprofile,
+                                style = mentionStyle,
+                                text = name
+                            )
                         }
 
                         is NoteNostrId -> {
-                            pushStringAnnotation(tag = NOTE1_TAG, annotation = nostrId.note1)
-                            pushStyle(style = mentionStyle)
-                            val name = URI + (getShortenedNote1(nostrId.note1) ?: nostrId.note1)
-                            append(name)
-                            pop()
-                            pop()
+                            pushAnnotatedString(
+                                tag = NOTE1_TAG,
+                                annotation = nostrId.note1,
+                                style = mentionStyle,
+                                text = URI + (getShortenedNote1(nostrId.note1) ?: nostrId.note1)
+                            )
                         }
 
                         is NeventNostrId -> {
-                            pushStringAnnotation(tag = NEVENT_TAG, annotation = nostrId.nevent)
-                            pushStyle(style = mentionStyle)
-                            val name = URI + (getShortenedNevent(nostrId.nevent) ?: nostrId.nevent)
-                            append(name)
-                            pop()
-                            pop()
+                            pushAnnotatedString(
+                                tag = NEVENT_TAG,
+                                annotation = nostrId.nevent,
+                                style = mentionStyle,
+                                text = URI + (getShortenedNevent(nostrId.nevent) ?: nostrId.nevent)
+                            )
                         }
 
                         null -> {
