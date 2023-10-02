@@ -27,8 +27,7 @@ class ThreadProvider(
         postId: String,
         waitForSubscription: Long?
     ): Flow<PostThread> {
-        nozzleSubscriber.unsubscribeParentPosts()
-        // TODO: Subscribe postId in encoded relays if post not in db yet
+        nozzleSubscriber.subscribeThreadPost(postId = postId)
         val hexId = postIdToNostrId(postId)?.hex ?: postId
         val replyContextList = postDao.getPostAndReplies(currentPostId = hexId)
         val current = replyContextList.find { it.id == hexId }

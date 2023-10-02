@@ -4,6 +4,7 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import com.dluvian.nozzle.data.APPEND_RETRY_TIME
 import com.dluvian.nozzle.data.SCOPE_TIMEOUT
 import com.dluvian.nozzle.data.cache.IClickedMediaUrlCache
 import com.dluvian.nozzle.data.nostr.utils.EncodingUtils.postIdToNostrId
@@ -42,6 +43,7 @@ class ThreadViewModel(
     }
 
     // TODO: Why is this called multiple times?
+    // TODO: Make this more readable
     private val isSettingThread = AtomicBoolean(false)
     val onOpenThread: (String) -> Unit = { postId ->
         val hexId = postIdToNostrId(postId)?.hex ?: postId
@@ -54,23 +56,26 @@ class ThreadViewModel(
             viewModelScope.launch(context = Dispatchers.IO) {
                 updateScreen(postId = postId)
                 isRefreshingFlow.update { false }
-                delay(WAIT_TIME)
+                delay(APPEND_RETRY_TIME)
+            }.invokeOnCompletion {
                 isSettingThread.set(false)
             }
         }
     }
 
     val onRefreshThreadView: () -> Unit = {
-        viewModelScope.launch(context = Dispatchers.IO) {
-            Log.i(TAG, "Refresh thread view")
-            isRefreshingFlow.update { true }
-            updateScreen(
-                postId = currentPostId,
-                waitForSubscription = WAIT_TIME,
-                initValue = threadState.value
-            )
-            delay(WAIT_TIME)
-            isRefreshingFlow.update { false }
+        if (!isSettingThread.get()) {
+            viewModelScope.launch(context = Dispatchers.IO) {
+                Log.i(TAG, "Refresh thread view")
+                isRefreshingFlow.update { true }
+                updateScreen(
+                    postId = currentPostId,
+                    waitForSubscription = WAIT_TIME,
+                    initValue = threadState.value
+                )
+                delay(WAIT_TIME)
+                isRefreshingFlow.update { false }
+            }
         }
     }
 
@@ -83,12 +88,11 @@ class ThreadViewModel(
         threadState = threadProvider.getThreadFlow(
             postId = postId,
             waitForSubscription = waitForSubscription
+        ).stateIn(
+            viewModelScope,
+            SharingStarted.WhileSubscribed(stopTimeoutMillis = SCOPE_TIMEOUT),
+            initValue,
         )
-            .stateIn(
-                viewModelScope,
-                SharingStarted.WhileSubscribed(stopTimeoutMillis = SCOPE_TIMEOUT),
-                initValue,
-            )
     }
 
     companion object {
