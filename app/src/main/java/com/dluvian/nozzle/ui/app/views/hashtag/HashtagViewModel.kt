@@ -3,7 +3,6 @@ package com.dluvian.nozzle.ui.app.views.hashtag
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
-import com.dluvian.nozzle.data.APPEND_RETRY_TIME
 import com.dluvian.nozzle.data.DB_APPEND_BATCH_SIZE
 import com.dluvian.nozzle.data.DB_BATCH_SIZE
 import com.dluvian.nozzle.data.MAX_APPEND_ATTEMPTS
@@ -80,10 +79,10 @@ class HashtagViewModel(
             viewModelScope.launch(context = Dispatchers.IO) {
                 val currentFeed = feedState.value
                 appendFeed(currentFeed = currentFeed)
-                delay(APPEND_RETRY_TIME)
                 if (currentFeed.lastOrNull()?.entity?.id.orEmpty() == feedState.value.lastOrNull()?.entity?.id.orEmpty()) {
                     failedAppendAttempts.incrementAndGet()
                 }
+                delay(WAIT_TIME)
                 isAppending.set(false)
             }
         }
@@ -130,6 +129,8 @@ class HashtagViewModel(
                     currentFeed,
                 )
         }
+        delay(WAIT_TIME)
+        uiFlow.update { it.copy(isRefreshing = false) }
     }
 
 
