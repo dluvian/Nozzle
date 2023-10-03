@@ -10,6 +10,7 @@ import androidx.lifecycle.viewModelScope
 import com.dluvian.nozzle.R
 import com.dluvian.nozzle.data.manager.IPersonalProfileManager
 import com.dluvian.nozzle.data.nostr.INostrService
+import com.dluvian.nozzle.data.provider.IRelayProvider
 import com.dluvian.nozzle.model.nostr.Metadata
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.*
@@ -30,6 +31,7 @@ data class EditProfileViewModelState(
 class EditProfileViewModel(
     private val personalProfileManager: IPersonalProfileManager,
     private val nostrService: INostrService,
+    private val relayProvider: IRelayProvider,
     context: Context,
 ) : ViewModel() {
     private val viewModelState = MutableStateFlow(EditProfileViewModelState())
@@ -151,7 +153,7 @@ class EditProfileViewModel(
             nip05 = state.nip05Input.trim(),
             lud16 = state.lud16Input.trim(),
         )
-        nostrService.publishProfile(metadata = metadata)
+        nostrService.publishProfile(metadata = metadata, relays = relayProvider.getWriteRelays())
         return metadata
     }
 
@@ -197,6 +199,7 @@ class EditProfileViewModel(
         fun provideFactory(
             personalProfileManager: IPersonalProfileManager,
             nostrService: INostrService,
+            relayProvider: IRelayProvider,
             context: Context,
         ): ViewModelProvider.Factory = object : ViewModelProvider.Factory {
             @Suppress("UNCHECKED_CAST")
@@ -204,6 +207,7 @@ class EditProfileViewModel(
                 return EditProfileViewModel(
                     personalProfileManager = personalProfileManager,
                     nostrService = nostrService,
+                    relayProvider = relayProvider,
                     context = context
                 ) as T
             }

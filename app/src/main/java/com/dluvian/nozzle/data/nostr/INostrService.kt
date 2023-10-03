@@ -8,7 +8,7 @@ import com.dluvian.nozzle.model.nostr.ReplyTo
 interface INostrService {
     fun initialize(initRelays: Collection<String>)
 
-    fun publishProfile(metadata: Metadata): Event
+    fun publishProfile(metadata: Metadata, relays: Collection<String>?): Event
 
     fun sendPost(
         content: String,
@@ -27,7 +27,7 @@ interface INostrService {
         relays: Collection<String>?
     ): Event
 
-    fun updateContactList(contactPubkeys: List<String>): Event
+    fun updateContactList(contactPubkeys: List<String>, relays: Collection<String>?): Event
 
     fun subscribe(
         filters: List<Filter>,

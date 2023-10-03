@@ -123,6 +123,7 @@ class AppContainer(context: Context) {
     val profileFollower: IProfileFollower = ProfileFollower(
         nostrService = nostrService,
         pubkeyProvider = keyManager,
+        relayProvider = relayProvider,
         contactDao = roomDb.contactDao()
     )
 

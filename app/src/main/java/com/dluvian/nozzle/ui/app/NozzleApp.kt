@@ -48,6 +48,7 @@ fun NozzleApp(appContainer: AppContainer) {
                     factory = EditProfileViewModel.provideFactory(
                         personalProfileManager = appContainer.personalProfileManager,
                         nostrService = appContainer.nostrService,
+                        relayProvider = appContainer.relayProvider,
                         context = LocalContext.current,
                     )
                 ),

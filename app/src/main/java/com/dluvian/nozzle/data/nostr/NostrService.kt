@@ -60,14 +60,14 @@ class NostrService(
         client.addRelays(initRelays)
     }
 
-    override fun publishProfile(metadata: Metadata): Event {
+    override fun publishProfile(metadata: Metadata, relays: Collection<String>?): Event {
         Log.i(TAG, "Publish profile $metadata")
         val event = Event.createMetadataEvent(
             metadata = metadata,
             keys = keyManager.getKeys(),
         )
         Log.i(TAG, "new profile is valid ${event.verify()}")
-        client.publishToRelays(event)
+        client.publishToRelays(event = event, relays = relays)
 
         return event
     }
@@ -121,13 +121,16 @@ class NostrService(
         return event
     }
 
-    override fun updateContactList(contactPubkeys: List<String>): Event {
+    override fun updateContactList(
+        contactPubkeys: List<String>,
+        relays: Collection<String>?
+    ): Event {
         Log.i(TAG, "Update contact list with ${contactPubkeys.size} contacts")
         val event = Event.createContactListEvent(
             contacts = contactPubkeys,
             keys = keyManager.getKeys(),
         )
-        client.publishToRelays(event = event)
+        client.publishToRelays(event = event, relays = relays)
 
         return event
     }
