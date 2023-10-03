@@ -1,7 +1,6 @@
 package com.dluvian.nozzle.ui.app.views.reply
 
 import android.content.Context
-import android.util.Log
 import android.widget.Toast
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
@@ -9,18 +8,19 @@ import androidx.lifecycle.viewModelScope
 import com.dluvian.nozzle.R
 import com.dluvian.nozzle.data.nostr.INostrService
 import com.dluvian.nozzle.data.nostr.utils.ShortenedNameUtils.getShortenedNpubFromPubkey
+import com.dluvian.nozzle.data.postPreparer.IPostPreparer
 import com.dluvian.nozzle.data.provider.IPersonalProfileProvider
 import com.dluvian.nozzle.data.provider.IRelayProvider
 import com.dluvian.nozzle.data.room.dao.HashtagDao
 import com.dluvian.nozzle.data.room.dao.PostDao
 import com.dluvian.nozzle.data.room.entity.HashtagEntity
 import com.dluvian.nozzle.data.room.entity.PostEntity
-import com.dluvian.nozzle.data.utils.HashtagUtils
 import com.dluvian.nozzle.data.utils.listRelayStatuses
 import com.dluvian.nozzle.data.utils.toggleRelay
 import com.dluvian.nozzle.model.AllRelays
 import com.dluvian.nozzle.model.PostWithMeta
 import com.dluvian.nozzle.model.RelayActive
+import com.dluvian.nozzle.model.nostr.Event
 import com.dluvian.nozzle.model.nostr.ReplyTo
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -28,8 +28,6 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-
-private const val TAG = "ReplyViewModel"
 
 data class ReplyViewModelState(
     val recipientName: String = "",
@@ -43,6 +41,7 @@ class ReplyViewModel(
     private val nostrService: INostrService,
     private val personalProfileProvider: IPersonalProfileProvider,
     private val relayProvider: IRelayProvider,
+    private val postPreparer: IPostPreparer,
     private val postDao: PostDao,
     private val hashtagDao: HashtagDao,
     context: Context,
@@ -60,18 +59,13 @@ class ReplyViewModel(
             viewModelState.value
         )
 
-    init {
-        Log.i(TAG, "Initialize ReplyViewModel")
-    }
-
     val onPrepareReply: (PostWithMeta) -> Unit = { post ->
-        updateMetadataState()
+        // TODO: Use flows. This should not be needed
+        metadataState = personalProfileProvider.getMetadataStateFlow()
         postToReplyTo = post
         viewModelScope.launch(context = Dispatchers.IO) {
-            Log.i(TAG, "Set reply to ${post.pubkey}")
             viewModelState.update {
                 recipientPubkey = post.pubkey
-                val recipientsReadRelays = relayProvider.getReadRelaysOfPubkey(recipientPubkey)
                 it.copy(
                     recipientName = post.name.ifEmpty {
                         getShortenedNpubFromPubkey(post.pubkey) ?: post.pubkey
@@ -81,7 +75,7 @@ class ReplyViewModel(
                     isSendable = false,
                     relaySelection = listRelayStatuses(
                         allRelayUrls = (relayProvider.getWriteRelays()
-                                + recipientsReadRelays
+                                + relayProvider.getReadRelaysOfPubkey(recipientPubkey)
                                 + post.relays)
                             .distinct(),
                         relaySelection = AllRelays,
@@ -91,77 +85,57 @@ class ReplyViewModel(
         }
     }
 
-    val onChangeReply: (String) -> Unit = { input ->
-        if (input != uiState.value.reply) {
-            viewModelState.update {
-                it.copy(reply = input, isSendable = input.isNotBlank())
-            }
+    val onChangeReply: (String) -> Unit = local@{ input ->
+        if (input == uiState.value.reply) return@local
+        viewModelState.update {
+            it.copy(reply = input, isSendable = input.isNotBlank())
         }
     }
 
     val onToggleRelaySelection: (Int) -> Unit = { index ->
         val toggled = toggleRelay(relays = uiState.value.relaySelection, index = index)
         if (toggled.any { it.isActive }) {
-            viewModelState.update {
-                it.copy(relaySelection = toggled)
+            viewModelState.update { it.copy(relaySelection = toggled) }
+        }
+    }
+
+    val onSend: () -> Unit = local@{
+        val parentPost = postToReplyTo ?: return@local
+        val event = sendReply(parentPost = parentPost, state = uiState.value)
+        viewModelScope.launch(context = Dispatchers.IO) {
+            postDao.insertIfNotPresent(PostEntity.fromEvent(event))
+            // TODO: Insert hashtags in tx
+            // TODO: dbSweepExcludingCache.addPostId(event.id)
+            val hashtags = event.getHashtags()
+                .map { HashtagEntity(eventId = event.id, hashtag = it) }
+            if (hashtags.isNotEmpty()) {
+                hashtagDao.insertOrIgnore(*hashtags.toTypedArray())
             }
+
         }
+        showReplyPublishedToast()
+        resetUI()
     }
 
-    val onSend: () -> Unit = {
-        uiState.value.let { state ->
-            val err = getErrorText(context = context, state = state)
-            if (err != null) {
-                Toast.makeText(context, err, Toast.LENGTH_SHORT).show()
-            } else {
-                postToReplyTo?.let { parentPost ->
-                    Log.i(TAG, "Send reply to ${state.recipientName} ${state.pubkey}")
-                    val replyTo = ReplyTo(
-                        replyTo = parentPost.entity.id,
-                        relayUrl = parentPost.relays
-                            .filter { relayProvider.getWriteRelays().contains(it) }
-                            .randomOrNull()
-                            ?: parentPost.relays.randomOrNull(),
-                    )
-                    val selectedRelays = state.relaySelection
-                        .filter { it.isActive }
-                        .map { it.relayUrl }
-                    val event = nostrService.sendReply(
-                        replyTo = replyTo,
-                        content = state.reply.trim(),
-                        mentions = listOf(parentPost.pubkey), // TODO: Add other mentions
-                        hashtags = HashtagUtils.extractHashtagValues(state.reply).distinct(),
-                        relays = selectedRelays
-                    )
-                    viewModelScope.launch(context = Dispatchers.IO) {
-                        postDao.insertIfNotPresent(PostEntity.fromEvent(event))
-                        // TODO: Insert hashtags in tx
-                        // TODO: dbSweepExcludingCache.addPostId(event.id)
-                        val hashtags = event.getHashtags()
-                            .map { HashtagEntity(eventId = event.id, hashtag = it) }
-                        if (hashtags.isNotEmpty()) {
-                            hashtagDao.insertOrIgnore(*hashtags.toTypedArray())
-                        }
-                    }
-                }
-                resetUI()
-            }
-        }
-    }
-
-    // TODO: Use flows. This should not be needed
-    private fun updateMetadataState() {
-        metadataState = personalProfileProvider.getMetadataStateFlow()
-    }
-
-    private fun getErrorText(context: Context, state: ReplyViewModelState): String? {
-        return if (state.reply.isBlank()) {
-            context.getString(R.string.your_reply_is_empty)
-        } else if (state.relaySelection.all { !it.isActive }) {
-            context.getString(R.string.pls_select_relays)
-        } else {
-            null
-        }
+    private fun sendReply(parentPost: PostWithMeta, state: ReplyViewModelState): Event {
+        val replyTo = ReplyTo(
+            replyTo = parentPost.entity.id,
+            relayUrl = parentPost.relays
+                .filter { relayProvider.getWriteRelays().contains(it) }
+                .randomOrNull()
+                ?: parentPost.relays.randomOrNull(),
+        )
+        val selectedRelays = state.relaySelection
+            .filter { it.isActive }
+            .map { it.relayUrl }
+        val post = postPreparer.getCleanPostWithTagsAndMentions(state.reply)
+        return nostrService.sendReply(
+            replyTo = replyTo,
+            content = post.content,
+            mentions = (post.mentions + parentPost.pubkey).distinct(),
+            hashtags = post.hashtags,
+            relays = selectedRelays
+        )
     }
 
     private fun resetUI() {
@@ -179,11 +153,20 @@ class ReplyViewModel(
         }
     }
 
+    private val showReplyPublishedToast: () -> Unit = {
+        Toast.makeText(
+            context,
+            context.getString(R.string.reply_published),
+            Toast.LENGTH_SHORT
+        ).show()
+    }
+
     companion object {
         fun provideFactory(
             nostrService: INostrService,
             personalProfileProvider: IPersonalProfileProvider,
             relayProvider: IRelayProvider,
+            postPreparer: IPostPreparer,
             postDao: PostDao,
             hashtagDao: HashtagDao,
             context: Context
@@ -194,6 +177,7 @@ class ReplyViewModel(
                     nostrService = nostrService,
                     personalProfileProvider = personalProfileProvider,
                     relayProvider = relayProvider,
+                    postPreparer = postPreparer,
                     postDao = postDao,
                     hashtagDao = hashtagDao,
                     context = context,

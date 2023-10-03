@@ -9,22 +9,20 @@ import com.dluvian.nozzle.R
 import com.dluvian.nozzle.data.nostr.INostrService
 import com.dluvian.nozzle.data.nostr.utils.EncodingUtils.createNeventUri
 import com.dluvian.nozzle.data.nostr.utils.EncodingUtils.nostrStrToNostrId
-import com.dluvian.nozzle.data.nostr.utils.MentionUtils.getCleanPostWithMentions
 import com.dluvian.nozzle.data.nostr.utils.ShortenedNameUtils.getShortenedNpubFromPubkey
+import com.dluvian.nozzle.data.postPreparer.IPostPreparer
 import com.dluvian.nozzle.data.provider.IPersonalProfileProvider
 import com.dluvian.nozzle.data.provider.IRelayProvider
 import com.dluvian.nozzle.data.room.dao.HashtagDao
 import com.dluvian.nozzle.data.room.dao.PostDao
 import com.dluvian.nozzle.data.room.entity.HashtagEntity
 import com.dluvian.nozzle.data.room.entity.PostEntity
-import com.dluvian.nozzle.data.utils.HashtagUtils
 import com.dluvian.nozzle.data.utils.listRelayStatuses
 import com.dluvian.nozzle.data.utils.toggleRelay
 import com.dluvian.nozzle.model.AllRelays
 import com.dluvian.nozzle.model.MentionedPost
 import com.dluvian.nozzle.model.RelayActive
 import com.dluvian.nozzle.model.nostr.Event
-import com.dluvian.nozzle.model.nostr.Post
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -46,6 +44,7 @@ class PostViewModel(
     private val personalProfileProvider: IPersonalProfileProvider,
     private val nostrService: INostrService,
     private val relayProvider: IRelayProvider,
+    private val postPreparer: IPostPreparer,
     private val postDao: PostDao,
     private val hashtagDao: HashtagDao,
     context: Context,
@@ -73,8 +72,10 @@ class PostViewModel(
         isPreparing.set(true)
         viewModelState.update { it.copy(postToQuote = null) }
         viewModelScope.launch(context = Dispatchers.IO) {
-            val postToQuote = getCleanMentionedPost(postIdHex = nostrId.hex)
-            preparePost(postToQuote = postToQuote, relays = nostrId.recommendedRelays)
+            preparePost(
+                postToQuote = getCleanMentionedPost(postIdHex = nostrId.hex),
+                relays = nostrId.recommendedRelays
+            )
         }.invokeOnCompletion { isPreparing.set(false) }
     }
 
@@ -109,7 +110,8 @@ class PostViewModel(
     }
 
     private fun preparePost(postToQuote: MentionedPost?, relays: Collection<String> = emptyList()) {
-        updateMetadataState()
+        // TODO: USE FLOWS. This should not be needed
+        metadataState = personalProfileProvider.getMetadataStateFlow()
         viewModelState.update {
             it.copy(
                 pubkey = personalProfileProvider.getPubkey(),
@@ -133,14 +135,18 @@ class PostViewModel(
     }
 
     private fun sendPost(state: PostViewModelState): Event {
-        val post = getContentToPublish(state = state)
+        val quote = getNewLineQuoteUri(
+            postIdToQuote = state.postToQuote?.id,
+            relays = state.quoteRelays
+        )
+        val post = postPreparer.getCleanPostWithTagsAndMentions(content = state.content + quote)
         val selectedRelays = state.relayStatuses
             .filter { it.isActive }
             .map { it.relayUrl }
         return nostrService.sendPost(
             content = post.content,
             mentions = post.mentions,
-            hashtags = HashtagUtils.extractHashtagValues(post.content),
+            hashtags = post.hashtags,
             relays = selectedRelays
         )
     }
@@ -158,11 +164,6 @@ class PostViewModel(
         }
     }
 
-    // TODO: USE FLOWS. This should not be needed
-    private fun updateMetadataState() {
-        metadataState = personalProfileProvider.getMetadataStateFlow()
-    }
-
     private val showPostPublishedToast: () -> Unit = {
         Toast.makeText(
             context,
@@ -176,16 +177,6 @@ class PostViewModel(
         relaySelection = AllRelays
     )
 
-    private fun getContentToPublish(state: PostViewModelState): Post {
-        val quote = getNewLineQuoteUri(
-            postIdToQuote = state.postToQuote?.id,
-            relays = state.quoteRelays
-        )
-        val postWithMentions = getCleanPostWithMentions(content = state.content)
-
-        return postWithMentions.copy(content = postWithMentions.content + quote)
-    }
-
     private fun getNewLineQuoteUri(postIdToQuote: String?, relays: Collection<String>): String {
         return if (postIdToQuote == null) ""
         else createNeventUri(postId = postIdToQuote, relays = relays)
@@ -198,6 +189,7 @@ class PostViewModel(
             personalProfileProvider: IPersonalProfileProvider,
             nostrService: INostrService,
             relayProvider: IRelayProvider,
+            postPreparer: IPostPreparer,
             postDao: PostDao,
             hashtagDao: HashtagDao,
             context: Context
@@ -208,6 +200,7 @@ class PostViewModel(
                     nostrService = nostrService,
                     personalProfileProvider = personalProfileProvider,
                     relayProvider = relayProvider,
+                    postPreparer = postPreparer,
                     postDao = postDao,
                     hashtagDao = hashtagDao,
                     context = context,

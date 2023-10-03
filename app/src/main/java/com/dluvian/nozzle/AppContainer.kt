@@ -25,6 +25,8 @@ import com.dluvian.nozzle.data.nostr.nip05.INip05Resolver
 import com.dluvian.nozzle.data.nostr.nip05.Nip05Resolver
 import com.dluvian.nozzle.data.postCardInteractor.IPostCardInteractor
 import com.dluvian.nozzle.data.postCardInteractor.PostCardInteractor
+import com.dluvian.nozzle.data.postPreparer.IPostPreparer
+import com.dluvian.nozzle.data.postPreparer.PostPreparer
 import com.dluvian.nozzle.data.preferences.IFeedSettingsPreferences
 import com.dluvian.nozzle.data.preferences.NozzlePreferences
 import com.dluvian.nozzle.data.profileFollower.IProfileFollower
@@ -177,4 +179,6 @@ class AppContainer(context: Context) {
         dbSweepExcludingCache = dbSweepExcludingCache,
         database = roomDb,
     )
+
+    val postPreparer: IPostPreparer = PostPreparer()
 }

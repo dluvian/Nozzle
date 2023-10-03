@@ -57,7 +57,6 @@
     <string name="send">Send</string>
     <string name="post_your_reply">Post your reply</string>
     <string name="edit_profile">Edit profile</string>
-    <string name="your_reply_is_empty">Your reply is empty</string>
     <string name="update">Update</string>
     <string name="nip05_identifier">nip-05 identifier</string>
     <string name="enter_nip05">e.g. user@domain.com</string>
@@ -82,7 +81,6 @@
     <string name="relays">Relays</string>
     <string name="choose_relays">Choose relays</string>
     <string name="your_post_is_empty">Your post is empty</string>
-    <string name="pls_select_relays">Please select a relay to send your post to</string>
     <string name="no_relays_available">No relays available</string>
     <string name="lightning_address">Lightning address</string>
     <string name="enter_lud16">e.g. user@domain.com</string>
@@ -96,6 +94,7 @@
     <string name="click_to_show_media">Click to show media</string>
     <string name="loaded_media">Loaded media</string>
     <string name="failed_to_resolve_nip05">Failed to resolve nip05</string>
+    <string name="reply_published">Reply published</string>
     <plurals name="other_relays">
         <item quantity="one">other</item>
         <item quantity="other">others</item>
