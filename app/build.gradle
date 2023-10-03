@@ -104,5 +104,6 @@ dependencies {
     implementation('fr.acinq.secp256k1:secp256k1-kmp-jni-android:0.10.0')
 
     // JSON
+    // gson does not understand default values. Be aware of the null!
     implementation('com.google.code.gson:gson:2.10.1')
 }
