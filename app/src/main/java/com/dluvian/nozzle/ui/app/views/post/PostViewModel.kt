@@ -9,6 +9,7 @@ import com.dluvian.nozzle.R
 import com.dluvian.nozzle.data.nostr.INostrService
 import com.dluvian.nozzle.data.nostr.utils.EncodingUtils.createNeventUri
 import com.dluvian.nozzle.data.nostr.utils.EncodingUtils.nostrStrToNostrId
+import com.dluvian.nozzle.data.nostr.utils.MentionUtils.getCleanPostWithMentions
 import com.dluvian.nozzle.data.nostr.utils.ShortenedNameUtils.getShortenedNpubFromPubkey
 import com.dluvian.nozzle.data.provider.IPersonalProfileProvider
 import com.dluvian.nozzle.data.provider.IRelayProvider
@@ -22,6 +23,8 @@ import com.dluvian.nozzle.data.utils.toggleRelay
 import com.dluvian.nozzle.model.AllRelays
 import com.dluvian.nozzle.model.MentionedPost
 import com.dluvian.nozzle.model.RelayActive
+import com.dluvian.nozzle.model.nostr.Event
+import com.dluvian.nozzle.model.nostr.Post
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -75,6 +78,36 @@ class PostViewModel(
         }.invokeOnCompletion { isPreparing.set(false) }
     }
 
+    val onChangeContent: (String) -> Unit = local@{ input ->
+        if (input == uiState.value.content) return@local
+        viewModelState.update {
+            it.copy(content = input, isSendable = input.isNotBlank() || it.postToQuote != null)
+        }
+    }
+
+    val onToggleRelaySelection: (Int) -> Unit = { index ->
+        val toggled = toggleRelay(relays = uiState.value.relayStatuses, index = index)
+        if (toggled.any { it.isActive }) {
+            viewModelState.update { it.copy(relayStatuses = toggled) }
+        }
+    }
+
+    val onSend: () -> Unit = {
+        val event = sendPost(state = uiState.value)
+        viewModelScope.launch(context = Dispatchers.IO) {
+            postDao.insertIfNotPresent(PostEntity.fromEvent(event))
+            // TODO: Insert hashtags in tx
+            // TODO: dbSweepExcludingCache.addPostId(event.id)
+            val hashtags = event.getHashtags()
+                .map { HashtagEntity(eventId = event.id, hashtag = it) }
+            if (hashtags.isNotEmpty()) {
+                hashtagDao.insertOrIgnore(*hashtags.toTypedArray())
+            }
+        }
+        showPostPublishedToast()
+        resetUI()
+    }
+
     private fun preparePost(postToQuote: MentionedPost?, relays: Collection<String> = emptyList()) {
         updateMetadataState()
         viewModelState.update {
@@ -91,7 +124,6 @@ class PostViewModel(
 
     private suspend fun getCleanMentionedPost(postIdHex: String): MentionedPost? {
         val mentionedPost = postDao.getMentionedPost(postId = postIdHex) ?: return null
-
         if (mentionedPost.name.isNullOrEmpty()) {
             val shortenedNpub = getShortenedNpubFromPubkey(mentionedPost.pubkey)
             return mentionedPost.copy(name = shortenedNpub)
@@ -100,44 +132,17 @@ class PostViewModel(
         return mentionedPost
     }
 
-    val onChangeContent: (String) -> Unit = local@{ input ->
-        if (input == uiState.value.content) return@local
-        viewModelState.update {
-            it.copy(content = input, isSendable = input.isNotBlank() || it.postToQuote != null)
-        }
-
-    }
-
-    val onToggleRelaySelection: (Int) -> Unit = { index ->
-        val toggled = toggleRelay(relays = uiState.value.relayStatuses, index = index)
-        if (toggled.any { it.isActive }) {
-            viewModelState.update { it.copy(relayStatuses = toggled) }
-        }
-    }
-
-    val onSend: () -> Unit = {
-        val state = uiState.value
+    private fun sendPost(state: PostViewModelState): Event {
+        val post = getContentToPublish(state = state)
         val selectedRelays = state.relayStatuses
             .filter { it.isActive }
             .map { it.relayUrl }
-        val event = nostrService.sendPost(
-            content = getContentToPublish(state = state),
-            mentions = emptyList(), // TODO: Set mentions
-            hashtags = HashtagUtils.extractHashtagValues(state.content),
+        return nostrService.sendPost(
+            content = post.content,
+            mentions = post.mentions,
+            hashtags = HashtagUtils.extractHashtagValues(post.content),
             relays = selectedRelays
         )
-        viewModelScope.launch(context = Dispatchers.IO) {
-            postDao.insertIfNotPresent(PostEntity.fromEvent(event))
-            // TODO: Insert hashtags in tx
-            // TODO: dbSweepExcludingCache.addPostId(event.id)
-            val hashtags = event.getHashtags()
-                .map { HashtagEntity(eventId = event.id, hashtag = it) }
-            if (hashtags.isNotEmpty()) {
-                hashtagDao.insertOrIgnore(*hashtags.toTypedArray())
-            }
-        }
-        showPostPublishedToast()
-        resetUI()
     }
 
     private fun resetUI() {
@@ -171,12 +176,14 @@ class PostViewModel(
         relaySelection = AllRelays
     )
 
-    private fun getContentToPublish(state: PostViewModelState): String {
+    private fun getContentToPublish(state: PostViewModelState): Post {
         val quote = getNewLineQuoteUri(
             postIdToQuote = state.postToQuote?.id,
             relays = state.quoteRelays
         )
-        return state.content.trim() + quote
+        val postWithMentions = getCleanPostWithMentions(content = state.content)
+
+        return postWithMentions.copy(content = postWithMentions.content + quote)
     }
 
     private fun getNewLineQuoteUri(postIdToQuote: String?, relays: Collection<String>): String {

@@ -130,7 +130,7 @@ class ReplyViewModel(
                         replyTo = replyTo,
                         content = state.reply.trim(),
                         mentions = listOf(parentPost.pubkey), // TODO: Add other mentions
-                        hashtags = HashtagUtils.extractHashtagValues(state.reply),
+                        hashtags = HashtagUtils.extractHashtagValues(state.reply).distinct(),
                         relays = selectedRelays
                     )
                     viewModelScope.launch(context = Dispatchers.IO) {

@@ -106,18 +106,12 @@ class Client(private val httpClient: OkHttpClient) {
         relays: Collection<String>? = null
     ) {
         val request = """["EVENT",${event.toJson()}]"""
-        Log.i(
-            TAG,
-            "Publish $request to ${relays?.size} relays"
-        )
+        Log.i(TAG, "Publish to ${relays?.size} relays: $request")
         relays?.let { addRelays(it) }
         synchronized(sockets) {
             for (relay in relays ?: sockets.keys) {
                 val socket = sockets[relay]
-                if (socket == null) Log.w(
-                    TAG,
-                    "Relay $relay is not registered"
-                )
+                if (socket == null) Log.w(TAG, "Relay $relay is not registered")
                 else socket.send(request)
             }
         }

@@ -4,9 +4,9 @@ import android.util.Log
 import com.dluvian.nozzle.data.cache.IIdCache
 import com.dluvian.nozzle.data.nostr.INostrSubscriber
 import com.dluvian.nozzle.data.nostr.utils.EncodingUtils
-import com.dluvian.nozzle.data.nostr.utils.IdExtractorUtils.extractNeventsAndNoteIds
-import com.dluvian.nozzle.data.nostr.utils.IdExtractorUtils.extractNprofilesAndNpubs
 import com.dluvian.nozzle.data.nostr.utils.KeyUtils
+import com.dluvian.nozzle.data.nostr.utils.MentionUtils.extractNeventsAndNoteIds
+import com.dluvian.nozzle.data.nostr.utils.MentionUtils.extractNprofilesAndNpubs
 import com.dluvian.nozzle.data.provider.IPubkeyProvider
 import com.dluvian.nozzle.data.provider.IRelayProvider
 import com.dluvian.nozzle.data.room.AppDatabase

@@ -11,6 +11,7 @@ import com.dluvian.nozzle.data.nostr.utils.EncodingUtils.URI
 import com.dluvian.nozzle.data.nostr.utils.EncodingUtils.nostrUriToNostrId
 import com.dluvian.nozzle.data.nostr.utils.EncodingUtils.note1ToHex
 import com.dluvian.nozzle.data.nostr.utils.EncodingUtils.readNevent
+import com.dluvian.nozzle.data.nostr.utils.MentionUtils
 import com.dluvian.nozzle.data.nostr.utils.ShortenedNameUtils.getShortenedNevent
 import com.dluvian.nozzle.data.nostr.utils.ShortenedNameUtils.getShortenedNote1
 import com.dluvian.nozzle.data.nostr.utils.ShortenedNameUtils.getShortenedNprofile
@@ -41,14 +42,12 @@ class AnnotatedContentHandler : IAnnotatedContentHandler {
     private val mentionStyle = SpanStyle(color = Color.Blue)
     private val hashtagStyle = SpanStyle(color = Color.Blue)
 
-    private val nostrUriPattern = Regex("nostr:(npub1|note1|nevent1|nprofile1)[a-zA-Z0-9]+")
-
     override fun annotateContent(
         content: String,
         mentionedPubkeyToName: Map<String, String>
     ): AnnotatedString {
         val urls = UrlUtils.extractUrls(content)
-        val nostrUris = extractNostrUris(content)
+        val nostrUris = MentionUtils.extractNostrUris(content)
         val tokens = (urls + nostrUris).toMutableList()
         val hashtags = HashtagUtils.extractHashtags(content).filter { hashtag ->
             tokens.none { isOverlappingHashtag(hashtag.range, it.range) }
@@ -165,7 +164,4 @@ class AnnotatedContentHandler : IAnnotatedContentHandler {
         return hashtagRange.first < otherRange.first
                 && hashtagRange.last > otherRange.first
     }
-
-    private fun extractNostrUris(extractFrom: String) =
-        nostrUriPattern.findAll(extractFrom).toList()
 }

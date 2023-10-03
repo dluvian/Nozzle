@@ -5,7 +5,8 @@ object HashtagUtils {
 
     fun extractHashtags(extractFrom: String) = hashtagPattern.findAll(extractFrom).toList()
 
-    fun extractHashtagValues(extractFrom: String) = hashtagPattern.findAll(extractFrom)
+    fun extractHashtagValues(extractFrom: String) = hashtagPattern
+        .findAll(extractFrom)
         .map { it.value.removeHashtagPrefix() }
         .toList()
 

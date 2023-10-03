@@ -9,9 +9,7 @@ object UrlUtils {
     val mediaSuffixes = listOf(".jpg", ".jpeg", ".png", ".gif", ".webp")
 
 
-    fun extractUrls(extractFrom: String): List<MatchResult> {
-        return urlPattern.findAll(extractFrom).toList()
-    }
+    fun extractUrls(extractFrom: String) = urlPattern.findAll(extractFrom).toList()
 
     fun String.removeTrailingSlashes() = this.trim().dropLastWhile { lastChar -> lastChar == '/' }
 
