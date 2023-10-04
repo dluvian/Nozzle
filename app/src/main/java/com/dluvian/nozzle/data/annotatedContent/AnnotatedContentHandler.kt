@@ -20,12 +20,14 @@ import com.dluvian.nozzle.data.utils.AnnotatedStringUtils.pushAnnotatedString
 import com.dluvian.nozzle.data.utils.AnnotatedStringUtils.pushStyledUrlAnnotation
 import com.dluvian.nozzle.data.utils.HashtagUtils
 import com.dluvian.nozzle.data.utils.UrlUtils
+import com.dluvian.nozzle.data.utils.get80PercentTrue
 import com.dluvian.nozzle.model.Pubkey
 import com.dluvian.nozzle.model.nostr.Nevent
 import com.dluvian.nozzle.model.nostr.NeventNostrId
 import com.dluvian.nozzle.model.nostr.NoteNostrId
 import com.dluvian.nozzle.model.nostr.NprofileNostrId
 import com.dluvian.nozzle.model.nostr.NpubNostrId
+import java.util.Collections
 
 private const val TAG = "AnnotatedContentHandler"
 
@@ -43,11 +45,18 @@ class AnnotatedContentHandler : IAnnotatedContentHandler {
     private val mentionStyle = SpanStyle(color = Color.Blue)
     private val hashtagStyle = SpanStyle(color = Color.Blue)
 
+    private val cache: MutableMap<String, AnnotatedString> =
+        Collections.synchronizedMap(mutableMapOf())
+
     override fun annotateContent(
         content: String,
         mentionedNamesByPubkey: Map<Pubkey, String>
     ): AnnotatedString {
         if (content.isEmpty()) return AnnotatedString("")
+        val cached = cache[content]
+        if (cached != null && (mentionedNamesByPubkey.isEmpty() || get80PercentTrue())) {
+            return cached
+        }
 
         val urls = UrlUtils.extractUrls(content)
         val nostrUris = MentionUtils.extractNostrUris(content)
@@ -61,7 +70,7 @@ class AnnotatedContentHandler : IAnnotatedContentHandler {
         tokens.sortBy { it.range.first }
 
         val editedContent = StringBuilder(content)
-        return buildAnnotatedString {
+        val result = buildAnnotatedString {
             for (token in tokens) {
                 val firstIndex = editedContent.indexOf(token.value)
                 if (firstIndex > 0) {
@@ -136,6 +145,8 @@ class AnnotatedContentHandler : IAnnotatedContentHandler {
             }
             append(editedContent)
         }
+        cache[content] = result
+        return result
     }
 
     @OptIn(ExperimentalTextApi::class)
