@@ -163,9 +163,9 @@ fun PostCard(
                 )
             }
 
-            post.mentionedPosts.forEach { mentionedPost ->
+            post.annotatedMentionedPosts.forEach { mentionedPost ->
                 Spacer(Modifier.height(spacing.medium))
-                MentionedPostCard(
+                AnnotatedMentionedPostCard(
                     post = mentionedPost,
                     onOpenProfile = onOpenProfile,
                     onNavigateToThread = onNavigateToThread,

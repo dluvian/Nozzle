@@ -131,7 +131,7 @@ class AppContainer(context: Context) {
 
     val clickedMediaUrlCache: IClickedMediaUrlCache = ClickedMediaUrlCache()
 
-    private val annotatedContentHandler = AnnotatedContentHandler()
+    val annotatedContentHandler = AnnotatedContentHandler()
 
     private val postWithMetaProvider: IPostWithMetaProvider = PostWithMetaProvider(
         pubkeyProvider = keyManager,

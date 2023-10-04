@@ -11,7 +11,7 @@ import com.dluvian.nozzle.R
 import com.dluvian.nozzle.model.nostr.Metadata
 import com.dluvian.nozzle.ui.components.ContentCreationTopBar
 import com.dluvian.nozzle.ui.components.InputBox
-import com.dluvian.nozzle.ui.components.postCard.MentionedPostCard
+import com.dluvian.nozzle.ui.components.postCard.AnnotatedMentionedPostCard
 import com.dluvian.nozzle.ui.theme.spacing
 
 
@@ -41,7 +41,7 @@ fun PostScreen(
                 onChangeInput = onChangeContent
             )
             uiState.postToQuote?.let { quote ->
-                MentionedPostCard(
+                AnnotatedMentionedPostCard(
                     modifier = Modifier
                         .wrapContentHeight()
                         .padding(spacing.screenEdge),

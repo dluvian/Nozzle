@@ -10,7 +10,7 @@ data class PostWithMeta(
     val pubkey: String,
     val annotatedContent: AnnotatedString,
     val mediaUrls: List<String>,
-    val mentionedPosts: List<MentionedPost>,
+    val annotatedMentionedPosts: List<AnnotatedMentionedPost>,
     val name: String,
     val pictureUrl: String,
     val isLikedByMe: Boolean,

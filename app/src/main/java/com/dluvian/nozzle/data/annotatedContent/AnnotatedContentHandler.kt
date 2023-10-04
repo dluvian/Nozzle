@@ -20,6 +20,7 @@ import com.dluvian.nozzle.data.utils.AnnotatedStringUtils.pushAnnotatedString
 import com.dluvian.nozzle.data.utils.AnnotatedStringUtils.pushStyledUrlAnnotation
 import com.dluvian.nozzle.data.utils.HashtagUtils
 import com.dluvian.nozzle.data.utils.UrlUtils
+import com.dluvian.nozzle.model.Pubkey
 import com.dluvian.nozzle.model.nostr.Nevent
 import com.dluvian.nozzle.model.nostr.NeventNostrId
 import com.dluvian.nozzle.model.nostr.NoteNostrId
@@ -44,8 +45,10 @@ class AnnotatedContentHandler : IAnnotatedContentHandler {
 
     override fun annotateContent(
         content: String,
-        mentionedPubkeyToName: Map<String, String>
+        mentionedNamesByPubkey: Map<Pubkey, String>
     ): AnnotatedString {
+        if (content.isEmpty()) return AnnotatedString("")
+
         val urls = UrlUtils.extractUrls(content)
         val nostrUris = MentionUtils.extractNostrUris(content)
         val tokens = (urls + nostrUris).toMutableList()
@@ -80,7 +83,7 @@ class AnnotatedContentHandler : IAnnotatedContentHandler {
                 } else {
                     when (val nostrId = nostrUriToNostrId(token.value)) {
                         is NpubNostrId -> {
-                            val name = "@" + (mentionedPubkeyToName[nostrId.pubkeyHex]
+                            val name = "@" + (mentionedNamesByPubkey[nostrId.pubkeyHex]
                                 ?.ifBlank { getShortenedNpub(nostrId.npub) }
                                 ?: getShortenedNpub(nostrId.npub)
                                 ?: nostrId.npub)
@@ -93,7 +96,7 @@ class AnnotatedContentHandler : IAnnotatedContentHandler {
                         }
 
                         is NprofileNostrId -> {
-                            val name = "@" + (mentionedPubkeyToName[nostrId.pubkeyHex]
+                            val name = "@" + (mentionedNamesByPubkey[nostrId.pubkeyHex]
                                 ?.ifBlank { getShortenedNprofile(nostrId.nprofile) }
                                 ?: getShortenedNprofile(nostrId.nprofile)
                                 ?: nostrId.nprofile)

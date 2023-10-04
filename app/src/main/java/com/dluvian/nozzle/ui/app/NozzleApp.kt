@@ -110,6 +110,7 @@ fun NozzleApp(appContainer: AppContainer) {
                         personalProfileProvider = appContainer.personalProfileManager,
                         relayProvider = appContainer.relayProvider,
                         postPreparer = appContainer.postPreparer,
+                        annotatedContentHandler = appContainer.annotatedContentHandler,
                         postDao = appContainer.roomDb.postDao(),
                         hashtagDao = appContainer.roomDb.hashtagDao(),
                         context = LocalContext.current,

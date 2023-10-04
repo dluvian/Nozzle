@@ -17,6 +17,7 @@ import com.dluvian.nozzle.data.utils.LONG_DEBOUNCE
 import com.dluvian.nozzle.data.utils.NORMAL_DEBOUNCE
 import com.dluvian.nozzle.data.utils.SHORT_DEBOUNCE
 import com.dluvian.nozzle.data.utils.firstThenDistinctDebounce
+import com.dluvian.nozzle.model.AnnotatedMentionedPost
 import com.dluvian.nozzle.model.MentionedPost
 import com.dluvian.nozzle.model.PostWithMeta
 import com.dluvian.nozzle.model.helper.FeedInfo
@@ -129,7 +130,7 @@ class PostWithMetaProvider(
                 val isOneself = pubkeyProvider.isOneself(pubkey)
                 val annotatedContent = annotatedContentHandler.annotateContent(
                     content = it.postEntity.content,
-                    mentionedPubkeyToName = mentionedNamesAndPosts.mentionedNamesByPubkey
+                    mentionedNamesByPubkey = mentionedNamesAndPosts.mentionedNamesByPubkey
                 )
                 PostWithMeta(
                     entity = it.postEntity,
@@ -147,9 +148,9 @@ class PostWithMetaProvider(
                     trustScore = if (isOneself) null else trustScore[pubkey],
                     annotatedContent = annotatedContent,
                     mediaUrls = annotatedContentHandler.extractMediaLinks(annotatedContent),
-                    mentionedPosts = getMentionedPosts(
+                    annotatedMentionedPosts = getAnnotatedMentionedPosts(
                         annotatedContent = annotatedContent,
-                        mentionedPostsById = mentionedNamesAndPosts.mentionedPostsById
+                        mentionedNamesAndPosts = mentionedNamesAndPosts,
                     ),
                 )
             }
@@ -164,17 +165,13 @@ class PostWithMetaProvider(
         }
     }
 
-    private fun getMentionedPosts(
+    private fun getAnnotatedMentionedPosts(
         annotatedContent: AnnotatedString,
-        mentionedPostsById: Map<String, MentionedPost>
-    ): List<MentionedPost> {
+        mentionedNamesAndPosts: MentionedNamesAndPosts
+    ): List<AnnotatedMentionedPost> {
         return annotatedContentHandler.extractNevents(annotatedContent)
             .map { nevent ->
-                mentionedPostsById[nevent.eventId]?.let { post ->
-                    if (post.name.isNullOrEmpty()) {
-                        post.copy(name = getShortenedNpubFromPubkey(post.pubkey))
-                    } else post
-                }
+                val post = mentionedNamesAndPosts.mentionedPostsById[nevent.eventId]
                     ?: MentionedPost(
                         id = nevent.eventId,
                         pubkey = "",
@@ -183,6 +180,18 @@ class PostWithMetaProvider(
                         picture = "",
                         createdAt = 0L
                     )
+                val annotated = annotatedContentHandler.annotateContent(
+                    content = post.content,
+                    mentionedNamesByPubkey = mentionedNamesAndPosts.mentionedNamesByPubkey
+                )
+                val finalPost = if (post.name.isNullOrEmpty() && post.pubkey.isNotEmpty()) {
+                    post.copy(name = getShortenedNpubFromPubkey(post.pubkey))
+                } else post
+
+                AnnotatedMentionedPost(
+                    annotatedContent = annotated,
+                    mentionedPost = finalPost
+                )
             }
     }
 

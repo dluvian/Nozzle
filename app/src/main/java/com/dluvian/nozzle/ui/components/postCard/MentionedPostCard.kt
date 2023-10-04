@@ -14,8 +14,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.text.AnnotatedString
-import com.dluvian.nozzle.model.MentionedPost
+import com.dluvian.nozzle.model.AnnotatedMentionedPost
 import com.dluvian.nozzle.model.Oneself
 import com.dluvian.nozzle.ui.components.postCard.atoms.BorderedCard
 import com.dluvian.nozzle.ui.components.postCard.atoms.PostCardContentBase
@@ -26,8 +25,8 @@ import com.dluvian.nozzle.ui.theme.spacing
 
 
 @Composable
-fun MentionedPostCard(
-    post: MentionedPost,
+fun AnnotatedMentionedPostCard(
+    post: AnnotatedMentionedPost,
     modifier: Modifier = Modifier,
     onNavigateToId: (String) -> Unit,
     onOpenProfile: ((String) -> Unit)? = null,
@@ -37,7 +36,7 @@ fun MentionedPostCard(
         BorderedCard(
             modifier = Modifier
                 .fillMaxWidth()
-                .clickable { onNavigateToThread?.let { it(post.id) } }
+                .clickable { onNavigateToThread?.let { it(post.mentionedPost.id) } }
         ) {
             Column(modifier = Modifier.padding(spacing.large)) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
@@ -45,16 +44,16 @@ fun MentionedPostCard(
                         modifier = Modifier
                             .size(sizing.smallProfilePicture)
                             .clip(CircleShape),
-                        pictureUrl = post.picture.orEmpty(),
-                        pubkey = post.pubkey,
+                        pictureUrl = post.mentionedPost.picture.orEmpty(),
+                        pubkey = post.mentionedPost.pubkey,
                         trustType = Oneself, // TODO: Find correct trust type
                         onOpenProfile = onOpenProfile,
                     )
                     Spacer(modifier = Modifier.width(spacing.medium))
                     PostCardHeader(
-                        name = post.name.orEmpty(),
-                        pubkey = post.pubkey,
-                        createdAt = post.createdAt,
+                        name = post.mentionedPost.name.orEmpty(),
+                        pubkey = post.mentionedPost.pubkey,
+                        createdAt = post.mentionedPost.createdAt,
                         onOpenProfile = onOpenProfile
                     )
                 }
@@ -62,9 +61,9 @@ fun MentionedPostCard(
                     replyToName = null,
                     replyRelayHint = null,
                     relays = null,
-                    annotatedContent = AnnotatedString(post.content), // TODO: Annotate this
+                    annotatedContent = post.annotatedContent,
                     isCurrent = false,
-                    onNavigateToThread = { onNavigateToThread?.let { it(post.id) } },
+                    onNavigateToThread = { onNavigateToThread?.let { it(post.mentionedPost.id) } },
                     onNavigateToId = onNavigateToId,
                 )
             }

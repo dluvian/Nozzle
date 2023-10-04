@@ -179,7 +179,9 @@ class NozzleSubscriber(
         if (posts.isEmpty()) return
 
         val replyParentPubkeys = posts.mapNotNull { it.replyToPubkey }
-        val mentionedPostPubkeys = posts.flatMap { it.mentionedPosts }.map { it.pubkey }
+        val mentionedPostPubkeys = posts
+            .flatMap { it.annotatedMentionedPosts }
+            .map { it.mentionedPost.pubkey }
         val allPubkeys = (replyParentPubkeys + mentionedPostPubkeys).distinct()
         if (allPubkeys.isEmpty()) return
 

@@ -6,6 +6,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.dluvian.nozzle.R
+import com.dluvian.nozzle.data.annotatedContent.IAnnotatedContentHandler
 import com.dluvian.nozzle.data.nostr.INostrService
 import com.dluvian.nozzle.data.nostr.utils.EncodingUtils.createNeventUri
 import com.dluvian.nozzle.data.nostr.utils.EncodingUtils.nostrStrToNostrId
@@ -20,7 +21,7 @@ import com.dluvian.nozzle.data.room.entity.PostEntity
 import com.dluvian.nozzle.data.utils.listRelayStatuses
 import com.dluvian.nozzle.data.utils.toggleRelay
 import com.dluvian.nozzle.model.AllRelays
-import com.dluvian.nozzle.model.MentionedPost
+import com.dluvian.nozzle.model.AnnotatedMentionedPost
 import com.dluvian.nozzle.model.RelayActive
 import com.dluvian.nozzle.model.nostr.Event
 import kotlinx.coroutines.Dispatchers
@@ -36,7 +37,7 @@ data class PostViewModelState(
     val pubkey: String = "",
     val relayStatuses: List<RelayActive> = emptyList(),
     val isSendable: Boolean = false,
-    val postToQuote: MentionedPost? = null,
+    val postToQuote: AnnotatedMentionedPost? = null,
     val quoteRelays: Collection<String> = emptyList(),
 )
 
@@ -45,6 +46,7 @@ class PostViewModel(
     private val nostrService: INostrService,
     private val relayProvider: IRelayProvider,
     private val postPreparer: IPostPreparer,
+    private val annotatedContentHandler: IAnnotatedContentHandler,
     private val postDao: PostDao,
     private val hashtagDao: HashtagDao,
     context: Context,
@@ -66,7 +68,7 @@ class PostViewModel(
 
     private val isPreparing = AtomicBoolean(false)
     val onPrepareQuote: (String) -> Unit = local@{ postIdToQuote ->
-        if (isPreparing.get() || uiState.value.postToQuote?.id == postIdToQuote) return@local
+        if (isPreparing.get() || uiState.value.postToQuote?.mentionedPost?.id == postIdToQuote) return@local
         val nostrId = nostrStrToNostrId(postIdToQuote) ?: return@local
 
         isPreparing.set(true)
@@ -109,7 +111,10 @@ class PostViewModel(
         resetUI()
     }
 
-    private fun preparePost(postToQuote: MentionedPost?, relays: Collection<String> = emptyList()) {
+    private fun preparePost(
+        postToQuote: AnnotatedMentionedPost?,
+        relays: Collection<String> = emptyList()
+    ) {
         // TODO: USE FLOWS. This should not be needed
         metadataState = personalProfileProvider.getMetadataStateFlow()
         viewModelState.update {
@@ -124,19 +129,31 @@ class PostViewModel(
         }
     }
 
-    private suspend fun getCleanMentionedPost(postIdHex: String): MentionedPost? {
+    private suspend fun getCleanMentionedPost(postIdHex: String): AnnotatedMentionedPost? {
         val mentionedPost = postDao.getMentionedPost(postId = postIdHex) ?: return null
-        if (mentionedPost.name.isNullOrEmpty()) {
+        val annotatedContent = annotatedContentHandler.annotateContent(
+            content = mentionedPost.content,
+            mentionedNamesByPubkey = emptyMap() // TODO: Get mentioned names
+        )
+        val annotatedMentionedPost = AnnotatedMentionedPost(
+            annotatedContent = annotatedContent,
+            mentionedPost = mentionedPost
+        )
+        if (annotatedMentionedPost.mentionedPost.name.isNullOrEmpty()) {
             val shortenedNpub = getShortenedNpubFromPubkey(mentionedPost.pubkey)
-            return mentionedPost.copy(name = shortenedNpub)
+            return annotatedMentionedPost.copy(
+                mentionedPost = annotatedMentionedPost.mentionedPost.copy(
+                    name = shortenedNpub
+                )
+            )
         }
 
-        return mentionedPost
+        return annotatedMentionedPost
     }
 
     private fun sendPost(state: PostViewModelState): Event {
         val quote = getNewLineQuoteUri(
-            postIdToQuote = state.postToQuote?.id,
+            postIdToQuote = state.postToQuote?.mentionedPost?.id,
             relays = state.quoteRelays
         )
         val post = postPreparer.getCleanPostWithTagsAndMentions(content = state.content + quote)
@@ -190,6 +207,7 @@ class PostViewModel(
             nostrService: INostrService,
             relayProvider: IRelayProvider,
             postPreparer: IPostPreparer,
+            annotatedContentHandler: IAnnotatedContentHandler,
             postDao: PostDao,
             hashtagDao: HashtagDao,
             context: Context
@@ -201,6 +219,7 @@ class PostViewModel(
                     personalProfileProvider = personalProfileProvider,
                     relayProvider = relayProvider,
                     postPreparer = postPreparer,
+                    annotatedContentHandler = annotatedContentHandler,
                     postDao = postDao,
                     hashtagDao = hashtagDao,
                     context = context,
