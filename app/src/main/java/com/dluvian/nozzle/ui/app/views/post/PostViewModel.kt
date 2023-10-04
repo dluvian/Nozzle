@@ -164,7 +164,7 @@ class PostViewModel(
             content = post.content,
             mentions = post.mentions,
             hashtags = post.hashtags,
-            relays = selectedRelays
+            relays = selectedRelays // TODO: Add read relays of mentioned pubkeys
         )
     }
 
