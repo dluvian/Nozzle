@@ -20,7 +20,6 @@ import com.dluvian.nozzle.data.utils.AnnotatedStringUtils.pushAnnotatedString
 import com.dluvian.nozzle.data.utils.AnnotatedStringUtils.pushStyledUrlAnnotation
 import com.dluvian.nozzle.data.utils.HashtagUtils
 import com.dluvian.nozzle.data.utils.UrlUtils
-import com.dluvian.nozzle.data.utils.get80PercentTrue
 import com.dluvian.nozzle.model.Pubkey
 import com.dluvian.nozzle.model.nostr.Nevent
 import com.dluvian.nozzle.model.nostr.NeventNostrId
@@ -28,6 +27,7 @@ import com.dluvian.nozzle.model.nostr.NoteNostrId
 import com.dluvian.nozzle.model.nostr.NprofileNostrId
 import com.dluvian.nozzle.model.nostr.NpubNostrId
 import java.util.Collections
+import kotlin.random.Random
 
 private const val TAG = "AnnotatedContentHandler"
 
@@ -54,7 +54,7 @@ class AnnotatedContentHandler : IAnnotatedContentHandler {
     ): AnnotatedString {
         if (content.isEmpty()) return AnnotatedString("")
         val cached = cache[content]
-        if (cached != null && (mentionedNamesByPubkey.isEmpty() || get80PercentTrue())) {
+        if (cached != null && (mentionedNamesByPubkey.isEmpty() || Random.nextBoolean())) {
             return cached
         }
 
