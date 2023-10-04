@@ -80,6 +80,6 @@ interface Nip65Dao {
     )
     suspend fun deleteOrphaned(excludePubkeys: Collection<String>): Int
 
-    @Query("SELECT pubkey FROM nip65 WHERE pubkey IN (:pubkeys)")
+    @Query("SELECT DISTINCT(pubkey) FROM nip65 WHERE pubkey IN (:pubkeys)")
     suspend fun filterPubkeysWithNip65(pubkeys: Collection<String>): List<String>
 }
