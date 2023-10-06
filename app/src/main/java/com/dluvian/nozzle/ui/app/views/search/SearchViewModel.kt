@@ -41,10 +41,6 @@ class SearchViewModel(private val nip05Resolver: INip05Resolver) : ViewModel() {
             viewModelState.value
         )
 
-    init {
-        Log.i(TAG, "Initialize SearchViewModel")
-    }
-
     val onSearch: () -> Unit = {
         if (uiState.value.input.isNotBlank()) {
             val trimmed = uiState.value.input.trim().removePrefix(URI)

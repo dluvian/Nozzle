@@ -33,6 +33,12 @@ class NozzleNavActions(private val navController: NavHostController) {
         }
     }
 
+    val navigateToRelayEditor: () -> Unit = {
+        navController.navigate(NozzleRoute.RELAY_EDITOR) {
+            setSimpleNavOptions(optionsBuilder = this)
+        }
+    }
+
     val navigateToKeys: () -> Unit = {
         navController.navigate(NozzleRoute.KEYS) {
             setSimpleNavOptions(optionsBuilder = this)

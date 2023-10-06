@@ -26,6 +26,7 @@ import com.dluvian.nozzle.ui.app.views.hashtag.HashtagRoute
 import com.dluvian.nozzle.ui.app.views.keys.KeysRoute
 import com.dluvian.nozzle.ui.app.views.post.PostRoute
 import com.dluvian.nozzle.ui.app.views.profile.ProfileRoute
+import com.dluvian.nozzle.ui.app.views.relayEditor.RelayEditorRoute
 import com.dluvian.nozzle.ui.app.views.reply.ReplyRoute
 import com.dluvian.nozzle.ui.app.views.search.SearchRoute
 import com.dluvian.nozzle.ui.app.views.thread.ThreadRoute
@@ -92,6 +93,12 @@ fun NozzleNavGraph(
             SearchRoute(
                 searchViewModel = vmContainer.searchViewModel,
                 onNavigateToId = navActions.navigateToId,
+                onGoBack = navActions.popStack,
+            )
+        }
+        composable(NozzleRoute.RELAY_EDITOR) {
+            RelayEditorRoute(
+                relayEditorViewModel = vmContainer.relayEditorViewModel,
                 onGoBack = navActions.popStack,
             )
         }

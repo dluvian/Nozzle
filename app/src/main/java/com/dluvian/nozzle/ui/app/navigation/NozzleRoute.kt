@@ -5,6 +5,7 @@ object NozzleRoute {
     const val EDIT_PROFILE = "edit_profile"
     const val FEED = "feed"
     const val SEARCH = "search"
+    const val RELAY_EDITOR = "relay_editor"
     const val KEYS = "keys"
     const val THREAD = "thread"
     const val REPLY = "reply"

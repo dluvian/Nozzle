@@ -27,6 +27,7 @@ import com.dluvian.nozzle.ui.app.views.hashtag.HashtagViewModel
 import com.dluvian.nozzle.ui.app.views.keys.KeysViewModel
 import com.dluvian.nozzle.ui.app.views.post.PostViewModel
 import com.dluvian.nozzle.ui.app.views.profile.ProfileViewModel
+import com.dluvian.nozzle.ui.app.views.relayEditor.RelayEditorViewModel
 import com.dluvian.nozzle.ui.app.views.reply.ReplyViewModel
 import com.dluvian.nozzle.ui.app.views.search.SearchViewModel
 import com.dluvian.nozzle.ui.app.views.thread.ThreadViewModel
@@ -127,6 +128,10 @@ fun NozzleApp(appContainer: AppContainer) {
                         postCardInteractor = appContainer.postCardInteractor,
                         feedProvider = appContainer.feedProvider,
                         relayProvider = appContainer.relayProvider,
+                    )
+                ),
+                relayEditorViewModel = viewModel(
+                    factory = RelayEditorViewModel.provideFactory(
                     )
                 ),
             )
