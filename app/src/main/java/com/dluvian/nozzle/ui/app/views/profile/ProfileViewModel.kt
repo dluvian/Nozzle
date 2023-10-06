@@ -75,10 +75,6 @@ class ProfileViewModel(
 
     private val recommendedRelays = mutableListOf<String>()
 
-    init {
-        Log.i(TAG, "Initialize ProfileViewModel")
-    }
-
     private val failedAppendAttempts = AtomicInteger(0)
 
     private val isSettingPubkey = AtomicBoolean(false)

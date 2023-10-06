@@ -36,7 +36,6 @@ class NozzleDrawerViewModel(
         )
 
     init {
-        Log.i(TAG, "Initialize NozzleDrawerViewModel")
         useCachedValues()
         nozzleSubscriber.subscribePersonalProfile()
     }

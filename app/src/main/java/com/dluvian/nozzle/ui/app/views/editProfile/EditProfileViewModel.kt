@@ -46,7 +46,6 @@ class EditProfileViewModel(
         )
 
     init {
-        Log.i(TAG, "Initialize EditProfileViewModel")
         useCachedValues()
     }
 

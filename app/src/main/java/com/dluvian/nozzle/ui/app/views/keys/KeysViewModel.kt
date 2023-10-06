@@ -46,7 +46,6 @@ class KeysViewModel(
         )
 
     init {
-        Log.i(TAG, "Initialize KeysViewModel")
         useCachedValues()
     }
 
