@@ -72,8 +72,7 @@ class Client(private val httpClient: OkHttpClient) {
 
         val ids = mutableListOf<String>()
         relays?.let { addRelays(relays) }
-        sockets.entries
-            .filter { relays?.contains(it.key) ?: true }
+        filterSocketsByRelays(relays = relays)
             .forEach {
                 val subscriptionId = UUID.randomUUID().toString()
                 ids.add(subscriptionId)
@@ -108,13 +107,7 @@ class Client(private val httpClient: OkHttpClient) {
         val request = """["EVENT",${event.toJson()}]"""
         Log.i(TAG, "Publish to ${relays?.size} relays: $request")
         relays?.let { addRelays(it) }
-        synchronized(sockets) {
-            for (relay in relays ?: sockets.keys) {
-                val socket = sockets[relay]
-                if (socket == null) Log.w(TAG, "Relay $relay is not registered")
-                else socket.send(request)
-            }
-        }
+        filterSocketsByRelays(relays = relays).forEach { it.value.send(request) }
     }
 
     fun addRelays(urls: Collection<String>) {
@@ -143,7 +136,6 @@ class Client(private val httpClient: OkHttpClient) {
 
     fun setListener(listener: NostrListener) {
         Log.i(TAG, "Set listener")
-
         nostrListener = listener
     }
 
@@ -177,5 +169,9 @@ class Client(private val httpClient: OkHttpClient) {
             TAG,
             "Removed socket of $removedSubCount subscriptions"
         )
+    }
+
+    private fun filterSocketsByRelays(relays: Collection<String>?): List<Map.Entry<String, WebSocket>> {
+        return sockets.entries.filter { relays?.contains(it.key) ?: true }
     }
 }

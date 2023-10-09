@@ -13,6 +13,7 @@ fun RelayEditorRoute(
 
     RelayEditorScreen(
         uiState = uiState,
+        onSaveRelays = relayEditorViewModel.onSaveRelays,
         onGoBack = onGoBack,
     )
 }

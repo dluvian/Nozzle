@@ -9,10 +9,14 @@ import com.dluvian.nozzle.model.nostr.NeventNostrId
 import com.dluvian.nozzle.model.nostr.NoteNostrId
 import com.dluvian.nozzle.model.nostr.NprofileNostrId
 import com.dluvian.nozzle.model.nostr.NpubNostrId
+import com.dluvian.nozzle.ui.app.VMContainer
 
 private const val TAG = "NozzleNavActions"
 
-class NozzleNavActions(private val navController: NavHostController) {
+class NozzleNavActions(
+    private val navController: NavHostController,
+    private val vmContainer: VMContainer
+) {
     val navigateToProfile: (String) -> Unit = { profileId ->
         if (profileId.isNotEmpty()) {
             navController.navigate("${NozzleRoute.PROFILE}/$profileId") {
@@ -34,6 +38,7 @@ class NozzleNavActions(private val navController: NavHostController) {
     }
 
     val navigateToRelayEditor: () -> Unit = {
+        vmContainer.relayEditorViewModel.onOpenRelayEditor()
         navController.navigate(NozzleRoute.RELAY_EDITOR) {
             setSimpleNavOptions(optionsBuilder = this)
         }

@@ -4,7 +4,7 @@ import com.dluvian.nozzle.data.getDefaultRelays
 import com.dluvian.nozzle.data.provider.IPubkeyProvider
 import com.dluvian.nozzle.data.provider.IRelayProvider
 import com.dluvian.nozzle.data.room.dao.Nip65Dao
-import com.dluvian.nozzle.data.room.entity.Nip65Entity
+import com.dluvian.nozzle.data.room.helper.Nip65Relay
 import com.dluvian.nozzle.data.utils.NORMAL_DEBOUNCE
 import com.dluvian.nozzle.data.utils.firstThenDistinctDebounce
 import com.dluvian.nozzle.model.Pubkey
@@ -45,6 +45,11 @@ class RelayProvider(
             .ifEmpty { getDefaultRelays() }
     }
 
+    override fun getNip65Relays(): List<Nip65Relay> {
+        updateFlow()
+        return personalNip65State.value.ifEmpty { getDefaultNip65s() }
+    }
+
     override suspend fun getReadRelaysOfPubkey(pubkey: String): List<String> {
         return nip65Dao.getReadRelaysOfPubkey(pubkey = pubkey)
     }
@@ -59,23 +64,23 @@ class RelayProvider(
 
     private fun updateFlow() {
         // TODO: Obsolete this check. See TODO above
-        if (personalPubkey != pubkeyProvider.getPubkey()) {
-            personalPubkey = pubkeyProvider.getPubkey()
-            personalNip65State = nip65Dao.getRelaysOfPubkeyFlow(personalPubkey)
-                .firstThenDistinctDebounce(NORMAL_DEBOUNCE)
-                .stateIn(
-                    scope,
-                    SharingStarted.Eagerly,
-                    getDefaultRelays().map {
-                        Nip65Entity(
-                            pubkey = pubkeyProvider.getPubkey(),
-                            url = it,
-                            isRead = true,
-                            isWrite = true,
-                            createdAt = 0L
-                        )
-                    }
-                )
-        }
+        if (personalPubkey == pubkeyProvider.getPubkey()) return
+        personalPubkey = pubkeyProvider.getPubkey()
+        personalNip65State = nip65Dao.getRelaysOfPubkeyFlow(personalPubkey)
+            .firstThenDistinctDebounce(NORMAL_DEBOUNCE)
+            .stateIn(
+                scope,
+                SharingStarted.Eagerly,
+                getDefaultNip65s()
+            )
     }
+
+    private fun getDefaultNip65s() = getDefaultRelays()
+        .map {
+            Nip65Relay(
+                url = it,
+                isRead = true,
+                isWrite = true,
+            )
+        }
 }

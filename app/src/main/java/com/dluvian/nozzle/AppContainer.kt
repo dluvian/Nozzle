@@ -148,6 +148,7 @@ class AppContainer(context: Context) {
         postWithMetaProvider = postWithMetaProvider,
         nozzleSubscriber = nozzleSubscriber,
         contactListProvider = contactListProvider,
+        pubkeyProvider = keyManager,
         postDao = roomDb.postDao(),
     )
 

@@ -3,6 +3,7 @@ package com.dluvian.nozzle.data.nostr
 import android.util.Log
 import com.dluvian.nozzle.data.eventProcessor.IEventProcessor
 import com.dluvian.nozzle.data.manager.IKeyManager
+import com.dluvian.nozzle.data.room.helper.Nip65Relay
 import com.dluvian.nozzle.model.nostr.Event
 import com.dluvian.nozzle.model.nostr.Filter
 import com.dluvian.nozzle.model.nostr.Metadata
@@ -66,8 +67,18 @@ class NostrService(
             metadata = metadata,
             keys = keyManager.getKeys(),
         )
-        Log.i(TAG, "new profile is valid ${event.verify()}")
         client.publishToRelays(event = event, relays = relays)
+
+        return event
+    }
+
+    override fun publishNip65(nip65Relays: List<Nip65Relay>): Event {
+        val event = Event.createNip65EventEvent(
+            nip65Relays = nip65Relays,
+            keys = keyManager.getKeys(),
+        )
+        client.addRelays(nip65Relays.map { it.url })
+        client.publishToRelays(event = event)
 
         return event
     }

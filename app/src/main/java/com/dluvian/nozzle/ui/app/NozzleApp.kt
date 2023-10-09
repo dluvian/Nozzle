@@ -132,13 +132,15 @@ fun NozzleApp(appContainer: AppContainer) {
                 ),
                 relayEditorViewModel = viewModel(
                     factory = RelayEditorViewModel.provideFactory(
+                        nostrService = appContainer.nostrService,
+                        relayProvider = appContainer.relayProvider
                     )
                 ),
             )
 
             val navController = rememberNavController()
             val navActions = remember(navController) {
-                NozzleNavActions(navController)
+                NozzleNavActions(navController = navController, vmContainer = vmContainer)
             }
 
             val coroutineScope = rememberCoroutineScope()
