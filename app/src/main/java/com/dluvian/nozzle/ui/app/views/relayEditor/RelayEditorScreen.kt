@@ -1,15 +1,13 @@
 package com.dluvian.nozzle.ui.app.views.relayEditor
 
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import com.dluvian.nozzle.R
+import com.dluvian.nozzle.ui.components.AddingTextFieldWithButton
 import com.dluvian.nozzle.ui.components.CheckTopBarButton
 import com.dluvian.nozzle.ui.components.ReturnableTopBar
 
@@ -17,6 +15,7 @@ import com.dluvian.nozzle.ui.components.ReturnableTopBar
 fun RelayEditorScreen(
     uiState: RelayEditorViewModelState,
     onSaveRelays: () -> Unit,
+    onAddRelay: (String) -> Boolean,
     onGoBack: () -> Unit,
 ) {
     Column {
@@ -29,13 +28,15 @@ fun RelayEditorScreen(
                     onCheck = onSaveRelays,
                 )
             })
-        LazyColumn(
-            modifier = Modifier.fillMaxSize(),
-            state = rememberLazyListState()
+        Text(text = stringResource(id = R.string.my_relays))
+        Column(
+            modifier = Modifier.fillMaxWidth(),
         ) {
-            itemsIndexed(items = uiState.relays) { index, relay ->
+            for (relay in uiState.relays) {
                 Text(text = "${relay.url} r:${relay.isRead} w:${relay.isWrite}")
             }
         }
+        Text(text = stringResource(id = R.string.add_relay))
+        AddingTextFieldWithButton(isError = uiState.isError, onAdd = onAddRelay)
     }
 }

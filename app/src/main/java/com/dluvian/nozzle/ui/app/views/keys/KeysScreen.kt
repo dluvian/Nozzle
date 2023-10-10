@@ -101,16 +101,15 @@ private fun Privkey(
     ChangeableTextField(
         modifier = Modifier.fillMaxWidth(),
         value = privkey,
-        isError = isInvalid,
         maxLines = 4,
-        placeholder = stringResource(id = R.string.enter_a_private_key),
+        isError = isInvalid,
         errorLabel = stringResource(id = R.string.invalid_private_key),
+        placeholder = stringResource(id = R.string.enter_a_private_key),
         isPassword = !isVisible,
         onChangeValue = onChangePrivkey,
-        trailingIcon = {
-            VisibilityIcon(
-                isVisible = isVisible,
-                onToggle = { isVisible = !isVisible })
-        },
-    )
+    ) {
+        VisibilityIcon(
+            isVisible = isVisible,
+            onToggle = { isVisible = !isVisible })
+    }
 }

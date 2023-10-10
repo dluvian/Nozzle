@@ -20,6 +20,7 @@ import kotlinx.coroutines.launch
 data class RelayEditorViewModelState(
     val relays: List<Nip65Relay> = listOf(),
     val hasChanges: Boolean = false,
+    val isError: Boolean = false,
 )
 
 class RelayEditorViewModel(
@@ -42,7 +43,8 @@ class RelayEditorViewModel(
         uiFlow.update {
             RelayEditorViewModelState(
                 relays = originalRelays,
-                hasChanges = false
+                hasChanges = false,
+                isError = false
             )
         }
     }
@@ -54,13 +56,17 @@ class RelayEditorViewModel(
     }
 
     val onAddRelay: (String) -> Boolean = local@{ url ->
-        if (!url.isWebsocketUrl()) return@local false
+        if (!url.isWebsocketUrl()) {
+            uiFlow.update { it.copy(isError = true) }
+            return@local false
+        }
 
         val relays = uiFlow.value.relays + Nip65Relay(url = url, isRead = true, isWrite = true)
         uiFlow.update {
             it.copy(
                 relays = relays,
-                hasChanges = relays != originalRelays
+                hasChanges = relays != originalRelays,
+                isError = false
             )
         }
         return@local true

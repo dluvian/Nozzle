@@ -95,6 +95,8 @@
     <string name="loaded_media">Loaded media</string>
     <string name="failed_to_resolve_nip05">Failed to resolve nip05</string>
     <string name="reply_published">Reply published</string>
+    <string name="my_relays">My Relays</string>
+    <string name="add_relay">Add Relay</string>
     <plurals name="other_relays">
         <item quantity="one">other</item>
         <item quantity="other">others</item>
