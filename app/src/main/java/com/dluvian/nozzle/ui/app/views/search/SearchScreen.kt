@@ -7,8 +7,11 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
@@ -28,6 +31,7 @@ fun SearchScreen(
     onResetUI: () -> Unit,
     onGoBack: () -> Unit,
 ) {
+    val focusRequester = remember { FocusRequester() }
     Column {
         ReturnableTopBar(
             text = stringResource(id = R.string.search),
@@ -50,6 +54,7 @@ fun SearchScreen(
             input = uiState.input,
             isInvalidNostrId = uiState.isInvalidNostrId,
             isInvalidNip05 = uiState.isInvalidNip05,
+            focusRequester = focusRequester,
             onChangeInput = onChangeInput,
             onSearch = onSearch
         )
@@ -61,6 +66,9 @@ fun SearchScreen(
     DisposableEffect(true) {
         onDispose { onResetUI() }
     }
+    LaunchedEffect(Unit) {
+        focusRequester.requestFocus()
+    }
 }
 
 @Composable
@@ -68,11 +76,14 @@ private fun SearchBar(
     input: String,
     isInvalidNostrId: Boolean,
     isInvalidNip05: Boolean,
+    focusRequester: FocusRequester,
     onChangeInput: (String) -> Unit,
     onSearch: () -> Unit,
 ) {
     ChangeableTextField(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .focusRequester(focusRequester),
         value = input,
         isError = isInvalidNostrId || isInvalidNip05,
         maxLines = Int.MAX_VALUE,
