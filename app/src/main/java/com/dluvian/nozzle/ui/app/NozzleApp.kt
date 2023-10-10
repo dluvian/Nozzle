@@ -133,7 +133,9 @@ fun NozzleApp(appContainer: AppContainer) {
                 relayEditorViewModel = viewModel(
                     factory = RelayEditorViewModel.provideFactory(
                         nostrService = appContainer.nostrService,
-                        relayProvider = appContainer.relayProvider
+                        relayProvider = appContainer.relayProvider,
+                        pubkeyProvider = appContainer.keyManager,
+                        nip65Dao = appContainer.roomDb.nip65Dao()
                     )
                 ),
             )
