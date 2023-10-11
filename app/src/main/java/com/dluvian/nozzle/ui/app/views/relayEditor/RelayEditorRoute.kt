@@ -15,6 +15,7 @@ fun RelayEditorRoute(
         uiState = uiState,
         onSaveRelays = relayEditorViewModel.onSaveRelays,
         onAddRelay = relayEditorViewModel.onAddRelay,
+        onDeleteRelay = relayEditorViewModel.onDeleteRelay,
         onGoBack = onGoBack,
     )
 }

@@ -3,7 +3,7 @@ package com.dluvian.nozzle.ui.components
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.Button
-import androidx.compose.material.TextField
+import androidx.compose.material.OutlinedTextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -21,7 +21,7 @@ fun AddingTextFieldWithButton(
     onAdd: (String) -> Boolean
 ) {
     var text by remember { mutableStateOf(TextFieldValue("")) }
-    TextField(
+    OutlinedTextField(
         modifier = modifier,
         value = text,
         isError = isError,

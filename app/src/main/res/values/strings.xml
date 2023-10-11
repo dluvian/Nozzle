@@ -97,6 +97,9 @@
     <string name="reply_published">Reply published</string>
     <string name="my_relays">My Relays</string>
     <string name="add_relay">Add Relay</string>
+    <string name="delete">Delete</string>
+    <string name="expand">Expand</string>
+    <string name="collapse">Collapse</string>
     <plurals name="other_relays">
         <item quantity="one">other</item>
         <item quantity="other">others</item>

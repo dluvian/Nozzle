@@ -4,6 +4,7 @@ package com.dluvian.nozzle.data.utils
 object UrlUtils {
     private val urlPattern = Regex(pattern = "https?://[^\\s]+")
     private val wssPattern = Regex("^wss://[^\\s]+\$")
+    const val WEBSOCKET_PREFIX = "wss://"
 
     val mediaSuffixes = listOf(".jpg", ".jpeg", ".png", ".gif", ".webp")
 
@@ -13,6 +14,6 @@ object UrlUtils {
 
     fun String.isWebsocketUrl() = wssPattern.matches(this)
 
-    fun String.removeWebsocketPrefix() = this.removePrefix("wss://")
+    fun String.removeWebsocketPrefix() = this.removePrefix(WEBSOCKET_PREFIX)
 }
 

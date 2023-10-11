@@ -2,6 +2,7 @@ package com.dluvian.nozzle.ui.components
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.Icon
 import androidx.compose.material.LocalContentAlpha
 import androidx.compose.material.LocalContentColor
@@ -9,6 +10,9 @@ import androidx.compose.material.MaterialTheme.colors
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ContentCopy
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.ExpandLess
+import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.FormatQuote
@@ -18,6 +22,7 @@ import androidx.compose.material.icons.outlined.Chat
 import androidx.compose.material.icons.rounded.Search
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import com.dluvian.nozzle.R
@@ -111,6 +116,54 @@ fun AddIcon(
     Icon(
         modifier = modifier,
         imageVector = Icons.Default.Add,
+        contentDescription = description,
+    )
+}
+
+@Composable
+fun DeleteIcon(
+    modifier: Modifier = Modifier,
+    onDelete: () -> Unit,
+    description: String? = stringResource(id = R.string.delete),
+) {
+    Icon(
+        modifier = modifier
+            .clip(CircleShape)
+            .clickable(onClick = onDelete),
+        imageVector = Icons.Default.Delete,
+        contentDescription = description,
+    )
+}
+
+@Composable
+fun ExpandAndCollapseIcon(
+    isExpanded: Boolean,
+    modifier: Modifier = Modifier,
+) {
+    if (isExpanded) CollapseIcon(modifier = modifier)
+    else ExpandIcon(modifier = modifier)
+}
+
+@Composable
+private fun ExpandIcon(
+    modifier: Modifier = Modifier,
+    description: String? = stringResource(id = R.string.expand),
+) {
+    Icon(
+        modifier = modifier,
+        imageVector = Icons.Default.ExpandMore,
+        contentDescription = description,
+    )
+}
+
+@Composable
+private fun CollapseIcon(
+    modifier: Modifier = Modifier,
+    description: String? = stringResource(id = R.string.collapse),
+) {
+    Icon(
+        modifier = modifier,
+        imageVector = Icons.Default.ExpandLess,
         contentDescription = description,
     )
 }
