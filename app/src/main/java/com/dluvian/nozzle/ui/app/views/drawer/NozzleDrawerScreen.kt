@@ -18,6 +18,7 @@ import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.material.TextButton
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.CellTower
 import androidx.compose.material.icons.rounded.Key
 import androidx.compose.material.icons.rounded.Newspaper
 import androidx.compose.material.icons.rounded.Search
@@ -68,6 +69,7 @@ fun NozzleDrawerScreen(
             modifier = Modifier.padding(spacing.screenEdge),
             navigateToFeed = navActions.navigateToFeed,
             navigateToSearch = navActions.navigateToSearch,
+            navigateToRelayEditor = navActions.navigateToRelayEditor,
             navigateToKeys = navActions.navigateToKeys,
             closeDrawer = closeDrawer
         )
@@ -130,6 +132,7 @@ private fun ProfileRow(
 private fun MainRows(
     navigateToFeed: () -> Unit,
     navigateToSearch: () -> Unit,
+    navigateToRelayEditor: () -> Unit,
     navigateToKeys: () -> Unit,
     closeDrawer: () -> Unit,
     modifier: Modifier,
@@ -148,6 +151,14 @@ private fun MainRows(
             label = stringResource(id = R.string.search),
             action = {
                 navigateToSearch()
+                closeDrawer()
+            }
+        )
+        DrawerRow(
+            imageVector = Icons.Rounded.CellTower,
+            label = stringResource(id = R.string.relays),
+            action = {
+                navigateToRelayEditor()
                 closeDrawer()
             }
         )

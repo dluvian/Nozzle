@@ -292,7 +292,7 @@ private fun ReplyAction(
 ) {
     Row(modifier = modifier, verticalAlignment = Alignment.CenterVertically) {
         ReplyIcon(modifier = Modifier
-            .size(sizing.smallIcon)
+            .size(sizing.smallItem)
             .clip(RoundedCornerShape(spacing.medium))
             .clickable {
                 onPrepareReply(postToReplyTo)
@@ -318,7 +318,7 @@ private fun QuoteAction(
     ) {
         QuoteIcon(
             modifier = Modifier
-                .size(sizing.smallIcon)
+                .size(sizing.smallItem)
                 .clip(RoundedCornerShape(spacing.medium))
                 .clickable(onClick = onNavigateToQuote)
         )
@@ -338,7 +338,7 @@ private fun LikeAction(
         verticalAlignment = Alignment.CenterVertically
     ) {
         val iconModifier = Modifier
-            .size(sizing.smallIcon)
+            .size(sizing.smallItem)
             .clip(RoundedCornerShape(spacing.medium))
         LikeIcon(
             modifier = if (isLikedByMe) iconModifier.clickable { }

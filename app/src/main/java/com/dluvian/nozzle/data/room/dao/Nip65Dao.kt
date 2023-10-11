@@ -2,6 +2,7 @@ package com.dluvian.nozzle.data.room.dao
 
 import androidx.room.*
 import com.dluvian.nozzle.data.room.entity.Nip65Entity
+import com.dluvian.nozzle.data.room.helper.Nip65Relay
 import com.dluvian.nozzle.model.Pubkey
 import com.dluvian.nozzle.model.Relay
 import kotlinx.coroutines.flow.Flow
@@ -66,11 +67,11 @@ interface Nip65Dao {
     suspend fun getWriteRelaysOfPubkey(pubkey: String): List<String>
 
     @Query(
-        "SELECT * " +
+        "SELECT url, isRead, isWrite " +
                 "FROM nip65 " +
                 "WHERE pubkey = :pubkey"
     )
-    fun getRelaysOfPubkeyFlow(pubkey: String): Flow<List<Nip65Entity>>
+    fun getRelaysOfPubkeyFlow(pubkey: String): Flow<List<Nip65Relay>>
 
     // TODO: No exclude. This should exclude pubkeys in user acc table
     @Query(
@@ -82,4 +83,13 @@ interface Nip65Dao {
 
     @Query("SELECT DISTINCT(pubkey) FROM nip65 WHERE pubkey IN (:pubkeys)")
     suspend fun filterPubkeysWithNip65(pubkeys: Collection<String>): List<String>
+
+    @Query(
+        "SELECT url " +
+                "FROM nip65 " +
+                "WHERE pubkey IN (:pubkeys) " +
+                "GROUP BY url " +
+                "ORDER BY COUNT(url) DESC"
+    )
+    suspend fun getRelaysOfPubkeys(pubkeys: Collection<String>): List<Relay>
 }

@@ -275,7 +275,7 @@ private fun CopyableNprofile(
         verticalAlignment = Alignment.CenterVertically
     ) {
         CopyIcon(
-            modifier = Modifier.size(sizing.smallIcon),
+            modifier = Modifier.size(sizing.smallItem),
             description = stringResource(id = R.string.copy_pubkey),
             tint = Color.LightGray
         )

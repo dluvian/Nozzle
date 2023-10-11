@@ -33,7 +33,7 @@ fun ChangeableTextField(
     colors: TextFieldColors = TextFieldDefaults.textFieldColors(),
     onChangeValue: (String) -> Unit,
     onImeAction: (() -> Unit)? = null,
-    trailingIcon: @Composable (() -> Unit)? = null,
+    trailingIcon: @Composable() (() -> Unit)? = null,
 ) {
     val focusManager = LocalFocusManager.current
     var newValue by remember { mutableStateOf(TextFieldValue(value)) }

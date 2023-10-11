@@ -47,14 +47,14 @@ fun InputBox(
                     .verticalScroll(rememberScrollState())
                     .focusRequester(focusRequester),
                 maxLines = Int.MAX_VALUE,
+                keyboardImeAction = ImeAction.Default,
+                placeholder = placeholder,
                 colors = TextFieldDefaults.textFieldColors(
                     backgroundColor = MaterialTheme.colors.background,
                     focusedIndicatorColor = Color.Transparent,
                     unfocusedIndicatorColor = Color.Transparent
                 ),
-                placeholder = placeholder,
-                onChangeValue = onChangeInput,
-                keyboardImeAction = ImeAction.Default
+                onChangeValue = onChangeInput
             )
         }
     }

@@ -27,6 +27,7 @@ import com.dluvian.nozzle.ui.app.views.hashtag.HashtagViewModel
 import com.dluvian.nozzle.ui.app.views.keys.KeysViewModel
 import com.dluvian.nozzle.ui.app.views.post.PostViewModel
 import com.dluvian.nozzle.ui.app.views.profile.ProfileViewModel
+import com.dluvian.nozzle.ui.app.views.relayEditor.RelayEditorViewModel
 import com.dluvian.nozzle.ui.app.views.reply.ReplyViewModel
 import com.dluvian.nozzle.ui.app.views.search.SearchViewModel
 import com.dluvian.nozzle.ui.app.views.thread.ThreadViewModel
@@ -129,11 +130,19 @@ fun NozzleApp(appContainer: AppContainer) {
                         relayProvider = appContainer.relayProvider,
                     )
                 ),
+                relayEditorViewModel = viewModel(
+                    factory = RelayEditorViewModel.provideFactory(
+                        nostrService = appContainer.nostrService,
+                        relayProvider = appContainer.relayProvider,
+                        pubkeyProvider = appContainer.keyManager,
+                        nip65Dao = appContainer.roomDb.nip65Dao()
+                    )
+                ),
             )
 
             val navController = rememberNavController()
             val navActions = remember(navController) {
-                NozzleNavActions(navController)
+                NozzleNavActions(navController = navController, vmContainer = vmContainer)
             }
 
             val coroutineScope = rememberCoroutineScope()

@@ -6,6 +6,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.dluvian.nozzle.data.APPEND_RETRY_TIME
 import com.dluvian.nozzle.data.SCOPE_TIMEOUT
+import com.dluvian.nozzle.data.WAIT_TIME
 import com.dluvian.nozzle.data.cache.IClickedMediaUrlCache
 import com.dluvian.nozzle.data.nostr.utils.EncodingUtils.postIdToNostrId
 import com.dluvian.nozzle.data.postCardInteractor.IPostCardInteractor
@@ -19,7 +20,6 @@ import kotlinx.coroutines.launch
 import java.util.concurrent.atomic.AtomicBoolean
 
 private const val TAG = "ThreadViewModel"
-private const val WAIT_TIME = 2100L
 
 class ThreadViewModel(
     val postCardInteractor: IPostCardInteractor,
@@ -37,10 +37,6 @@ class ThreadViewModel(
         )
 
     private var currentPostId = ""
-
-    init {
-        Log.i(TAG, "Initialize ThreadViewModel")
-    }
 
     // TODO: Why is this called multiple times?
     // TODO: Make this more readable

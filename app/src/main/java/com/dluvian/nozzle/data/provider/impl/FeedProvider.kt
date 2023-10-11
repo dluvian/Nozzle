@@ -4,6 +4,7 @@ import android.util.Log
 import com.dluvian.nozzle.data.provider.IContactListProvider
 import com.dluvian.nozzle.data.provider.IFeedProvider
 import com.dluvian.nozzle.data.provider.IPostWithMetaProvider
+import com.dluvian.nozzle.data.provider.IPubkeyProvider
 import com.dluvian.nozzle.data.room.dao.PostDao
 import com.dluvian.nozzle.data.room.entity.PostEntity
 import com.dluvian.nozzle.data.subscriber.INozzleSubscriber
@@ -24,6 +25,7 @@ class FeedProvider(
     private val nozzleSubscriber: INozzleSubscriber,
     private val postDao: PostDao,
     private val contactListProvider: IContactListProvider,
+    private val pubkeyProvider: IPubkeyProvider,
 ) : IFeedProvider {
 
     override suspend fun getFeedFlow(
@@ -63,7 +65,7 @@ class FeedProvider(
     private suspend fun listPubkeys(authorSelection: AuthorSelection): List<String>? {
         return when (authorSelection) {
             is Everyone -> null
-            is Contacts -> contactListProvider.listPersonalContactPubkeys()
+            is Contacts -> contactListProvider.listPersonalContactPubkeys() + pubkeyProvider.getPubkey()
             is SingleAuthor -> listOf(authorSelection.pubkey)
         }
     }

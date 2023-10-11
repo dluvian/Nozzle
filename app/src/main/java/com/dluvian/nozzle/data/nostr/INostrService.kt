@@ -1,5 +1,6 @@
 package com.dluvian.nozzle.data.nostr
 
+import com.dluvian.nozzle.data.room.helper.Nip65Relay
 import com.dluvian.nozzle.model.nostr.Event
 import com.dluvian.nozzle.model.nostr.Filter
 import com.dluvian.nozzle.model.nostr.Metadata
@@ -9,6 +10,8 @@ interface INostrService {
     fun initialize(initRelays: Collection<String>)
 
     fun publishProfile(metadata: Metadata, relays: Collection<String>?): Event
+
+    fun publishNip65(nip65Relays: List<Nip65Relay>): Event
 
     fun sendPost(
         content: String,

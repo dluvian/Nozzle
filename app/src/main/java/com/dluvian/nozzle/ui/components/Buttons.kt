@@ -126,7 +126,7 @@ fun FeedSettingsButton(
     Icon(
         modifier = Modifier
             .clip(CircleShape)
-            .size(sizing.mediumIcon)
+            .size(sizing.mediumItem)
             .clickable { if (isOpenable) showMenu.value = true },
         imageVector = Icons.Default.SettingsSuggest,
         contentDescription = stringResource(id = R.string.feed_settings),

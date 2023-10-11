@@ -1,10 +1,12 @@
 package com.dluvian.nozzle.model.nostr
 
+import com.dluvian.nozzle.data.room.helper.Nip65Relay
 import com.dluvian.nozzle.data.utils.JsonUtils.gson
 import com.dluvian.nozzle.data.utils.SchnorrUtils
 import com.dluvian.nozzle.data.utils.SchnorrUtils.secp256k1
 import com.dluvian.nozzle.data.utils.Sha256Utils.sha256
 import com.dluvian.nozzle.data.utils.UrlUtils.removeTrailingSlashes
+import com.dluvian.nozzle.data.utils.getCurrentTimeInSeconds
 import com.google.gson.JsonElement
 import com.google.gson.annotations.SerializedName
 import fr.acinq.secp256k1.Hex
@@ -33,9 +35,6 @@ class Event(
     }
 
     companion object {
-        fun fromJson(json: String): Result<Event> {
-            return kotlin.runCatching { gson.fromJson(json, Event::class.java) }
-        }
 
         fun fromJson(json: JsonElement): Result<Event> {
             return kotlin.runCatching { gson.fromJson(json, Event::class.java) }
@@ -62,7 +61,7 @@ class Event(
 
         fun create(kind: Int, tags: List<Tag>, content: String, keys: Keys): Event {
             val pubkey = Hex.encode(keys.pubkey)
-            val createdAt = System.currentTimeMillis() / 1000  // TODO: Use util function
+            val createdAt = getCurrentTimeInSeconds()
             val id = generateId(
                 pubkey,
                 createdAt,
@@ -96,6 +95,21 @@ class Event(
                 kind = Kind.CONTACT_LIST,
                 // No relayUrl and petname. No one uses it
                 tags = contacts.map { listOf("p", it) },
+                content = "",
+                keys = keys
+            )
+        }
+
+        fun createNip65Event(nip65Relays: List<Nip65Relay>, keys: Keys): Event {
+            return create(
+                kind = Kind.NIP65,
+                tags = nip65Relays.map {
+                    val tags = mutableListOf("r", it.url)
+                    if (it.isRead xor it.isWrite) {
+                        tags.add(if (it.isRead) "read" else "write")
+                    }
+                    tags
+                },
                 content = "",
                 keys = keys
             )

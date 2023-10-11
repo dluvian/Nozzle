@@ -2,6 +2,7 @@ package com.dluvian.nozzle.ui.components
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.Icon
 import androidx.compose.material.LocalContentAlpha
 import androidx.compose.material.LocalContentColor
@@ -9,15 +10,18 @@ import androidx.compose.material.MaterialTheme.colors
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ContentCopy
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.FormatQuote
+import androidx.compose.material.icons.filled.Save
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material.icons.outlined.Chat
 import androidx.compose.material.icons.rounded.Search
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import com.dluvian.nozzle.R
@@ -27,7 +31,7 @@ import com.dluvian.nozzle.ui.theme.sizing
 fun CopyIcon(onCopy: () -> Unit) {
     CopyIcon(
         modifier = Modifier
-            .size(sizing.smallIcon)
+            .size(sizing.smallItem)
             .clickable { onCopy() },
         description = stringResource(id = R.string.copy_content),
     )
@@ -106,11 +110,46 @@ fun LikeIcon(
 @Composable
 fun AddIcon(
     modifier: Modifier = Modifier,
+    onAdd: (() -> Unit)? = null,
     description: String? = stringResource(id = R.string.add),
 ) {
     Icon(
-        modifier = modifier,
+        modifier = modifier.let {
+            if (onAdd != null) it
+                .clip(CircleShape)
+                .clickable(onClick = onAdd) else it
+        },
         imageVector = Icons.Default.Add,
+        contentDescription = description,
+    )
+}
+
+@Composable
+fun DeleteIcon(
+    modifier: Modifier = Modifier,
+    onDelete: () -> Unit,
+    description: String? = stringResource(id = R.string.delete),
+) {
+    Icon(
+        modifier = modifier
+            .clip(CircleShape)
+            .clickable(onClick = onDelete),
+        imageVector = Icons.Default.Delete,
+        contentDescription = description,
+    )
+}
+
+@Composable
+fun SaveIcon(
+    modifier: Modifier = Modifier,
+    onSave: () -> Unit,
+    description: String? = stringResource(id = R.string.save),
+) {
+    Icon(
+        modifier = modifier
+            .clip(CircleShape)
+            .clickable(onClick = onSave),
+        imageVector = Icons.Default.Save,
         contentDescription = description,
     )
 }
@@ -119,7 +158,7 @@ fun AddIcon(
 fun VisibilityIcon(isVisible: Boolean, onToggle: () -> Unit) {
     Icon(
         modifier = Modifier
-            .size(sizing.smallIcon)
+            .size(sizing.smallItem)
             .clickable { onToggle() },
         imageVector = if (isVisible) {
             Icons.Default.VisibilityOff
