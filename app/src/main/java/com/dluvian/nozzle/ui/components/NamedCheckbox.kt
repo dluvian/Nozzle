@@ -5,6 +5,8 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.Checkbox
+import androidx.compose.material.CheckboxDefaults
+import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -26,7 +28,8 @@ fun NamedCheckbox(
             modifier = Modifier.size(sizing.smallItem),
             enabled = isEnabled,
             checked = isChecked,
-            onCheckedChange = { onClick() }
+            onCheckedChange = { onClick() },
+            colors = CheckboxDefaults.colors(disabledColor = MaterialTheme.colors.secondary)
         )
         Spacer(modifier = Modifier.width(spacing.large))
         Text(text = name, color = textColor)

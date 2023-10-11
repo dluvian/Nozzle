@@ -94,7 +94,9 @@ private fun ScreenContent(
 
         item { SpacedHeaderText(text = stringResource(id = R.string.my_relays)) }
         itemsIndexed(items = myRelays) { index, relay ->
-            MyRelayRow(relay = relay,
+            MyRelayRow(
+                relay = relay,
+                isDeletable = myRelays.size > 1,
                 onDeleteRelay = { onDeleteRelay(index) },
                 onToggleRead = { onToggleRead(index) },
                 onToggleWrite = { onToggleWrite(index) }
@@ -158,6 +160,7 @@ private fun PopularRelayRow(relay: String, isAddable: Boolean, onUseRelay: () ->
 @Composable
 private fun MyRelayRow(
     relay: Nip65Relay,
+    isDeletable: Boolean,
     onDeleteRelay: () -> Unit,
     onToggleRead: () -> Unit,
     onToggleWrite: () -> Unit
@@ -183,7 +186,7 @@ private fun MyRelayRow(
             )
             Spacer(modifier = Modifier.width(spacing.xl))
 
-            DeleteIcon(onDelete = onDeleteRelay)
+            if (isDeletable) DeleteIcon(onDelete = onDeleteRelay)
         }
     }
 }
