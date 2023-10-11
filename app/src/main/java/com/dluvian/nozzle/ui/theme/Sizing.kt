@@ -15,11 +15,11 @@ data class Sizing(
     /**
      * 16 dp
      */
-    val smallIcon: Dp = 16.dp,
+    val smallItem: Dp = 16.dp,
     /**
      * 24 dp
      */
-    val mediumIcon: Dp = 24.dp,
+    val mediumItem: Dp = 24.dp,
     /**
      * 32 dp
      */

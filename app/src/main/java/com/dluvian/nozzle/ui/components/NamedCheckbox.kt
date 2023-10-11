@@ -9,19 +9,26 @@ import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import com.dluvian.nozzle.ui.theme.sizing
 import com.dluvian.nozzle.ui.theme.spacing
 
 @Composable
-fun NamedCheckbox(isChecked: Boolean, name: String, isEnabled: Boolean, onClick: () -> Unit) {
+fun NamedCheckbox(
+    isChecked: Boolean,
+    name: String,
+    isEnabled: Boolean,
+    textColor: Color,
+    onClick: () -> Unit
+) {
     Row(verticalAlignment = Alignment.CenterVertically) {
         Checkbox(
-            modifier = Modifier.size(sizing.smallIcon),
+            modifier = Modifier.size(sizing.smallItem),
             enabled = isEnabled,
             checked = isChecked,
             onCheckedChange = { onClick() }
         )
         Spacer(modifier = Modifier.width(spacing.large))
-        Text(text = name)
+        Text(text = name, color = textColor)
     }
 }

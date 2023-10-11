@@ -9,6 +9,7 @@ import com.dluvian.nozzle.data.provider.IRelayProvider
 import com.dluvian.nozzle.data.room.dao.Nip65Dao
 import com.dluvian.nozzle.data.room.entity.Nip65Entity
 import com.dluvian.nozzle.data.room.helper.Nip65Relay
+import com.dluvian.nozzle.data.utils.UrlUtils.WEBSOCKET_PREFIX
 import com.dluvian.nozzle.data.utils.UrlUtils.isWebsocketUrl
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -55,9 +56,11 @@ class RelayEditorViewModel(
         }
     }
 
-    val onAddRelay: (String) -> Boolean = local@{ url ->
-        if (!url.isWebsocketUrl()) {
-            uiFlow.update { it.copy(isError = true) }
+    val onAddRelay: (String) -> Boolean = local@{ rawUrl ->
+        val url = rawUrl.trim()
+            .let { if (!it.startsWith(WEBSOCKET_PREFIX)) "$WEBSOCKET_PREFIX$it" else it }
+        if (url.isEmpty() || uiFlow.value.relays.any { it.url == url } || !url.isWebsocketUrl()) {
+            if (url.isNotEmpty()) uiFlow.update { it.copy(isError = true) }
             return@local false
         }
 

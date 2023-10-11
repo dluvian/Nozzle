@@ -11,8 +11,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.ExpandLess
-import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.FormatQuote
@@ -32,7 +30,7 @@ import com.dluvian.nozzle.ui.theme.sizing
 fun CopyIcon(onCopy: () -> Unit) {
     CopyIcon(
         modifier = Modifier
-            .size(sizing.smallIcon)
+            .size(sizing.smallItem)
             .clickable { onCopy() },
         description = stringResource(id = R.string.copy_content),
     )
@@ -136,43 +134,10 @@ fun DeleteIcon(
 }
 
 @Composable
-fun ExpandAndCollapseIcon(
-    isExpanded: Boolean,
-    modifier: Modifier = Modifier,
-) {
-    if (isExpanded) CollapseIcon(modifier = modifier)
-    else ExpandIcon(modifier = modifier)
-}
-
-@Composable
-private fun ExpandIcon(
-    modifier: Modifier = Modifier,
-    description: String? = stringResource(id = R.string.expand),
-) {
-    Icon(
-        modifier = modifier,
-        imageVector = Icons.Default.ExpandMore,
-        contentDescription = description,
-    )
-}
-
-@Composable
-private fun CollapseIcon(
-    modifier: Modifier = Modifier,
-    description: String? = stringResource(id = R.string.collapse),
-) {
-    Icon(
-        modifier = modifier,
-        imageVector = Icons.Default.ExpandLess,
-        contentDescription = description,
-    )
-}
-
-@Composable
 fun VisibilityIcon(isVisible: Boolean, onToggle: () -> Unit) {
     Icon(
         modifier = Modifier
-            .size(sizing.smallIcon)
+            .size(sizing.smallItem)
             .clickable { onToggle() },
         imageVector = if (isVisible) {
             Icons.Default.VisibilityOff

@@ -98,8 +98,6 @@
     <string name="my_relays">My Relays</string>
     <string name="add_relay">Add Relay</string>
     <string name="delete">Delete</string>
-    <string name="expand">Expand</string>
-    <string name="collapse">Collapse</string>
     <string name="read">Read</string>
     <string name="write">Write</string>
     <plurals name="other_relays">

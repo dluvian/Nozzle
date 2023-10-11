@@ -1,9 +1,7 @@
 package com.dluvian.nozzle.ui.app.views.relayEditor
 
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -13,15 +11,11 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.Divider
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Color.Companion.DarkGray
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import com.dluvian.nozzle.R
@@ -30,7 +24,6 @@ import com.dluvian.nozzle.data.utils.UrlUtils.removeWebsocketPrefix
 import com.dluvian.nozzle.ui.components.AddingTextFieldWithButton
 import com.dluvian.nozzle.ui.components.CheckTopBarButton
 import com.dluvian.nozzle.ui.components.DeleteIcon
-import com.dluvian.nozzle.ui.components.ExpandAndCollapseIcon
 import com.dluvian.nozzle.ui.components.NamedCheckbox
 import com.dluvian.nozzle.ui.components.ReturnableTopBar
 import com.dluvian.nozzle.ui.components.text.HeaderText
@@ -80,7 +73,13 @@ private fun ScreenContent(
             .fillMaxSize()
     ) {
         HeaderText(text = stringResource(id = R.string.add_relay))
-        AddingTextFieldWithButton(isError = uiState.isError, onAdd = onAddRelay)
+        AddingTextFieldWithButton(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(IntrinsicSize.Max),
+            isError = uiState.isError,
+            onAdd = onAddRelay
+        )
         Spacer(modifier = Modifier.height(spacing.xl))
 
         HeaderText(text = stringResource(id = R.string.my_relays))
@@ -122,83 +121,40 @@ private fun RelayItem(
     onToggleRead: () -> Unit,
     onToggleWrite: () -> Unit
 ) {
-    val isExpanded = remember { mutableStateOf(false) }
-
-    Column(modifier = Modifier.fillMaxWidth()) {
-        RelayItemHeader(
-            url = relay.url,
-            isExpanded = isExpanded.value,
-            onToggleExpansion = { isExpanded.value = !isExpanded.value },
-            onDeleteRelay = onDeleteRelay
-        )
-        AnimatedVisibility(visible = isExpanded.value) {
-            RelayItemExpansion(
-                relay = relay,
-                onToggleRead = onToggleRead,
-                onToggleWrite = onToggleWrite
-            )
-        }
-    }
-}
-
-@Composable
-private fun RelayItemHeader(
-    url: String,
-    isExpanded: Boolean,
-    onToggleExpansion: () -> Unit,
-    onDeleteRelay: () -> Unit
-) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = spacing.large)
-            .clickable(onClick = onToggleExpansion),
-        horizontalArrangement = Arrangement.SpaceBetween
+            .padding(vertical = spacing.large),
     ) {
+        Text(
+            modifier = Modifier.weight(1f),
+            text = relay.url.removeWebsocketPrefix(),
+            color = DarkGray,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis
+        )
+
         Row {
-            ExpandAndCollapseIcon(
-                modifier = Modifier
-                    .clip(CircleShape)
-                    .clickable(onClick = onToggleExpansion),
-                isExpanded = isExpanded
+            Spacer(modifier = Modifier.width(spacing.large))
+            NamedCheckbox(
+                isChecked = relay.isRead,
+                name = stringResource(id = R.string.read),
+                isEnabled = relay.isWrite || !relay.isRead,
+                textColor = DarkGray,
+                onClick = onToggleRead
             )
-            Text(
-                text = url.removeWebsocketPrefix(),
-                color = Color.DarkGray,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis
+            Spacer(modifier = Modifier.width(spacing.xxl))
+
+            NamedCheckbox(
+                isChecked = relay.isWrite,
+                name = stringResource(id = R.string.write),
+                isEnabled = relay.isRead || !relay.isWrite,
+                textColor = DarkGray,
+                onClick = onToggleWrite
             )
+            Spacer(modifier = Modifier.width(spacing.xl))
+
+            DeleteIcon(onDelete = onDeleteRelay)
         }
-        DeleteIcon(onDelete = onDeleteRelay)
-    }
-}
-
-@Composable
-private fun RelayItemExpansion(
-    relay: Nip65Relay,
-    onToggleRead: () -> Unit,
-    onToggleWrite: () -> Unit
-) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = spacing.screenEdge)
-            .padding(bottom = spacing.screenEdge)
-    ) {
-        Spacer(modifier = Modifier.width(spacing.xxl))
-        NamedCheckbox(
-            isChecked = relay.isRead,
-            name = stringResource(id = R.string.read),
-            isEnabled = relay.isWrite || !relay.isRead,
-            onClick = onToggleRead
-        )
-
-        Spacer(modifier = Modifier.width(spacing.xxl))
-        NamedCheckbox(
-            isChecked = relay.isWrite,
-            name = stringResource(id = R.string.write),
-            isEnabled = relay.isRead || !relay.isWrite,
-            onClick = onToggleWrite
-        )
     }
 }
