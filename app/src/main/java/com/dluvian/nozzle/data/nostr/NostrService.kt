@@ -73,7 +73,7 @@ class NostrService(
     }
 
     override fun publishNip65(nip65Relays: List<Nip65Relay>): Event {
-        val event = Event.createNip65EventEvent(
+        val event = Event.createNip65Event(
             nip65Relays = nip65Relays,
             keys = keyManager.getKeys(),
         )

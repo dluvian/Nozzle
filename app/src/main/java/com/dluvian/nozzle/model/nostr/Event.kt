@@ -35,9 +35,6 @@ class Event(
     }
 
     companion object {
-        fun fromJson(json: String): Result<Event> {
-            return kotlin.runCatching { gson.fromJson(json, Event::class.java) }
-        }
 
         fun fromJson(json: JsonElement): Result<Event> {
             return kotlin.runCatching { gson.fromJson(json, Event::class.java) }
@@ -103,7 +100,7 @@ class Event(
             )
         }
 
-        fun createNip65EventEvent(nip65Relays: List<Nip65Relay>, keys: Keys): Event {
+        fun createNip65Event(nip65Relays: List<Nip65Relay>, keys: Keys): Event {
             return create(
                 kind = Kind.NIP65,
                 tags = nip65Relays.map {
