@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
@@ -30,6 +31,7 @@ import com.dluvian.nozzle.ui.components.AddingTextFieldWithButton
 import com.dluvian.nozzle.ui.components.CheckTopBarButton
 import com.dluvian.nozzle.ui.components.DeleteIcon
 import com.dluvian.nozzle.ui.components.ExpandAndCollapseIcon
+import com.dluvian.nozzle.ui.components.NamedCheckbox
 import com.dluvian.nozzle.ui.components.ReturnableTopBar
 import com.dluvian.nozzle.ui.components.text.HeaderText
 import com.dluvian.nozzle.ui.theme.spacing
@@ -40,6 +42,8 @@ fun RelayEditorScreen(
     onSaveRelays: () -> Unit,
     onAddRelay: (String) -> Boolean,
     onDeleteRelay: (Int) -> Unit,
+    onToggleRead: (Int) -> Unit,
+    onToggleWrite: (Int) -> Unit,
     onGoBack: () -> Unit,
 ) {
     Column {
@@ -52,7 +56,13 @@ fun RelayEditorScreen(
                     onCheck = onSaveRelays,
                 )
             })
-        ScreenContent(uiState = uiState, onAddRelay = onAddRelay, onDeleteRelay = onDeleteRelay)
+        ScreenContent(
+            uiState = uiState,
+            onAddRelay = onAddRelay,
+            onDeleteRelay = onDeleteRelay,
+            onToggleRead = onToggleRead,
+            onToggleWrite = onToggleWrite
+        )
     }
 }
 
@@ -60,7 +70,9 @@ fun RelayEditorScreen(
 private fun ScreenContent(
     uiState: RelayEditorViewModelState,
     onAddRelay: (String) -> Boolean,
-    onDeleteRelay: (Int) -> Unit
+    onDeleteRelay: (Int) -> Unit,
+    onToggleRead: (Int) -> Unit,
+    onToggleWrite: (Int) -> Unit
 ) {
     Column(
         modifier = Modifier
@@ -73,15 +85,29 @@ private fun ScreenContent(
 
         HeaderText(text = stringResource(id = R.string.my_relays))
         Spacer(modifier = Modifier.height(spacing.medium))
-        RelayItemList(relays = uiState.relays, onDeleteRelay = onDeleteRelay)
+        RelayItemList(
+            relays = uiState.relays,
+            onDeleteRelay = onDeleteRelay,
+            onToggleRead = onToggleRead,
+            onToggleWrite = onToggleWrite
+        )
     }
 }
 
 @Composable
-private fun RelayItemList(relays: List<Nip65Relay>, onDeleteRelay: (Int) -> Unit) {
+private fun RelayItemList(
+    relays: List<Nip65Relay>,
+    onDeleteRelay: (Int) -> Unit,
+    onToggleRead: (Int) -> Unit,
+    onToggleWrite: (Int) -> Unit
+) {
     LazyColumn(modifier = Modifier.fillMaxSize()) {
         itemsIndexed(items = relays) { index, relay ->
-            RelayItem(relay = relay, onDeleteRelay = { onDeleteRelay(index) })
+            RelayItem(relay = relay,
+                onDeleteRelay = { onDeleteRelay(index) },
+                onToggleRead = { onToggleRead(index) },
+                onToggleWrite = { onToggleWrite(index) }
+            )
             if (index != relays.size - 1) {
                 Divider()
             }
@@ -90,7 +116,12 @@ private fun RelayItemList(relays: List<Nip65Relay>, onDeleteRelay: (Int) -> Unit
 }
 
 @Composable
-private fun RelayItem(relay: Nip65Relay, onDeleteRelay: () -> Unit) {
+private fun RelayItem(
+    relay: Nip65Relay,
+    onDeleteRelay: () -> Unit,
+    onToggleRead: () -> Unit,
+    onToggleWrite: () -> Unit
+) {
     val isExpanded = remember { mutableStateOf(false) }
 
     Column(modifier = Modifier.fillMaxWidth()) {
@@ -101,7 +132,11 @@ private fun RelayItem(relay: Nip65Relay, onDeleteRelay: () -> Unit) {
             onDeleteRelay = onDeleteRelay
         )
         AnimatedVisibility(visible = isExpanded.value) {
-            RelayItemExpansion(relay = relay)
+            RelayItemExpansion(
+                relay = relay,
+                onToggleRead = onToggleRead,
+                onToggleWrite = onToggleWrite
+            )
         }
     }
 }
@@ -139,6 +174,31 @@ private fun RelayItemHeader(
 }
 
 @Composable
-private fun RelayItemExpansion(relay: Nip65Relay) {
-    Text(text = relay.url)
+private fun RelayItemExpansion(
+    relay: Nip65Relay,
+    onToggleRead: () -> Unit,
+    onToggleWrite: () -> Unit
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = spacing.screenEdge)
+            .padding(bottom = spacing.screenEdge)
+    ) {
+        Spacer(modifier = Modifier.width(spacing.xxl))
+        NamedCheckbox(
+            isChecked = relay.isRead,
+            name = stringResource(id = R.string.read),
+            isEnabled = relay.isWrite || !relay.isRead,
+            onClick = onToggleRead
+        )
+
+        Spacer(modifier = Modifier.width(spacing.xxl))
+        NamedCheckbox(
+            isChecked = relay.isWrite,
+            name = stringResource(id = R.string.write),
+            isEnabled = relay.isRead || !relay.isWrite,
+            onClick = onToggleWrite
+        )
+    }
 }
