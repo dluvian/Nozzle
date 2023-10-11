@@ -14,6 +14,7 @@ import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.FormatQuote
+import androidx.compose.material.icons.filled.Save
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material.icons.outlined.Chat
@@ -129,6 +130,21 @@ fun DeleteIcon(
             .clip(CircleShape)
             .clickable(onClick = onDelete),
         imageVector = Icons.Default.Delete,
+        contentDescription = description,
+    )
+}
+
+@Composable
+fun SaveIcon(
+    modifier: Modifier = Modifier,
+    onSave: () -> Unit,
+    description: String? = stringResource(id = R.string.save),
+) {
+    Icon(
+        modifier = modifier
+            .clip(CircleShape)
+            .clickable(onClick = onSave),
+        imageVector = Icons.Default.Save,
         contentDescription = description,
     )
 }

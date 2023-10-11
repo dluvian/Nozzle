@@ -26,6 +26,7 @@ import com.dluvian.nozzle.ui.theme.spacing
 @Composable
 fun AddingTextFieldWithButton(
     modifier: Modifier = Modifier,
+    placeholder: String,
     isError: Boolean,
     onAdd: (String) -> Boolean
 ) {
@@ -38,6 +39,7 @@ fun AddingTextFieldWithButton(
             value = text,
             isError = isError,
             maxLines = 1,
+            placeholder = { Text(text = placeholder) },
             onValueChange = { change -> text = change },
             keyboardOptions = KeyboardOptions(
                 keyboardType = KeyboardType.Uri,

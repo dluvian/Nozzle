@@ -20,12 +20,13 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import com.dluvian.nozzle.R
 import com.dluvian.nozzle.data.room.helper.Nip65Relay
+import com.dluvian.nozzle.data.utils.UrlUtils.WEBSOCKET_PREFIX
 import com.dluvian.nozzle.data.utils.UrlUtils.removeWebsocketPrefix
 import com.dluvian.nozzle.ui.components.AddingTextFieldWithButton
-import com.dluvian.nozzle.ui.components.CheckTopBarButton
 import com.dluvian.nozzle.ui.components.DeleteIcon
 import com.dluvian.nozzle.ui.components.NamedCheckbox
 import com.dluvian.nozzle.ui.components.ReturnableTopBar
+import com.dluvian.nozzle.ui.components.SaveIcon
 import com.dluvian.nozzle.ui.components.text.HeaderText
 import com.dluvian.nozzle.ui.theme.spacing
 
@@ -44,10 +45,7 @@ fun RelayEditorScreen(
             text = stringResource(id = R.string.relays),
             onGoBack = onGoBack,
             trailingIcon = {
-                CheckTopBarButton(
-                    hasChanges = uiState.hasChanges,
-                    onCheck = onSaveRelays,
-                )
+                if (uiState.hasChanges) SaveIcon(onSave = onSaveRelays)
             })
         ScreenContent(
             uiState = uiState,
@@ -78,6 +76,7 @@ private fun ScreenContent(
                 .fillMaxWidth()
                 .height(IntrinsicSize.Max),
             isError = uiState.isError,
+            placeholder = WEBSOCKET_PREFIX,
             onAdd = onAddRelay
         )
         Spacer(modifier = Modifier.height(spacing.xl))

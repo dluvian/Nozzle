@@ -3,14 +3,16 @@ package com.dluvian.nozzle.data.utils
 
 object UrlUtils {
     private val urlPattern = Regex(pattern = "https?://[^\\s]+")
-    private val wssPattern = Regex("^wss://[^\\s]+\$")
+    private val wssPattern =
+        Regex("^(wss)://[a-zA-Z0-9-]+(\\.[a-zA-Z0-9-]+)*(:(\\d{1,5}))?(/.*)?\$")
     const val WEBSOCKET_PREFIX = "wss://"
 
     val mediaSuffixes = listOf(".jpg", ".jpeg", ".png", ".gif", ".webp")
 
     fun extractUrls(extractFrom: String) = urlPattern.findAll(extractFrom).toList()
 
-    fun String.removeTrailingSlashes() = this.trim().dropLastWhile { lastChar -> lastChar == '/' }
+    fun String.removeTrailingSlashes() =
+        this.trim().dropLastWhile { lastChar -> lastChar == '/' || lastChar == ' ' }
 
     fun String.isWebsocketUrl() = wssPattern.matches(this)
 
