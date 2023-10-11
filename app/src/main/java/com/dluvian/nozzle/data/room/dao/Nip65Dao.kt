@@ -83,4 +83,13 @@ interface Nip65Dao {
 
     @Query("SELECT DISTINCT(pubkey) FROM nip65 WHERE pubkey IN (:pubkeys)")
     suspend fun filterPubkeysWithNip65(pubkeys: Collection<String>): List<String>
+
+    @Query(
+        "SELECT url " +
+                "FROM nip65 " +
+                "WHERE pubkey IN (:pubkeys) " +
+                "GROUP BY url " +
+                "ORDER BY COUNT(url) DESC"
+    )
+    suspend fun getRelaysOfPubkeys(pubkeys: Collection<String>): List<Relay>
 }

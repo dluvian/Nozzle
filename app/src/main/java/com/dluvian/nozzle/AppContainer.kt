@@ -91,6 +91,7 @@ class AppContainer(context: Context) {
 
     val relayProvider: IRelayProvider = RelayProvider(
         pubkeyProvider = keyManager,
+        contactListProvider = contactListProvider,
         nip65Dao = roomDb.nip65Dao(),
     )
 

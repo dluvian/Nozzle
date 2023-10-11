@@ -14,19 +14,23 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.Divider
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color.Companion.DarkGray
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import com.dluvian.nozzle.R
+import com.dluvian.nozzle.data.RECOMMENDED_RELAY_NUM
 import com.dluvian.nozzle.data.room.helper.Nip65Relay
 import com.dluvian.nozzle.data.utils.UrlUtils.WEBSOCKET_PREFIX
 import com.dluvian.nozzle.data.utils.UrlUtils.removeWebsocketPrefix
+import com.dluvian.nozzle.ui.components.AddIcon
 import com.dluvian.nozzle.ui.components.AddingTextFieldWithButton
 import com.dluvian.nozzle.ui.components.DeleteIcon
 import com.dluvian.nozzle.ui.components.NamedCheckbox
 import com.dluvian.nozzle.ui.components.ReturnableTopBar
 import com.dluvian.nozzle.ui.components.SaveIcon
+import com.dluvian.nozzle.ui.components.TopBarCircleProgressIndicator
 import com.dluvian.nozzle.ui.components.text.HeaderText
 import com.dluvian.nozzle.ui.theme.spacing
 
@@ -38,6 +42,7 @@ fun RelayEditorScreen(
     onDeleteRelay: (Int) -> Unit,
     onToggleRead: (Int) -> Unit,
     onToggleWrite: (Int) -> Unit,
+    onUsePopularRelay: (Int) -> Unit,
     onGoBack: () -> Unit,
 ) {
     Column {
@@ -45,94 +50,119 @@ fun RelayEditorScreen(
             text = stringResource(id = R.string.relays),
             onGoBack = onGoBack,
             trailingIcon = {
-                if (uiState.hasChanges) SaveIcon(onSave = onSaveRelays)
+                if (uiState.hasChanges && !uiState.isLoading) SaveIcon(onSave = onSaveRelays)
+                if (uiState.isLoading) TopBarCircleProgressIndicator()
             })
+        val myRelays = remember(uiState.myRelays) {
+            uiState.myRelays.map { relay -> relay.copy(url = relay.url.removeWebsocketPrefix()) }
+        }
+        val popularRelays = remember(uiState.popularRelays) {
+            uiState.popularRelays.map { it.removeWebsocketPrefix() }
+        }
         ScreenContent(
-            uiState = uiState,
+            myRelays = myRelays,
+            popularRelays = popularRelays,
+            isError = uiState.isError,
             onAddRelay = onAddRelay,
             onDeleteRelay = onDeleteRelay,
             onToggleRead = onToggleRead,
-            onToggleWrite = onToggleWrite
+            onToggleWrite = onToggleWrite,
+            onUsePopularRelay = onUsePopularRelay
         )
     }
 }
 
 @Composable
 private fun ScreenContent(
-    uiState: RelayEditorViewModelState,
+    myRelays: List<Nip65Relay>,
+    popularRelays: List<String>,
+    isError: Boolean,
     onAddRelay: (String) -> Boolean,
     onDeleteRelay: (Int) -> Unit,
     onToggleRead: (Int) -> Unit,
-    onToggleWrite: (Int) -> Unit
+    onToggleWrite: (Int) -> Unit,
+    onUsePopularRelay: (Int) -> Unit
 ) {
-    Column(
+    LazyColumn(
         modifier = Modifier
             .padding(spacing.screenEdge)
             .fillMaxSize()
-    ) {
-        HeaderText(text = stringResource(id = R.string.add_relay))
-        AddingTextFieldWithButton(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(IntrinsicSize.Max),
-            isError = uiState.isError,
-            placeholder = WEBSOCKET_PREFIX,
-            onAdd = onAddRelay
-        )
-        Spacer(modifier = Modifier.height(spacing.xl))
+    )
+    {
+        item { AddRelay(isError = isError, onAddRelay = onAddRelay) }
+        item { Spacer(modifier = Modifier.height(spacing.xxl)) }
 
-        HeaderText(text = stringResource(id = R.string.my_relays))
-        Spacer(modifier = Modifier.height(spacing.medium))
-        RelayItemList(
-            relays = uiState.relays,
-            onDeleteRelay = onDeleteRelay,
-            onToggleRead = onToggleRead,
-            onToggleWrite = onToggleWrite
-        )
-    }
-}
-
-@Composable
-private fun RelayItemList(
-    relays: List<Nip65Relay>,
-    onDeleteRelay: (Int) -> Unit,
-    onToggleRead: (Int) -> Unit,
-    onToggleWrite: (Int) -> Unit
-) {
-    LazyColumn(modifier = Modifier.fillMaxSize()) {
-        itemsIndexed(items = relays) { index, relay ->
-            RelayItem(relay = relay,
+        item { SpacedHeaderText(text = stringResource(id = R.string.my_relays)) }
+        itemsIndexed(items = myRelays) { index, relay ->
+            MyRelayRow(relay = relay,
                 onDeleteRelay = { onDeleteRelay(index) },
                 onToggleRead = { onToggleRead(index) },
                 onToggleWrite = { onToggleWrite(index) }
             )
-            if (index != relays.size - 1) {
+            if (index != myRelays.size - 1) {
                 Divider()
+            }
+        }
+        item { Spacer(modifier = Modifier.height(spacing.xxl)) }
+
+
+        if (popularRelays.isNotEmpty()) {
+            item { SpacedHeaderText(text = stringResource(id = R.string.my_friends_relays)) }
+            itemsIndexed(items = popularRelays) { index, relay ->
+                PopularRelayRow(
+                    relay = relay,
+                    isAddable = myRelays.size < RECOMMENDED_RELAY_NUM
+                            && myRelays.none { it.url == relay },
+                    onUseRelay = { onUsePopularRelay(index) })
+                if (index != popularRelays.size - 1) {
+                    Divider()
+                }
             }
         }
     }
 }
 
 @Composable
-private fun RelayItem(
+private fun SpacedHeaderText(text: String) {
+    Column {
+        HeaderText(text = text)
+        Spacer(modifier = Modifier.height(spacing.medium))
+    }
+}
+
+@Composable
+private fun AddRelay(
+    isError: Boolean,
+    onAddRelay: (String) -> Boolean,
+) {
+    Column {
+        SpacedHeaderText(text = stringResource(id = R.string.add_relay))
+        AddingTextFieldWithButton(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(IntrinsicSize.Max),
+            isError = isError,
+            placeholder = WEBSOCKET_PREFIX,
+            onAdd = onAddRelay
+        )
+    }
+}
+
+@Composable
+private fun PopularRelayRow(relay: String, isAddable: Boolean, onUseRelay: () -> Unit) {
+    RelayRow(relay = relay) {
+        if (isAddable) AddIcon(onAdd = onUseRelay)
+    }
+}
+
+@Composable
+private fun MyRelayRow(
     relay: Nip65Relay,
     onDeleteRelay: () -> Unit,
     onToggleRead: () -> Unit,
     onToggleWrite: () -> Unit
 ) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = spacing.large),
-    ) {
-        Text(
-            modifier = Modifier.weight(1f),
-            text = relay.url.removeWebsocketPrefix(),
-            color = DarkGray,
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis
-        )
-
+    RelayRow(relay = relay.url) {
         Row {
             Spacer(modifier = Modifier.width(spacing.large))
             NamedCheckbox(
@@ -155,5 +185,24 @@ private fun RelayItem(
 
             DeleteIcon(onDelete = onDeleteRelay)
         }
+    }
+}
+
+@Composable
+private fun RelayRow(relay: String, trailingContent: @Composable (() -> Unit)) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = spacing.large),
+    ) {
+        Text(
+            modifier = Modifier.weight(1f),
+            text = relay,
+            color = DarkGray,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis
+        )
+
+        trailingContent()
     }
 }

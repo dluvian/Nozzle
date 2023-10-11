@@ -1,10 +1,7 @@
 package com.dluvian.nozzle.ui.app.views.search
 
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.aspectRatio
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -12,14 +9,13 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import com.dluvian.nozzle.R
 import com.dluvian.nozzle.ui.components.ChangeableTextField
 import com.dluvian.nozzle.ui.components.ReturnableTopBar
 import com.dluvian.nozzle.ui.components.SearchTopBarButton
-import com.dluvian.nozzle.ui.theme.sizing
+import com.dluvian.nozzle.ui.components.TopBarCircleProgressIndicator
 
 
 @Composable
@@ -37,13 +33,7 @@ fun SearchScreen(
             text = stringResource(id = R.string.search),
             onGoBack = onGoBack,
             trailingIcon = {
-                if (uiState.isLoading) CircularProgressIndicator(
-                    modifier = Modifier
-                        .fillMaxHeight(0.5f)
-                        .aspectRatio(1f),
-                    color = Color.White,
-                    strokeWidth = sizing.smallProgressIndicator
-                )
+                if (uiState.isLoading) TopBarCircleProgressIndicator()
                 else SearchTopBarButton(
                     hasChanges = uiState.input.isNotBlank(),
                     onSearch = onSearch,

@@ -1,6 +1,7 @@
 package com.dluvian.nozzle.data.provider.impl
 
 import com.dluvian.nozzle.data.getDefaultRelays
+import com.dluvian.nozzle.data.provider.IContactListProvider
 import com.dluvian.nozzle.data.provider.IPubkeyProvider
 import com.dluvian.nozzle.data.provider.IRelayProvider
 import com.dluvian.nozzle.data.room.dao.Nip65Dao
@@ -17,6 +18,7 @@ import kotlinx.coroutines.flow.stateIn
 
 class RelayProvider(
     private val pubkeyProvider: IPubkeyProvider,
+    private val contactListProvider: IContactListProvider,
     private val nip65Dao: Nip65Dao,
 ) : IRelayProvider {
     private val scope = CoroutineScope(context = Dispatchers.Default)
@@ -60,6 +62,10 @@ class RelayProvider(
 
     override suspend fun getWriteRelaysOfPubkeys(pubkeys: Collection<String>): Map<Pubkey, List<Relay>> {
         return nip65Dao.getWriteRelaysOfPubkeys(pubkeys = pubkeys)
+    }
+
+    override suspend fun getRelaysOfContacts(): List<Relay> {
+        return nip65Dao.getRelaysOfPubkeys(pubkeys = contactListProvider.listPersonalContactPubkeys())
     }
 
     private fun updateFlow() {

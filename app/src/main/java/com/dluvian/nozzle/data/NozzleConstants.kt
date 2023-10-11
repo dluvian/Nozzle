@@ -23,3 +23,5 @@ const val SWEEP_THRESHOLD = 3000
 const val SWEEP_THRESHOLD_FACTOR = 1.5f
 
 const val RESUB_AFTER = 5000L
+
+const val RECOMMENDED_RELAY_NUM = 5

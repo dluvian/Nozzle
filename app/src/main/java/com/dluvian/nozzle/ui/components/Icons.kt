@@ -110,10 +110,15 @@ fun LikeIcon(
 @Composable
 fun AddIcon(
     modifier: Modifier = Modifier,
+    onAdd: (() -> Unit)? = null,
     description: String? = stringResource(id = R.string.add),
 ) {
     Icon(
-        modifier = modifier,
+        modifier = modifier.let {
+            if (onAdd != null) it
+                .clip(CircleShape)
+                .clickable(onClick = onAdd) else it
+        },
         imageVector = Icons.Default.Add,
         contentDescription = description,
     )

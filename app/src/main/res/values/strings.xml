@@ -101,6 +101,7 @@
     <string name="read">Read</string>
     <string name="write">Write</string>
     <string name="save">Save</string>
+    <string name="my_friends_relays">My Friends Relays</string>
     <plurals name="other_relays">
         <item quantity="one">other</item>
         <item quantity="other">others</item>
