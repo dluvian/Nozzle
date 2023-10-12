@@ -92,6 +92,7 @@
     <string name="write">Write</string>
     <string name="save">Save</string>
     <string name="my_friends_relays">My Friends Relays</string>
+    <string name="inbox">Inbox</string>
     <plurals name="other_relays">
         <item quantity="one">other</item>
         <item quantity="other">others</item>

@@ -24,6 +24,7 @@ import com.dluvian.nozzle.ui.app.views.drawer.NozzleDrawerViewModel
 import com.dluvian.nozzle.ui.app.views.editProfile.EditProfileViewModel
 import com.dluvian.nozzle.ui.app.views.feed.FeedViewModel
 import com.dluvian.nozzle.ui.app.views.hashtag.HashtagViewModel
+import com.dluvian.nozzle.ui.app.views.inbox.InboxViewModel
 import com.dluvian.nozzle.ui.app.views.keys.KeysViewModel
 import com.dluvian.nozzle.ui.app.views.post.PostViewModel
 import com.dluvian.nozzle.ui.app.views.profile.ProfileViewModel
@@ -85,6 +86,10 @@ fun NozzleApp(appContainer: AppContainer) {
                         relayProvider = appContainer.relayProvider,
                         autopilotProvider = appContainer.autopilotProvider,
                         feedSettingsPreferences = appContainer.feedSettingsPreferences,
+                    )
+                ),
+                inboxViewModel = viewModel(
+                    factory = InboxViewModel.provideFactory(
                     )
                 ),
                 threadViewModel = viewModel(

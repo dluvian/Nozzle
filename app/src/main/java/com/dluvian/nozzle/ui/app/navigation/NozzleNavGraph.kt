@@ -23,6 +23,7 @@ import com.dluvian.nozzle.ui.app.VMContainer
 import com.dluvian.nozzle.ui.app.views.editProfile.EditProfileRoute
 import com.dluvian.nozzle.ui.app.views.feed.FeedRoute
 import com.dluvian.nozzle.ui.app.views.hashtag.HashtagRoute
+import com.dluvian.nozzle.ui.app.views.inbox.InboxRoute
 import com.dluvian.nozzle.ui.app.views.keys.KeysRoute
 import com.dluvian.nozzle.ui.app.views.post.PostRoute
 import com.dluvian.nozzle.ui.app.views.profile.ProfileRoute
@@ -87,6 +88,12 @@ fun NozzleNavGraph(
                 onNavigateToEditProfile = onNavigateToEditProfile,
                 onNavigateToQuote = navActions.navigateToQuote,
                 onNavigateToId = navActions.navigateToId
+            )
+        }
+        composable(NozzleRoute.INBOX) {
+            InboxRoute(
+                inboxViewModel = vmContainer.inboxViewModel,
+                onGoBack = navActions.popStack,
             )
         }
         composable(NozzleRoute.SEARCH) {

@@ -31,6 +31,12 @@ class NozzleNavActions(
         }
     }
 
+    val navigateToInbox: () -> Unit = {
+        navController.navigate(NozzleRoute.INBOX) {
+            setSimpleNavOptions(optionsBuilder = this)
+        }
+    }
+
     val navigateToSearch: () -> Unit = {
         navController.navigate(NozzleRoute.SEARCH) {
             setSimpleNavOptions(optionsBuilder = this)
