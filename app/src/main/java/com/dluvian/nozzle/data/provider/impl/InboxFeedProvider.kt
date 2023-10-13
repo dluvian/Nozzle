@@ -29,7 +29,7 @@ class InboxFeedProvider(
         )
         delay(waitForSubscription)
 
-        val posts = postDao.getInboxPosts(relays = relays, until = until, limit = limit)
+        val posts = postDao.getInboxBasePosts(relays = relays, until = until, limit = limit)
         val feedInfo = nozzleSubscriber.subscribeFeedInfo(posts = posts)
 
         return postWithMetaProvider.getPostsWithMetaFlow(feedInfo = feedInfo)

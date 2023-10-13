@@ -98,19 +98,21 @@ interface PostDao {
         limit: Int,
     ): List<PostEntity>
 
-    @Query(
-        "SELECT * " +
-                "FROM post " +
-                "WHERE createdAt < :until " +
-                "AND id IN (SELECT DISTINCT eventId FROM eventRelay WHERE relayUrl IN (:relays)) " +
-                "ORDER BY createdAt DESC " +
-                "LIMIT :limit"
-    )
-    suspend fun getInboxPosts(
+
+    suspend fun getInboxBasePosts(
         until: Long,
         limit: Int,
         relays: Collection<String>
-    ): List<PostEntity>
+    ): List<PostEntity> {
+        return getGlobalFeedBasePostsByRelays(
+            isPosts = true,
+            isReplies = true,
+            hashtag = null,
+            relays = relays,
+            until = until,
+            limit = limit,
+        )
+    }
 
     @Query(
         // SELECT PostEntity
