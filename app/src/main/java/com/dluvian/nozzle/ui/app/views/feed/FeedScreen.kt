@@ -33,6 +33,7 @@ import com.dluvian.nozzle.model.PostWithMeta
 import com.dluvian.nozzle.model.RelayActive
 import com.dluvian.nozzle.model.UserSpecific
 import com.dluvian.nozzle.model.nostr.Metadata
+import com.dluvian.nozzle.ui.app.navigation.PostCardNavLambdas
 import com.dluvian.nozzle.ui.components.AddIcon
 import com.dluvian.nozzle.ui.components.ChooseRelayButton
 import com.dluvian.nozzle.ui.components.FeedSettingsButton
@@ -48,6 +49,7 @@ fun FeedScreen(
     uiState: FeedViewModelState,
     feedState: List<PostWithMeta>,
     metadataState: Metadata?,
+    postCardNavLambdas: PostCardNavLambdas,
     onLike: (PostWithMeta) -> Unit,
     onShowMedia: (String) -> Unit,
     onShouldShowMedia: (String) -> Boolean,
@@ -62,12 +64,7 @@ fun FeedScreen(
     onToggleAutopilot: () -> Unit,
     onLoadMore: () -> Unit,
     onOpenDrawer: () -> Unit,
-    onNavigateToThread: (String) -> Unit,
-    onNavigateToProfile: (String) -> Unit,
-    onNavigateToReply: () -> Unit,
     onNavigateToPost: () -> Unit,
-    onNavigateToQuote: (String) -> Unit,
-    onNavigateToId: (String) -> Unit,
 ) {
     val lazyListState = rememberLazyListState()
     val scope = rememberCoroutineScope()
@@ -105,18 +102,14 @@ fun FeedScreen(
             PostCardList(
                 posts = feedState,
                 isRefreshing = uiState.isRefreshing,
+                postCardNavLambdas = postCardNavLambdas,
                 onRefresh = onRefreshFeedView,
                 onLike = onLike,
                 onShowMedia = onShowMedia,
                 onShouldShowMedia = onShouldShowMedia,
                 onPrepareReply = onPrepareReply,
                 onLoadMore = onLoadMore,
-                onNavigateToThread = onNavigateToThread,
-                onNavigateToReply = onNavigateToReply,
-                onNavigateToQuote = onNavigateToQuote,
                 lazyListState = lazyListState,
-                onOpenProfile = onNavigateToProfile,
-                onNavigateToId = onNavigateToId,
             )
         }
         if (feedState.isEmpty()) NoPostsHint()

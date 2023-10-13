@@ -29,6 +29,7 @@ import com.dluvian.nozzle.data.nostr.utils.ShortenedNameUtils.getShortenedNpubFr
 import com.dluvian.nozzle.model.PostWithMeta
 import com.dluvian.nozzle.model.ProfileWithMeta
 import com.dluvian.nozzle.model.TrustType
+import com.dluvian.nozzle.ui.app.navigation.PostCardNavLambdas
 import com.dluvian.nozzle.ui.components.CopyIcon
 import com.dluvian.nozzle.ui.components.EditProfileButton
 import com.dluvian.nozzle.ui.components.FollowButton
@@ -49,6 +50,7 @@ fun ProfileScreen(
     profile: ProfileWithMeta,
     isFollowedByMe: Boolean,
     feed: List<PostWithMeta>,
+    postCardNavLambdas: PostCardNavLambdas,
     onPrepareReply: (PostWithMeta) -> Unit,
     onLike: (PostWithMeta) -> Unit,
     onFollow: (String) -> Unit,
@@ -58,11 +60,7 @@ fun ProfileScreen(
     onRefreshProfileView: () -> Unit,
     onCopyNprofile: () -> Unit,
     onLoadMore: () -> Unit,
-    onNavigateToThread: (String) -> Unit,
-    onNavigateToReply: () -> Unit,
-    onNavigateToQuote: (String) -> Unit,
     onNavigateToEditProfile: () -> Unit,
-    onNavigateToId: (String) -> Unit
 ) {
     Column {
         ProfileData(
@@ -72,7 +70,7 @@ fun ProfileScreen(
             onUnfollow = onUnfollow,
             onCopyNprofile = onCopyNprofile,
             onNavToEditProfile = onNavigateToEditProfile,
-            onNavigateToId = onNavigateToId,
+            onNavigateToId = postCardNavLambdas.onNavigateToId,
         )
         Spacer(Modifier.height(spacing.medium))
         NumberedCategories(
@@ -85,16 +83,13 @@ fun ProfileScreen(
         PostCardList(
             posts = feed,
             isRefreshing = isRefreshing,
+            postCardNavLambdas = postCardNavLambdas,
             onRefresh = onRefreshProfileView,
             onLike = onLike,
             onShowMedia = onShowMedia,
             onShouldShowMedia = onShouldShowMedia,
             onPrepareReply = onPrepareReply,
             onLoadMore = onLoadMore,
-            onNavigateToThread = onNavigateToThread,
-            onNavigateToReply = onNavigateToReply,
-            onNavigateToQuote = onNavigateToQuote,
-            onNavigateToId = onNavigateToId,
         )
     }
     if (feed.isEmpty()) NoPostsHint()

@@ -27,6 +27,7 @@ class NozzleNavActions(
     }
 
     val navigateToInbox: () -> Unit = {
+        vmContainer.inboxViewModel.onOpenInbox()
         navController.navigateToNozzleRoute(NozzleRoute.INBOX)
     }
 
@@ -44,6 +45,7 @@ class NozzleNavActions(
     }
 
     val navigateToEditProfile: () -> Unit = {
+        vmContainer.editProfileViewModel.onResetUiState() // TODO: Is name of lambda correct?
         navController.navigateToNozzleRoute(NozzleRoute.EDIT_PROFILE)
     }
 
@@ -68,10 +70,8 @@ class NozzleNavActions(
         if (id.isNotEmpty()) {
             val route = if (HashtagUtils.isHashtag(id)) "${NozzleRoute.HASHTAG}/${id}"
             else when (nostrStrToNostrId(nostrStr = id)) {
-                is NoteNostrId -> "${NozzleRoute.THREAD}/${id}"
-                is NeventNostrId -> "${NozzleRoute.THREAD}/${id}"
-                is NpubNostrId -> "${NozzleRoute.PROFILE}/${id}"
-                is NprofileNostrId -> "${NozzleRoute.PROFILE}/${id}"
+                is NoteNostrId, is NeventNostrId -> "${NozzleRoute.THREAD}/${id}"
+                is NpubNostrId, is NprofileNostrId -> "${NozzleRoute.PROFILE}/${id}"
                 null -> {
                     Log.w(TAG, "Failed to resolve $id")
                     NozzleRoute.FEED
@@ -89,5 +89,15 @@ class NozzleNavActions(
         this.navigate(route) {
             launchSingleTop = true
         }
+    }
+
+    fun getPostCardNavigation(): PostCardNavLambdas {
+        return PostCardNavLambdas(
+            onNavigateToThread = navigateToThread,
+            onNavigateToProfile = navigateToProfile,
+            onNavigateToReply = navigateToReply,
+            onNavigateToQuote = navigateToQuote,
+            onNavigateToId = navigateToId,
+        )
     }
 }

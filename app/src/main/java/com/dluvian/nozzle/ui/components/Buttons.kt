@@ -2,17 +2,18 @@ package com.dluvian.nozzle.ui.components
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Button
 import androidx.compose.material.ButtonDefaults
+import androidx.compose.material.DropdownMenu
 import androidx.compose.material.Icon
 import androidx.compose.material.MaterialTheme.colors
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.CellTower
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Search
@@ -29,9 +30,11 @@ import androidx.compose.ui.unit.dp
 import com.dluvian.nozzle.R
 import com.dluvian.nozzle.model.FeedSettings
 import com.dluvian.nozzle.model.RelayActive
+import com.dluvian.nozzle.ui.components.dropdown.CheckboxDropdownMenuItem
 import com.dluvian.nozzle.ui.components.dropdown.FeedSettingsDropdownMenu
 import com.dluvian.nozzle.ui.components.dropdown.RelaysDropdownMenu
 import com.dluvian.nozzle.ui.theme.sizing
+import com.dluvian.nozzle.ui.theme.spacing
 
 @Composable
 fun GoBackButton(onGoBack: () -> Unit) {
@@ -71,6 +74,26 @@ fun SendTopBarButton(
 }
 
 @Composable
+fun ShowRelaysButton(relays: List<String>) {
+    val showMenu = remember { mutableStateOf(false) }
+    DropdownMenu(
+        expanded = showMenu.value,
+        onDismissRequest = { showMenu.value = false }
+    ) {
+        relays.forEach { relay ->
+            CheckboxDropdownMenuItem(
+                isChecked = true,
+                enabled = false,
+                text = relay,
+                contentPadding = PaddingValues(start = spacing.medium, end = spacing.xl),
+                onToggle = { },
+            )
+        }
+    }
+    RelayIcon(onClick = { showMenu.value = true })
+}
+
+@Composable
 fun ChooseRelayButton(
     relays: List<RelayActive>,
     onClickIndex: (Int) -> Unit,
@@ -93,13 +116,7 @@ fun ChooseRelayButton(
         autopilotEnabled = autopilotEnabled,
         onToggleAutopilot = onToggleAutopilot
     )
-    Icon(
-        modifier = Modifier
-            .clip(CircleShape)
-            .clickable { if (isOpenable) showMenu.value = true },
-        imageVector = Icons.Default.CellTower,
-        contentDescription = stringResource(id = R.string.choose_relays),
-    )
+    RelayIcon(onClick = { if (isOpenable) showMenu.value = true })
 }
 
 @Composable

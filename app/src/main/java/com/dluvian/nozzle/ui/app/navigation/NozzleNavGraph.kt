@@ -46,14 +46,7 @@ fun NozzleNavGraph(
     drawerState: DrawerState,
 ) {
     val scope = rememberCoroutineScope()
-    val onNavigateToEditProfile = remember {
-        {
-            run {
-                vmContainer.editProfileViewModel.onResetUiState()
-                navActions.navigateToEditProfile()
-            }
-        }
-    }
+    val postCardNavLambdas = remember { navActions.getPostCardNavigation() }
     NavHost(
         navController = navController,
         startDestination = startDestination,
@@ -62,15 +55,11 @@ fun NozzleNavGraph(
         composable(NozzleRoute.FEED) {
             FeedRoute(
                 feedViewModel = vmContainer.feedViewModel,
+                postCardNavLambdas = postCardNavLambdas,
                 onPrepareReply = vmContainer.replyViewModel.onPrepareReply,
                 onPreparePost = vmContainer.postViewModel.onPreparePost,
                 onOpenDrawer = { scope.launch { drawerState.open() } },
-                onNavigateToProfile = navActions.navigateToProfile,
-                onNavigateToThread = navActions.navigateToThread,
-                onNavigateToReply = navActions.navigateToReply,
                 onNavigateToPost = navActions.navigateToPost,
-                onNavigateToQuote = navActions.navigateToQuote,
-                onNavigateToId = navActions.navigateToId,
             )
         }
         composable(
@@ -82,17 +71,16 @@ fun NozzleNavGraph(
             )
             ProfileRoute(
                 profileViewModel = vmContainer.profileViewModel,
+                postCardNavLambdas = postCardNavLambdas,
                 onPrepareReply = vmContainer.replyViewModel.onPrepareReply,
-                onNavigateToThread = navActions.navigateToThread,
-                onNavigateToReply = navActions.navigateToReply,
-                onNavigateToEditProfile = onNavigateToEditProfile,
-                onNavigateToQuote = navActions.navigateToQuote,
-                onNavigateToId = navActions.navigateToId
+                onNavigateToEditProfile = navActions.navigateToEditProfile,
             )
         }
         composable(NozzleRoute.INBOX) {
             InboxRoute(
                 inboxViewModel = vmContainer.inboxViewModel,
+                postCardNavLambdas = postCardNavLambdas,
+                onPrepareReply = vmContainer.replyViewModel.onPrepareReply,
                 onGoBack = navActions.popStack,
             )
         }
@@ -135,11 +123,8 @@ fun NozzleNavGraph(
             )
             ThreadRoute(
                 threadViewModel = vmContainer.threadViewModel,
+                postCardNavLambdas = postCardNavLambdas,
                 onPrepareReply = vmContainer.replyViewModel.onPrepareReply,
-                onNavigateToProfile = navActions.navigateToProfile,
-                onNavigateToReply = navActions.navigateToReply,
-                onNavigateToQuote = navActions.navigateToQuote,
-                onNavigateToId = navActions.navigateToId,
                 onGoBack = navActions.popStack,
             )
         }
@@ -175,12 +160,8 @@ fun NozzleNavGraph(
                 vmContainer.hashtagViewModel.onOpenHashtag(hashtag)
                 HashtagRoute(
                     hashtagViewModel = vmContainer.hashtagViewModel,
+                    postCardNavLambdas = postCardNavLambdas,
                     onPrepareReply = vmContainer.replyViewModel.onPrepareReply,
-                    onNavigateToProfile = navActions.navigateToProfile,
-                    onNavigateToThread = navActions.navigateToThread,
-                    onNavigateToReply = navActions.navigateToReply,
-                    onNavigateToQuote = navActions.navigateToQuote,
-                    onNavigateToId = navActions.navigateToId,
                     onGoBack = navActions.popStack,
                 )
             }

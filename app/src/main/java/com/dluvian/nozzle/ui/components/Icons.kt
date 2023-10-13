@@ -9,6 +9,7 @@ import androidx.compose.material.LocalContentColor
 import androidx.compose.material.MaterialTheme.colors
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.CellTower
 import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Favorite
@@ -166,5 +167,16 @@ fun VisibilityIcon(isVisible: Boolean, onToggle: () -> Unit) {
             Icons.Default.Visibility
         },
         contentDescription = stringResource(id = R.string.toggle_visibility),
+    )
+}
+
+@Composable
+fun RelayIcon(onClick: () -> Unit) {
+    Icon(
+        modifier = Modifier
+            .clip(CircleShape)
+            .clickable(onClick = onClick),
+        imageVector = Icons.Default.CellTower,
+        contentDescription = stringResource(id = R.string.relays)
     )
 }

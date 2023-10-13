@@ -27,6 +27,7 @@ import com.dluvian.nozzle.data.nostr.utils.EncodingUtils.createNeventStr
 import com.dluvian.nozzle.model.PostWithMeta
 import com.dluvian.nozzle.model.ThreadPosition
 import com.dluvian.nozzle.model.TrustType
+import com.dluvian.nozzle.ui.app.navigation.PostCardNavLambdas
 import com.dluvian.nozzle.ui.components.*
 import com.dluvian.nozzle.ui.components.postCard.atoms.PostCardContentBase
 import com.dluvian.nozzle.ui.components.postCard.atoms.PostCardHeader
@@ -42,18 +43,14 @@ import com.dluvian.nozzle.ui.theme.*
 @Composable
 fun PostCard(
     post: PostWithMeta,
+    postCardNavLambdas: PostCardNavLambdas,
     onLike: () -> Unit,
     onPrepareReply: (PostWithMeta) -> Unit,
     modifier: Modifier = Modifier,
-    onNavigateToThread: (String) -> Unit,
-    onNavigateToReply: () -> Unit,
-    onNavigateToQuote: (String) -> Unit,
-    onNavigateToId: (String) -> Unit,
     onShowMedia: (String) -> Unit,
     onShouldShowMedia: (String) -> Boolean,
     isCurrent: Boolean = false,
     threadPosition: ThreadPosition = ThreadPosition.SINGLE,
-    onOpenProfile: ((String) -> Unit)? = null,
 ) {
     val x = sizing.profilePicture / 2 + spacing.screenEdge
     val yTop = spacing.screenEdge
@@ -64,7 +61,7 @@ fun PostCard(
     Row(modifier
         .combinedClickable(
             enabled = !isCurrent,
-            onClick = { onNavigateToThread(post.entity.id) },
+            onClick = { postCardNavLambdas.onNavigateToThread(post.entity.id) },
             onLongClick = {
                 // TODO: Move this out of UI layer
                 val nevent = createNeventStr(
@@ -138,20 +135,20 @@ fun PostCard(
                 isFollowed = post.isFollowedByMe,
                 trustScore = post.trustScore,
             ),
-            onOpenProfile = onOpenProfile,
+            onNavigateToProfile = postCardNavLambdas.onNavigateToProfile,
         )
         Spacer(Modifier.width(spacing.large))
         Column {
             PostCardHeaderAndContent(
                 post = post,
                 isCurrent = isCurrent,
-                onOpenProfile = onOpenProfile,
+                onNavigateToProfile = postCardNavLambdas.onNavigateToProfile,
                 onNavigateToThread = {
                     if (!isCurrent) {
-                        onNavigateToThread(post.entity.id)
+                        postCardNavLambdas.onNavigateToThread(post.entity.id)
                     }
                 },
-                onNavigateToId = onNavigateToId,
+                onNavigateToId = postCardNavLambdas.onNavigateToId,
             )
 
             post.mediaUrls.forEach { mediaUrl ->
@@ -167,9 +164,9 @@ fun PostCard(
                 Spacer(Modifier.height(spacing.medium))
                 AnnotatedMentionedPostCard(
                     post = mentionedPost,
-                    onOpenProfile = onOpenProfile,
-                    onNavigateToThread = onNavigateToThread,
-                    onNavigateToId = onNavigateToId,
+                    onNavigateToProfile = postCardNavLambdas.onNavigateToProfile,
+                    onNavigateToThread = postCardNavLambdas.onNavigateToThread,
+                    onNavigateToId = postCardNavLambdas.onNavigateToId,
                 )
             }
 
@@ -178,9 +175,9 @@ fun PostCard(
                 numOfReplies = post.numOfReplies,
                 post = post,
                 onLike = onLike,
-                onPrepareReply = onPrepareReply,
-                onNavigateToReply = onNavigateToReply,
-                onNavigateToQuote = onNavigateToQuote,
+                onPrepareReply = onPrepareReply, // TODO: No prepareReply
+                onNavigateToReply = postCardNavLambdas.onNavigateToReply,
+                onNavigateToQuote = postCardNavLambdas.onNavigateToQuote,
             )
         }
     }
@@ -190,7 +187,7 @@ fun PostCard(
 private fun PostCardHeaderAndContent(
     post: PostWithMeta,
     isCurrent: Boolean,
-    onOpenProfile: ((String) -> Unit)?,
+    onNavigateToProfile: ((String) -> Unit)?,
     onNavigateToThread: () -> Unit,
     onNavigateToId: (String) -> Unit,
 ) {
@@ -199,7 +196,7 @@ private fun PostCardHeaderAndContent(
             name = post.name,
             pubkey = post.pubkey,
             createdAt = post.entity.createdAt,
-            onOpenProfile = onOpenProfile
+            onOpenProfile = onNavigateToProfile
         )
         PostCardContentBase(
             replyToName = post.replyToName,

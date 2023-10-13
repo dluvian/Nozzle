@@ -5,16 +5,13 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.lifecycle.viewModelScope
 import com.dluvian.nozzle.model.PostWithMeta
+import com.dluvian.nozzle.ui.app.navigation.PostCardNavLambdas
 
 @Composable
 fun HashtagRoute(
     hashtagViewModel: HashtagViewModel,
+    postCardNavLambdas: PostCardNavLambdas,
     onPrepareReply: (PostWithMeta) -> Unit,
-    onNavigateToThread: (String) -> Unit,
-    onNavigateToProfile: (String) -> Unit,
-    onNavigateToReply: () -> Unit,
-    onNavigateToQuote: (String) -> Unit,
-    onNavigateToId: (String) -> Unit,
     onGoBack: () -> Unit,
 ) {
     val uiState by hashtagViewModel.uiState.collectAsState()
@@ -23,6 +20,7 @@ fun HashtagRoute(
     HashtagScreen(
         uiState = uiState,
         feed = feedState,
+        postCardNavLambdas = postCardNavLambdas,
         onLike = { post ->
             hashtagViewModel.postCardInteractor.like(
                 scope = hashtagViewModel.viewModelScope,
@@ -39,11 +37,6 @@ fun HashtagRoute(
         onRefresh = hashtagViewModel.onRefresh,
         onLoadMore = hashtagViewModel.onLoadMore,
         onPrepareReply = onPrepareReply,
-        onNavigateToThread = onNavigateToThread,
-        onNavigateToProfile = onNavigateToProfile,
-        onNavigateToReply = onNavigateToReply,
-        onNavigateToQuote = onNavigateToQuote,
-        onNavigateToId = onNavigateToId,
         onGoBack = onGoBack
     )
 }

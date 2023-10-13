@@ -8,24 +8,21 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import com.dluvian.nozzle.model.PostWithMeta
+import com.dluvian.nozzle.ui.app.navigation.PostCardNavLambdas
 import com.dluvian.nozzle.ui.components.PullRefreshBox
 
 @Composable
 fun PostCardList(
     posts: List<PostWithMeta>,
     isRefreshing: Boolean,
+    postCardNavLambdas: PostCardNavLambdas,
     onRefresh: () -> Unit,
     onLike: (PostWithMeta) -> Unit,
     onShowMedia: (String) -> Unit,
     onShouldShowMedia: (String) -> Boolean,
     onPrepareReply: (PostWithMeta) -> Unit,
     onLoadMore: () -> Unit,
-    onNavigateToThread: (String) -> Unit,
-    onNavigateToReply: () -> Unit,
-    onNavigateToQuote: (String) -> Unit,
-    onNavigateToId: (String) -> Unit,
     lazyListState: LazyListState = rememberLazyListState(),
-    onOpenProfile: ((String) -> Unit)? = null,
 ) {
     PullRefreshBox(isRefreshing = isRefreshing, onRefresh = onRefresh) {
         LazyColumn(
@@ -34,15 +31,11 @@ fun PostCardList(
             itemsIndexed(items = posts, key = { _, item -> item.entity.id }) { index, post ->
                 PostCard(
                     post = post,
+                    postCardNavLambdas = postCardNavLambdas,
                     onLike = { onLike(post) },
-                    onOpenProfile = onOpenProfile,
-                    onShowMedia = onShowMedia,
-                    onShouldShowMedia = onShouldShowMedia,
                     onPrepareReply = onPrepareReply,
-                    onNavigateToThread = onNavigateToThread,
-                    onNavigateToReply = onNavigateToReply,
-                    onNavigateToQuote = onNavigateToQuote,
-                    onNavigateToId = onNavigateToId
+                    onShowMedia = onShowMedia,
+                    onShouldShowMedia = onShouldShowMedia
                 )
                 if (index == posts.size - 7 || index == posts.size - 1) {
                     onLoadMore()

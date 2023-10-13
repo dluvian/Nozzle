@@ -29,7 +29,7 @@ fun AnnotatedMentionedPostCard(
     post: AnnotatedMentionedPost,
     modifier: Modifier = Modifier,
     onNavigateToId: (String) -> Unit,
-    onOpenProfile: ((String) -> Unit)? = null,
+    onNavigateToProfile: ((String) -> Unit)? = null,
     onNavigateToThread: ((String) -> Unit)? = null,
 ) {
     Box(modifier = modifier) {
@@ -47,14 +47,14 @@ fun AnnotatedMentionedPostCard(
                         pictureUrl = post.mentionedPost.picture.orEmpty(),
                         pubkey = post.mentionedPost.pubkey,
                         trustType = Oneself, // TODO: Find correct trust type
-                        onOpenProfile = onOpenProfile,
+                        onNavigateToProfile = onNavigateToProfile,
                     )
                     Spacer(modifier = Modifier.width(spacing.medium))
                     PostCardHeader(
                         name = post.mentionedPost.name.orEmpty(),
                         pubkey = post.mentionedPost.pubkey,
                         createdAt = post.mentionedPost.createdAt,
-                        onOpenProfile = onOpenProfile
+                        onOpenProfile = onNavigateToProfile
                     )
                 }
                 PostCardContentBase(

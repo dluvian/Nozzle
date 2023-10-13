@@ -11,7 +11,7 @@ fun PostCardProfilePicture(
     pictureUrl: String,
     pubkey: String,
     trustType: TrustType,
-    onOpenProfile: ((String) -> Unit)?,
+    onNavigateToProfile: ((String) -> Unit)?,
     modifier: Modifier = Modifier,
 ) {
     ProfilePicture(
@@ -19,8 +19,8 @@ fun PostCardProfilePicture(
         pictureUrl = pictureUrl,
         pubkey = pubkey,
         trustType = trustType,
-        onOpenProfile = if (onOpenProfile != null) {
-            { onOpenProfile(pubkey) }
+        onOpenProfile = if (onNavigateToProfile != null) {
+            { onNavigateToProfile(pubkey) }
         } else {
             null
         }

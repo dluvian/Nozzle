@@ -5,20 +5,17 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.lifecycle.viewModelScope
 import com.dluvian.nozzle.model.PostWithMeta
+import com.dluvian.nozzle.ui.app.navigation.PostCardNavLambdas
 
 // TODO: Nav with args, no need for onPrepare
 @Composable
 fun FeedRoute(
     feedViewModel: FeedViewModel,
+    postCardNavLambdas: PostCardNavLambdas,
     onPrepareReply: (PostWithMeta) -> Unit,
     onPreparePost: () -> Unit,
     onOpenDrawer: () -> Unit,
-    onNavigateToProfile: (String) -> Unit,
-    onNavigateToThread: (String) -> Unit,
-    onNavigateToReply: () -> Unit,
     onNavigateToPost: () -> Unit,
-    onNavigateToQuote: (String) -> Unit,
-    onNavigateToId: (String) -> Unit,
 ) {
     val uiState by feedViewModel.uiState.collectAsState()
     val metadataState by feedViewModel.metadataState.collectAsState()
@@ -28,6 +25,7 @@ fun FeedRoute(
         uiState = uiState,
         feedState = feedState,
         metadataState = metadataState,
+        postCardNavLambdas = postCardNavLambdas,
         onLike = { post ->
             feedViewModel.postCardInteractor.like(
                 scope = feedViewModel.viewModelScope,
@@ -41,6 +39,8 @@ fun FeedRoute(
         onShouldShowMedia = { mediaUrl ->
             feedViewModel.clickedMediaUrlCache.contains(mediaUrl)
         },
+        onRefreshFeedView = feedViewModel.onRefreshFeedView,
+        onRefreshOnMenuDismiss = feedViewModel.onRefreshOnMenuDismiss,
         onPrepareReply = onPrepareReply,
         onPreparePost = onPreparePost,
         onToggleContactsOnly = feedViewModel.onToggleContactsOnly,
@@ -48,15 +48,8 @@ fun FeedRoute(
         onToggleReplies = feedViewModel.onToggleReplies,
         onToggleRelayIndex = feedViewModel.onToggleRelayIndex,
         onToggleAutopilot = feedViewModel.onToggleAutopilot,
-        onRefreshFeedView = feedViewModel.onRefreshFeedView,
-        onRefreshOnMenuDismiss = feedViewModel.onRefreshOnMenuDismiss,
         onLoadMore = feedViewModel.onLoadMore,
         onOpenDrawer = onOpenDrawer,
-        onNavigateToProfile = onNavigateToProfile,
-        onNavigateToThread = onNavigateToThread,
-        onNavigateToReply = onNavigateToReply,
         onNavigateToPost = onNavigateToPost,
-        onNavigateToQuote = onNavigateToQuote,
-        onNavigateToId = onNavigateToId,
     )
 }

@@ -20,6 +20,7 @@ import com.dluvian.nozzle.R
 import com.dluvian.nozzle.model.PostThread
 import com.dluvian.nozzle.model.PostWithMeta
 import com.dluvian.nozzle.model.ThreadPosition
+import com.dluvian.nozzle.ui.app.navigation.PostCardNavLambdas
 import com.dluvian.nozzle.ui.components.PullRefreshBox
 import com.dluvian.nozzle.ui.components.ReturnableTopBar
 import com.dluvian.nozzle.ui.components.postCard.NoPostsHint
@@ -32,17 +33,13 @@ import com.dluvian.nozzle.ui.theme.spacing
 fun ThreadScreen(
     thread: PostThread,
     isRefreshing: Boolean,
+    postCardNavLambdas: PostCardNavLambdas,
     onPrepareReply: (PostWithMeta) -> Unit,
     onLike: (PostWithMeta) -> Unit,
     onRefreshThreadView: () -> Unit,
-    onOpenThread: (String) -> Unit,
     onShowMedia: (String) -> Unit,
     onShouldShowMedia: (String) -> Boolean,
     onGoBack: () -> Unit,
-    onNavigateToProfile: (String) -> Unit,
-    onNavigateToReply: () -> Unit,
-    onNavigateToQuote: (String) -> Unit,
-    onNavigateToId: (String) -> Unit,
 ) {
     Column {
         ReturnableTopBar(text = stringResource(id = R.string.thread), onGoBack = onGoBack)
@@ -50,16 +47,12 @@ fun ThreadScreen(
             ThreadedPosts(
                 thread = thread,
                 isRefreshing = isRefreshing,
+                postCardNavLambdas = postCardNavLambdas,
                 onPrepareReply = onPrepareReply,
                 onRefresh = onRefreshThreadView,
                 onLike = onLike,
-                onOpenThread = onOpenThread,
                 onShowMedia = onShowMedia,
                 onShouldShowMedia = onShouldShowMedia,
-                onNavigateToProfile = onNavigateToProfile,
-                onNavigateToReply = onNavigateToReply,
-                onNavigateToQuote = onNavigateToQuote,
-                onNavigateToId = onNavigateToId,
             )
         }
     }
@@ -70,16 +63,12 @@ fun ThreadScreen(
 private fun ThreadedPosts(
     thread: PostThread,
     isRefreshing: Boolean,
+    postCardNavLambdas: PostCardNavLambdas,
     onPrepareReply: (PostWithMeta) -> Unit,
     onRefresh: () -> Unit,
     onLike: (PostWithMeta) -> Unit,
-    onNavigateToProfile: (String) -> Unit,
-    onOpenThread: (String) -> Unit,
     onShowMedia: (String) -> Unit,
     onShouldShowMedia: (String) -> Boolean,
-    onNavigateToReply: () -> Unit,
-    onNavigateToQuote: (String) -> Unit,
-    onNavigateToId: (String) -> Unit,
 ) {
     val lazyListState = rememberLazyListState(initialFirstVisibleItemIndex = thread.previous.size)
     LaunchedEffect(key1 = thread.previous.size) {
@@ -102,16 +91,12 @@ private fun ThreadedPosts(
                     }
                     PostCard(
                         post = post,
+                        postCardNavLambdas = postCardNavLambdas,
                         onLike = { onLike(post) },
                         onPrepareReply = onPrepareReply,
-                        onNavigateToThread = onOpenThread,
-                        onNavigateToReply = onNavigateToReply,
-                        onNavigateToQuote = onNavigateToQuote,
                         onShowMedia = onShowMedia,
                         onShouldShowMedia = onShouldShowMedia,
                         threadPosition = threadPosition,
-                        onOpenProfile = onNavigateToProfile,
-                        onNavigateToId = onNavigateToId,
                     )
                 }
                 item {
@@ -120,6 +105,10 @@ private fun ThreadedPosts(
                     }
                     val focusColor = colors.primaryVariant
                     PostCard(
+                        post = it,
+                        postCardNavLambdas = postCardNavLambdas,
+                        onLike = { onLike(it) },
+                        onPrepareReply = onPrepareReply,
                         modifier = Modifier.drawBehind {
                             drawLine(
                                 color = focusColor,
@@ -128,18 +117,10 @@ private fun ThreadedPosts(
                                 end = Offset(x = 0f, y = size.height),
                             )
                         },
-                        post = it,
-                        onLike = { onLike(it) },
-                        onPrepareReply = onPrepareReply,
-                        onNavigateToThread = onOpenThread,
-                        onNavigateToReply = onNavigateToReply,
-                        onNavigateToQuote = onNavigateToQuote,
                         onShowMedia = onShowMedia,
                         onShouldShowMedia = onShouldShowMedia,
                         isCurrent = true,
                         threadPosition = thread.getCurrentThreadPosition(),
-                        onOpenProfile = onNavigateToProfile,
-                        onNavigateToId = onNavigateToId,
                     )
                     Divider()
                     Spacer(modifier = Modifier.height(spacing.tiny))
@@ -148,15 +129,11 @@ private fun ThreadedPosts(
                 items(thread.replies) { post ->
                     PostCard(
                         post = post,
+                        postCardNavLambdas = postCardNavLambdas,
                         onLike = { onLike(post) },
                         onPrepareReply = onPrepareReply,
-                        onNavigateToThread = onOpenThread,
-                        onNavigateToReply = onNavigateToReply,
-                        onNavigateToQuote = onNavigateToQuote,
                         onShowMedia = onShowMedia,
                         onShouldShowMedia = onShouldShowMedia,
-                        onOpenProfile = onNavigateToProfile,
-                        onNavigateToId = onNavigateToId,
                     )
                 }
             }

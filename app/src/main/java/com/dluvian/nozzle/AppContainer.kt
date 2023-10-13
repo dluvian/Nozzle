@@ -34,6 +34,7 @@ import com.dluvian.nozzle.data.profileFollower.ProfileFollower
 import com.dluvian.nozzle.data.provider.IAutopilotProvider
 import com.dluvian.nozzle.data.provider.IContactListProvider
 import com.dluvian.nozzle.data.provider.IFeedProvider
+import com.dluvian.nozzle.data.provider.IInboxFeedProvider
 import com.dluvian.nozzle.data.provider.IPostWithMetaProvider
 import com.dluvian.nozzle.data.provider.IProfileWithMetaProvider
 import com.dluvian.nozzle.data.provider.IRelayProvider
@@ -41,6 +42,7 @@ import com.dluvian.nozzle.data.provider.IThreadProvider
 import com.dluvian.nozzle.data.provider.impl.AutopilotProvider
 import com.dluvian.nozzle.data.provider.impl.ContactListProvider
 import com.dluvian.nozzle.data.provider.impl.FeedProvider
+import com.dluvian.nozzle.data.provider.impl.InboxFeedProvider
 import com.dluvian.nozzle.data.provider.impl.PostWithMetaProvider
 import com.dluvian.nozzle.data.provider.impl.ProfileWithMetaProvider
 import com.dluvian.nozzle.data.provider.impl.RelayProvider
@@ -183,4 +185,5 @@ class AppContainer(context: Context) {
     )
 
     val postPreparer: IPostPreparer = PostPreparer()
+    val inboxFeedProvider: IInboxFeedProvider = InboxFeedProvider()
 }

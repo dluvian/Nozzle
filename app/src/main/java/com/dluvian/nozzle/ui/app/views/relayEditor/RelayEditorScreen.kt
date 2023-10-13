@@ -205,7 +205,6 @@ private fun RelayRow(relay: String, trailingContent: @Composable (() -> Unit)) {
             maxLines = 1,
             overflow = TextOverflow.Ellipsis
         )
-
         trailingContent()
     }
 }
