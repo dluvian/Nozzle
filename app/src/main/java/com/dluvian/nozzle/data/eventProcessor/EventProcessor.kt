@@ -80,6 +80,7 @@ class EventProcessor(
                 Log.d(TAG, "Insert hashtags: $hashtags")
                 database.hashtagDao().insertOrIgnore(*hashtags.toTypedArray())
             }
+            // TODO: Process mentions with mentionDao
         }
     }
 

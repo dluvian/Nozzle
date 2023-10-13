@@ -99,6 +99,18 @@ interface PostDao {
     ): List<PostEntity>
 
     @Query(
+        "SELECT * " +
+                "FROM post " +
+                "WHERE createdAt < :until " +
+                "ORDER BY createdAt DESC " +
+                "LIMIT :limit"
+    )
+    suspend fun getInboxPosts(
+        until: Long,
+        limit: Int,
+    ): List<PostEntity>
+
+    @Query(
         // SELECT PostEntity
         "SELECT mainPost.*, " +
                 // SELECT likedByMe

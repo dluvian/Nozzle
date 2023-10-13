@@ -1,5 +1,6 @@
 package com.dluvian.nozzle.data.nostr
 
+import com.dluvian.nozzle.data.utils.getCurrentTimeInSeconds
 import com.dluvian.nozzle.model.Pubkey
 import com.dluvian.nozzle.model.Relay
 
@@ -13,7 +14,7 @@ interface INostrSubscriber {
         authorPubkeys: List<String>?,
         hashtag: String?,
         limit: Int,
-        until: Long?,
+        until: Long = getCurrentTimeInSeconds(),
         relays: Collection<String>? = null,
     ): List<String>
 

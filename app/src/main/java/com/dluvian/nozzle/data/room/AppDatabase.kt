@@ -5,6 +5,7 @@ import androidx.room.RoomDatabase
 import com.dluvian.nozzle.data.room.dao.ContactDao
 import com.dluvian.nozzle.data.room.dao.EventRelayDao
 import com.dluvian.nozzle.data.room.dao.HashtagDao
+import com.dluvian.nozzle.data.room.dao.MentionDao
 import com.dluvian.nozzle.data.room.dao.Nip65Dao
 import com.dluvian.nozzle.data.room.dao.PostDao
 import com.dluvian.nozzle.data.room.dao.ProfileDao
@@ -12,6 +13,7 @@ import com.dluvian.nozzle.data.room.dao.ReactionDao
 import com.dluvian.nozzle.data.room.entity.ContactEntity
 import com.dluvian.nozzle.data.room.entity.EventRelayEntity
 import com.dluvian.nozzle.data.room.entity.HashtagEntity
+import com.dluvian.nozzle.data.room.entity.MentionEntity
 import com.dluvian.nozzle.data.room.entity.Nip65Entity
 import com.dluvian.nozzle.data.room.entity.PostEntity
 import com.dluvian.nozzle.data.room.entity.ProfileEntity
@@ -26,8 +28,9 @@ import com.dluvian.nozzle.data.room.entity.ReactionEntity
         ProfileEntity::class,
         ReactionEntity::class,
         HashtagEntity::class,
+        MentionEntity::class,
     ],
-    version = 14
+    version = 15
 )
 abstract class AppDatabase : RoomDatabase() {
     abstract fun contactDao(): ContactDao
@@ -37,4 +40,5 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun postDao(): PostDao
     abstract fun reactionDao(): ReactionDao
     abstract fun hashtagDao(): HashtagDao
+    abstract fun mentionDao(): MentionDao
 }

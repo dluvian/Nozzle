@@ -53,13 +53,12 @@ import com.dluvian.nozzle.data.subscriber.NozzleSubscriber
 import okhttp3.OkHttpClient
 
 class AppContainer(context: Context) {
-    val roomDb: AppDatabase by lazy {
-        Room.databaseBuilder(
-            context = context,
-            klass = AppDatabase::class.java,
-            name = "nozzle_database",
-        ).fallbackToDestructiveMigration().build()
-    }
+    val roomDb: AppDatabase = Room.databaseBuilder(
+        context = context,
+        klass = AppDatabase::class.java,
+        name = "nozzle_database",
+    ).fallbackToDestructiveMigration().build()
+
 
     val keyManager: IKeyManager = KeyManager(context = context)
 
@@ -185,5 +184,9 @@ class AppContainer(context: Context) {
     )
 
     val postPreparer: IPostPreparer = PostPreparer()
-    val inboxFeedProvider: IInboxFeedProvider = InboxFeedProvider()
+    val inboxFeedProvider: IInboxFeedProvider = InboxFeedProvider(
+        nozzleSubscriber = nozzleSubscriber,
+        postWithMetaProvider = postWithMetaProvider,
+        postDao = roomDb.postDao()
+    )
 }

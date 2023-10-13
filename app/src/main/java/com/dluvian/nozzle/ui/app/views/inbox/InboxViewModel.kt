@@ -3,6 +3,8 @@ package com.dluvian.nozzle.ui.app.views.inbox
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import com.dluvian.nozzle.data.DB_APPEND_BATCH_SIZE
+import com.dluvian.nozzle.data.DB_BATCH_SIZE
 import com.dluvian.nozzle.data.MAX_APPEND_ATTEMPTS
 import com.dluvian.nozzle.data.MAX_FEED_LENGTH
 import com.dluvian.nozzle.data.SCOPE_TIMEOUT
@@ -84,7 +86,10 @@ class InboxViewModel(
     }
 
     private suspend fun updateFeed(isRefresh: Boolean) {
-        feedState = inboxFeedProvider.getInboxFeedFlow().stateIn(
+        feedState = inboxFeedProvider.getInboxFeedFlow(
+            limit = DB_BATCH_SIZE,
+            waitForSubscription = if (isRefresh) WAIT_TIME else 0L
+        ).stateIn(
             viewModelScope,
             SharingStarted.WhileSubscribed(stopTimeoutMillis = SCOPE_TIMEOUT),
             if (isRefresh) feedState.value else emptyList(),
@@ -95,7 +100,10 @@ class InboxViewModel(
     private suspend fun appendFeed(currentFeed: List<PostWithMeta>) {
         _uiState.update { it.copy(isRefreshing = true) }
         feedState.value.lastOrNull()?.let { last ->
-            feedState = inboxFeedProvider.getInboxFeedFlow().map { toAppend ->
+            feedState = inboxFeedProvider.getInboxFeedFlow(
+                limit = DB_APPEND_BATCH_SIZE,
+                until = last.entity.createdAt
+            ).map { toAppend ->
                 currentFeed.takeLast(MAX_FEED_LENGTH) + toAppend
             }
                 .stateIn(

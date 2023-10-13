@@ -1,6 +1,7 @@
 package com.dluvian.nozzle.data.subscriber
 
 import com.dluvian.nozzle.data.room.entity.PostEntity
+import com.dluvian.nozzle.data.utils.getCurrentTimeInSeconds
 import com.dluvian.nozzle.model.PostWithMeta
 import com.dluvian.nozzle.model.RelaySelection
 import com.dluvian.nozzle.model.helper.FeedInfo
@@ -14,9 +15,11 @@ interface INozzleSubscriber {
         hashtag: String?,
         authorPubkeys: List<String>?,
         limit: Int,
-        until: Long?,
         relaySelection: RelaySelection,
+        until: Long = getCurrentTimeInSeconds(),
     )
+
+    fun subscribeToInbox(limit: Int, until: Long = getCurrentTimeInSeconds())
 
     // TODO: NostrId instead of String. Prevents parsing nostrStr multiple times
     suspend fun subscribeFullProfile(profileId: String)
