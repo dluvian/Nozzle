@@ -117,7 +117,7 @@ class NozzleSubscriber(
         feedPostSubs.unsubThenAddAll(subIds)
     }
 
-    override fun subscribeToInbox(limit: Int, until: Long) {
+    override fun subscribeToInbox(relays: Collection<String>, limit: Int, until: Long) {
         TODO("Not yet implemented")
     }
 

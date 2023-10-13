@@ -6,6 +6,7 @@ import kotlinx.coroutines.flow.Flow
 
 interface IInboxFeedProvider {
     suspend fun getInboxFeedFlow(
+        relays: Collection<String>,
         limit: Int,
         until: Long = getCurrentTimeInSeconds(),
         waitForSubscription: Long = 0L

@@ -87,6 +87,7 @@ class InboxViewModel(
 
     private suspend fun updateFeed(isRefresh: Boolean) {
         feedState = inboxFeedProvider.getInboxFeedFlow(
+            relays = uiState.value.relays,
             limit = DB_BATCH_SIZE,
             waitForSubscription = if (isRefresh) WAIT_TIME else 0L
         ).stateIn(
@@ -101,6 +102,7 @@ class InboxViewModel(
         _uiState.update { it.copy(isRefreshing = true) }
         feedState.value.lastOrNull()?.let { last ->
             feedState = inboxFeedProvider.getInboxFeedFlow(
+                relays = uiState.value.relays,
                 limit = DB_APPEND_BATCH_SIZE,
                 until = last.entity.createdAt
             ).map { toAppend ->

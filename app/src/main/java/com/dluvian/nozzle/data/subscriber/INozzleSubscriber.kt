@@ -19,7 +19,11 @@ interface INozzleSubscriber {
         until: Long = getCurrentTimeInSeconds(),
     )
 
-    fun subscribeToInbox(limit: Int, until: Long = getCurrentTimeInSeconds())
+    fun subscribeToInbox(
+        relays: Collection<String>,
+        limit: Int,
+        until: Long = getCurrentTimeInSeconds()
+    )
 
     // TODO: NostrId instead of String. Prevents parsing nostrStr multiple times
     suspend fun subscribeFullProfile(profileId: String)
