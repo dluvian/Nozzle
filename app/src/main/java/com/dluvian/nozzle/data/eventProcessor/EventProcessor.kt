@@ -63,25 +63,26 @@ class EventProcessor(
         if (!verify(event)) return
 
         val isNew = dbSweepExcludingCache.addPostId(event.id)
-        if (isNew) {
-            scope.launch {
-                database.postDao().insertWithHashtagsAndMentions(
-                    postEntity = PostEntity.fromEvent(event),
-                    hashtagDao = database.hashtagDao(),
-                    hashtags = event.getHashtags(),
-                    mentionDao = database.mentionDao(),
-                    mentions = event.getMentions()
-                )
-            }.invokeOnCompletion {
-                if (it == null) return@invokeOnCompletion
-                Log.w(TAG, "Processing of post ${event.id} failed", it)
-                dbSweepExcludingCache.removePostId(event.id)
-            }
+        if (!isNew) {
+            insertEventRelay(eventId = event.id, relayUrl = relayUrl)
+            return
         }
-        insertEventRelay(
-            eventId = event.id,
-            relayUrl = relayUrl?.removeTrailingSlashes()
-        )
+        scope.launch {
+            database.postDao().insertWithHashtagsAndMentions(
+                postEntity = PostEntity.fromEvent(event),
+                hashtagDao = database.hashtagDao(),
+                hashtags = event.getHashtags(),
+                mentionDao = database.mentionDao(),
+                mentions = event.getMentions()
+            )
+        }.invokeOnCompletion {
+            if (it == null) {
+                insertEventRelay(eventId = event.id, relayUrl = relayUrl)
+                return@invokeOnCompletion
+            }
+            Log.w(TAG, "Failed to process post ${event.id} from ${event.pubkey}", it)
+            dbSweepExcludingCache.removePostId(event.id)
+        }
 
     }
 
@@ -102,7 +103,7 @@ class EventProcessor(
                 dbSweepExcludingCache.addContactListAuthor(event.pubkey)
                 return@invokeOnCompletion
             }
-            Log.w(TAG, "Processing of contact list ${event.id} from ${event.pubkey} failed", it)
+            Log.w(TAG, "Failed to process contact list ${event.id} from ${event.pubkey}", it)
             otherIdsCache.remove(event.id)
         }
     }
@@ -136,7 +137,7 @@ class EventProcessor(
                 dbSweepExcludingCache.addPubkey(event.pubkey)
                 return@invokeOnCompletion
             }
-            Log.w(TAG, "Processing of profile ${event.id} of ${event.pubkey} failed", it)
+            Log.w(TAG, "Failed to process profile ${event.id} of ${event.pubkey}", it)
             otherIdsCache.remove(event.id)
         }
     }
@@ -150,7 +151,6 @@ class EventProcessor(
 
         otherIdsCache.add(event.id)
 
-        Log.d(TAG, "Process ${nip65Entries.size} nip65 entries from ${event.pubkey}")
         scope.launch {
             val entities = nip65Entries.map {
                 Nip65Entity(
@@ -171,7 +171,7 @@ class EventProcessor(
                 dbSweepExcludingCache.addNip65Author(event.pubkey)
                 return@invokeOnCompletion
             }
-            Log.w(TAG, "Processing of nip65 ${event.id} of ${event.pubkey} failed", it)
+            Log.w(TAG, "Failed to process nip65 ${event.id} of ${event.pubkey}", it)
             otherIdsCache.remove(event.id)
         }
     }
@@ -186,10 +186,14 @@ class EventProcessor(
         val reactedToId = event.getReactedToId() ?: return
 
         scope.launch {
-            database.reactionDao().like(eventId = reactedToId, pubkey = event.pubkey)
+            runCatching {
+                database.reactionDao().like(eventId = reactedToId, pubkey = event.pubkey)
+            }.onFailure {
+                Log.w(TAG, "Failed to insert reaction ${event.id} from ${event.pubkey}")
+            }
         }.invokeOnCompletion {
             if (it == null) return@invokeOnCompletion
-            Log.w(TAG, "Processing of reaction ${event.id} from ${event.pubkey} failed", it)
+            Log.w(TAG, "Failed to process reaction ${event.id} from ${event.pubkey}", it)
             otherIdsCache.remove(event.id)
         }
     }
@@ -220,17 +224,17 @@ class EventProcessor(
     }
 
     private fun insertEventRelay(eventId: String, relayUrl: String?) {
-        if (relayUrl == null) return
+        val cleanRelayUrl = relayUrl?.removeTrailingSlashes() ?: return
 
-        val specialId = eventId + relayUrl
+        val specialId = eventId + cleanRelayUrl
         val isNew = otherIdsCache.add(specialId)
         if (!isNew) return
 
         scope.launch {
-            database.eventRelayDao().insertOrIgnore(eventId = eventId, relayUrl = relayUrl)
+            database.eventRelayDao().insertOrIgnore(eventId = eventId, relayUrl = cleanRelayUrl)
         }.invokeOnCompletion {
             if (it == null) return@invokeOnCompletion
-            Log.w(TAG, "Processing of eventRelay $relayUrl of event $eventId failed", it)
+            Log.w(TAG, "Failed to process eventRelay $cleanRelayUrl of event $eventId", it)
             otherIdsCache.remove(specialId)
         }
     }
