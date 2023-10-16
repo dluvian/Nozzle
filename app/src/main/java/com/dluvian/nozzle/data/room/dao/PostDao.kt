@@ -227,9 +227,9 @@ interface PostDao {
                 "SELECT id " +
                 "FROM post " +
                 "WHERE id NOT IN (:exclude) " +
-                "AND pubkey IS NOT :excludeAuthor" +
-                " ORDER BY createdAt DESC" +
-                " LIMIT :amountToKeep" +
+                "AND pubkey IS NOT :excludeAuthor " +
+                "ORDER BY createdAt DESC " +
+                "LIMIT :amountToKeep" +
                 ")"
     )
     suspend fun deleteAllExceptNewest(

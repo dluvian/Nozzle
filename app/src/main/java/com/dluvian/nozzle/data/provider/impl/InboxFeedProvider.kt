@@ -7,7 +7,7 @@ import com.dluvian.nozzle.data.subscriber.INozzleSubscriber
 import com.dluvian.nozzle.model.PostWithMeta
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.emptyFlow
+import kotlinx.coroutines.flow.flow
 
 class InboxFeedProvider(
     private val nozzleSubscriber: INozzleSubscriber,
@@ -20,7 +20,7 @@ class InboxFeedProvider(
         until: Long,
         waitForSubscription: Long
     ): Flow<List<PostWithMeta>> {
-        if (relays.isEmpty()) return emptyFlow()
+        if (relays.isEmpty()) return flow { emit(emptyList()) }
 
         nozzleSubscriber.subscribeToInbox(
             relays = relays,

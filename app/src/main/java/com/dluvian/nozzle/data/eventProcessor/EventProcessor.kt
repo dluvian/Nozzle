@@ -22,7 +22,6 @@ import java.util.Collections
 
 private const val TAG = "EventProcessor"
 
-// TODO: Check if foreign key exception on insert possible
 class EventProcessor(
     private val dbSweepExcludingCache: IIdCache,
     private val database: AppDatabase,

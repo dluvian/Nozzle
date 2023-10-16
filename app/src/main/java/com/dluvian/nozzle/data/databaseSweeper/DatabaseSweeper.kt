@@ -11,7 +11,6 @@ import kotlin.random.Random
 private const val TAG = "DatabaseSweeper"
 
 
-// TODO: Check if this works once you have internet again
 class DatabaseSweeper(
     private val keepPosts: Int,
     private val pubkeyProvider: IPubkeyProvider,
