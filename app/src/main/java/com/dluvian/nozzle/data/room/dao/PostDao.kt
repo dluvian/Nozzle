@@ -9,7 +9,6 @@ import com.dluvian.nozzle.model.MentionedPost
 import com.dluvian.nozzle.model.Pubkey
 import kotlinx.coroutines.flow.Flow
 
-
 @Dao
 interface PostDao {
 
@@ -157,7 +156,7 @@ interface PostDao {
     ): Flow<List<PostEntityExtended>>
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
-    suspend fun insertIfNotPresent(post: PostEntity)
+    suspend fun insertIfNotPresent(post: PostEntity): Long
 
     @Transaction
     suspend fun insertWithHashtagsAndMentions(
@@ -167,8 +166,10 @@ interface PostDao {
         mentionDao: MentionDao,
         mentions: Collection<Pubkey>
     ) {
-        insertIfNotPresent(postEntity)
-        // TODO: Only invoke below if it is inserted
+        val inserted = insertIfNotPresent(postEntity)
+        if (inserted == -1L) {
+            return
+        }
 
         if (hashtags.isNotEmpty()) {
             val entities = hashtags.map { HashtagEntity(eventId = postEntity.id, hashtag = it) }
