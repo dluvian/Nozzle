@@ -12,4 +12,6 @@ interface IIdCache {
 
     fun addContactListAuthor(pubkey: String): Boolean
     fun getContactListAuthors(): Set<String>
+
+    fun removePostId(postId: String)
 }

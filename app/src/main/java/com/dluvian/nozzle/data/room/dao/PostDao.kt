@@ -1,9 +1,12 @@
 package com.dluvian.nozzle.data.room.dao
 
 import androidx.room.*
+import com.dluvian.nozzle.data.room.entity.HashtagEntity
+import com.dluvian.nozzle.data.room.entity.MentionEntity
 import com.dluvian.nozzle.data.room.entity.PostEntity
 import com.dluvian.nozzle.data.room.helper.extended.PostEntityExtended
 import com.dluvian.nozzle.model.MentionedPost
+import com.dluvian.nozzle.model.Pubkey
 import kotlinx.coroutines.flow.Flow
 
 
@@ -154,7 +157,29 @@ interface PostDao {
     ): Flow<List<PostEntityExtended>>
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
-    suspend fun insertIfNotPresent(vararg post: PostEntity)
+    suspend fun insertIfNotPresent(post: PostEntity)
+
+    @Transaction
+    suspend fun insertWithHashtagsAndMentions(
+        postEntity: PostEntity,
+        hashtagDao: HashtagDao,
+        hashtags: Collection<String>,
+        mentionDao: MentionDao,
+        mentions: Collection<Pubkey>
+    ) {
+        insertIfNotPresent(postEntity)
+        // TODO: Only invoke below if it is inserted
+
+        if (hashtags.isNotEmpty()) {
+            val entities = hashtags.map { HashtagEntity(eventId = postEntity.id, hashtag = it) }
+            hashtagDao.insertOrIgnore(*entities.toTypedArray())
+        }
+
+        if (mentions.isNotEmpty()) {
+            val entities = mentions.map { MentionEntity(eventId = postEntity.id, pubkey = it) }
+            mentionDao.insertOrIgnore(*entities.toTypedArray())
+        }
+    }
 
     @Query("SELECT * FROM post WHERE id = :id")
     suspend fun getPost(id: String): PostEntity?

@@ -39,4 +39,8 @@ class IdCache : IIdCache {
     override fun getContactListAuthors(): Set<String> {
         return contactListAuthors.toSet()
     }
+
+    override fun removePostId(postId: String) {
+        postIds.remove(postId)
+    }
 }
