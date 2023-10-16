@@ -3,7 +3,6 @@ package com.dluvian.nozzle
 import android.content.Context
 import androidx.room.Room
 import com.dluvian.nozzle.data.SWEEP_THRESHOLD
-import com.dluvian.nozzle.data.SWEEP_THRESHOLD_FACTOR
 import com.dluvian.nozzle.data.annotatedContent.AnnotatedContentHandler
 import com.dluvian.nozzle.data.cache.ClickedMediaUrlCache
 import com.dluvian.nozzle.data.cache.IClickedMediaUrlCache
@@ -176,7 +175,6 @@ class AppContainer(context: Context) {
 
     val databaseSweeper: IDatabaseSweeper = DatabaseSweeper(
         keepPosts = SWEEP_THRESHOLD,
-        thresholdFactor = SWEEP_THRESHOLD_FACTOR,
         pubkeyProvider = keyManager,
         contactListProvider = contactListProvider,
         dbSweepExcludingCache = dbSweepExcludingCache,

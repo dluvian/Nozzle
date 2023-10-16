@@ -39,11 +39,4 @@ class IdCache : IIdCache {
     override fun getContactListAuthors(): Set<String> {
         return contactListAuthors.toSet()
     }
-
-    override fun clearAll() {
-        postIds.clear()
-        pubkeys.clear()
-        nip65Pubkeys.clear()
-        contactListAuthors.clear()
-    }
 }

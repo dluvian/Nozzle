@@ -12,12 +12,6 @@ interface ReactionDao {
     suspend fun like(eventId: String, pubkey: String)
 
     @Query(
-        "DELETE FROM reaction " +
-                "WHERE eventId NOT IN (SELECT id FROM post)"
-    )
-    suspend fun deleteOrphaned(): Int
-
-    @Query(
         "SELECT eventId " +
                 "FROM reaction " +
                 "WHERE pubkey = :pubkey " +

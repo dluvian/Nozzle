@@ -196,16 +196,21 @@ interface PostDao {
                 "WHERE " +
                 "id NOT IN (:exclude) " +
                 "AND pubkey IS NOT :excludeAuthor " +
-                "AND id NOT IN (SELECT id FROM post ORDER BY createdAt DESC LIMIT :amountToKeep)"
+                "AND id NOT IN (" +
+                // Exclude newest without the ones already excluded
+                "SELECT id " +
+                "FROM post " +
+                "WHERE id NOT IN (:exclude) " +
+                "AND pubkey IS NOT :excludeAuthor" +
+                " ORDER BY createdAt DESC" +
+                " LIMIT :amountToKeep" +
+                ")"
     )
     suspend fun deleteAllExceptNewest(
         amountToKeep: Int,
         exclude: Collection<String>,
         excludeAuthor: String
     ): Int
-
-    @Query("SELECT COUNT(*) FROM post")
-    suspend fun countPosts(): Int
 
     @Query(
         "SELECT pubkey " +
