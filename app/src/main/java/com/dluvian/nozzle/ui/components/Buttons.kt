@@ -28,6 +28,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.dluvian.nozzle.R
+import com.dluvian.nozzle.data.utils.UrlUtils.removeWebsocketPrefix
 import com.dluvian.nozzle.model.FeedSettings
 import com.dluvian.nozzle.model.RelayActive
 import com.dluvian.nozzle.ui.components.dropdown.CheckboxDropdownMenuItem
@@ -76,11 +77,12 @@ fun SendTopBarButton(
 @Composable
 fun ShowRelaysButton(relays: List<String>) {
     val showMenu = remember { mutableStateOf(false) }
+    val cleanRelays = remember(relays) { relays.map { it.removeWebsocketPrefix() } }
     DropdownMenu(
         expanded = showMenu.value,
         onDismissRequest = { showMenu.value = false }
     ) {
-        relays.forEach { relay ->
+        cleanRelays.forEach { relay ->
             CheckboxDropdownMenuItem(
                 isChecked = true,
                 enabled = false,

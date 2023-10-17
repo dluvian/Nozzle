@@ -14,6 +14,7 @@ import com.dluvian.nozzle.data.postCardInteractor.IPostCardInteractor
 import com.dluvian.nozzle.data.provider.IInboxFeedProvider
 import com.dluvian.nozzle.data.provider.IRelayProvider
 import com.dluvian.nozzle.model.PostWithMeta
+import com.dluvian.nozzle.model.Relay
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -74,20 +75,16 @@ class InboxViewModel(
     }
 
     private suspend fun updateScreen(isRefresh: Boolean) {
-        _uiState.update {
-            it.copy(
-                isRefreshing = true,
-                relays = relayProvider.getReadRelays()
-            )
-        }
-        updateFeed(isRefresh = isRefresh)
+        val relays = relayProvider.getReadRelays()
+        _uiState.update { it.copy(isRefreshing = true, relays = relays) }
+        updateFeed(isRefresh = isRefresh, relays = relays)
         if (isRefresh) delay(WAIT_TIME)
         _uiState.update { it.copy(isRefreshing = false) }
     }
 
-    private suspend fun updateFeed(isRefresh: Boolean) {
+    private suspend fun updateFeed(isRefresh: Boolean, relays: Collection<Relay>) {
         feedState = inboxFeedProvider.getInboxFeedFlow(
-            relays = uiState.value.relays,
+            relays = relays,
             limit = DB_BATCH_SIZE,
             waitForSubscription = if (isRefresh) WAIT_TIME else 0L
         ).stateIn(
