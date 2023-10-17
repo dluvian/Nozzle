@@ -58,7 +58,6 @@ class AppContainer(context: Context) {
         name = "nozzle_database",
     ).fallbackToDestructiveMigration().build()
 
-
     val keyManager: IKeyManager = KeyManager(context = context)
 
     val contactListProvider: IContactListProvider = ContactListProvider(
@@ -112,9 +111,7 @@ class AppContainer(context: Context) {
     )
 
     init {
-        nostrService.initialize(
-            initRelays = relayProvider.getWriteRelays().toSet() + relayProvider.getReadRelays()
-        )
+        nostrService.initialize(initRelays = relayProvider.getReadRelays())
     }
 
     val postCardInteractor: IPostCardInteractor = PostCardInteractor(
