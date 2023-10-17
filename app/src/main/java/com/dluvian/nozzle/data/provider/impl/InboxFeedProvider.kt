@@ -2,6 +2,7 @@ package com.dluvian.nozzle.data.provider.impl
 
 import com.dluvian.nozzle.data.provider.IInboxFeedProvider
 import com.dluvian.nozzle.data.provider.IPostWithMetaProvider
+import com.dluvian.nozzle.data.provider.IPubkeyProvider
 import com.dluvian.nozzle.data.room.dao.PostDao
 import com.dluvian.nozzle.data.subscriber.INozzleSubscriber
 import com.dluvian.nozzle.model.PostWithMeta
@@ -11,6 +12,7 @@ import kotlinx.coroutines.flow.flow
 
 class InboxFeedProvider(
     private val nozzleSubscriber: INozzleSubscriber,
+    private val pubkeyProvider: IPubkeyProvider,
     private val postWithMetaProvider: IPostWithMetaProvider,
     private val postDao: PostDao,
 ) : IInboxFeedProvider {
@@ -20,7 +22,7 @@ class InboxFeedProvider(
         until: Long,
         waitForSubscription: Long
     ): Flow<List<PostWithMeta>> {
-        if (relays.isEmpty()) return flow { emit(emptyList()) }
+        if (relays.isEmpty() || limit <= 0) return flow { emit(emptyList()) }
 
         nozzleSubscriber.subscribeToInbox(
             relays = relays,
@@ -29,7 +31,12 @@ class InboxFeedProvider(
         )
         delay(waitForSubscription)
 
-        val posts = postDao.getInboxBasePosts(relays = relays, until = until, limit = limit)
+        val posts = postDao.getInboxBasePosts(
+            mentionedPubkey = pubkeyProvider.getPubkey(),
+            relays = relays,
+            until = until,
+            limit = limit
+        )
         val feedInfo = nozzleSubscriber.subscribeFeedInfo(posts = posts)
 
         return postWithMetaProvider.getPostsWithMetaFlow(feedInfo = feedInfo)

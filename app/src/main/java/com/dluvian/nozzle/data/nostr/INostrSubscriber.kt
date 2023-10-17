@@ -38,6 +38,13 @@ interface INostrSubscriber {
         relays: Collection<String>? = null
     ): List<String>
 
+    fun subscribePostsWithMention(
+        mentionedPubkey: String,
+        limit: Int,
+        until: Long = getCurrentTimeInSeconds(),
+        relays: Collection<String>? = null,
+    ): List<String>
+
     fun subscribeNip65(pubkeys: List<String>): List<String>
 
     fun unsubscribe(subscriptionIds: Collection<String>)

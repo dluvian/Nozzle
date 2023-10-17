@@ -43,6 +43,7 @@ class NozzleSubscriber(
     private val threadPostSubs = Collections.synchronizedList(mutableListOf<String>())
     private val parentPostSubs = Collections.synchronizedList(mutableListOf<String>())
     private val unknownPubkeySubs = Collections.synchronizedList(mutableListOf<String>())
+    private val inboxSubs = Collections.synchronizedList(mutableListOf<String>())
 
     override fun subscribePersonalProfile() {
         Log.i(TAG, "Subscribe personal profile")
@@ -117,8 +118,21 @@ class NozzleSubscriber(
         feedPostSubs.unsubThenAddAll(subIds)
     }
 
-    override fun subscribeToInbox(relays: Collection<String>, limit: Int, until: Long) {
-        TODO("Not yet implemented")
+    override fun subscribeToInbox(
+        relays: Collection<String>,
+        limit: Int,
+        until: Long
+    ) {
+        Log.i(TAG, "Subscribe inbox")
+        if (relays.isEmpty() || limit <= 0) return
+
+        val subIds = nostrSubscriber.subscribePostsWithMention(
+            mentionedPubkey = pubkeyProvider.getPubkey(),
+            limit = limit,
+            until = until,
+            relays = relays
+        )
+        inboxSubs.unsubThenAddAll(subIds)
     }
 
     override suspend fun subscribeFeedInfo(posts: List<PostEntity>): FeedInfo {

@@ -68,6 +68,7 @@ interface PostDao {
                 "AND id IN (SELECT DISTINCT eventId FROM eventRelay WHERE relayUrl IN (:relays)) " +
                 "AND createdAt < :until " +
                 "AND (:hashtag IS NULL OR id IN (SELECT eventId FROM hashtag WHERE hashtag = :hashtag)) " +
+                "AND (:mentionedPubkey IS NULL OR id IN (SELECT eventId FROM mention WHERE pubkey = :mentionedPubkey)) " +
                 "ORDER BY createdAt DESC " +
                 "LIMIT :limit"
     )
@@ -78,6 +79,7 @@ interface PostDao {
         relays: Collection<String>,
         until: Long,
         limit: Int,
+        mentionedPubkey: Pubkey? = null,
     ): List<PostEntity>
 
     /**
@@ -101,7 +103,9 @@ interface PostDao {
     ): List<PostEntity>
 
 
+    // TODO: Determine mentionedPubkey via db table
     suspend fun getInboxBasePosts(
+        mentionedPubkey: Pubkey,
         until: Long,
         limit: Int,
         relays: Collection<String>
@@ -113,6 +117,7 @@ interface PostDao {
             relays = relays,
             until = until,
             limit = limit,
+            mentionedPubkey = mentionedPubkey
         )
     }
 

@@ -184,6 +184,7 @@ class AppContainer(context: Context) {
     val postPreparer: IPostPreparer = PostPreparer()
     val inboxFeedProvider: IInboxFeedProvider = InboxFeedProvider(
         nozzleSubscriber = nozzleSubscriber,
+        pubkeyProvider = keyManager,
         postWithMetaProvider = postWithMetaProvider,
         postDao = roomDb.postDao()
     )
