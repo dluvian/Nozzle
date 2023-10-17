@@ -42,10 +42,4 @@ interface EventRelayDao {
                 "(SELECT id FROM post WHERE pubkey = :pubkey) "
     )
     fun listUsedRelaysFlow(pubkey: String): Flow<List<String>>
-
-    @Query(
-        "DELETE FROM eventRelay " +
-                "WHERE eventId NOT IN (SELECT id FROM post)"
-    )
-    suspend fun deleteOrphaned(): Int
 }

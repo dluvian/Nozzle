@@ -1,20 +1,22 @@
-package com.dluvian.nozzle.ui.app.views.hashtag
+package com.dluvian.nozzle.ui.app.views.inbox
 
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
+import com.dluvian.nozzle.R
 import com.dluvian.nozzle.model.PostWithMeta
 import com.dluvian.nozzle.ui.app.navigation.PostCardNavLambdas
 import com.dluvian.nozzle.ui.components.ReturnableTopBar
+import com.dluvian.nozzle.ui.components.ShowRelaysButton
 import com.dluvian.nozzle.ui.components.postCard.NoPostsHint
 import com.dluvian.nozzle.ui.components.postCard.PostCardList
 
-
 @Composable
-fun HashtagScreen(
-    uiState: HashtagViewModelState,
+fun InboxScreen(
+    uiState: InboxViewModelState,
     feed: List<PostWithMeta>,
     postCardNavLambdas: PostCardNavLambdas,
     onLike: (PostWithMeta) -> Unit,
@@ -26,10 +28,16 @@ fun HashtagScreen(
     onGoBack: () -> Unit,
 ) {
     Column {
-        val title = remember(uiState.feedSettings.hashtag) {
-            "#${uiState.feedSettings.hashtag.orEmpty()}"
-        }
-        ReturnableTopBar(text = title, onGoBack = onGoBack)
+        ReturnableTopBar(
+            text = stringResource(id = R.string.inbox),
+            onGoBack = onGoBack,
+            trailingIcon = {
+                // Wrapped in Row or else dialog will be aligned to the left
+                // TODO: Check if Row-wrap is still necessary
+                Row {
+                    ShowRelaysButton(relays = uiState.relays)
+                }
+            })
         Column(modifier = Modifier.fillMaxSize()) {
             PostCardList(
                 posts = feed,
@@ -38,8 +46,8 @@ fun HashtagScreen(
                 onRefresh = onRefresh,
                 onLike = onLike,
                 onShowMedia = onShowMedia,
-                onShouldShowMedia = onShouldShowMedia,
-                onPrepareReply = onPrepareReply, // TODO: Delete dis
+                onShouldShowMedia = onShouldShowMedia, // TODO: Delete dis
+                onPrepareReply = onPrepareReply,
                 onLoadMore = onLoadMore,
             )
         }

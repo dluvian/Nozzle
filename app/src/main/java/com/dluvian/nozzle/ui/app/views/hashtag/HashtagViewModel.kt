@@ -15,8 +15,6 @@ import com.dluvian.nozzle.data.provider.IFeedProvider
 import com.dluvian.nozzle.data.provider.IRelayProvider
 import com.dluvian.nozzle.data.utils.*
 import com.dluvian.nozzle.data.utils.HashtagUtils.removeHashtagPrefix
-import com.dluvian.nozzle.model.Everyone
-import com.dluvian.nozzle.model.FeedSettings
 import com.dluvian.nozzle.model.MultipleRelays
 import com.dluvian.nozzle.model.PostWithMeta
 import kotlinx.coroutines.Dispatchers
@@ -27,28 +25,17 @@ import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicInteger
 
 
-data class HashtagViewModelState(
-    val isRefreshing: Boolean = false,
-    val feedSettings: FeedSettings = FeedSettings(
-        isPosts = true,
-        isReplies = true,
-        hashtag = null,
-        authorSelection = Everyone,
-        relaySelection = MultipleRelays(emptyList())
-    ),
-)
-
 class HashtagViewModel(
     val clickedMediaUrlCache: IClickedMediaUrlCache,
     val postCardInteractor: IPostCardInteractor,
     private val feedProvider: IFeedProvider,
     private val relayProvider: IRelayProvider,
 ) : ViewModel() {
-    private val uiFlow = MutableStateFlow(HashtagViewModelState())
-    val uiState = uiFlow.stateIn(
+    private val _uiState = MutableStateFlow(HashtagViewModelState())
+    val uiState = _uiState.stateIn(
         viewModelScope,
         SharingStarted.WhileSubscribed(stopTimeoutMillis = SCOPE_TIMEOUT),
-        uiFlow.value
+        _uiState.value
     )
 
     var feedState: StateFlow<List<PostWithMeta>> = MutableStateFlow(emptyList())
@@ -67,7 +54,7 @@ class HashtagViewModel(
 
     val onRefresh: () -> Unit = {
         viewModelScope.launch(context = Dispatchers.IO) {
-            updateScreen(hashtag = uiFlow.value.feedSettings.hashtag.orEmpty())
+            updateScreen(hashtag = _uiState.value.feedSettings.hashtag.orEmpty())
         }
     }
 
@@ -89,8 +76,8 @@ class HashtagViewModel(
     }
 
     private suspend fun updateScreen(hashtag: String) {
-        val isRefresh = hashtag == uiFlow.value.feedSettings.hashtag
-        uiFlow.update {
+        val isRefresh = hashtag == _uiState.value.feedSettings.hashtag
+        _uiState.update {
             it.copy(
                 isRefreshing = true,
                 feedSettings = it.feedSettings.copy(hashtag = hashtag)
@@ -99,12 +86,12 @@ class HashtagViewModel(
         updateRelays()
         updateFeed(isRefresh = isRefresh)
         if (isRefresh) delay(WAIT_TIME)
-        uiFlow.update { it.copy(isRefreshing = false) }
+        _uiState.update { it.copy(isRefreshing = false) }
     }
 
     private suspend fun updateFeed(isRefresh: Boolean) {
         feedState = feedProvider.getFeedFlow(
-            feedSettings = uiFlow.value.feedSettings,
+            feedSettings = _uiState.value.feedSettings,
             limit = DB_BATCH_SIZE,
             waitForSubscription = WAIT_TIME,
         ).stateIn(
@@ -116,10 +103,10 @@ class HashtagViewModel(
 
     // TODO: Append in FeedProvider to reduce duplicate code in ProvileVM and FeedVM
     private suspend fun appendFeed(currentFeed: List<PostWithMeta>) {
-        uiFlow.update { it.copy(isRefreshing = true) }
+        _uiState.update { it.copy(isRefreshing = true) }
         feedState.value.lastOrNull()?.let { last ->
             feedState = feedProvider.getFeedFlow(
-                feedSettings = uiFlow.value.feedSettings,
+                feedSettings = _uiState.value.feedSettings,
                 limit = DB_APPEND_BATCH_SIZE,
                 until = last.entity.createdAt
             ).map { toAppend -> currentFeed.takeLast(MAX_FEED_LENGTH) + toAppend }
@@ -130,12 +117,12 @@ class HashtagViewModel(
                 )
         }
         delay(WAIT_TIME)
-        uiFlow.update { it.copy(isRefreshing = false) }
+        _uiState.update { it.copy(isRefreshing = false) }
     }
 
 
     private fun updateRelays() {
-        uiFlow.update { ui ->
+        _uiState.update { ui ->
             ui.copy(
                 feedSettings = ui.feedSettings.copy(
                     relaySelection = MultipleRelays(
@@ -145,7 +132,6 @@ class HashtagViewModel(
             )
         }
     }
-
 
     companion object {
         fun provideFactory(

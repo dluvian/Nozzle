@@ -1,21 +1,21 @@
 package com.dluvian.nozzle.data.room.entity
 
 import androidx.room.Entity
-import androidx.room.ForeignKey
+import androidx.room.ForeignKey.Companion.CASCADE
 import androidx.room.ForeignKey.Companion.NO_ACTION
 
 @Entity(
-    tableName = "eventRelay",
-    primaryKeys = ["eventId", "relayUrl"],
-    foreignKeys = [ForeignKey(
+    tableName = "mention",
+    primaryKeys = ["eventId", "pubkey"],
+    foreignKeys = [androidx.room.ForeignKey(
         entity = PostEntity::class,
         parentColumns = ["id"],
         childColumns = ["eventId"],
-        onDelete = ForeignKey.CASCADE,
+        onDelete = CASCADE,
         onUpdate = NO_ACTION
     )]
 )
-data class EventRelayEntity(
+data class MentionEntity(
     val eventId: String,
-    val relayUrl: String,
+    val pubkey: String,
 )

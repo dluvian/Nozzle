@@ -1,4 +1,4 @@
-package com.dluvian.nozzle.ui.app.views.hashtag
+package com.dluvian.nozzle.ui.app.views.inbox
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -8,34 +8,34 @@ import com.dluvian.nozzle.model.PostWithMeta
 import com.dluvian.nozzle.ui.app.navigation.PostCardNavLambdas
 
 @Composable
-fun HashtagRoute(
-    hashtagViewModel: HashtagViewModel,
+fun InboxRoute(
+    inboxViewModel: InboxViewModel,
     postCardNavLambdas: PostCardNavLambdas,
     onPrepareReply: (PostWithMeta) -> Unit,
     onGoBack: () -> Unit,
 ) {
-    val uiState by hashtagViewModel.uiState.collectAsState()
-    val feedState by hashtagViewModel.feedState.collectAsState()
+    val uiState by inboxViewModel.uiState.collectAsState()
+    val feed by inboxViewModel.feedState.collectAsState()
 
-    HashtagScreen(
+    InboxScreen(
         uiState = uiState,
-        feed = feedState,
+        feed = feed,
         postCardNavLambdas = postCardNavLambdas,
         onLike = { post ->
-            hashtagViewModel.postCardInteractor.like(
-                scope = hashtagViewModel.viewModelScope,
+            inboxViewModel.postCardInteractor.like(
+                scope = inboxViewModel.viewModelScope,
                 postId = post.entity.id,
                 postPubkey = post.pubkey
             )
         },
         onShowMedia = { mediaUrl ->
-            hashtagViewModel.clickedMediaUrlCache.insert(mediaUrl)
+            inboxViewModel.clickedMediaUrlCache.insert(mediaUrl)
         },
         onShouldShowMedia = { mediaUrl ->
-            hashtagViewModel.clickedMediaUrlCache.contains(mediaUrl)
+            inboxViewModel.clickedMediaUrlCache.contains(mediaUrl)
         },
-        onRefresh = hashtagViewModel.onRefresh,
-        onLoadMore = hashtagViewModel.onLoadMore,
+        onRefresh = inboxViewModel.onRefresh,
+        onLoadMore = inboxViewModel.onLoadMore,
         onPrepareReply = onPrepareReply,
         onGoBack = onGoBack
     )

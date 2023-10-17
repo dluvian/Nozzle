@@ -5,72 +5,61 @@ import com.dluvian.nozzle.data.cache.IIdCache
 import com.dluvian.nozzle.data.provider.IContactListProvider
 import com.dluvian.nozzle.data.provider.IPubkeyProvider
 import com.dluvian.nozzle.data.room.AppDatabase
+import java.util.concurrent.atomic.AtomicBoolean
+import kotlin.random.Random
 
 private const val TAG = "DatabaseSweeper"
 
 class DatabaseSweeper(
     private val keepPosts: Int,
-    private val thresholdFactor: Float,
     private val pubkeyProvider: IPubkeyProvider,
     private val contactListProvider: IContactListProvider,
     private val dbSweepExcludingCache: IIdCache,
     private val database: AppDatabase
 ) : IDatabaseSweeper {
+    private val isSweeping = AtomicBoolean(false)
     override suspend fun sweep() {
-        val postCount = database.postDao().countPosts()
-        if (postCount < thresholdFactor * keepPosts) {
-            Log.i(TAG, "Skip sweep. Only $postCount posts in db")
+        if (!isSweeping.compareAndSet(false, true)) {
+            Log.i(TAG, "Sweep blocked by ongoing sweep")
             return
         }
-        val excludePostIds = dbSweepExcludingCache.getPostIds()
-        val excludeProfiles = dbSweepExcludingCache.getPubkeys()
-        Log.i(
-            TAG,
-            "Sweep database leaving $keepPosts, " +
-                    "excluding ${excludePostIds.size} posts " +
-                    "and ${excludeProfiles.size} profiles"
-        )
+        Log.i(TAG, "Sweep database")
+        val excludePubkeys = dbSweepExcludingCache.getPubkeys() +
+                contactListProvider.listPersonalContactPubkeys() +
+                pubkeyProvider.getPubkey()
 
-        val start = System.currentTimeMillis()
-        delete(excludePostIds = excludePostIds, excludeProfiles = excludeProfiles)
-        dbSweepExcludingCache.clearAll()
-        Log.i(TAG, "Execution time ${System.currentTimeMillis() - start}ms")
+        when (Random.nextInt(until = 4)) {
+            0 -> deletePosts()
+            1 -> deleteProfiles(excludePubkeys = excludePubkeys)
+            2 -> deleteContactLists(excludePubkeys = excludePubkeys)
+            3 -> deleteNip65(excludePubkeys = excludePubkeys)
+            else -> Log.w(TAG, "Delete case not covered")
+        }
+        isSweeping.set(false)
     }
 
-    private suspend fun delete(
-        excludePostIds: Collection<String>,
-        excludeProfiles: Collection<String>
-    ) {
-        // TODO: Exclude contacts via db table of user acc
-        val contacts = contactListProvider.listPersonalContactPubkeys() + pubkeyProvider.getPubkey()
+    private suspend fun deletePosts() {
         // TODO: Exclude author via db table of user acc
         val deletePostCount = database.postDao().deleteAllExceptNewest(
             amountToKeep = keepPosts,
-            exclude = excludePostIds,
+            exclude = dbSweepExcludingCache.getPostIds(),
             excludeAuthor = pubkeyProvider.getPubkey()
         )
         Log.i(TAG, "Deleted $deletePostCount posts")
-        if (deletePostCount == 0) return
+    }
 
-        val deleteRelayCount = database.eventRelayDao().deleteOrphaned()
-        Log.i(TAG, "Deleted $deleteRelayCount event relay entries")
-
-        val deleteHashtagCount = database.hashtagDao().deleteOrphaned()
-        Log.i(TAG, "Deleted $deleteHashtagCount hashtag entries")
-
-        val deleteReactionCount = database.reactionDao().deleteOrphaned()
-        Log.i(TAG, "Deleted $deleteReactionCount reactions")
-
-        val deleteProfileCount = database.profileDao().deleteOrphaned(
-            exclude = excludeProfiles + contacts
-        )
+    private suspend fun deleteProfiles(excludePubkeys: Collection<String>) {
+        val deleteProfileCount = database.profileDao().deleteOrphaned(exclude = excludePubkeys)
         Log.i(TAG, "Deleted $deleteProfileCount profiles")
+    }
 
-        val deleteContactCount = database.contactDao().deleteOrphaned(exclude = contacts)
+    private suspend fun deleteContactLists(excludePubkeys: Collection<String>) {
+        val deleteContactCount = database.contactDao().deleteOrphaned(exclude = excludePubkeys)
         Log.i(TAG, "Deleted $deleteContactCount contact entries")
+    }
 
-        // TODO: Exclude author via db table of user acc
-        val deleteNip65Count = database.nip65Dao().deleteOrphaned(excludePubkeys = contacts)
+    private suspend fun deleteNip65(excludePubkeys: Collection<String>) {
+        val deleteNip65Count = database.nip65Dao().deleteOrphaned(excludePubkeys = excludePubkeys)
         Log.i(TAG, "Deleted $deleteNip65Count nip65 entries")
     }
 }

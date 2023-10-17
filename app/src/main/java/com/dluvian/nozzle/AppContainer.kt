@@ -3,7 +3,6 @@ package com.dluvian.nozzle
 import android.content.Context
 import androidx.room.Room
 import com.dluvian.nozzle.data.SWEEP_THRESHOLD
-import com.dluvian.nozzle.data.SWEEP_THRESHOLD_FACTOR
 import com.dluvian.nozzle.data.annotatedContent.AnnotatedContentHandler
 import com.dluvian.nozzle.data.cache.ClickedMediaUrlCache
 import com.dluvian.nozzle.data.cache.IClickedMediaUrlCache
@@ -34,6 +33,7 @@ import com.dluvian.nozzle.data.profileFollower.ProfileFollower
 import com.dluvian.nozzle.data.provider.IAutopilotProvider
 import com.dluvian.nozzle.data.provider.IContactListProvider
 import com.dluvian.nozzle.data.provider.IFeedProvider
+import com.dluvian.nozzle.data.provider.IInboxFeedProvider
 import com.dluvian.nozzle.data.provider.IPostWithMetaProvider
 import com.dluvian.nozzle.data.provider.IProfileWithMetaProvider
 import com.dluvian.nozzle.data.provider.IRelayProvider
@@ -41,6 +41,7 @@ import com.dluvian.nozzle.data.provider.IThreadProvider
 import com.dluvian.nozzle.data.provider.impl.AutopilotProvider
 import com.dluvian.nozzle.data.provider.impl.ContactListProvider
 import com.dluvian.nozzle.data.provider.impl.FeedProvider
+import com.dluvian.nozzle.data.provider.impl.InboxFeedProvider
 import com.dluvian.nozzle.data.provider.impl.PostWithMetaProvider
 import com.dluvian.nozzle.data.provider.impl.ProfileWithMetaProvider
 import com.dluvian.nozzle.data.provider.impl.RelayProvider
@@ -51,13 +52,11 @@ import com.dluvian.nozzle.data.subscriber.NozzleSubscriber
 import okhttp3.OkHttpClient
 
 class AppContainer(context: Context) {
-    val roomDb: AppDatabase by lazy {
-        Room.databaseBuilder(
-            context = context,
-            klass = AppDatabase::class.java,
-            name = "nozzle_database",
-        ).fallbackToDestructiveMigration().build()
-    }
+    val roomDb: AppDatabase = Room.databaseBuilder(
+        context = context,
+        klass = AppDatabase::class.java,
+        name = "nozzle_database",
+    ).fallbackToDestructiveMigration().build()
 
     val keyManager: IKeyManager = KeyManager(context = context)
 
@@ -112,9 +111,7 @@ class AppContainer(context: Context) {
     )
 
     init {
-        nostrService.initialize(
-            initRelays = relayProvider.getWriteRelays().toSet() + relayProvider.getReadRelays()
-        )
+        nostrService.initialize(initRelays = relayProvider.getReadRelays())
     }
 
     val postCardInteractor: IPostCardInteractor = PostCardInteractor(
@@ -175,7 +172,6 @@ class AppContainer(context: Context) {
 
     val databaseSweeper: IDatabaseSweeper = DatabaseSweeper(
         keepPosts = SWEEP_THRESHOLD,
-        thresholdFactor = SWEEP_THRESHOLD_FACTOR,
         pubkeyProvider = keyManager,
         contactListProvider = contactListProvider,
         dbSweepExcludingCache = dbSweepExcludingCache,
@@ -183,4 +179,10 @@ class AppContainer(context: Context) {
     )
 
     val postPreparer: IPostPreparer = PostPreparer()
+    val inboxFeedProvider: IInboxFeedProvider = InboxFeedProvider(
+        nozzleSubscriber = nozzleSubscriber,
+        pubkeyProvider = keyManager,
+        postWithMetaProvider = postWithMetaProvider,
+        postDao = roomDb.postDao()
+    )
 }

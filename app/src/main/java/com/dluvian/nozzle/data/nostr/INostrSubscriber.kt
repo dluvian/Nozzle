@@ -1,5 +1,6 @@
 package com.dluvian.nozzle.data.nostr
 
+import com.dluvian.nozzle.data.utils.getCurrentTimeInSeconds
 import com.dluvian.nozzle.model.Pubkey
 import com.dluvian.nozzle.model.Relay
 
@@ -13,7 +14,7 @@ interface INostrSubscriber {
         authorPubkeys: List<String>?,
         hashtag: String?,
         limit: Int,
-        until: Long?,
+        until: Long = getCurrentTimeInSeconds(),
         relays: Collection<String>? = null,
     ): List<String>
 
@@ -35,6 +36,13 @@ interface INostrSubscriber {
     fun subscribePosts(
         postIds: List<String>,
         relays: Collection<String>? = null
+    ): List<String>
+
+    fun subscribePostsWithMention(
+        mentionedPubkey: String,
+        limit: Int,
+        until: Long = getCurrentTimeInSeconds(),
+        relays: Collection<String>? = null,
     ): List<String>
 
     fun subscribeNip65(pubkeys: List<String>): List<String>

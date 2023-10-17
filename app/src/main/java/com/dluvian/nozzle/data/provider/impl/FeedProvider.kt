@@ -8,7 +8,6 @@ import com.dluvian.nozzle.data.provider.IPubkeyProvider
 import com.dluvian.nozzle.data.room.dao.PostDao
 import com.dluvian.nozzle.data.room.entity.PostEntity
 import com.dluvian.nozzle.data.subscriber.INozzleSubscriber
-import com.dluvian.nozzle.data.utils.getCurrentTimeInSeconds
 import com.dluvian.nozzle.model.AuthorSelection
 import com.dluvian.nozzle.model.Contacts
 import com.dluvian.nozzle.model.Everyone
@@ -31,8 +30,8 @@ class FeedProvider(
     override suspend fun getFeedFlow(
         feedSettings: FeedSettings,
         limit: Int,
-        until: Long?,
-        waitForSubscription: Long?,
+        until: Long,
+        waitForSubscription: Long,
     ): Flow<List<PostWithMeta>> {
         Log.i(TAG, "Get feed")
         val authorSelectionPubkeys = listPubkeys(authorSelection = feedSettings.authorSelection)
@@ -40,12 +39,11 @@ class FeedProvider(
             isReplies = feedSettings.isReplies,
             hashtag = feedSettings.hashtag,
             authorPubkeys = authorSelectionPubkeys,
-            limit = limit,
-            until = until,
-            relaySelection = feedSettings.relaySelection
+            limit = 2 * limit,
+            relaySelection = feedSettings.relaySelection,
+            until = until
         )
-
-        waitForSubscription?.let { delay(it) }
+        delay(waitForSubscription)
 
         val posts = listPosts(
             isPosts = feedSettings.isPosts,
@@ -53,7 +51,7 @@ class FeedProvider(
             hashtag = feedSettings.hashtag,
             authorPubkeys = authorSelectionPubkeys,
             relays = feedSettings.relaySelection.selectedRelays,
-            until = until ?: getCurrentTimeInSeconds(),
+            until = until,
             limit = limit,
         )
 

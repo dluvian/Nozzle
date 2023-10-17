@@ -1,11 +1,13 @@
 package com.dluvian.nozzle.data.room.dao
 
 import androidx.room.*
+import com.dluvian.nozzle.data.room.entity.HashtagEntity
+import com.dluvian.nozzle.data.room.entity.MentionEntity
 import com.dluvian.nozzle.data.room.entity.PostEntity
 import com.dluvian.nozzle.data.room.helper.extended.PostEntityExtended
 import com.dluvian.nozzle.model.MentionedPost
+import com.dluvian.nozzle.model.Pubkey
 import kotlinx.coroutines.flow.Flow
-
 
 @Dao
 interface PostDao {
@@ -66,6 +68,7 @@ interface PostDao {
                 "AND id IN (SELECT DISTINCT eventId FROM eventRelay WHERE relayUrl IN (:relays)) " +
                 "AND createdAt < :until " +
                 "AND (:hashtag IS NULL OR id IN (SELECT eventId FROM hashtag WHERE hashtag = :hashtag)) " +
+                "AND (:mentionedPubkey IS NULL OR id IN (SELECT eventId FROM mention WHERE pubkey = :mentionedPubkey)) " +
                 "ORDER BY createdAt DESC " +
                 "LIMIT :limit"
     )
@@ -76,6 +79,7 @@ interface PostDao {
         relays: Collection<String>,
         until: Long,
         limit: Int,
+        mentionedPubkey: Pubkey? = null,
     ): List<PostEntity>
 
     /**
@@ -97,6 +101,25 @@ interface PostDao {
         until: Long,
         limit: Int,
     ): List<PostEntity>
+
+
+    // TODO: Determine mentionedPubkey via db table
+    suspend fun getInboxBasePosts(
+        mentionedPubkey: Pubkey,
+        until: Long,
+        limit: Int,
+        relays: Collection<String>
+    ): List<PostEntity> {
+        return getGlobalFeedBasePostsByRelays(
+            isPosts = true,
+            isReplies = true,
+            hashtag = null,
+            relays = relays,
+            until = until,
+            limit = limit,
+            mentionedPubkey = mentionedPubkey
+        )
+    }
 
     @Query(
         // SELECT PostEntity
@@ -138,7 +161,31 @@ interface PostDao {
     ): Flow<List<PostEntityExtended>>
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
-    suspend fun insertIfNotPresent(vararg post: PostEntity)
+    suspend fun insertIfNotPresent(post: PostEntity): Long
+
+    @Transaction
+    suspend fun insertWithHashtagsAndMentions(
+        postEntity: PostEntity,
+        hashtagDao: HashtagDao,
+        hashtags: Collection<String>,
+        mentionDao: MentionDao,
+        mentions: Collection<Pubkey>
+    ) {
+        val inserted = insertIfNotPresent(postEntity)
+        if (inserted == -1L) {
+            return
+        }
+
+        if (hashtags.isNotEmpty()) {
+            val entities = hashtags.map { HashtagEntity(eventId = postEntity.id, hashtag = it) }
+            hashtagDao.insertOrIgnore(*entities.toTypedArray())
+        }
+
+        if (mentions.isNotEmpty()) {
+            val entities = mentions.map { MentionEntity(eventId = postEntity.id, pubkey = it) }
+            mentionDao.insertOrIgnore(*entities.toTypedArray())
+        }
+    }
 
     @Query("SELECT * FROM post WHERE id = :id")
     suspend fun getPost(id: String): PostEntity?
@@ -180,16 +227,18 @@ interface PostDao {
                 "WHERE " +
                 "id NOT IN (:exclude) " +
                 "AND pubkey IS NOT :excludeAuthor " +
-                "AND id NOT IN (SELECT id FROM post ORDER BY createdAt DESC LIMIT :amountToKeep)"
+                "AND id NOT IN (" +
+                // Exclude newest without the ones already excluded
+                "SELECT id FROM post WHERE id NOT IN (:exclude) " +
+                "AND pubkey IS NOT :excludeAuthor " +
+                "ORDER BY createdAt DESC LIMIT :amountToKeep" +
+                ")"
     )
     suspend fun deleteAllExceptNewest(
         amountToKeep: Int,
         exclude: Collection<String>,
         excludeAuthor: String
     ): Int
-
-    @Query("SELECT COUNT(*) FROM post")
-    suspend fun countPosts(): Int
 
     @Query(
         "SELECT pubkey " +

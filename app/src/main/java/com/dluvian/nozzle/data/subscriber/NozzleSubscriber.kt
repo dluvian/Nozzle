@@ -43,6 +43,7 @@ class NozzleSubscriber(
     private val threadPostSubs = Collections.synchronizedList(mutableListOf<String>())
     private val parentPostSubs = Collections.synchronizedList(mutableListOf<String>())
     private val unknownPubkeySubs = Collections.synchronizedList(mutableListOf<String>())
+    private val inboxSubs = Collections.synchronizedList(mutableListOf<String>())
 
     override fun subscribePersonalProfile() {
         Log.i(TAG, "Subscribe personal profile")
@@ -71,23 +72,18 @@ class NozzleSubscriber(
         hashtag: String?,
         authorPubkeys: List<String>?,
         limit: Int,
-        until: Long?,
-        relaySelection: RelaySelection
+        relaySelection: RelaySelection,
+        until: Long
     ) {
         Log.i(TAG, "Subscribe feed posts")
         if (authorPubkeys != null && authorPubkeys.isEmpty()) return
-
-        // We can't exclude replies in relay subscriptions,
-        // so we increase the limit for post-only settings
-        // to increase the chance of receiving more posts.
-        val adjustedLimit = if (isReplies) 2 * limit else 3 * limit
 
         val subIds = when (relaySelection) {
             is AllRelays, is MultipleRelays -> {
                 nostrSubscriber.subscribeToFeedPosts(
                     authorPubkeys = authorPubkeys,
                     hashtag = hashtag,
-                    limit = adjustedLimit,
+                    limit = limit,
                     until = until,
                     relays = relaySelection.selectedRelays
                 )
@@ -98,18 +94,19 @@ class NozzleSubscriber(
                     nostrSubscriber.subscribeToFeedPosts(
                         authorPubkeys = null,
                         hashtag = hashtag,
-                        limit = adjustedLimit,
+                        limit = limit,
                         until = until,
                         relays = relaySelection.selectedRelays
                     )
                 } else {
                     relaySelection.pubkeysPerRelay.flatMap { (relay, pubkeys) ->
                         // We ignore authorPubkeys because relaySelection should contain them
+                        // TODO: Bad design. IMPROVE
                         if (pubkeys.isNotEmpty()) {
                             nostrSubscriber.subscribeToFeedPosts(
                                 authorPubkeys = pubkeys.toList(),
                                 hashtag = hashtag,
-                                limit = adjustedLimit,
+                                limit = limit,
                                 until = until,
                                 relays = listOf(relay)
                             )
@@ -119,6 +116,23 @@ class NozzleSubscriber(
             }
         }
         feedPostSubs.unsubThenAddAll(subIds)
+    }
+
+    override fun subscribeToInbox(
+        relays: Collection<String>,
+        limit: Int,
+        until: Long
+    ) {
+        Log.i(TAG, "Subscribe inbox")
+        if (relays.isEmpty() || limit <= 0) return
+
+        val subIds = nostrSubscriber.subscribePostsWithMention(
+            mentionedPubkey = pubkeyProvider.getPubkey(),
+            limit = limit,
+            until = until,
+            relays = relays
+        )
+        inboxSubs.unsubThenAddAll(subIds)
     }
 
     override suspend fun subscribeFeedInfo(posts: List<PostEntity>): FeedInfo {

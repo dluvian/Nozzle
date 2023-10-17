@@ -36,14 +36,14 @@ class NostrSubscriber(private val nostrService: INostrService) : INostrSubscribe
         authorPubkeys: List<String>?,
         hashtag: String?,
         limit: Int,
-        until: Long?,
+        until: Long,
         relays: Collection<String>?
     ): List<String> {
         Log.i(TAG, "Subscribe to feed of ${authorPubkeys?.size} pubkeys in ${relays?.size} relays")
         val postFilter = Filter.createPostFilter(
             pubkeys = authorPubkeys,
             t = hashtag?.let { listOf(hashtag) },
-            until = until ?: getCurrentTimeInSeconds(),
+            until = until,
             limit = limit
         )
 
@@ -181,6 +181,25 @@ class NostrSubscriber(private val nostrService: INostrService) : INostrSubscribe
 
         return nostrService.subscribe(
             filters = listOf(postFilter),
+            unsubOnEOSE = true,
+            relays = relays,
+        )
+    }
+
+    override fun subscribePostsWithMention(
+        mentionedPubkey: String,
+        limit: Int,
+        until: Long,
+        relays: Collection<String>?
+    ): List<String> {
+        val mentionFilter = Filter.createPostFilter(
+            p = listOf(mentionedPubkey),
+            limit = limit,
+            until = until,
+        )
+
+        return nostrService.subscribe(
+            filters = listOf(mentionFilter),
             unsubOnEOSE = true,
             relays = relays,
         )

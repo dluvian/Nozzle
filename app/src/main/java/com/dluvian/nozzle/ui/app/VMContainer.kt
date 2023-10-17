@@ -4,6 +4,7 @@ import com.dluvian.nozzle.ui.app.views.drawer.NozzleDrawerViewModel
 import com.dluvian.nozzle.ui.app.views.editProfile.EditProfileViewModel
 import com.dluvian.nozzle.ui.app.views.feed.FeedViewModel
 import com.dluvian.nozzle.ui.app.views.hashtag.HashtagViewModel
+import com.dluvian.nozzle.ui.app.views.inbox.InboxViewModel
 import com.dluvian.nozzle.ui.app.views.keys.KeysViewModel
 import com.dluvian.nozzle.ui.app.views.post.PostViewModel
 import com.dluvian.nozzle.ui.app.views.profile.ProfileViewModel
@@ -16,6 +17,7 @@ data class VMContainer(
     val drawerViewModel: NozzleDrawerViewModel,
     val profileViewModel: ProfileViewModel,
     val feedViewModel: FeedViewModel,
+    val inboxViewModel: InboxViewModel,
     val keysViewModel: KeysViewModel,
     val editProfileViewModel: EditProfileViewModel,
     val threadViewModel: ThreadViewModel,

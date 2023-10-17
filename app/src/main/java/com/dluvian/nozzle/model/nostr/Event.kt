@@ -1,5 +1,6 @@
 package com.dluvian.nozzle.model.nostr
 
+import com.dluvian.nozzle.data.nostr.utils.KeyUtils
 import com.dluvian.nozzle.data.room.helper.Nip65Relay
 import com.dluvian.nozzle.data.utils.JsonUtils.gson
 import com.dluvian.nozzle.data.utils.SchnorrUtils
@@ -247,6 +248,12 @@ class Event(
         .filter { it[0] == "t" }
         .mapNotNull { it.getOrNull(1)?.trim() }
         .filter { it.isNotEmpty() }
+        .distinct()
+
+    fun getMentions() = tags
+        .filter { it[0] == "p" }
+        .mapNotNull { it.getOrNull(1)?.trim() }
+        .filter { KeyUtils.isValidHexKey(it) }
         .distinct()
 
     fun isReaction() = this.kind == Kind.REACTION

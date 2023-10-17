@@ -40,10 +40,7 @@ class IdCache : IIdCache {
         return contactListAuthors.toSet()
     }
 
-    override fun clearAll() {
-        postIds.clear()
-        pubkeys.clear()
-        nip65Pubkeys.clear()
-        contactListAuthors.clear()
+    override fun removePostId(postId: String) {
+        postIds.remove(postId)
     }
 }
