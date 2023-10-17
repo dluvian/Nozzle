@@ -82,7 +82,6 @@ class EventProcessor(
             Log.w(TAG, "Failed to process post ${event.id} from ${event.pubkey}", it)
             dbSweepExcludingCache.removePostId(event.id)
         }
-
     }
 
     private fun processContactList(event: Event) {

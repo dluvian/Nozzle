@@ -10,7 +10,6 @@ import kotlin.random.Random
 
 private const val TAG = "DatabaseSweeper"
 
-
 class DatabaseSweeper(
     private val keepPosts: Int,
     private val pubkeyProvider: IPubkeyProvider,

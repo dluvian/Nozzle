@@ -74,6 +74,8 @@ fun SendTopBarButton(
     )
 }
 
+
+// TODO: ShowRelaysButton and ChooseRelayButton should be the same
 @Composable
 fun ShowRelaysButton(relays: List<String>) {
     val showMenu = remember { mutableStateOf(false) }
