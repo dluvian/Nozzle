@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.Icon
 import androidx.compose.material.MaterialTheme
@@ -41,41 +42,45 @@ import com.dluvian.nozzle.ui.theme.spacing
 
 @Composable
 fun NozzleDrawerScreen(
-    pubkeyState: DrawerViewModelState,
+    uiState: NozzleDrawerViewModelState,
     metadataState: Metadata?,
     navActions: NozzleNavActions,
     closeDrawer: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    Column(
+    LazyColumn(
         modifier = modifier
             .fillMaxSize()
-            .padding(vertical = spacing.screenEdge)
+            .padding(vertical = spacing.screenEdge),
+        verticalArrangement = Arrangement.SpaceBetween
     ) {
-        ProfileRow(
-            modifier = Modifier.padding(horizontal = spacing.medium),
-            picture = metadataState?.picture.orEmpty(),
-            pubkey = pubkeyState.pubkey,
-            npub = pubkeyState.npub,
-            profileName = metadataState?.name.orEmpty(),
-            navigateToProfile = navActions.navigateToProfile,
-            closeDrawer = closeDrawer
-        )
-        Spacer(
-            modifier = Modifier
-                .height(spacing.medium)
-                .padding(horizontal = spacing.screenEdge)
-        )
-        MainRows(
-            modifier = Modifier.padding(spacing.screenEdge),
-            navigateToFeed = navActions.navigateToFeed,
-            navigateToSearch = navActions.navigateToSearch,
-            navigateToRelayEditor = navActions.navigateToRelayEditor,
-            navigateToInbox = navActions.navigateToInbox,
-            navigateToKeys = navActions.navigateToKeys,
-            closeDrawer = closeDrawer
-        )
-        VersionText()
+        item {
+            ProfileRow(
+                modifier = Modifier.padding(horizontal = spacing.medium),
+                picture = metadataState?.picture.orEmpty(),
+                pubkey = uiState.pubkey,
+                profileName = metadataState?.name
+                    .orEmpty()
+                    .ifEmpty { getShortenedNpub(uiState.npub) ?: uiState.npub },
+                navigateToProfile = navActions.navigateToProfile,
+                closeDrawer = closeDrawer
+            )
+            Spacer(
+                modifier = Modifier
+                    .height(spacing.medium)
+                    .padding(horizontal = spacing.screenEdge)
+            )
+            MainRows(
+                modifier = Modifier.padding(spacing.screenEdge),
+                navigateToFeed = navActions.navigateToFeed,
+                navigateToSearch = navActions.navigateToSearch,
+                navigateToRelayEditor = navActions.navigateToRelayEditor,
+                navigateToInbox = navActions.navigateToInbox,
+                navigateToKeys = navActions.navigateToKeys,
+                closeDrawer = closeDrawer
+            )
+        }
+        item { VersionText() }
     }
 }
 
@@ -83,7 +88,6 @@ fun NozzleDrawerScreen(
 private fun ProfileRow(
     picture: String,
     pubkey: String,
-    npub: String,
     profileName: String,
     navigateToProfile: (String) -> Unit,
     closeDrawer: () -> Unit,
@@ -119,7 +123,7 @@ private fun ProfileRow(
                 )
                 Spacer(Modifier.width(spacing.large))
                 Text(
-                    text = profileName.ifEmpty { getShortenedNpub(npub) ?: npub },
+                    text = profileName,
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis,
                     style = MaterialTheme.typography.h6,

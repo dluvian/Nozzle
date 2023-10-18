@@ -15,28 +15,24 @@ import kotlinx.coroutines.flow.update
 private const val TAG = "NozzleDrawerViewModel"
 
 // TODO: Flow from DB instead of manually setting state
-data class DrawerViewModelState(
-    val pubkey: String = "",
-    val npub: String = "",
-)
 
 class NozzleDrawerViewModel(
     private val personalProfileProvider: IPersonalProfileProvider,
     nozzleSubscriber: INozzleSubscriber,
 ) : ViewModel() {
-    private val drawerViewModelState = MutableStateFlow(DrawerViewModelState())
+    private val _uiState = MutableStateFlow(NozzleDrawerViewModelState())
 
     var metadataState = personalProfileProvider.getMetadataStateFlow()
 
-    val pubkeyState = drawerViewModelState
+    val uiState = _uiState
         .stateIn(
             viewModelScope,
             SharingStarted.Eagerly,
-            drawerViewModelState.value
+            _uiState.value
         )
 
     init {
-        useCachedValues()
+        resetState()
         nozzleSubscriber.subscribePersonalProfile()
     }
 
@@ -44,12 +40,11 @@ class NozzleDrawerViewModel(
         Log.i(TAG, "Reset UI")
         // TODO: USE FLOWS
         metadataState = personalProfileProvider.getMetadataStateFlow()
-        useCachedValues()
+        resetState()
     }
 
-    private fun useCachedValues() {
-        Log.i(TAG, "Set cached values")
-        drawerViewModelState.update {
+    private fun resetState() {
+        _uiState.update {
             it.copy(
                 pubkey = personalProfileProvider.getPubkey(),
                 npub = personalProfileProvider.getNpub(),
