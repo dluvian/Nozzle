@@ -175,7 +175,7 @@ class EventProcessor(
     }
 
     private fun processReaction(event: Event) {
-        if (event.content != "+") return
+        if (event.content != "+" && event.content.isNotEmpty()) return
         if (otherIdsCache.contains(event.id)) return
         if (!verify(event)) return
 
