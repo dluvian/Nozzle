@@ -2,6 +2,7 @@ package com.dluvian.nozzle.data.nostr
 
 import android.util.Log
 import com.dluvian.nozzle.data.eventProcessor.IEventProcessor
+import com.dluvian.nozzle.data.getDefaultRelays
 import com.dluvian.nozzle.data.manager.IKeyManager
 import com.dluvian.nozzle.data.room.helper.Nip65Relay
 import com.dluvian.nozzle.model.nostr.Event
@@ -78,6 +79,7 @@ class NostrService(
             keys = keyManager.getKeys(),
         )
         client.addRelays(nip65Relays.map { it.url })
+        client.addRelays(getDefaultRelays())
         client.publishToRelays(event = event)
 
         return event
