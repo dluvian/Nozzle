@@ -12,6 +12,8 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.CellTower
 import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.ExpandLess
+import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.FormatQuote
@@ -178,5 +180,18 @@ fun RelayIcon(onClick: () -> Unit) {
             .clickable(onClick = onClick),
         imageVector = Icons.Default.CellTower,
         contentDescription = stringResource(id = R.string.relays)
+    )
+}
+
+@Composable
+fun ExpandIcon(isExpanded: Boolean, onToggle: () -> Unit, modifier: Modifier = Modifier) {
+    Icon(
+        modifier = modifier
+            .clip(CircleShape)
+            .clickable(onClick = onToggle),
+        imageVector = if (isExpanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
+        contentDescription = stringResource(
+            id = if (isExpanded) R.string.collapse else R.string.expand
+        )
     )
 }

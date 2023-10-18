@@ -93,6 +93,8 @@
     <string name="save">Save</string>
     <string name="my_friends_relays">My Friends Relays</string>
     <string name="inbox">Inbox</string>
+    <string name="collapse">Collapse</string>
+    <string name="expand">Expand</string>
     <plurals name="other_relays">
         <item quantity="one">other</item>
         <item quantity="other">others</item>

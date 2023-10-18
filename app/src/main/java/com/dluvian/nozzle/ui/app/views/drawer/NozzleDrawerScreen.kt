@@ -1,5 +1,6 @@
 package com.dluvian.nozzle.ui.app.views.drawer
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -25,6 +26,8 @@ import androidx.compose.material.icons.rounded.Key
 import androidx.compose.material.icons.rounded.Newspaper
 import androidx.compose.material.icons.rounded.Search
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -34,9 +37,11 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import com.dluvian.nozzle.R
 import com.dluvian.nozzle.data.nostr.utils.ShortenedNameUtils.getShortenedNpub
+import com.dluvian.nozzle.model.Account
 import com.dluvian.nozzle.model.Oneself
 import com.dluvian.nozzle.model.nostr.Metadata
 import com.dluvian.nozzle.ui.app.navigation.NozzleNavActions
+import com.dluvian.nozzle.ui.components.ExpandIcon
 import com.dluvian.nozzle.ui.components.media.ProfilePicture
 import com.dluvian.nozzle.ui.theme.spacing
 
@@ -55,7 +60,7 @@ fun NozzleDrawerScreen(
         verticalArrangement = Arrangement.SpaceBetween
     ) {
         item {
-            ProfileRow(
+            TopRow(
                 modifier = Modifier.padding(horizontal = spacing.medium),
                 picture = metadataState?.picture.orEmpty(),
                 pubkey = uiState.pubkey,
@@ -85,7 +90,7 @@ fun NozzleDrawerScreen(
 }
 
 @Composable
-private fun ProfileRow(
+private fun TopRow(
     picture: String,
     pubkey: String,
     profileName: String,
@@ -100,18 +105,53 @@ private fun ProfileRow(
         color = colors.surface,
         shape = MaterialTheme.shapes.small
     ) {
-        TextButton(
-            onClick = {
-                navigateToProfile(pubkey)
-                closeDrawer()
-            },
-            modifier = Modifier.fillMaxWidth()
+        val isExpanded = remember { mutableStateOf(false) }
+        Column {
+            ActiveAccount(
+                picture = picture,
+                pubkey = pubkey,
+                profileName = profileName,
+                isExpanded = isExpanded.value,
+                onToggleExpand = { isExpanded.value = !isExpanded.value },
+                onClick = {
+                    navigateToProfile(pubkey)
+                    closeDrawer()
+                }
+            )
+            AnimatedVisibility(visible = isExpanded.value) {
+                AccountRows(
+                    listOf(
+                        Account("lol", "", "asdfasdf"),
+                        Account("lol", "", "asdfasdf"),
+                        Account("lol", "", "asdfasdf"),
+                        Account("lol", "", "asdfasdf"),
+                        Account("lol", "", "asdfasdf"),
+                        Account("lol", "", "asdfasdf"),
+                        Account("lol", "", "asdfasdf"),
+                        Account("lol", "", "asdfasdf"),
+                        Account("lol", "", "asdfasdf"),
+                    )
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun ActiveAccount(
+    picture: String,
+    pubkey: String,
+    profileName: String,
+    isExpanded: Boolean,
+    onToggleExpand: () -> Unit,
+    onClick: () -> Unit,
+) {
+    TextButton(onClick = onClick) {
+        Row(
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            Row(
-                horizontalArrangement = Arrangement.Start,
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.fillMaxWidth()
-            ) {
+            Row(modifier = Modifier.weight(1f), verticalAlignment = Alignment.CenterVertically) {
                 ProfilePicture(
                     modifier = Modifier
                         .fillMaxWidth(0.20f)
@@ -125,6 +165,38 @@ private fun ProfileRow(
                 Text(
                     text = profileName,
                     maxLines = 2,
+                    overflow = TextOverflow.Ellipsis,
+                    style = MaterialTheme.typography.h6,
+                    color = colors.onSurface
+                )
+            }
+            ExpandIcon(
+                modifier = Modifier.padding(spacing.small),
+                isExpanded = isExpanded,
+                onToggle = onToggleExpand
+            )
+        }
+    }
+}
+
+@Composable
+private fun AccountRows(accounts: List<Account>) {
+    Column(modifier = Modifier.fillMaxWidth()) {
+        accounts.forEach { acc ->
+            Row {
+                ProfilePicture(
+                    modifier = Modifier
+                        .fillMaxWidth(0.10f)
+                        .aspectRatio(1f)
+                        .clip(CircleShape),
+                    pictureUrl = acc.picture,
+                    pubkey = acc.pubkey,
+                    trustType = Oneself
+                )
+                Spacer(Modifier.width(spacing.large))
+                Text(
+                    text = acc.name,
+                    maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                     style = MaterialTheme.typography.h6,
                     color = colors.onSurface
