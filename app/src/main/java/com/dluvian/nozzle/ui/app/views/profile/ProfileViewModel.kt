@@ -65,8 +65,8 @@ class ProfileViewModel(
 
     var feedState: StateFlow<List<PostWithMeta>> = MutableStateFlow(emptyList())
 
-    private val isFollowedByMeFlow = MutableStateFlow(false)
-    val isFollowedByMeState = isFollowedByMeFlow
+    private val _isFollowedByMeState = MutableStateFlow(false)
+    val isFollowedByMeState = _isFollowedByMeState
         .stateIn(
             viewModelScope,
             SharingStarted.WhileSubscribed(),
@@ -91,6 +91,7 @@ class ProfileViewModel(
             } else {
                 Log.i(TAG, "Set UI for $nonNullPubkey")
                 failedAppendAttempts.set(0)
+                followProcess = null
                 viewModelScope.launch(context = Dispatchers.IO) {
                     setProfileAndFeed(profileId = nonNullProfileId)
                 }.invokeOnCompletion {
@@ -147,7 +148,7 @@ class ProfileViewModel(
     val onFollow: (String) -> Unit = { pubkeyToFollow ->
         if (!isFollowedByMeState.value) {
             followProcess?.cancel(CancellationException("Cancelled to start follow process"))
-            isFollowedByMeFlow.update { true }
+            _isFollowedByMeState.update { true }
             followProcess = viewModelScope.launch(context = Dispatchers.IO) {
                 profileFollower.follow(pubkeyToFollow = pubkeyToFollow)
             }
@@ -160,7 +161,7 @@ class ProfileViewModel(
     val onUnfollow: (String) -> Unit = { pubkeyToUnfollow ->
         if (isFollowedByMeState.value) {
             followProcess?.cancel(CancellationException("Cancelled to start unfollow process"))
-            isFollowedByMeFlow.update { false }
+            _isFollowedByMeState.update { false }
             followProcess = viewModelScope.launch(context = Dispatchers.IO) {
                 profileFollower.unfollow(pubkeyToUnfollow = pubkeyToUnfollow)
             }
@@ -185,7 +186,9 @@ class ProfileViewModel(
 
     private suspend fun setProfile(profileId: String, pubkey: String) {
         Log.i(TAG, "Set profile of $profileId")
-        updateFollowFlow(newPubkey = pubkey)
+        _isFollowedByMeState.update {
+            contactListProvider.listPersonalContactPubkeys().contains(pubkey)
+        }
         profileState = profileProvider.getProfileFlow(profileId = profileId)
             .stateIn(
                 viewModelScope,
@@ -193,12 +196,6 @@ class ProfileViewModel(
                 if (profileState.value.pubkey == pubkey) profileState.value
                 else ProfileWithMeta.createEmpty(),
             )
-    }
-
-    private suspend fun updateFollowFlow(newPubkey: String) {
-        isFollowedByMeFlow.update {
-            contactListProvider.listPersonalContactPubkeys().contains(newPubkey)
-        }
     }
 
     private suspend fun setFeed(pubkey: String) {
