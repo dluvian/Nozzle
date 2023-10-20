@@ -95,6 +95,7 @@
     <string name="inbox">Inbox</string>
     <string name="collapse">Collapse</string>
     <string name="expand">Expand</string>
+    <string name="add_account">Add Account</string>
     <plurals name="other_relays">
         <item quantity="one">other</item>
         <item quantity="other">others</item>

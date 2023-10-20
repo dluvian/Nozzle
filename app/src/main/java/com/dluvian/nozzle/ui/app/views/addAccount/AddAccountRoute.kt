@@ -4,5 +4,5 @@ import androidx.compose.runtime.Composable
 
 @Composable
 fun AddAccountRoute(addAccountViewModel: AddAccountViewModel, onGoBack: () -> Unit) {
-    AddAccountScreen()
+    AddAccountScreen(onGoBack = onGoBack)
 }
