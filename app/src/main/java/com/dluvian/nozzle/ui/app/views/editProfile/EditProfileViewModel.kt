@@ -18,16 +18,6 @@ import kotlinx.coroutines.launch
 
 private const val TAG = "EditProfileViewModel"
 
-data class EditProfileViewModelState(
-    val nameInput: String = "",
-    val aboutInput: String = "",
-    val pictureInput: String = "",
-    val nip05Input: String = "",
-    val lud16Input: String = "",
-    val hasChanges: Boolean = false,
-    val isInvalidPictureUrl: Boolean = false,
-)
-
 class EditProfileViewModel(
     private val personalProfileManager: IPersonalProfileManager,
     private val nostrService: INostrService,
@@ -78,10 +68,8 @@ class EditProfileViewModel(
     }
 
     val onChangeName: (String) -> Unit = { input ->
-        uiState.value.let { state ->
-            viewModelState.update {
-                it.copy(nameInput = input)
-            }
+        uiState.value.let {
+            viewModelState.update { it.copy(nameInput = input) }
             setUIHasChanges()
         }
     }

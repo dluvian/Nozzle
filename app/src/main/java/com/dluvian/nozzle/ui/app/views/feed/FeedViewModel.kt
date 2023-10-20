@@ -23,19 +23,6 @@ import java.util.concurrent.atomic.AtomicBoolean
 
 private const val TAG = "FeedViewModel"
 
-data class FeedViewModelState(
-    val isRefreshing: Boolean = false,
-    val pubkey: String = "",
-    val feedSettings: FeedSettings = FeedSettings(
-        isPosts = true,
-        isReplies = true,
-        hashtag = null,
-        authorSelection = Contacts,
-        relaySelection = UserSpecific(emptyMap())
-    ),
-    val relayStatuses: List<RelayActive> = emptyList(),
-)
-
 class FeedViewModel(
     val clickedMediaUrlCache: IClickedMediaUrlCache,
     val postCardInteractor: IPostCardInteractor,

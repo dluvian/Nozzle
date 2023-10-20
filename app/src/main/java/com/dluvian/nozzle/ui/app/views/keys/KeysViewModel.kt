@@ -21,13 +21,6 @@ import kotlinx.coroutines.flow.update
 
 private const val TAG = "KeysViewModel"
 
-data class KeysViewModelState(
-    val npub: String = "",
-    val privkeyInput: String = "",
-    val hasChanges: Boolean = false,
-    val isInvalid: Boolean = false,
-)
-
 class KeysViewModel(
     private val keyManager: IKeyManager,
     private val personalProfileManager: IPersonalProfileManager,

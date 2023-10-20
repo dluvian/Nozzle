@@ -19,7 +19,6 @@ import com.dluvian.nozzle.data.utils.listRelayStatuses
 import com.dluvian.nozzle.data.utils.toggleRelay
 import com.dluvian.nozzle.model.AllRelays
 import com.dluvian.nozzle.model.PostWithMeta
-import com.dluvian.nozzle.model.RelayActive
 import com.dluvian.nozzle.model.nostr.Event
 import com.dluvian.nozzle.model.nostr.ReplyTo
 import kotlinx.coroutines.Dispatchers
@@ -28,14 +27,6 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-
-data class ReplyViewModelState(
-    val recipientName: String = "",
-    val reply: String = "",
-    val isSendable: Boolean = false,
-    val pubkey: String = "",
-    val relaySelection: List<RelayActive> = emptyList(),
-)
 
 class ReplyViewModel(
     private val nostrService: INostrService,

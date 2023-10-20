@@ -22,14 +22,6 @@ import kotlinx.coroutines.launch
 
 private const val TAG = "SearchViewModel"
 
-data class SearchViewModelState(
-    val input: String = "",
-    val finalId: String = "",
-    val isLoading: Boolean = false,
-    val isInvalidNostrId: Boolean = false,
-    val isInvalidNip05: Boolean = false,
-)
-
 class SearchViewModel(private val nip05Resolver: INip05Resolver) : ViewModel() {
 
     private val viewModelState = MutableStateFlow(SearchViewModelState())

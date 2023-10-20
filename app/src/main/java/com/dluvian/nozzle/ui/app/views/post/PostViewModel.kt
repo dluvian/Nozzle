@@ -22,7 +22,6 @@ import com.dluvian.nozzle.data.utils.listRelayStatuses
 import com.dluvian.nozzle.data.utils.toggleRelay
 import com.dluvian.nozzle.model.AllRelays
 import com.dluvian.nozzle.model.AnnotatedMentionedPost
-import com.dluvian.nozzle.model.RelayActive
 import com.dluvian.nozzle.model.nostr.Event
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -31,15 +30,6 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.util.concurrent.atomic.AtomicBoolean
-
-data class PostViewModelState(
-    val content: String = "",
-    val pubkey: String = "",
-    val relayStatuses: List<RelayActive> = emptyList(),
-    val isSendable: Boolean = false,
-    val postToQuote: AnnotatedMentionedPost? = null,
-    val quoteRelays: Collection<String> = emptyList(),
-)
 
 class PostViewModel(
     private val personalProfileProvider: IPersonalProfileProvider,
