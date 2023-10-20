@@ -41,6 +41,7 @@ import com.dluvian.nozzle.model.Account
 import com.dluvian.nozzle.model.Oneself
 import com.dluvian.nozzle.model.nostr.Metadata
 import com.dluvian.nozzle.ui.app.navigation.NozzleNavActions
+import com.dluvian.nozzle.ui.components.AddIcon
 import com.dluvian.nozzle.ui.components.ExpandIcon
 import com.dluvian.nozzle.ui.components.media.ProfilePicture
 import com.dluvian.nozzle.ui.theme.spacing
@@ -67,8 +68,14 @@ fun NozzleDrawerScreen(
                 profileName = metadataState?.name
                     .orEmpty()
                     .ifEmpty { getShortenedNpub(uiState.npub) ?: uiState.npub },
-                navigateToProfile = navActions.navigateToProfile,
-                closeDrawer = closeDrawer
+                onActiveProfileClick = {
+                    navActions.navigateToProfile(uiState.pubkey)
+                    closeDrawer()
+                },
+                onAddAccount = {
+                    navActions.navigateToAddAccount()
+                    closeDrawer()
+                },
             )
             Spacer(
                 modifier = Modifier
@@ -94,8 +101,8 @@ private fun TopRow(
     picture: String,
     pubkey: String,
     profileName: String,
-    navigateToProfile: (String) -> Unit,
-    closeDrawer: () -> Unit,
+    onActiveProfileClick: () -> Unit,
+    onAddAccount: () -> Unit,
     modifier: Modifier,
 ) {
     Surface(
@@ -113,14 +120,11 @@ private fun TopRow(
                 profileName = profileName,
                 isExpanded = isExpanded.value,
                 onToggleExpand = { isExpanded.value = !isExpanded.value },
-                onClick = {
-                    navigateToProfile(pubkey)
-                    closeDrawer()
-                }
+                onClick = onActiveProfileClick
             )
             AnimatedVisibility(visible = isExpanded.value) {
                 AccountRows(
-                    listOf(
+                    accounts = listOf(
                         Account("lol", "", "asdfasdf"),
                         Account("lol", "", "asdfasdf"),
                         Account("lol", "", "asdfasdf"),
@@ -130,7 +134,8 @@ private fun TopRow(
                         Account("lol", "", "asdfasdf"),
                         Account("lol", "", "asdfasdf"),
                         Account("lol", "", "asdfasdf"),
-                    )
+                    ),
+                    onAddAccount = onAddAccount,
                 )
             }
         }
@@ -180,7 +185,7 @@ private fun ActiveAccount(
 }
 
 @Composable
-private fun AccountRows(accounts: List<Account>) {
+private fun AccountRows(accounts: List<Account>, onAddAccount: () -> Unit) {
     Column(modifier = Modifier.fillMaxWidth()) {
         accounts.forEach { acc ->
             Row {
@@ -203,6 +208,15 @@ private fun AccountRows(accounts: List<Account>) {
                 )
             }
         }
+        AddAccountRow(onAddAccount = onAddAccount)
+    }
+}
+
+@Composable
+private fun AddAccountRow(onAddAccount: () -> Unit) {
+    TextButton(onClick = onAddAccount) {
+        AddIcon()
+        Text(text = stringResource(id = R.string.add))
     }
 }
 

@@ -14,7 +14,7 @@ private const val TAG = "NozzleNavActions"
 
 class NozzleNavActions(
     private val navController: NavHostController,
-    private val vmContainer: VMContainer
+    private val vmContainer: VMContainer,
 ) {
     val navigateToProfile: (String) -> Unit = { profileId ->
         if (profileId.isNotEmpty()) {
@@ -53,16 +53,20 @@ class NozzleNavActions(
         navController.navigateToNozzleRoute("${NozzleRoute.THREAD}/$postId")
     }
 
-    val navigateToReply: () -> Unit =
-        { // TODO: PostWithMeta as input and call replyViewModel.onPrepareReply
-            navController.navigateToNozzleRoute(NozzleRoute.REPLY)
-        }
-
     val navigateToPost: () -> Unit = {
         navController.navigateToNozzleRoute(NozzleRoute.POST)
     }
 
-    val navigateToQuote: (String) -> Unit = { postId ->
+    val navigateToAddAccount: () -> Unit = {
+        navController.navigateToNozzleRoute(NozzleRoute.ADD_ACCOUNT)
+    }
+
+    private val navigateToReply: () -> Unit =
+        { // TODO: PostWithMeta as input and call replyViewModel.onPrepareReply
+            navController.navigateToNozzleRoute(NozzleRoute.REPLY)
+        }
+
+    private val navigateToQuote: (String) -> Unit = { postId ->
         navController.navigateToNozzleRoute("${NozzleRoute.QUOTE}/${postId}")
     }
 

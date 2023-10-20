@@ -20,6 +20,7 @@ import com.dluvian.nozzle.model.nostr.NoteNostrId
 import com.dluvian.nozzle.model.nostr.NprofileNostrId
 import com.dluvian.nozzle.model.nostr.NpubNostrId
 import com.dluvian.nozzle.ui.app.VMContainer
+import com.dluvian.nozzle.ui.app.views.addAccount.AddAccountRoute
 import com.dluvian.nozzle.ui.app.views.editProfile.EditProfileRoute
 import com.dluvian.nozzle.ui.app.views.feed.FeedRoute
 import com.dluvian.nozzle.ui.app.views.hashtag.HashtagRoute
@@ -52,7 +53,7 @@ fun NozzleNavGraph(
         startDestination = startDestination,
         modifier = modifier
     ) {
-        composable(NozzleRoute.FEED) {
+        composable(route = NozzleRoute.FEED) {
             FeedRoute(
                 feedViewModel = vmContainer.feedViewModel,
                 postCardNavLambdas = postCardNavLambdas,
@@ -76,7 +77,7 @@ fun NozzleNavGraph(
                 onNavigateToEditProfile = navActions.navigateToEditProfile,
             )
         }
-        composable(NozzleRoute.INBOX) {
+        composable(route = NozzleRoute.INBOX) {
             InboxRoute(
                 inboxViewModel = vmContainer.inboxViewModel,
                 postCardNavLambdas = postCardNavLambdas,
@@ -84,20 +85,20 @@ fun NozzleNavGraph(
                 onGoBack = navActions.popStack,
             )
         }
-        composable(NozzleRoute.SEARCH) {
+        composable(route = NozzleRoute.SEARCH) {
             SearchRoute(
                 searchViewModel = vmContainer.searchViewModel,
                 onNavigateToId = navActions.navigateToId,
                 onGoBack = navActions.popStack,
             )
         }
-        composable(NozzleRoute.RELAY_EDITOR) {
+        composable(route = NozzleRoute.RELAY_EDITOR) {
             RelayEditorRoute(
                 relayEditorViewModel = vmContainer.relayEditorViewModel,
                 onGoBack = navActions.popStack,
             )
         }
-        composable(NozzleRoute.KEYS) {
+        composable(route = NozzleRoute.KEYS) {
             KeysRoute(
                 keysViewModel = vmContainer.keysViewModel,
                 onResetDrawerUiState = vmContainer.drawerViewModel.onResetUiState,
@@ -106,7 +107,7 @@ fun NozzleNavGraph(
                 onGoBack = navActions.popStack,
             )
         }
-        composable(NozzleRoute.EDIT_PROFILE) {
+        composable(route = NozzleRoute.EDIT_PROFILE) {
             EditProfileRoute(
                 editProfileViewModel = vmContainer.editProfileViewModel,
                 onResetDrawerUiState = vmContainer.drawerViewModel.onResetUiState,
@@ -128,13 +129,13 @@ fun NozzleNavGraph(
                 onGoBack = navActions.popStack,
             )
         }
-        composable(NozzleRoute.REPLY) {
+        composable(route = NozzleRoute.REPLY) {
             ReplyRoute(
                 replyViewModel = vmContainer.replyViewModel,
                 onGoBack = navActions.popStack,
             )
         }
-        composable(NozzleRoute.POST) {
+        composable(route = NozzleRoute.POST) {
             PostRoute(
                 postViewModel = vmContainer.postViewModel,
                 onGoBack = navActions.popStack,
@@ -155,6 +156,7 @@ fun NozzleNavGraph(
             route = "${NozzleRoute.HASHTAG}/{hashtag}",
             arguments = listOf(navArgument("hashtag") { type = NavType.StringType })
         ) { backStackEntry ->
+            // TODO: Handle this in navActions
             val hashtag = backStackEntry.arguments?.getString("hashtag")
             if (hashtag != null) {
                 vmContainer.hashtagViewModel.onOpenHashtag(hashtag)
@@ -165,6 +167,12 @@ fun NozzleNavGraph(
                     onGoBack = navActions.popStack,
                 )
             }
+        }
+        composable(route = NozzleRoute.ADD_ACCOUNT) {
+            AddAccountRoute(
+                addAccountViewModel = vmContainer.addAccountViewModel,
+                onGoBack = navActions.popStack,
+            )
         }
         composable(
             route = NozzleRoute.ROUTER,

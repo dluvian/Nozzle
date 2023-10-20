@@ -19,6 +19,7 @@ import androidx.navigation.compose.rememberNavController
 import com.dluvian.nozzle.AppContainer
 import com.dluvian.nozzle.ui.app.navigation.NozzleNavActions
 import com.dluvian.nozzle.ui.app.navigation.NozzleNavGraph
+import com.dluvian.nozzle.ui.app.views.addAccount.AddAccountViewModel
 import com.dluvian.nozzle.ui.app.views.drawer.NozzleDrawerRoute
 import com.dluvian.nozzle.ui.app.views.drawer.NozzleDrawerViewModel
 import com.dluvian.nozzle.ui.app.views.editProfile.EditProfileViewModel
@@ -145,6 +146,10 @@ fun NozzleApp(appContainer: AppContainer) {
                         relayProvider = appContainer.relayProvider,
                         pubkeyProvider = appContainer.keyManager,
                         nip65Dao = appContainer.roomDb.nip65Dao()
+                    )
+                ),
+                addAccountViewModel = viewModel(
+                    factory = AddAccountViewModel.provideFactory(
                     )
                 ),
             )
