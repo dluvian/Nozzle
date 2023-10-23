@@ -142,12 +142,12 @@ class RelayEditorViewModel(
                 url = it.url,
                 isRead = it.isRead,
                 isWrite = it.isWrite,
-                pubkey = pubkeyProvider.getPubkey(),
+                pubkey = pubkeyProvider.getActivePubkey(),
                 createdAt = event.createdAt
             )
         }
         nip65Dao.insertAndDeleteOutdated(
-            pubkey = pubkeyProvider.getPubkey(),
+            pubkey = pubkeyProvider.getActivePubkey(),
             timestamp = event.createdAt,
             nip65Entities = entities.toTypedArray()
         )

@@ -46,7 +46,7 @@ class PostWithMetaProvider(
         val extendedPostsFlow = postDao
             .listExtendedPostsFlow(
                 postIds = feedInfo.postIds,
-                personalPubkey = pubkeyProvider.getPubkey()
+                personalPubkey = pubkeyProvider.getActivePubkey()
             )
             .firstThenDistinctDebounce(NORMAL_DEBOUNCE)
 
@@ -63,7 +63,7 @@ class PostWithMetaProvider(
         // TODO: No pubkey. Use extra DB Table for current user
         val trustScorePerPubkeyFlow = contactDao
             .getTrustScoreByPubkeyFlow(
-                pubkey = pubkeyProvider.getPubkey(),
+                pubkey = pubkeyProvider.getActivePubkey(),
                 contactPubkeys = feedInfo.authorPubkeys
             )
             .firstThenDistinctDebounce(NORMAL_DEBOUNCE)

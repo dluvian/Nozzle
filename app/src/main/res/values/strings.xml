@@ -26,10 +26,8 @@
     <string name="public_key_explanation">Your public key identifies your account. You can share it with anyone trying to find you.</string>
     <string name="private_key_description">Your private key verifies your identity.</string>
     <string name="private_key_warning">Do not share it with anyone else!</string>
-    <string name="invalid_private_key">Invalid private key</string>
-    <string name="key_pair_updated">Key pair updated</string>
-    <string name="enter_a_private_key">Enter nsec or hex private key</string>
     <string name="profile_id_copied">Profile ID copied</string>
+    <string name="private_key_copied">Private key copied</string>
     <string name="enter_your_username">Enter your username</string>
     <string name="username">Username</string>
     <string name="about_you">About you</string>

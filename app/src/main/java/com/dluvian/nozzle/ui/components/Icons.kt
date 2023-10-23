@@ -35,6 +35,7 @@ fun CopyIcon(onCopy: () -> Unit) {
     CopyIcon(
         modifier = Modifier
             .size(sizing.smallItem)
+            .clip(CircleShape)
             .clickable { onCopy() },
         description = stringResource(id = R.string.copy_content),
     )
@@ -162,6 +163,7 @@ fun VisibilityIcon(isVisible: Boolean, onToggle: () -> Unit) {
     Icon(
         modifier = Modifier
             .size(sizing.smallItem)
+            .clip(CircleShape)
             .clickable { onToggle() },
         imageVector = if (isVisible) {
             Icons.Default.VisibilityOff

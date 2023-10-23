@@ -20,7 +20,7 @@ class PersonalProfileManager(
     private val profileDao: ProfileDao
 ) : IPersonalProfileManager {
     private val scope = CoroutineScope(Dispatchers.IO)
-    private var metadataStateFlow = profileDao.getMetadata(pubkeyProvider.getPubkey())
+    private var metadataStateFlow = profileDao.getMetadata(pubkeyProvider.getActivePubkey())
         .firstThenDistinctDebounce(NORMAL_DEBOUNCE)
         .stateIn(
             scope,
@@ -36,7 +36,7 @@ class PersonalProfileManager(
         lud16: String
     ) {
         profileDao.updateMetadata(
-            pubkey = getPubkey(),
+            pubkey = getActivePubkey(),
             name = name,
             about = about,
             picture = picture,
@@ -46,8 +46,8 @@ class PersonalProfileManager(
     }
 
     override fun updateMetadata() {
-        Log.i(TAG, "Update metadata with new pubkey ${pubkeyProvider.getPubkey()}")
-        metadataStateFlow = profileDao.getMetadata(pubkeyProvider.getPubkey())
+        Log.i(TAG, "Update metadata with new pubkey ${pubkeyProvider.getActivePubkey()}")
+        metadataStateFlow = profileDao.getMetadata(pubkeyProvider.getActivePubkey())
             .firstThenDistinctDebounce(NORMAL_DEBOUNCE)
             .stateIn(
                 scope,
@@ -60,7 +60,7 @@ class PersonalProfileManager(
         return metadataStateFlow
     }
 
-    override fun getPubkey() = pubkeyProvider.getPubkey()
+    override fun getActivePubkey() = pubkeyProvider.getActivePubkey()
 
-    override fun getNpub() = pubkeyProvider.getNpub()
+    override fun getActiveNpub() = pubkeyProvider.getActiveNpub()
 }

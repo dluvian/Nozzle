@@ -61,7 +61,7 @@ class ReplyViewModel(
                     recipientName = post.name.ifEmpty {
                         getShortenedNpubFromPubkey(post.pubkey) ?: post.pubkey
                     },
-                    pubkey = personalProfileProvider.getPubkey(),
+                    pubkey = personalProfileProvider.getActivePubkey(),
                     reply = "",
                     isSendable = false,
                     relaySelection = listRelayStatuses(

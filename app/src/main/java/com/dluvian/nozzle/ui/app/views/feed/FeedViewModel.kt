@@ -48,7 +48,7 @@ class FeedViewModel(
     init {
         viewModelState.update {
             it.copy(
-                pubkey = personalProfileProvider.getPubkey(),
+                pubkey = personalProfileProvider.getActivePubkey(),
                 feedSettings = feedSettingsPreferences.getFeedSettings(),
             )
         }
@@ -177,7 +177,7 @@ class FeedViewModel(
         Log.i(TAG, "Reset profile icon")
         metadataState = personalProfileProvider.getMetadataStateFlow()
         viewModelState.update {
-            it.copy(pubkey = personalProfileProvider.getPubkey())
+            it.copy(pubkey = personalProfileProvider.getActivePubkey())
         }
     }
 

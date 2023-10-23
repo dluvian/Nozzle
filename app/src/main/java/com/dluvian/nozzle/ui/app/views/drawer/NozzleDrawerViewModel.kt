@@ -46,8 +46,8 @@ class NozzleDrawerViewModel(
     private fun resetState() {
         _uiState.update {
             it.copy(
-                pubkey = personalProfileProvider.getPubkey(),
-                npub = personalProfileProvider.getNpub(),
+                pubkey = personalProfileProvider.getActivePubkey(),
+                npub = personalProfileProvider.getActiveNpub(),
             )
         }
     }

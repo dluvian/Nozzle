@@ -7,21 +7,39 @@ import androidx.room.Query
 import androidx.room.Transaction
 import com.dluvian.nozzle.data.room.entity.AccountEntity
 import com.dluvian.nozzle.model.Pubkey
+import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface AccountDao {
-    @Insert(onConflict = OnConflictStrategy.IGNORE)
-    suspend fun insertIfNotPresent(account: AccountEntity): Long
+
+    @Transaction
+    suspend fun setAccounts(pubkeys: List<Pubkey>) {
+        if (pubkeys.isEmpty()) return
+        val accounts = pubkeys.mapIndexed { i, key ->
+            AccountEntity(pubkey = key, isActive = i == 0)
+        }
+        deleteAll()
+        insert(*accounts.toTypedArray())
+    }
 
     @Transaction
     suspend fun activateAccount(pubkey: Pubkey) {
-        activate(pubkey = pubkey)
+        activateSinglePubkey(pubkey = pubkey)
         deactivateAllExcept(excludePubkey = pubkey)
     }
+
+    @Query("SELECT pubkey FROM account WHERE isActive IS 1")
+    fun getActivePubkeyFlow(): Flow<Pubkey?>
+
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    suspend fun insert(vararg accounts: AccountEntity): List<Long>
 
     @Query("UPDATE account SET isActive = 0 WHERE pubkey IS NOT :excludePubkey")
     suspend fun deactivateAllExcept(excludePubkey: Pubkey)
 
     @Query("UPDATE account SET isActive = 1 WHERE pubkey = :pubkey")
-    suspend fun activate(pubkey: Pubkey)
+    suspend fun activateSinglePubkey(pubkey: Pubkey)
+
+    @Query("DELETE FROM account")
+    suspend fun deleteAll()
 }

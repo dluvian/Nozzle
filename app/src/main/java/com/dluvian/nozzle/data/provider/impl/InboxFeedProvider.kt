@@ -32,7 +32,7 @@ class InboxFeedProvider(
         delay(waitForSubscription)
 
         val posts = postDao.getInboxBasePosts(
-            mentionedPubkey = pubkeyProvider.getPubkey(),
+            mentionedPubkey = pubkeyProvider.getActivePubkey(),
             relays = relays,
             until = until,
             limit = limit

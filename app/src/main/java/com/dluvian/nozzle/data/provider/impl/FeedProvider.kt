@@ -63,7 +63,7 @@ class FeedProvider(
     private suspend fun listPubkeys(authorSelection: AuthorSelection): List<String>? {
         return when (authorSelection) {
             is Everyone -> null
-            is Contacts -> contactListProvider.listPersonalContactPubkeys() + pubkeyProvider.getPubkey()
+            is Contacts -> contactListProvider.listPersonalContactPubkeys() + pubkeyProvider.getActivePubkey()
             is SingleAuthor -> listOf(authorSelection.pubkey)
         }
     }

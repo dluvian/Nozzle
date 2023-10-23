@@ -81,7 +81,7 @@ class ProfileViewModel(
     val onSetProfileId: (String?) -> Unit = { profileId ->
         if (!isSettingPubkey.get()) {
             isSettingPubkey.set(true)
-            val nonNullProfileId = profileId ?: pubkeyProvider.getPubkey()
+            val nonNullProfileId = profileId ?: pubkeyProvider.getActivePubkey()
             val nonNullPubkey = profileIdToNostrId(nonNullProfileId)?.hex ?: nonNullProfileId
             if (profileId.isNullOrEmpty()) Log.w(TAG, "Tried to set empty pubkey for UI")
 

@@ -50,7 +50,7 @@ class ProfileWithMetaProvider(
 
         // No debounce because of immediate user interaction response
         val trustScoreFlow = contactDao.getTrustScoreFlow(
-            pubkey = pubkeyProvider.getPubkey(),
+            pubkey = pubkeyProvider.getActivePubkey(),
             contactPubkey = pubkey
         ).distinctUntilChanged()
 

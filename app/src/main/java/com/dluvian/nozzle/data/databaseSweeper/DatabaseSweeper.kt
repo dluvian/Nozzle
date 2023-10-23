@@ -26,7 +26,7 @@ class DatabaseSweeper(
         Log.i(TAG, "Sweep database")
         val excludePubkeys = dbSweepExcludingCache.getPubkeys() +
                 contactListProvider.listPersonalContactPubkeys() +
-                pubkeyProvider.getPubkey()
+                pubkeyProvider.getActivePubkey()
 
         when (Random.nextInt(until = 4)) {
             0 -> deletePosts()
@@ -43,7 +43,7 @@ class DatabaseSweeper(
         val deletePostCount = database.postDao().deleteAllExceptNewest(
             amountToKeep = keepPosts,
             exclude = dbSweepExcludingCache.getPostIds(),
-            excludeAuthor = pubkeyProvider.getPubkey()
+            excludeAuthor = pubkeyProvider.getActivePubkey()
         )
         Log.i(TAG, "Deleted $deletePostCount posts")
     }

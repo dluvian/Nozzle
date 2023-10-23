@@ -1,7 +1,9 @@
 package com.dluvian.nozzle.data.provider
 
+import com.dluvian.nozzle.model.Pubkey
+
 interface IPubkeyProvider {
-    fun getPubkey(): String
-    fun getNpub(): String
-    fun isOneself(pubkey: String) = pubkey == getPubkey()
+    fun getActivePubkey(): Pubkey
+    fun getActiveNpub(): String
+    fun isOneself(pubkey: Pubkey) = pubkey == getActivePubkey()
 }

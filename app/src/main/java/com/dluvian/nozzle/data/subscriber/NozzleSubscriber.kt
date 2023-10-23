@@ -48,7 +48,7 @@ class NozzleSubscriber(
     override fun subscribePersonalProfile() {
         Log.i(TAG, "Subscribe personal profile")
         val subIds = nostrSubscriber.subscribeFullProfile(
-            pubkey = pubkeyProvider.getPubkey(),
+            pubkey = pubkeyProvider.getActivePubkey(),
             relays = relayProvider.getWriteRelays()
         )
         personalProfileSubs.unsubThenAddAll(subIds)
@@ -127,7 +127,7 @@ class NozzleSubscriber(
         if (relays.isEmpty() || limit <= 0) return
 
         val subIds = nostrSubscriber.subscribePostsWithMention(
-            mentionedPubkey = pubkeyProvider.getPubkey(),
+            mentionedPubkey = pubkeyProvider.getActivePubkey(),
             limit = limit,
             until = until,
             relays = relays
@@ -176,7 +176,7 @@ class NozzleSubscriber(
             postIdsByRelay = getPostIdsToSub(replyTos = replyTos, mentionedPosts = mentionedPosts),
             repliesByRelay = getPostIdsToSubReplies(postIds = postIds),
             reactionPostIdsByRelay = getReactionPostIdsToSub(postIds = postIds),
-            reactorPubkey = pubkeyProvider.getPubkey()
+            reactorPubkey = pubkeyProvider.getActivePubkey()
         )
         feedInfoSubs.unsubThenAddAll(subIds)
 
@@ -315,7 +315,7 @@ class NozzleSubscriber(
             getDbPubkeys = { filteredPubkeys ->
                 database.contactDao().filterFriendsWithList(
                     contactPubkeys = filteredPubkeys,
-                    myPubkey = pubkeyProvider.getPubkey()
+                    myPubkey = pubkeyProvider.getActivePubkey()
                 )
             }
         )
@@ -356,7 +356,7 @@ class NozzleSubscriber(
 
         val alreadyLiked = database.reactionDao().filterLikedPostIds(
             postIds = postIds,
-            pubkey = pubkeyProvider.getPubkey()
+            pubkey = pubkeyProvider.getActivePubkey()
         )
         val toSub = postIds.minus(alreadyLiked.toSet())
         if (toSub.isEmpty()) return emptyMap()

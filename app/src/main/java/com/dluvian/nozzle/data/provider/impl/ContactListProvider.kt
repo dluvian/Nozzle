@@ -21,15 +21,15 @@ class ContactListProvider(
     private val scope = CoroutineScope(context = Dispatchers.Default)
 
     // TODO: Don't track it. Use extra DB table for current user
-    private var personalPubkey = pubkeyProvider.getPubkey()
+    private var personalPubkey = pubkeyProvider.getActivePubkey()
     private var personalContactListState = contactDao.listContactPubkeysFlow(personalPubkey)
         .stateIn(scope, SharingStarted.Eagerly, emptyList())
 
     override suspend fun listPersonalContactPubkeys(): List<String> {
-        return if (personalPubkey != pubkeyProvider.getPubkey()) {
+        return if (personalPubkey != pubkeyProvider.getActivePubkey()) {
             Log.i(TAG, "Pubkey changed. Update contact list flow")
-            updatePubkeyAndContactListFlow(newPubkey = pubkeyProvider.getPubkey())
-            contactDao.listContactPubkeys(pubkey = pubkeyProvider.getPubkey())
+            updatePubkeyAndContactListFlow(newPubkey = pubkeyProvider.getActivePubkey())
+            contactDao.listContactPubkeys(pubkey = pubkeyProvider.getActivePubkey())
         } else {
             personalContactListState.value
         }

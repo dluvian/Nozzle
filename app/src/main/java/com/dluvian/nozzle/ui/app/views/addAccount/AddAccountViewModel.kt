@@ -29,7 +29,7 @@ class AddAccountViewModel(
 //            _uiState.update{ it.copy(isLoading = true) }
         viewModelScope.launch(context = Dispatchers.IO) {
             val account = AccountEntity(pubkey = pubkey)
-            val insertCode = accountDao.insertIfNotPresent(account)
+            val insertCode = accountDao.insert(account)
 //            if (insertCode == -1) {
 //              _uiState.update{ it.copy(pubkeyAlreadyExists = true) }
 //            }

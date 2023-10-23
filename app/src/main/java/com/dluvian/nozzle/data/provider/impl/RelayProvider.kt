@@ -24,7 +24,7 @@ class RelayProvider(
     private val scope = CoroutineScope(context = Dispatchers.Default)
 
     // TODO: Determine current pubkey by db table. PubkeyProvider should not be needed
-    private var personalPubkey = pubkeyProvider.getPubkey()
+    private var personalPubkey = pubkeyProvider.getActivePubkey()
     private var personalNip65State = nip65Dao.getRelaysOfPubkeyFlow(personalPubkey)
         .firstThenDistinctDebounce(NORMAL_DEBOUNCE)
         .stateIn(
@@ -70,8 +70,8 @@ class RelayProvider(
 
     private fun updateFlow() {
         // TODO: Obsolete this check. See TODO above
-        if (personalPubkey == pubkeyProvider.getPubkey()) return
-        personalPubkey = pubkeyProvider.getPubkey()
+        if (personalPubkey == pubkeyProvider.getActivePubkey()) return
+        personalPubkey = pubkeyProvider.getActivePubkey()
         personalNip65State = nip65Dao.getRelaysOfPubkeyFlow(personalPubkey)
             .firstThenDistinctDebounce(NORMAL_DEBOUNCE)
             .stateIn(

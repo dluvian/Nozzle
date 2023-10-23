@@ -101,9 +101,6 @@ fun NozzleNavGraph(
         composable(route = NozzleRoute.KEYS) {
             KeysRoute(
                 keysViewModel = vmContainer.keysViewModel,
-                onResetDrawerUiState = vmContainer.drawerViewModel.onResetUiState,
-                onResetFeedIconUiState = vmContainer.feedViewModel.onResetProfileIconUiState,
-                onResetEditProfileUiState = vmContainer.editProfileViewModel.onResetUiState,
                 onGoBack = navActions.popStack,
             )
         }

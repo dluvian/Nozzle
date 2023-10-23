@@ -110,7 +110,7 @@ class PostViewModel(
         metadataState = personalProfileProvider.getMetadataStateFlow()
         viewModelState.update {
             it.copy(
-                pubkey = personalProfileProvider.getPubkey(),
+                pubkey = personalProfileProvider.getActivePubkey(),
                 content = "",
                 isSendable = postToQuote != null,
                 relayStatuses = getRelayStatuses(),
@@ -165,7 +165,7 @@ class PostViewModel(
                 content = "",
                 relayStatuses = getRelayStatuses(),
                 isSendable = false,
-                pubkey = personalProfileProvider.getPubkey(),
+                pubkey = personalProfileProvider.getActivePubkey(),
                 postToQuote = null,
                 quoteRelays = emptyList(),
             )

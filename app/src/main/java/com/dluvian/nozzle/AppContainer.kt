@@ -58,7 +58,7 @@ class AppContainer(context: Context) {
         name = "nozzle_database",
     ).fallbackToDestructiveMigration().build()
 
-    val keyManager: IKeyManager = KeyManager(context = context)
+    val keyManager: IKeyManager = KeyManager(context = context, accountDao = roomDb.accountDao())
 
     val contactListProvider: IContactListProvider = ContactListProvider(
         pubkeyProvider = keyManager,

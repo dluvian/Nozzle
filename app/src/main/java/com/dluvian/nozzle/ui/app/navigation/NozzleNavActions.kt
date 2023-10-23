@@ -41,6 +41,7 @@ class NozzleNavActions(
     }
 
     val navigateToKeys: () -> Unit = {
+        vmContainer.keysViewModel.onOpenKeys()
         navController.navigateToNozzleRoute(NozzleRoute.KEYS)
     }
 
