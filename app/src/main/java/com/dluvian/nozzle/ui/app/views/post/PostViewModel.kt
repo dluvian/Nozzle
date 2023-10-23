@@ -91,8 +91,9 @@ class PostViewModel(
             postDao.insertIfNotPresent(PostEntity.fromEvent(event))
             // TODO: Insert hashtags in tx
             // TODO: dbSweepExcludingCache.addPostId(event.id)
-            val hashtags = event.getHashtags()
-                .map { HashtagEntity(eventId = event.id, hashtag = it) }
+            val hashtags = event.getHashtags().map {
+                HashtagEntity(eventId = event.id, hashtag = it.lowercase())
+            }
             if (hashtags.isNotEmpty()) {
                 hashtagDao.insertOrIgnore(*hashtags.toTypedArray())
             }

@@ -42,7 +42,7 @@ class NostrSubscriber(private val nostrService: INostrService) : INostrSubscribe
         Log.i(TAG, "Subscribe to feed of ${authorPubkeys?.size} pubkeys in ${relays?.size} relays")
         val postFilter = Filter.createPostFilter(
             pubkeys = authorPubkeys,
-            t = hashtag?.let { listOf(hashtag) },
+            t = hashtag?.let { listOf(hashtag, hashtag.lowercase()).distinct() },
             until = until,
             limit = limit
         )

@@ -177,7 +177,9 @@ interface PostDao {
         }
 
         if (hashtags.isNotEmpty()) {
-            val entities = hashtags.map { HashtagEntity(eventId = postEntity.id, hashtag = it) }
+            val entities = hashtags.map {
+                HashtagEntity(eventId = postEntity.id, hashtag = it.lowercase())
+            }
             hashtagDao.insertOrIgnore(*entities.toTypedArray())
         }
 
