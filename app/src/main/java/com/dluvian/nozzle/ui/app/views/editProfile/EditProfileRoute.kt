@@ -9,7 +9,6 @@ import androidx.compose.runtime.getValue
 @Composable
 fun EditProfileRoute(
     editProfileViewModel: EditProfileViewModel,
-    onResetDrawerUiState: () -> Unit,
     onResetFeedIconUiState: () -> Unit,
     onGoBack: () -> Unit,
 ) {
@@ -20,7 +19,6 @@ fun EditProfileRoute(
         onUpdateProfile = {
             // TODO: Simplify with Flows
             editProfileViewModel.onUpdateProfile()
-            onResetDrawerUiState()
             onResetFeedIconUiState()
         },
         onChangeName = editProfileViewModel.onChangeName,

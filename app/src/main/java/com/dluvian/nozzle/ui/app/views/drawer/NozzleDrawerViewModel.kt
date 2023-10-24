@@ -1,67 +1,54 @@
 package com.dluvian.nozzle.ui.app.views.drawer
 
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
-import com.dluvian.nozzle.data.provider.IPersonalProfileProvider
+import com.dluvian.nozzle.data.provider.IPubkeyProvider
+import com.dluvian.nozzle.data.room.dao.AccountDao
 import com.dluvian.nozzle.data.subscriber.INozzleSubscriber
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
-import kotlinx.coroutines.flow.update
-
-private const val TAG = "NozzleDrawerViewModel"
-
-// TODO: Flow from DB instead of manually setting state
 
 class NozzleDrawerViewModel(
-    private val personalProfileProvider: IPersonalProfileProvider,
+    private val pubkeyProvider: IPubkeyProvider,
+    accountDao: AccountDao,
     nozzleSubscriber: INozzleSubscriber,
 ) : ViewModel() {
-    private val _uiState = MutableStateFlow(NozzleDrawerViewModelState())
 
-    var metadataState = personalProfileProvider.getMetadataStateFlow()
-
-    val uiState = _uiState
+    val uiState = accountDao.listAccountsFlow()
+        .distinctUntilChanged()
+        .map { accounts ->
+            NozzleDrawerViewModelState.from(
+                accounts = accounts,
+                defaultPubkey = pubkeyProvider.getActivePubkey()
+            )
+        }
         .stateIn(
             viewModelScope,
             SharingStarted.Eagerly,
-            _uiState.value
+            NozzleDrawerViewModelState()
         )
 
     init {
-        resetState()
+        // TODO: Subscribe all accounts
         nozzleSubscriber.subscribePersonalProfile()
-    }
-
-    val onResetUiState: () -> Unit = {
-        Log.i(TAG, "Reset UI")
-        // TODO: USE FLOWS
-        metadataState = personalProfileProvider.getMetadataStateFlow()
-        resetState()
-    }
-
-    private fun resetState() {
-        _uiState.update {
-            it.copy(
-                pubkey = personalProfileProvider.getActivePubkey(),
-                npub = personalProfileProvider.getActiveNpub(),
-            )
-        }
     }
 
     companion object {
         fun provideFactory(
-            personalProfileProvider: IPersonalProfileProvider,
+            pubkeyProvider: IPubkeyProvider,
+            accountDao: AccountDao,
             nozzleSubscriber: INozzleSubscriber
         ): ViewModelProvider.Factory =
             object : ViewModelProvider.Factory {
                 @Suppress("UNCHECKED_CAST")
                 override fun <T : ViewModel> create(modelClass: Class<T>): T {
                     return NozzleDrawerViewModel(
-                        personalProfileProvider = personalProfileProvider,
+                        pubkeyProvider = pubkeyProvider,
+                        accountDao = accountDao,
                         nozzleSubscriber = nozzleSubscriber
                     ) as T
                 }

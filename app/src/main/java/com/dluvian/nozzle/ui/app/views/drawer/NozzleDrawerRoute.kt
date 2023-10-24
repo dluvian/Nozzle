@@ -15,12 +15,10 @@ fun NozzleDrawerRoute(
     modifier: Modifier = Modifier,
 ) {
     val uiState by nozzleDrawerViewModel.uiState.collectAsState()
-    val metadataState by nozzleDrawerViewModel.metadataState.collectAsState()
 
     NozzleDrawerScreen(
         modifier = modifier,
         uiState = uiState,
-        metadataState = metadataState,
         navActions = navActions,
         closeDrawer = closeDrawer,
     )

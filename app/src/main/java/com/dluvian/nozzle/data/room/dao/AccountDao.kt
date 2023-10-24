@@ -6,10 +6,19 @@ import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Transaction
 import com.dluvian.nozzle.data.room.entity.AccountEntity
+import com.dluvian.nozzle.data.room.helper.extended.AccountEntityExtended
 import com.dluvian.nozzle.model.Pubkey
+import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface AccountDao {
+
+    @Query(
+        "SELECT account.pubkey, account.isActive, profile.name, profile.picture " +
+                "FROM account " +
+                "LEFT JOIN profile ON account.pubkey = profile.pubkey"
+    )
+    fun listAccountsFlow(): Flow<List<AccountEntityExtended>>
 
     @Transaction
     suspend fun setAccounts(pubkeys: List<Pubkey>) {

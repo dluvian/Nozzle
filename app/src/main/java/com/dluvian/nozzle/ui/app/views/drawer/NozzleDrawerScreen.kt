@@ -36,10 +36,8 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import com.dluvian.nozzle.R
-import com.dluvian.nozzle.data.nostr.utils.ShortenedNameUtils.getShortenedNpub
 import com.dluvian.nozzle.model.Account
 import com.dluvian.nozzle.model.Oneself
-import com.dluvian.nozzle.model.nostr.Metadata
 import com.dluvian.nozzle.ui.app.navigation.NozzleNavActions
 import com.dluvian.nozzle.ui.components.AddIcon
 import com.dluvian.nozzle.ui.components.ExpandIcon
@@ -49,7 +47,6 @@ import com.dluvian.nozzle.ui.theme.spacing
 @Composable
 fun NozzleDrawerScreen(
     uiState: NozzleDrawerViewModelState,
-    metadataState: Metadata?,
     navActions: NozzleNavActions,
     closeDrawer: () -> Unit,
     modifier: Modifier = Modifier,
@@ -63,13 +60,10 @@ fun NozzleDrawerScreen(
         item {
             TopRow(
                 modifier = Modifier.padding(horizontal = spacing.medium),
-                picture = metadataState?.picture.orEmpty(),
-                pubkey = uiState.pubkey,
-                profileName = metadataState?.name
-                    .orEmpty()
-                    .ifEmpty { getShortenedNpub(uiState.npub) ?: uiState.npub },
+                activeAccount = uiState.activeAccount,
+                otherAccounts = uiState.otherAccounts,
                 onActiveProfileClick = {
-                    navActions.navigateToProfile(uiState.pubkey)
+                    navActions.navigateToProfile(uiState.activeAccount.pubkey)
                     closeDrawer()
                 },
                 onAddAccount = {
@@ -98,9 +92,8 @@ fun NozzleDrawerScreen(
 
 @Composable
 private fun TopRow(
-    picture: String,
-    pubkey: String,
-    profileName: String,
+    activeAccount: Account,
+    otherAccounts: List<Account>,
     onActiveProfileClick: () -> Unit,
     onAddAccount: () -> Unit,
     modifier: Modifier,
@@ -115,26 +108,16 @@ private fun TopRow(
         val isExpanded = remember { mutableStateOf(false) }
         Column {
             ActiveAccount(
-                picture = picture,
-                pubkey = pubkey,
-                profileName = profileName,
+                picture = activeAccount.picture,
+                pubkey = activeAccount.pubkey,
+                profileName = activeAccount.name,
                 isExpanded = isExpanded.value,
                 onToggleExpand = { isExpanded.value = !isExpanded.value },
                 onClick = onActiveProfileClick
             )
             AnimatedVisibility(visible = isExpanded.value) {
                 AccountRows(
-                    accounts = listOf(
-                        Account("lol", "", "asdfasdf"),
-                        Account("lol", "", "asdfasdf"),
-                        Account("lol", "", "asdfasdf"),
-                        Account("lol", "", "asdfasdf"),
-                        Account("lol", "", "asdfasdf"),
-                        Account("lol", "", "asdfasdf"),
-                        Account("lol", "", "asdfasdf"),
-                        Account("lol", "", "asdfasdf"),
-                        Account("lol", "", "asdfasdf"),
-                    ),
+                    accounts = otherAccounts,
                     onAddAccount = onAddAccount,
                 )
             }
