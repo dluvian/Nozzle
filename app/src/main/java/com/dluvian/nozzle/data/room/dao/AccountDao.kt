@@ -7,7 +7,6 @@ import androidx.room.Query
 import androidx.room.Transaction
 import com.dluvian.nozzle.data.room.entity.AccountEntity
 import com.dluvian.nozzle.model.Pubkey
-import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface AccountDao {
@@ -27,9 +26,6 @@ interface AccountDao {
         activateSinglePubkey(pubkey = pubkey)
         deactivateAllExcept(excludePubkey = pubkey)
     }
-
-    @Query("SELECT pubkey FROM account WHERE isActive IS 1")
-    fun getActivePubkeyFlow(): Flow<Pubkey?>
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insert(vararg accounts: AccountEntity): List<Long>

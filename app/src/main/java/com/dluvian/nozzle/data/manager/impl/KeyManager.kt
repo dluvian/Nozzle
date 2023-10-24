@@ -6,7 +6,6 @@ import androidx.security.crypto.EncryptedSharedPreferences
 import androidx.security.crypto.MasterKey
 import com.dluvian.nozzle.data.PreferenceFileNames
 import com.dluvian.nozzle.data.manager.IKeyManager
-import com.dluvian.nozzle.data.nostr.utils.EncodingUtils.hexToNpub
 import com.dluvian.nozzle.data.nostr.utils.EncodingUtils.hexToNsec
 import com.dluvian.nozzle.data.nostr.utils.KeyUtils.derivePubkey
 import com.dluvian.nozzle.data.nostr.utils.KeyUtils.generatePrivkey
@@ -14,15 +13,10 @@ import com.dluvian.nozzle.data.nostr.utils.KeyUtils.isValidHexKey
 import com.dluvian.nozzle.data.room.dao.AccountDao
 import com.dluvian.nozzle.data.room.entity.AccountEntity
 import com.dluvian.nozzle.model.Pubkey
-import com.dluvian.nozzle.model.helper.PubkeyVariations
 import com.dluvian.nozzle.model.nostr.Keys
 import fr.acinq.secp256k1.Hex
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
 
@@ -31,14 +25,6 @@ private const val PRIVKEY: String = "privkey"
 private const val DELIMITER: String = ";"
 
 class KeyManager(context: Context, private val accountDao: AccountDao) : IKeyManager {
-    private val activePubkeyFlow = accountDao.getActivePubkeyFlow()
-        .distinctUntilChanged()
-        .map { key ->
-            Log.w("LOLOL", "LOLOL")
-            key?.let { PubkeyVariations(pubkey = it, npub = hexToNpub(it), shortenedNpub = "") }
-        }
-        .stateIn(CoroutineScope(Dispatchers.IO), SharingStarted.Eagerly, null)
-
     private val masterKey = MasterKey.Builder(context)
         .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
         .build()
@@ -51,6 +37,8 @@ class KeyManager(context: Context, private val accountDao: AccountDao) : IKeyMan
         EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
     )
 
+    private var currentPubkey: Pubkey = ""
+
     init {
         val privkeys = getPrivkeys().ifEmpty { listOf(generatePrivkey()) }
         setPrivkeys(privkeys)
@@ -62,11 +50,7 @@ class KeyManager(context: Context, private val accountDao: AccountDao) : IKeyMan
         }
     }
 
-    override fun getActivePubkey() = activePubkeyFlow.value?.pubkey ?: throw IllegalStateException()
-
-    override fun getActiveNpub() = activePubkeyFlow.value?.npub ?: throw IllegalStateException()
-
-    override fun getActivePrivkey() = getPrivkeys().first()
+    override fun getActivePubkey() = currentPubkey
 
     override fun getActiveNsec() = hexToNsec(getActivePrivkey())
 
@@ -106,6 +90,10 @@ class KeyManager(context: Context, private val accountDao: AccountDao) : IKeyMan
         val privkeys = getPrivkeys()
         val pubkeys = privkeys.map { derivePubkey(it) }
         val index = pubkeys.indexOf(pubkey)
+        if (index == -1) {
+            Log.w(TAG, "Pubkey $pubkey not found in derived privkey list (n=${privkeys.size}")
+            return
+        }
 
         val newPrivkeys = privkeys.filterIndexed { i, _ -> i != index }
         setPrivkeys(privkeys = newPrivkeys)
@@ -118,14 +106,24 @@ class KeyManager(context: Context, private val accountDao: AccountDao) : IKeyMan
         )
     }
 
+    private fun getActivePrivkey() = getPrivkeys().first()
+
     private fun getPrivkeys(): List<String> {
+        // TODO: Delete log
+        Log.w(
+            "TO BE DELETED 1",
+            "${preferences.getString(PRIVKEY, "")?.split(DELIMITER) ?: emptyList()}"
+        )
         return preferences.getString(PRIVKEY, "")?.split(DELIMITER) ?: emptyList()
     }
 
     private fun setPrivkeys(privkeys: List<String>) {
         val combinedString = privkeys.joinToString(separator = DELIMITER)
+        // TODO: Delete log
+        Log.w("TO BE DELETED 2", combinedString)
         preferences.edit()
             .putString(PRIVKEY, combinedString)
             .apply()
+        currentPubkey = derivePubkey(privkey = privkeys.first())
     }
 }

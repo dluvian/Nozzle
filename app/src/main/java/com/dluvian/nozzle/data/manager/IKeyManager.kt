@@ -5,7 +5,6 @@ import com.dluvian.nozzle.model.Pubkey
 import com.dluvian.nozzle.model.nostr.Keys
 
 interface IKeyManager : IPubkeyProvider {
-    fun getActivePrivkey(): String
     fun getActiveNsec(): String
     suspend fun activatePubkey(pubkey: Pubkey)
     suspend fun addPrivkey(privkey: String)

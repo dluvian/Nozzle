@@ -3,6 +3,7 @@ package com.dluvian.nozzle.ui.components
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Icon
 import androidx.compose.material.LocalContentAlpha
 import androidx.compose.material.LocalContentColor
@@ -29,13 +30,14 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import com.dluvian.nozzle.R
 import com.dluvian.nozzle.ui.theme.sizing
+import com.dluvian.nozzle.ui.theme.spacing
 
 @Composable
 fun CopyIcon(onCopy: () -> Unit) {
     CopyIcon(
         modifier = Modifier
             .size(sizing.smallItem)
-            .clip(CircleShape)
+            .clip(RoundedCornerShape(spacing.medium))
             .clickable { onCopy() },
         description = stringResource(id = R.string.copy_content),
     )

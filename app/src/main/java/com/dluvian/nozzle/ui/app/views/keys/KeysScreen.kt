@@ -66,7 +66,7 @@ private fun Npub(npub: String) {
                 clip.setText(AnnotatedString(npub))
                 Toast.makeText(
                     context,
-                    context.getString(R.string.profile_id_copied),
+                    context.getString(R.string.public_key_copied),
                     Toast.LENGTH_SHORT
                 ).show()
             })
@@ -105,6 +105,11 @@ private fun NsecTrailingIcons(nsec: String, isVisible: Boolean, onToggleVisibili
     val clip = LocalClipboardManager.current
     val context = LocalContext.current
     Row {
+        VisibilityIcon(
+            isVisible = isVisible,
+            onToggle = onToggleVisibility
+        )
+        Spacer(modifier = Modifier.width(spacing.medium))
         CopyIcon(onCopy = {
             clip.setText(AnnotatedString(nsec))
             Toast.makeText(
@@ -113,10 +118,5 @@ private fun NsecTrailingIcons(nsec: String, isVisible: Boolean, onToggleVisibili
                 Toast.LENGTH_SHORT
             ).show()
         })
-        Spacer(modifier = Modifier.width(spacing.medium))
-        VisibilityIcon(
-            isVisible = isVisible,
-            onToggle = onToggleVisibility
-        )
     }
 }
