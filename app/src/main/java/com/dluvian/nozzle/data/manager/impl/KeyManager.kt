@@ -116,7 +116,8 @@ class KeyManager(context: Context, private val accountDao: AccountDao) : IKeyMan
             "TO BE DELETED 1",
             "${preferences.getString(PRIVKEY, "")?.split(DELIMITER) ?: emptyList()}"
         )
-        return preferences.getString(PRIVKEY, "")?.split(DELIMITER) ?: emptyList()
+        val saved = preferences.getString(PRIVKEY, "")?.split(DELIMITER) ?: emptyList()
+        return saved.filter(String::isNotEmpty)
     }
 
     private fun setPrivkeys(privkeys: List<String>) {
