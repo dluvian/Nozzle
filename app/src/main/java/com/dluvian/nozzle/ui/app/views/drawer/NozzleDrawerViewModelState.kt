@@ -1,30 +1,23 @@
 package com.dluvian.nozzle.ui.app.views.drawer
 
-import com.dluvian.nozzle.data.nostr.utils.EncodingUtils
 import com.dluvian.nozzle.data.room.helper.extended.AccountEntityExtended
 import com.dluvian.nozzle.model.Account
-import com.dluvian.nozzle.model.Pubkey
 
 data class NozzleDrawerViewModelState(
-    val activeAccount: Account = Account(name = "", picture = "", pubkey = ""),
-    val otherAccounts: List<Account> = emptyList(),
+    val activeAccount: Account = Account(name = "", picture = "", pubkey = "", isActive = true),
+    val allAccounts: List<Account> = emptyList(),
 ) {
     companion object {
-        fun from(
-            accounts: Collection<AccountEntityExtended>,
-            defaultPubkey: Pubkey
-        ): NozzleDrawerViewModelState {
-            val default = Account(
-                name = EncodingUtils.hexToNpub(defaultPubkey),
-                picture = "",
-                pubkey = defaultPubkey
+        fun from(accounts: Collection<AccountEntityExtended>): NozzleDrawerViewModelState? {
+            if (accounts.isEmpty()) return null
+
+            val allMapped = accounts.map(Account::from)
+            val active = allMapped.find { it.isActive } ?: return null
+
+            return NozzleDrawerViewModelState(
+                activeAccount = active,
+                allAccounts = allMapped
             )
-            if (accounts.isEmpty()) return NozzleDrawerViewModelState(activeAccount = default)
-
-            val active = accounts.find { it.isActive }?.let { Account.from(it) } ?: default
-            val other = accounts.filter { !it.isActive }.map { Account.from(it) }
-
-            return NozzleDrawerViewModelState(activeAccount = active, otherAccounts = other)
         }
     }
 }

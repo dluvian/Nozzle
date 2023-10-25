@@ -38,14 +38,18 @@ class AddAccountViewModel(
 
     private val isLoggingIn = AtomicBoolean(false)
     val onLogin: (String) -> Boolean = local@{ nsec ->
-        if (!isLoggingIn.compareAndSet(false, true)) return@local false
-        if (nsec.isBlank()) return@local false
+        if (nsec.isBlank() || !isLoggingIn.compareAndSet(false, true)) {
+            return@local false
+        }
 
         val trimmed = nsec.trim()
         val hex = if (KeyUtils.isValidHexKey(trimmed)) trimmed
         else EncodingUtils.nsecToHex(nsec.trim())
         _uiState.update { it.copy(isInvalid = hex == null) }
-        if (hex == null) return@local false
+        if (hex == null) {
+            isLoggingIn.set(false)
+            return@local false
+        }
 
         viewModelScope.launch(context = Dispatchers.IO) {
             keyManager.addPrivkey(privkey = hex)

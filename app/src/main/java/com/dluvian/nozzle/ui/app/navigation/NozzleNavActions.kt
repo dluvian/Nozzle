@@ -46,7 +46,6 @@ class NozzleNavActions(
     }
 
     val navigateToEditProfile: () -> Unit = {
-        vmContainer.editProfileViewModel.onResetUiState() // TODO: Is name of lambda correct?
         navController.navigateToNozzleRoute(NozzleRoute.EDIT_PROFILE)
     }
 

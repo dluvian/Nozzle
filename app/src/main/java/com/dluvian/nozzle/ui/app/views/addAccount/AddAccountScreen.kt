@@ -84,19 +84,24 @@ private fun ScreenContent(
                         )
                     }
                 )
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.End
-                ) {
-                    TextButton(onClick = onGenerateNew) {
-                        Text("Generate new")
-                    }
-                    Spacer(modifier = Modifier.width(spacing.medium))
-                    TextButton(onClick = { onLogin(input.value) }) {
-                        Text("Login")
-                    }
-                }
+                Buttons(onGenerateNew = onGenerateNew, onLogin = { onLogin(input.value) })
             }
+        }
+    }
+}
+
+@Composable
+private fun Buttons(onGenerateNew: () -> Unit, onLogin: () -> Unit) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.End
+    ) {
+        TextButton(onClick = onGenerateNew) {
+            Text(stringResource(id = R.string.generate_new))
+        }
+        Spacer(modifier = Modifier.width(spacing.medium))
+        TextButton(onClick = onLogin) {
+            Text(stringResource(id = R.string.login))
         }
     }
 }

@@ -22,6 +22,7 @@ import androidx.compose.material.icons.filled.Save
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material.icons.outlined.Chat
+import androidx.compose.material.icons.rounded.Check
 import androidx.compose.material.icons.rounded.Search
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -156,6 +157,18 @@ fun SaveIcon(
             .clip(CircleShape)
             .clickable(onClick = onSave),
         imageVector = Icons.Default.Save,
+        contentDescription = description,
+    )
+}
+
+@Composable
+fun CheckIcon(
+    modifier: Modifier = Modifier,
+    description: String? = null,
+) {
+    Icon(
+        modifier = modifier,
+        imageVector = Icons.Rounded.Check,
         contentDescription = description,
     )
 }

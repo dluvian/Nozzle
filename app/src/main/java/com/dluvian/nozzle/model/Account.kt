@@ -7,6 +7,7 @@ data class Account(
     val name: String,
     val picture: String,
     val pubkey: String,
+    val isActive: Boolean
 ) {
     companion object {
         fun from(accountEntityExtended: AccountEntityExtended): Account {
@@ -15,7 +16,8 @@ data class Account(
                     .orEmpty()
                     .ifBlank { getShortenedNpubFromPubkey(accountEntityExtended.pubkey).orEmpty() },
                 pubkey = accountEntityExtended.pubkey,
-                picture = accountEntityExtended.picture.orEmpty()
+                picture = accountEntityExtended.picture.orEmpty(),
+                isActive = accountEntityExtended.isActive
             )
         }
     }

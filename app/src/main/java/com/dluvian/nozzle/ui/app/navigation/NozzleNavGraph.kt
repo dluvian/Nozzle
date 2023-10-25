@@ -105,6 +105,7 @@ fun NozzleNavGraph(
             )
         }
         composable(route = NozzleRoute.EDIT_PROFILE) {
+            vmContainer.editProfileViewModel.onResetUiState() // TODO: Is name of lambda correct?
             EditProfileRoute(
                 editProfileViewModel = vmContainer.editProfileViewModel,
                 onResetFeedIconUiState = vmContainer.feedViewModel.onResetProfileIconUiState,
@@ -165,6 +166,7 @@ fun NozzleNavGraph(
             }
         }
         composable(route = NozzleRoute.ADD_ACCOUNT) {
+            vmContainer.addAccountViewModel.onReset()
             AddAccountRoute(
                 addAccountViewModel = vmContainer.addAccountViewModel,
                 onGoBack = navActions.popStack,

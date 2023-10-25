@@ -40,8 +40,10 @@ import com.dluvian.nozzle.model.Account
 import com.dluvian.nozzle.model.Oneself
 import com.dluvian.nozzle.ui.app.navigation.NozzleNavActions
 import com.dluvian.nozzle.ui.components.AddIcon
+import com.dluvian.nozzle.ui.components.CheckIcon
 import com.dluvian.nozzle.ui.components.ExpandIcon
 import com.dluvian.nozzle.ui.components.media.ProfilePicture
+import com.dluvian.nozzle.ui.theme.sizing
 import com.dluvian.nozzle.ui.theme.spacing
 
 @Composable
@@ -61,7 +63,7 @@ fun NozzleDrawerScreen(
             TopRow(
                 modifier = Modifier.padding(horizontal = spacing.medium),
                 activeAccount = uiState.activeAccount,
-                otherAccounts = uiState.otherAccounts,
+                allAccounts = uiState.allAccounts,
                 onActiveProfileClick = {
                     navActions.navigateToProfile(uiState.activeAccount.pubkey)
                     closeDrawer()
@@ -93,7 +95,7 @@ fun NozzleDrawerScreen(
 @Composable
 private fun TopRow(
     activeAccount: Account,
-    otherAccounts: List<Account>,
+    allAccounts: List<Account>,
     onActiveProfileClick: () -> Unit,
     onAddAccount: () -> Unit,
     modifier: Modifier,
@@ -117,7 +119,7 @@ private fun TopRow(
             )
             AnimatedVisibility(visible = isExpanded.value) {
                 AccountRows(
-                    accounts = otherAccounts,
+                    accounts = allAccounts,
                     onAddAccount = onAddAccount,
                 )
             }
@@ -142,7 +144,7 @@ private fun ActiveAccount(
             Row(modifier = Modifier.weight(1f), verticalAlignment = Alignment.CenterVertically) {
                 ProfilePicture(
                     modifier = Modifier
-                        .fillMaxWidth(0.20f)
+                        .width(sizing.largeProfilePicture)
                         .aspectRatio(1f)
                         .clip(CircleShape),
                     pictureUrl = picture,
@@ -170,28 +172,37 @@ private fun ActiveAccount(
 @Composable
 private fun AccountRows(accounts: List<Account>, onAddAccount: () -> Unit) {
     Column(modifier = Modifier.fillMaxWidth()) {
-        accounts.forEach { acc ->
-            Row {
-                ProfilePicture(
-                    modifier = Modifier
-                        .fillMaxWidth(0.10f)
-                        .aspectRatio(1f)
-                        .clip(CircleShape),
-                    pictureUrl = acc.picture,
-                    pubkey = acc.pubkey,
-                    trustType = Oneself
-                )
-                Spacer(Modifier.width(spacing.large))
-                Text(
-                    text = acc.name,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                    style = MaterialTheme.typography.h6,
-                    color = colors.onSurface
-                )
-            }
-        }
+        accounts.forEach { AccountRow(account = it) }
         AddAccountRow(onAddAccount = onAddAccount)
+    }
+}
+
+@Composable
+private fun AccountRow(account: Account) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween
+    ) {
+        Row(modifier = Modifier.weight(1f)) {
+            ProfilePicture(
+                modifier = Modifier
+                    .fillMaxWidth(0.10f)
+                    .aspectRatio(1f)
+                    .clip(CircleShape),
+                pictureUrl = account.picture,
+                pubkey = account.pubkey,
+                trustType = Oneself
+            )
+            Spacer(Modifier.width(spacing.large))
+            Text(
+                text = account.name,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                style = MaterialTheme.typography.h6,
+                color = colors.onSurface
+            )
+        }
+        if (account.isActive) CheckIcon()
     }
 }
 
