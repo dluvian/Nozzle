@@ -24,15 +24,14 @@ class EditProfileViewModel(
     private val relayProvider: IRelayProvider,
     context: Context,
 ) : ViewModel() {
-    private val viewModelState = MutableStateFlow(EditProfileViewModelState())
-
     var metadataState = personalProfileManager.getMetadataStateFlow()
 
-    val uiState = viewModelState
+    private val _uiState = MutableStateFlow(EditProfileViewModelState())
+    val uiState = _uiState
         .stateIn(
             viewModelScope,
             SharingStarted.Eagerly,
-            viewModelState.value
+            _uiState.value
         )
 
     init {
@@ -60,7 +59,7 @@ class EditProfileViewModel(
                 ).show()
             } else {
                 Log.i(TAG, "New values are invalid")
-                viewModelState.update { state ->
+                _uiState.update { state ->
                     state.copy(isInvalidPictureUrl = false)
                 }
             }
@@ -69,14 +68,14 @@ class EditProfileViewModel(
 
     val onChangeName: (String) -> Unit = { input ->
         uiState.value.let {
-            viewModelState.update { it.copy(nameInput = input) }
+            _uiState.update { it.copy(nameInput = input) }
             setUIHasChanges()
         }
     }
 
     val onChangeAbout: (String) -> Unit = { input ->
         if (input != uiState.value.aboutInput) {
-            viewModelState.update {
+            _uiState.update {
                 it.copy(aboutInput = input)
             }
             setUIHasChanges()
@@ -85,12 +84,12 @@ class EditProfileViewModel(
 
     val onChangePicture: (String) -> Unit = { input ->
         uiState.value.let { state ->
-            viewModelState.update {
+            _uiState.update {
                 it.copy(pictureInput = input)
             }
             setUIHasChanges()
             if (state.isInvalidPictureUrl && isValidUrl(input)) {
-                viewModelState.update {
+                _uiState.update {
                     it.copy(isInvalidPictureUrl = false)
                 }
             }
@@ -98,14 +97,14 @@ class EditProfileViewModel(
     }
 
     val onChangeNip05: (String) -> Unit = { input ->
-        viewModelState.update {
+        _uiState.update {
             it.copy(nip05Input = input)
         }
         setUIHasChanges()
     }
 
     val onChangeLud16: (String) -> Unit = { input ->
-        viewModelState.update {
+        _uiState.update {
             it.copy(lud16Input = input)
         }
         setUIHasChanges()
@@ -155,7 +154,7 @@ class EditProfileViewModel(
                         || oldState.nip05Input != metadata?.nip05.orEmpty()
                         || oldState.lud16Input != metadata?.lud16.orEmpty()
                 if (hasChanges != oldState.hasChanges) {
-                    viewModelState.update { state ->
+                    _uiState.update { state ->
                         state.copy(hasChanges = hasChanges)
                     }
                 }
@@ -167,7 +166,7 @@ class EditProfileViewModel(
         Log.i(TAG, "Use cached values")
         metadataState = personalProfileManager.getMetadataStateFlow()
         metadataState.value.let { metadata ->
-            viewModelState.update {
+            _uiState.update {
                 it.copy(
                     nameInput = metadata?.name.orEmpty(),
                     aboutInput = metadata?.about.orEmpty(),

@@ -44,9 +44,11 @@ class KeyManager(context: Context, private val accountDao: AccountDao) : IKeyMan
         setPrivkeys(privkeys)
 
         // Do this always for migration
-        CoroutineScope(Dispatchers.Main).launch {
-            val pubkeys = privkeys.map { derivePubkey(it) }
-            accountDao.setAccounts(pubkeys = pubkeys)
+        if (privkeys.size == 1) {
+            CoroutineScope(Dispatchers.Main).launch {
+                val pubkeys = privkeys.map { derivePubkey(it) }
+                accountDao.setAccounts(pubkeys = pubkeys)
+            }
         }
     }
 

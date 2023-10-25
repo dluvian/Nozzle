@@ -55,6 +55,7 @@
     <string name="post_your_thoughts">Post your thoughts</string>
     <string name="add">Add</string>
     <string name="invalid_nostr_id">Invalid nostr ID</string>
+    <string name="invalid_nsec">Invalid nsec</string>
     <string name="open_nostr_id">Open nostr ID, hashtag or nip05</string>
     <string name="post_published">Post published</string>
     <string name="time_abbr_now">Now</string>
@@ -95,6 +96,8 @@
     <string name="collapse">Collapse</string>
     <string name="expand">Expand</string>
     <string name="add_account">Add Account</string>
+    <string name="nsec_ellipsis">nsec…</string>
+    <string name="nsec">nsec</string>
     <plurals name="other_relays">
         <item quantity="one">other</item>
         <item quantity="other">others</item>

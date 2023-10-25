@@ -106,7 +106,7 @@ private fun Username(
     Text(text = stringResource(id = R.string.username), fontWeight = FontWeight.Bold)
     ChangeableTextField(
         modifier = Modifier.fillMaxWidth(),
-        value = username,
+        initValue = username,
         placeholder = stringResource(id = R.string.enter_your_username),
         onChangeValue = onChangeName,
     )
@@ -120,7 +120,7 @@ private fun About(
     Text(text = stringResource(id = R.string.about_you), fontWeight = FontWeight.Bold)
     ChangeableTextField(
         modifier = Modifier.fillMaxWidth(),
-        value = about,
+        initValue = about,
         maxLines = 3,
         placeholder = stringResource(id = R.string.describe_yourself),
         onChangeValue = onChangeAbout,
@@ -136,7 +136,7 @@ private fun ProfilePictureUrl(
     Text(text = stringResource(id = R.string.profile_picture_url), fontWeight = FontWeight.Bold)
     ChangeableTextField(
         modifier = Modifier.fillMaxWidth(),
-        value = pictureUrl,
+        initValue = pictureUrl,
         isError = isInvalid,
         maxLines = 3,
         placeholder = stringResource(id = R.string.enter_a_picture_url),
@@ -154,7 +154,7 @@ private fun Nip05(
     Text(text = stringResource(id = R.string.nip05_identifier), fontWeight = FontWeight.Bold)
     ChangeableTextField(
         modifier = Modifier.fillMaxWidth(),
-        value = nip05,
+        initValue = nip05,
         maxLines = 3,
         placeholder = stringResource(id = R.string.enter_nip05),
         keyboardType = KeyboardType.Uri,
@@ -170,7 +170,7 @@ private fun Lud16(
     Text(text = stringResource(id = R.string.lightning_address), fontWeight = FontWeight.Bold)
     ChangeableTextField(
         modifier = Modifier.fillMaxWidth(),
-        value = lud16,
+        initValue = lud16,
         maxLines = 3,
         placeholder = stringResource(id = R.string.enter_lud16),
         keyboardType = KeyboardType.Uri,

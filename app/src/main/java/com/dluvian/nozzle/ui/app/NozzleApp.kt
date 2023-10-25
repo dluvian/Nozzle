@@ -147,7 +147,7 @@ fun NozzleApp(appContainer: AppContainer) {
                 ),
                 addAccountViewModel = viewModel(
                     factory = AddAccountViewModel.provideFactory(
-                        accountDao = appContainer.roomDb.accountDao()
+                        keyManager = appContainer.keyManager
                     )
                 ),
             )

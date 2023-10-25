@@ -76,13 +76,11 @@ private fun Npub(npub: String) {
 
 @Composable
 private fun Nsec(nsec: String) {
-    val isVisible = remember { mutableStateOf(false) }
-    Text(
-        text = stringResource(id = R.string.private_key),
-        fontWeight = FontWeight.Bold
-    )
+    Text(text = stringResource(id = R.string.private_key), fontWeight = FontWeight.Bold)
     Text(text = stringResource(id = R.string.private_key_description))
     Text(text = stringResource(id = R.string.private_key_warning))
+
+    val isVisible = remember { mutableStateOf(false) }
     TextField(
         modifier = Modifier.fillMaxWidth(),
         value = nsec,

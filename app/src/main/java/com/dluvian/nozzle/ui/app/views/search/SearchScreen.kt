@@ -74,7 +74,7 @@ private fun SearchBar(
         modifier = Modifier
             .fillMaxWidth()
             .focusRequester(focusRequester),
-        value = input,
+        initValue = input,
         isError = isInvalidNostrId || isInvalidNip05,
         maxLines = Int.MAX_VALUE,
         placeholder = stringResource(id = R.string.open_nostr_id),

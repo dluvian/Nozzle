@@ -3,58 +3,69 @@ package com.dluvian.nozzle.ui.app.views.addAccount
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import com.dluvian.nozzle.data.SCOPE_TIMEOUT
+import com.dluvian.nozzle.data.manager.IKeyManager
 import com.dluvian.nozzle.data.nostr.utils.EncodingUtils
 import com.dluvian.nozzle.data.nostr.utils.KeyUtils
-import com.dluvian.nozzle.data.room.dao.AccountDao
-import com.dluvian.nozzle.data.room.entity.AccountEntity
 import com.dluvian.nozzle.data.utils.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
+import java.util.concurrent.atomic.AtomicBoolean
 
 
 class AddAccountViewModel(
-    accountDao: AccountDao,
+    private val keyManager: IKeyManager,
 ) : ViewModel() {
 
-    val onOpenScreen: () -> Unit = {
-//        _uiState.update{ it.copy(isInvalid = false) }
-    }
+    private val _uiState = MutableStateFlow(AddAccountViewModelState())
+    val uiState = _uiState
+        .stateIn(
+            viewModelScope,
+            SharingStarted.WhileSubscribed(SCOPE_TIMEOUT),
+            _uiState.value
+        )
 
-    val onAddAccount: (String) -> Unit = local@{ pubkey ->
-        if (!KeyUtils.isValidPubkey(pubkey)) {
-//            _uiState.update{ it.copy(isInvalid = true) }
-            return@local
-        }
-//            _uiState.update{ it.copy(isLoading = true) }
-        viewModelScope.launch(context = Dispatchers.IO) {
-            val account = AccountEntity(pubkey = pubkey)
-            val insertCode = accountDao.insert(account)
-//            if (insertCode == -1) {
-//              _uiState.update{ it.copy(pubkeyAlreadyExists = true) }
-//            }
-            // if(uiState.value.isGenerated){
-            //      insertAndPublishDefaultRelays
-            // }
-        }.invokeOnCompletion {
-//            _uiState.update{ it.copy(isLoading = false)
-        }
-    }
+    private val isGenerating = AtomicBoolean(false)
+    val onGenerateNew: () -> Unit = local@{
+        if (!isGenerating.compareAndSet(false, true)) return@local
 
-    val onGeneratePubkey: () -> Unit = {
         val privkey = KeyUtils.generatePrivkey()
-        val pubkey = KeyUtils.derivePubkey(privkey = privkey)
-        val npub = EncodingUtils.hexToNpub(pubkey)
+        val nsec = EncodingUtils.hexToNsec(privkey)
+        _uiState.update { it.copy(value = nsec, isInvalid = false) }
+        isGenerating.set(false)
+    }
+
+    private val isLoggingIn = AtomicBoolean(false)
+    val onLogin: (String) -> Boolean = local@{ nsec ->
+        if (!isLoggingIn.compareAndSet(false, true)) return@local false
+        if (nsec.isBlank()) return@local false
+
+        val hex = EncodingUtils.nsecToHex(nsec.trim())
+        _uiState.update { it.copy(isInvalid = hex == null) }
+        if (hex == null) return@local false
+
+        viewModelScope.launch(context = Dispatchers.IO) {
+            keyManager.addPrivkey(privkey = hex)
+        }.invokeOnCompletion {
+            isLoggingIn.set(false)
+        }
+
+        true
+    }
+
+    val onReset: () -> Unit = {
+        _uiState.update { AddAccountViewModelState() }
     }
 
     companion object {
         fun provideFactory(
-            accountDao: AccountDao,
+            keyManager: IKeyManager,
         ): ViewModelProvider.Factory = object : ViewModelProvider.Factory {
             @Suppress("UNCHECKED_CAST")
             override fun <T : ViewModel> create(modelClass: Class<T>): T {
                 return AddAccountViewModel(
-                    accountDao = accountDao
+                    keyManager = keyManager
                 ) as T
             }
         }

@@ -1,5 +1,6 @@
 package com.dluvian.nozzle.ui.app.views.editProfile
 
+
 data class EditProfileViewModelState(
     val nameInput: String = "",
     val aboutInput: String = "",
