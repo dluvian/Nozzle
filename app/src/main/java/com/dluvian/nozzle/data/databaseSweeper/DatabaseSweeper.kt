@@ -2,8 +2,6 @@ package com.dluvian.nozzle.data.databaseSweeper
 
 import android.util.Log
 import com.dluvian.nozzle.data.cache.IIdCache
-import com.dluvian.nozzle.data.provider.IContactListProvider
-import com.dluvian.nozzle.data.provider.IPubkeyProvider
 import com.dluvian.nozzle.data.room.AppDatabase
 import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.random.Random
@@ -12,8 +10,6 @@ private const val TAG = "DatabaseSweeper"
 
 class DatabaseSweeper(
     private val keepPosts: Int,
-    private val pubkeyProvider: IPubkeyProvider,
-    private val contactListProvider: IContactListProvider,
     private val dbSweepExcludingCache: IIdCache,
     private val database: AppDatabase
 ) : IDatabaseSweeper {
@@ -24,26 +20,21 @@ class DatabaseSweeper(
             return
         }
         Log.i(TAG, "Sweep database")
-        val excludePubkeys = dbSweepExcludingCache.getPubkeys() +
-                contactListProvider.listPersonalContactPubkeys() +
-                pubkeyProvider.getActivePubkey()
 
         when (Random.nextInt(until = 4)) {
             0 -> deletePosts()
-            1 -> deleteProfiles(excludePubkeys = excludePubkeys)
-            2 -> deleteContactLists(excludePubkeys = excludePubkeys)
-            3 -> deleteNip65(excludePubkeys = excludePubkeys)
+            1 -> deleteProfiles(excludePubkeys = dbSweepExcludingCache.getPubkeys())
+            2 -> deleteContactLists(excludePubkeys = dbSweepExcludingCache.getContactListAuthors())
+            3 -> deleteNip65(excludePubkeys = dbSweepExcludingCache.getNip65Authors())
             else -> Log.w(TAG, "Delete case not covered")
         }
         isSweeping.set(false)
     }
 
     private suspend fun deletePosts() {
-        // TODO: Exclude author via db table of user acc
         val deletePostCount = database.postDao().deleteAllExceptNewest(
             amountToKeep = keepPosts,
             exclude = dbSweepExcludingCache.getPostIds(),
-            excludeAuthor = pubkeyProvider.getActivePubkey()
         )
         Log.i(TAG, "Deleted $deletePostCount posts")
     }

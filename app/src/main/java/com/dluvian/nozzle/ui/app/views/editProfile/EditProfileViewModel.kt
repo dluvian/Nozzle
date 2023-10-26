@@ -24,7 +24,7 @@ class EditProfileViewModel(
     private val relayProvider: IRelayProvider,
     context: Context,
 ) : ViewModel() {
-    var metadataState = personalProfileManager.getMetadataStateFlow()
+    val metadataState = personalProfileManager.getMetadataStateFlow()
 
     private val _uiState = MutableStateFlow(EditProfileViewModelState())
     val uiState = _uiState
@@ -164,7 +164,6 @@ class EditProfileViewModel(
 
     private fun useCachedValues() {
         Log.i(TAG, "Use cached values")
-        metadataState = personalProfileManager.getMetadataStateFlow()
         metadataState.value.let { metadata ->
             _uiState.update {
                 it.copy(

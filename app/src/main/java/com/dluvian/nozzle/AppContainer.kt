@@ -61,7 +61,6 @@ class AppContainer(context: Context) {
     val keyManager: IKeyManager = KeyManager(context = context, accountDao = roomDb.accountDao())
 
     val contactListProvider: IContactListProvider = ContactListProvider(
-        pubkeyProvider = keyManager,
         contactDao = roomDb.contactDao()
     )
 
@@ -89,7 +88,6 @@ class AppContainer(context: Context) {
     private val nostrSubscriber: INostrSubscriber = NostrSubscriber(nostrService = nostrService)
 
     val relayProvider: IRelayProvider = RelayProvider(
-        pubkeyProvider = keyManager,
         contactListProvider = contactListProvider,
         nip65Dao = roomDb.nip65Dao(),
     )
@@ -172,8 +170,6 @@ class AppContainer(context: Context) {
 
     val databaseSweeper: IDatabaseSweeper = DatabaseSweeper(
         keepPosts = SWEEP_THRESHOLD,
-        pubkeyProvider = keyManager,
-        contactListProvider = contactListProvider,
         dbSweepExcludingCache = dbSweepExcludingCache,
         database = roomDb,
     )
@@ -181,7 +177,6 @@ class AppContainer(context: Context) {
     val postPreparer: IPostPreparer = PostPreparer()
     val inboxFeedProvider: IInboxFeedProvider = InboxFeedProvider(
         nozzleSubscriber = nozzleSubscriber,
-        pubkeyProvider = keyManager,
         postWithMetaProvider = postWithMetaProvider,
         postDao = roomDb.postDao()
     )

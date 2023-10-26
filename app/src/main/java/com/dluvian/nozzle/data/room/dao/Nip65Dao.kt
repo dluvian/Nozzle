@@ -69,15 +69,16 @@ interface Nip65Dao {
     @Query(
         "SELECT url, isRead, isWrite " +
                 "FROM nip65 " +
-                "WHERE pubkey = :pubkey"
+                "WHERE pubkey = (SELECT pubkey FROM account WHERE isActive = 1)"
     )
-    fun getRelaysOfPubkeyFlow(pubkey: String): Flow<List<Nip65Relay>>
+    fun getPersonalRelaysFlow(): Flow<List<Nip65Relay>>
 
-    // TODO: No exclude. This should exclude pubkeys in user acc table
     @Query(
         "DELETE FROM nip65 " +
                 "WHERE pubkey NOT IN (SELECT pubkey FROM profile) " +
-                "AND pubkey NOT IN (:excludePubkeys)"
+                "AND pubkey NOT IN (:excludePubkeys) " +
+                "AND pubkey NOT IN (SELECT pubkey FROM account)" +
+                "AND pubkey NOT IN (SELECT contactPubkey FROM contact WHERE pubkey IN (SELECT pubkey FROM account))"
     )
     suspend fun deleteOrphaned(excludePubkeys: Collection<String>): Int
 

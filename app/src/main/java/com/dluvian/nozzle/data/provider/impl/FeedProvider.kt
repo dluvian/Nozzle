@@ -60,7 +60,7 @@ class FeedProvider(
         return postWithMetaProvider.getPostsWithMetaFlow(feedInfo = feedInfo)
     }
 
-    private suspend fun listPubkeys(authorSelection: AuthorSelection): List<String>? {
+    private fun listPubkeys(authorSelection: AuthorSelection): List<String>? {
         return when (authorSelection) {
             is Everyone -> null
             is Contacts -> contactListProvider.listPersonalContactPubkeys() + pubkeyProvider.getActivePubkey()

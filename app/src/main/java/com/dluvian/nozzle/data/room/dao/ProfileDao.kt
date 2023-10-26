@@ -23,6 +23,7 @@ interface ProfileDao {
     )
     fun getProfileEntityExtendedFlow(pubkey: String): Flow<ProfileEntityExtended?>
 
+    // TODO: Rename all dao methods with active=1 to ...active... like here
     @RewriteQueriesToDropUnusedColumns
     @Query("SELECT * FROM profile WHERE pubkey = (SELECT pubkey FROM account WHERE isActive = 1)")
     fun getActiveMetadata(): Flow<Metadata?>
@@ -67,7 +68,9 @@ interface ProfileDao {
     @Query(
         "DELETE FROM profile " +
                 "WHERE pubkey NOT IN (SELECT pubkey FROM post) " +
-                "AND pubkey NOT IN (:exclude)"
+                "AND pubkey NOT IN (:exclude)" +
+                "AND pubkey NOT IN (SELECT pubkey FROM account) " +
+                "AND pubkey NOT IN (SELECT contactPubkey FROM contact WHERE pubkey IN (SELECT pubkey FROM account))"
     )
     suspend fun deleteOrphaned(exclude: Collection<String>): Int
 

@@ -42,7 +42,6 @@ class PersonalProfileManager(
         )
     }
 
-
     override fun getMetadataStateFlow(): StateFlow<Metadata?> {
         return metadataStateFlow
     }

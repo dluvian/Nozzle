@@ -23,9 +23,9 @@ interface ContactDao {
     @Query(
         "SELECT contactPubkey " +
                 "FROM contact " +
-                "WHERE pubkey = :pubkey"
+                "WHERE pubkey = (SELECT pubkey FROM account WHERE isActive = 1)"
     )
-    fun listContactPubkeysFlow(pubkey: String): Flow<List<String>>
+    fun listPersonalContactPubkeysFlow(): Flow<List<String>>
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insertOrIgnore(vararg contacts: ContactEntity)
@@ -112,38 +112,39 @@ interface ContactDao {
         "SELECT COUNT(*) " +
                 "FROM contact " +
                 "WHERE contactPubkey = :contactPubkey " +
-                "AND pubkey IN (SELECT contactPubkey FROM contact WHERE pubkey = :pubkey)"
+                "AND pubkey IN (SELECT contactPubkey " +
+                "FROM contact " +
+                "WHERE pubkey = (SELECT pubkey FROM account WHERE isActive = 1))"
     )
-    fun getRawTrustScoreFlow(pubkey: String, contactPubkey: String): Flow<Int>
+    fun getRawTrustScoreFlow(contactPubkey: String): Flow<Int>
 
     @MapInfo(keyColumn = "contactPubkey", valueColumn = "rawTrustScore")
     @Query(
         "SELECT contactPubkey, COUNT(*) AS rawTrustScore " +
                 "FROM contact " +
                 "WHERE contactPubkey IN (:contactPubkeys) " +
-                "AND pubkey IN (SELECT contactPubkey FROM contact WHERE pubkey = :pubkey) " +
+                "AND pubkey IN (SELECT contactPubkey " +
+                "FROM contact " +
+                "WHERE pubkey = (SELECT pubkey FROM account WHERE isActive = 1)) " +
                 "GROUP BY contactPubkey"
     )
     fun getRawTrustScoreByPubkeyFlow(
-        pubkey: String,
         contactPubkeys: Collection<String>
     ): Flow<Map<String, Int>>
 
     @Query(
         "SELECT COUNT(*) " +
                 "FROM contact " +
-                "WHERE pubkey = :pubkey " +
+                "WHERE pubkey = (SELECT pubkey FROM account WHERE isActive = 1) " +
                 "AND contactPubkey IN (SELECT pubkey FROM contact)"
     )
-    fun getTrustScoreDividerFlow(pubkey: String): Flow<Int>
+    fun getTrustScoreDividerFlow(): Flow<Int>
 
     fun getTrustScoreFlow(
-        pubkey: String,
         contactPubkey: String
     ): Flow<Float> {
-        val trustScoreDividerFlow = getTrustScoreDividerFlow(pubkey).distinctUntilChanged()
+        val trustScoreDividerFlow = getTrustScoreDividerFlow().distinctUntilChanged()
         val rawTrustScoreFlow = getRawTrustScoreFlow(
-            pubkey = pubkey,
             contactPubkey = contactPubkey
         ).distinctUntilChanged()
         return trustScoreDividerFlow
@@ -156,14 +157,12 @@ interface ContactDao {
     }
 
     fun getTrustScoreByPubkeyFlow(
-        pubkey: String,
         contactPubkeys: Collection<String>
     ): Flow<Map<Pubkey, Float>> {
         if (contactPubkeys.isEmpty()) return flow { emit(emptyMap()) }
 
-        val trustScoreDividerFlow = getTrustScoreDividerFlow(pubkey).distinctUntilChanged()
+        val trustScoreDividerFlow = getTrustScoreDividerFlow().distinctUntilChanged()
         val rawTrustScorePerPubkeyFlow = getRawTrustScoreByPubkeyFlow(
-            pubkey = pubkey,
             contactPubkeys = contactPubkeys
         ).distinctUntilChanged()
         return trustScoreDividerFlow
@@ -185,11 +184,12 @@ interface ContactDao {
         return minOf(percentage * TRUST_SCORE_BOOST, 1f)
     }
 
-    // TODO: No except. This should exclude pubkeys in user acc table
     @Query(
         "DELETE FROM contact " +
                 "WHERE pubkey NOT IN (SELECT pubkey FROM profile) " +
-                "AND pubkey NOT IN (:exclude)"
+                "AND pubkey NOT IN (:exclude)" +
+                "AND pubkey NOT IN (SELECT pubkey FROM account)" +
+                "AND pubkey NOT IN (SELECT contactPubkey FROM contact WHERE pubkey IN (SELECT pubkey FROM account))"
     )
     suspend fun deleteOrphaned(exclude: Collection<String>): Int
 

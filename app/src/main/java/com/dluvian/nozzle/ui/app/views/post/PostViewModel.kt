@@ -43,7 +43,7 @@ class PostViewModel(
 ) : ViewModel() {
     private val viewModelState = MutableStateFlow(PostViewModelState())
 
-    var metadataState = personalProfileProvider.getMetadataStateFlow()
+    val metadataState = personalProfileProvider.getMetadataStateFlow()
 
     val uiState = viewModelState
         .stateIn(
@@ -106,8 +106,6 @@ class PostViewModel(
         postToQuote: AnnotatedMentionedPost?,
         relays: Collection<String> = emptyList()
     ) {
-        // TODO: USE FLOWS. This should not be needed
-        metadataState = personalProfileProvider.getMetadataStateFlow()
         viewModelState.update {
             it.copy(
                 pubkey = personalProfileProvider.getActivePubkey(),

@@ -13,7 +13,6 @@ fun FeedRoute(
     feedViewModel: FeedViewModel,
     postCardNavLambdas: PostCardNavLambdas,
     onPrepareReply: (PostWithMeta) -> Unit,
-    onPreparePost: () -> Unit,
     onOpenDrawer: () -> Unit,
     onNavigateToPost: () -> Unit,
 ) {
@@ -42,7 +41,6 @@ fun FeedRoute(
         onRefreshFeedView = feedViewModel.onRefreshFeedView,
         onRefreshOnMenuDismiss = feedViewModel.onRefreshOnMenuDismiss,
         onPrepareReply = onPrepareReply,
-        onPreparePost = onPreparePost,
         onToggleContactsOnly = feedViewModel.onToggleContactsOnly,
         onTogglePosts = feedViewModel.onTogglePosts,
         onToggleReplies = feedViewModel.onToggleReplies,

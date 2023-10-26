@@ -5,22 +5,16 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 
 
-// TODO: USE FLOWS
 @Composable
 fun EditProfileRoute(
     editProfileViewModel: EditProfileViewModel,
-    onResetFeedIconUiState: () -> Unit,
     onGoBack: () -> Unit,
 ) {
     val uiState by editProfileViewModel.uiState.collectAsState()
 
     EditProfileScreen(
         uiState = uiState,
-        onUpdateProfile = {
-            // TODO: Simplify with Flows
-            editProfileViewModel.onUpdateProfile()
-            onResetFeedIconUiState()
-        },
+        onUpdateProfile = editProfileViewModel.onUpdateProfile,
         onChangeName = editProfileViewModel.onChangeName,
         onChangeAbout = editProfileViewModel.onChangeAbout,
         onChangePicture = editProfileViewModel.onChangePicture,

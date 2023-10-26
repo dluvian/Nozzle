@@ -56,7 +56,6 @@ fun FeedScreen(
     onRefreshFeedView: () -> Unit,
     onRefreshOnMenuDismiss: () -> Unit,
     onPrepareReply: (PostWithMeta) -> Unit,
-    onPreparePost: () -> Unit,
     onToggleContactsOnly: () -> Unit,
     onTogglePosts: () -> Unit,
     onToggleReplies: () -> Unit,
@@ -86,13 +85,7 @@ fun FeedScreen(
                 onScrollToTop = { scope.launch { lazyListState.animateScrollToItem(0) } }
             )
         },
-        floatingActionButton = {
-            FeedFab(onPrepareNewPost = {
-                // TODO: only onNavigateToPost()
-                onPreparePost()
-                onNavigateToPost()
-            })
-        },
+        floatingActionButton = { FeedFab(onNavigateToPost = onNavigateToPost) },
     ) {
         Column(
             modifier = Modifier
@@ -204,8 +197,8 @@ private fun Headline(
 }
 
 @Composable
-private fun FeedFab(onPrepareNewPost: () -> Unit) {
-    FloatingActionButton(onClick = { onPrepareNewPost() }, contentColor = Color.White) {
+private fun FeedFab(onNavigateToPost: () -> Unit) {
+    FloatingActionButton(onClick = onNavigateToPost, contentColor = Color.White) {
         AddIcon()
     }
 }

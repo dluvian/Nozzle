@@ -48,10 +48,9 @@ class ProfileWithMetaProvider(
         val nprofileFlow = relaysFlow.map { createNprofileStr(pubkey = pubkey, relays = it) }
 
         // No debounce because of immediate user interaction response
-        val trustScoreFlow = contactDao.getTrustScoreFlow(
-            pubkey = pubkeyProvider.getActivePubkey(),
-            contactPubkey = pubkey
-        ).distinctUntilChanged()
+        val trustScoreFlow = contactDao
+            .getTrustScoreFlow(contactPubkey = pubkey)
+            .distinctUntilChanged()
 
         return getFinalFlow(
             pubkeyVariations = PubkeyVariations.fromPubkey(pubkey),

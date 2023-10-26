@@ -54,6 +54,7 @@ class NozzleNavActions(
     }
 
     val navigateToPost: () -> Unit = {
+        vmContainer.postViewModel.onPreparePost()
         navController.navigateToNozzleRoute(NozzleRoute.POST)
     }
 

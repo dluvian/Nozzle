@@ -58,7 +58,6 @@ fun NozzleNavGraph(
                 feedViewModel = vmContainer.feedViewModel,
                 postCardNavLambdas = postCardNavLambdas,
                 onPrepareReply = vmContainer.replyViewModel.onPrepareReply,
-                onPreparePost = vmContainer.postViewModel.onPreparePost,
                 onOpenDrawer = { scope.launch { drawerState.open() } },
                 onNavigateToPost = navActions.navigateToPost,
             )
@@ -108,7 +107,6 @@ fun NozzleNavGraph(
             vmContainer.editProfileViewModel.onResetUiState() // TODO: Is name of lambda correct?
             EditProfileRoute(
                 editProfileViewModel = vmContainer.editProfileViewModel,
-                onResetFeedIconUiState = vmContainer.feedViewModel.onResetProfileIconUiState,
                 onGoBack = navActions.popStack,
             )
         }
