@@ -53,6 +53,7 @@ class AddAccountViewModel(
 
         viewModelScope.launch(context = Dispatchers.IO) {
             keyManager.addPrivkey(privkey = hex)
+            keyManager.activatePubkey(pubkey = KeyUtils.derivePubkey(hex))
         }.invokeOnCompletion {
             isLoggingIn.set(false)
         }

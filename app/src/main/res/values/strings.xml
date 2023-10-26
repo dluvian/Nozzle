@@ -100,6 +100,8 @@
     <string name="nsec">nsec</string>
     <string name="generate_new">Generate new</string>
     <string name="login">Login</string>
+    <string name="open_profile">Open profile</string>
+    <string name="delete_account">Delete account</string>
     <plurals name="other_relays">
         <item quantity="one">other</item>
         <item quantity="other">others</item>

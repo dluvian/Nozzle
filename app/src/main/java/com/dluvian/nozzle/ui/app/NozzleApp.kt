@@ -43,6 +43,7 @@ fun NozzleApp(appContainer: AppContainer) {
             val vmContainer = VMContainer(
                 drawerViewModel = viewModel(
                     factory = NozzleDrawerViewModel.provideFactory(
+                        keyManager = appContainer.keyManager,
                         accountDao = appContainer.roomDb.accountDao(),
                         nozzleSubscriber = appContainer.nozzleSubscriber
                     )

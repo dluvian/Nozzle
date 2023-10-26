@@ -26,8 +26,8 @@ interface AccountDao {
         val accounts = pubkeys.mapIndexed { i, key ->
             AccountEntity(pubkey = key, isActive = i == 0)
         }
-        deleteAll()
-        insert(*accounts.toTypedArray())
+        deleteAllAccounts()
+        insertAccount(*accounts.toTypedArray())
     }
 
     @Transaction
@@ -36,8 +36,11 @@ interface AccountDao {
         deactivateAllExcept(excludePubkey = pubkey)
     }
 
+    @Query("DELETE FROM account WHERE pubkey = :pubkey")
+    suspend fun deleteAccount(pubkey: Pubkey)
+
     @Insert(onConflict = OnConflictStrategy.IGNORE)
-    suspend fun insert(vararg accounts: AccountEntity): List<Long>
+    suspend fun insertAccount(vararg accounts: AccountEntity): List<Long>
 
     @Query("UPDATE account SET isActive = 0 WHERE pubkey IS NOT :excludePubkey")
     suspend fun deactivateAllExcept(excludePubkey: Pubkey)
@@ -46,5 +49,5 @@ interface AccountDao {
     suspend fun activateSinglePubkey(pubkey: Pubkey)
 
     @Query("DELETE FROM account")
-    suspend fun deleteAll()
+    suspend fun deleteAllAccounts()
 }

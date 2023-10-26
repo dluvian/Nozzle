@@ -24,8 +24,8 @@ interface ProfileDao {
     fun getProfileEntityExtendedFlow(pubkey: String): Flow<ProfileEntityExtended?>
 
     @RewriteQueriesToDropUnusedColumns
-    @Query("SELECT * FROM profile WHERE pubkey = :pubkey")
-    fun getMetadata(pubkey: String): Flow<Metadata?>
+    @Query("SELECT * FROM profile WHERE pubkey = (SELECT pubkey FROM account WHERE isActive = 1)")
+    fun getActiveMetadata(): Flow<Metadata?>
 
     @Query(
         "UPDATE profile " +

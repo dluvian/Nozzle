@@ -39,7 +39,7 @@ fun CopyIcon(onCopy: () -> Unit) {
         modifier = Modifier
             .size(sizing.smallItem)
             .clip(RoundedCornerShape(spacing.medium))
-            .clickable { onCopy() },
+            .clickable(onClick = onCopy),
         description = stringResource(id = R.string.copy_content),
     )
 }

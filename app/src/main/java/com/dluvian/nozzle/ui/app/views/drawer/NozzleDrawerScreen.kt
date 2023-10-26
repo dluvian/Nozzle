@@ -1,6 +1,8 @@
 package com.dluvian.nozzle.ui.app.views.drawer
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -13,6 +15,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.DropdownMenu
 import androidx.compose.material.Icon
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.MaterialTheme.colors
@@ -42,6 +45,7 @@ import com.dluvian.nozzle.ui.app.navigation.NozzleNavActions
 import com.dluvian.nozzle.ui.components.AddIcon
 import com.dluvian.nozzle.ui.components.CheckIcon
 import com.dluvian.nozzle.ui.components.ExpandIcon
+import com.dluvian.nozzle.ui.components.dropdown.SimpleDropdownMenuItem
 import com.dluvian.nozzle.ui.components.media.ProfilePicture
 import com.dluvian.nozzle.ui.theme.sizing
 import com.dluvian.nozzle.ui.theme.spacing
@@ -50,6 +54,8 @@ import com.dluvian.nozzle.ui.theme.spacing
 fun NozzleDrawerScreen(
     uiState: NozzleDrawerViewModelState,
     navActions: NozzleNavActions,
+    onActivateAccount: (Int) -> Unit,
+    onDeleteAccount: (Int) -> Unit,
     closeDrawer: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -68,8 +74,14 @@ fun NozzleDrawerScreen(
                     navActions.navigateToProfile(uiState.activeAccount.pubkey)
                     closeDrawer()
                 },
+                onActivateAccount = onActivateAccount,
                 onAddAccount = {
                     navActions.navigateToAddAccount()
+                    closeDrawer()
+                },
+                onDeleteAccount = onDeleteAccount,
+                navigateToProfile = { pubkey ->
+                    navActions.navigateToProfile(pubkey)
                     closeDrawer()
                 },
             )
@@ -97,7 +109,10 @@ private fun TopRow(
     activeAccount: Account,
     allAccounts: List<Account>,
     onActiveProfileClick: () -> Unit,
+    onActivateAccount: (Int) -> Unit,
     onAddAccount: () -> Unit,
+    onDeleteAccount: (Int) -> Unit,
+    navigateToProfile: (String) -> Unit,
     modifier: Modifier,
 ) {
     Surface(
@@ -120,7 +135,10 @@ private fun TopRow(
             AnimatedVisibility(visible = isExpanded.value) {
                 AccountRows(
                     accounts = allAccounts,
+                    onActivateAccount = onActivateAccount,
                     onAddAccount = onAddAccount,
+                    onDeleteAccount = onDeleteAccount,
+                    navigateToProfile = navigateToProfile,
                 )
             }
         }
@@ -170,39 +188,71 @@ private fun ActiveAccount(
 }
 
 @Composable
-private fun AccountRows(accounts: List<Account>, onAddAccount: () -> Unit) {
+private fun AccountRows(
+    accounts: List<Account>,
+    onActivateAccount: (Int) -> Unit,
+    onAddAccount: () -> Unit,
+    onDeleteAccount: (Int) -> Unit,
+    navigateToProfile: (String) -> Unit
+) {
     Column(modifier = Modifier.fillMaxWidth()) {
-        accounts.forEach { AccountRow(account = it) }
+        accounts.forEachIndexed { i, account ->
+            AccountRow(
+                account = account,
+                onActivateAccount = { onActivateAccount(i) },
+                onOpenProfile = { navigateToProfile(account.pubkey) },
+                onDeleteAccount = { onDeleteAccount(i) })
+        }
         AddAccountRow(onAddAccount = onAddAccount)
     }
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
-private fun AccountRow(account: Account) {
-    Row(
+private fun AccountRow(
+    account: Account,
+    onActivateAccount: () -> Unit,
+    onOpenProfile: () -> Unit,
+    onDeleteAccount: () -> Unit,
+) {
+    TextButton(
         modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceBetween
+        onClick = onActivateAccount,
     ) {
-        Row(modifier = Modifier.weight(1f)) {
-            ProfilePicture(
-                modifier = Modifier
-                    .fillMaxWidth(0.10f)
-                    .aspectRatio(1f)
-                    .clip(CircleShape),
-                pictureUrl = account.picture,
-                pubkey = account.pubkey,
-                trustType = Oneself
+        val showMenu = remember { mutableStateOf(false) }
+        AccountRowMenu(
+            showMenu = showMenu.value,
+            onOpenProfile = onOpenProfile,
+            onDeleteAccount = if (account.isActive) null else onDeleteAccount,
+            onDismiss = { showMenu.value = false }
+        )
+        Row(
+            modifier = Modifier.combinedClickable(
+                onClick = onActivateAccount,
+                onLongClick = { showMenu.value = true }
             )
-            Spacer(Modifier.width(spacing.large))
-            Text(
-                text = account.name,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-                style = MaterialTheme.typography.h6,
-                color = colors.onSurface
-            )
+        ) {
+            Row(modifier = Modifier.weight(1f)) {
+                ProfilePicture(
+                    modifier = Modifier
+                        .width(sizing.smallProfilePicture)
+                        .aspectRatio(1f)
+                        .clip(CircleShape),
+                    pictureUrl = account.picture,
+                    pubkey = account.pubkey,
+                    trustType = Oneself
+                )
+                Spacer(Modifier.width(spacing.large))
+                Text(
+                    text = account.name,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    style = MaterialTheme.typography.h6,
+                    color = colors.onSurface
+                )
+            }
+            if (account.isActive) CheckIcon()
         }
-        if (account.isActive) CheckIcon()
     }
 }
 
@@ -325,3 +375,35 @@ private fun DrawerRow(
         }
     }
 }
+
+@Composable
+fun AccountRowMenu(
+    showMenu: Boolean,
+    onOpenProfile: () -> Unit,
+    onDismiss: () -> Unit,
+    onDeleteAccount: (() -> Unit)? = null,
+) {
+    DropdownMenu(
+        expanded = showMenu,
+        onDismissRequest = onDismiss
+    ) {
+        SimpleDropdownMenuItem(
+            text = stringResource(id = R.string.open_profile),
+            onClick = {
+                onDismiss()
+                onOpenProfile()
+            }
+        )
+        if (onDeleteAccount != null) {
+            SimpleDropdownMenuItem(
+                text = stringResource(id = R.string.delete_account),
+                onClick = {
+                    onDismiss()
+                    onDeleteAccount()
+                }
+            )
+        }
+    }
+}
+
+

@@ -20,6 +20,8 @@ fun NozzleDrawerRoute(
         modifier = modifier,
         uiState = uiState,
         navActions = navActions,
+        onActivateAccount = nozzleDrawerViewModel.onActivateAccount,
+        onDeleteAccount = nozzleDrawerViewModel.onDeleteAccount,
         closeDrawer = closeDrawer,
     )
 }

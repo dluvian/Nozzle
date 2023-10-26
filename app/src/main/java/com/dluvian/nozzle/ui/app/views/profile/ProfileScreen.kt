@@ -266,7 +266,7 @@ private fun CopyableNprofile(
     onCopyNprofile: () -> Unit,
 ) {
     Row(
-        Modifier.clickable { onCopyNprofile() },
+        Modifier.clickable(onClick = onCopyNprofile),
         verticalAlignment = Alignment.CenterVertically
     ) {
         CopyIcon(

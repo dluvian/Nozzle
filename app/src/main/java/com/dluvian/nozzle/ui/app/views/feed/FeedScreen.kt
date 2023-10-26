@@ -143,7 +143,7 @@ private fun FeedTopBar(
                 ProfilePicture(
                     modifier = Modifier
                         .size(sizing.smallProfilePicture)
-                        .clickable { onPictureClick() },
+                        .clickable(onClick = onPictureClick),
                     pictureUrl = picture,
                     pubkey = pubkey,
                     trustType = Oneself

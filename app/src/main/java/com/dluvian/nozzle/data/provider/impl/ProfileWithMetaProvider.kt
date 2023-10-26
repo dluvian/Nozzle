@@ -37,7 +37,6 @@ class ProfileWithMetaProvider(
 
         val pubkey = profileIdToNostrId(profileId)?.hex ?: profileId
 
-
         val profileExtendedFlow = profileDao.getProfileEntityExtendedFlow(pubkey = pubkey)
             .distinctUntilChanged()
 
@@ -84,7 +83,7 @@ class ProfileWithMetaProvider(
                 numOfFollowing = profile?.numOfFollowing ?: 0,
                 numOfFollowers = profile?.numOfFollowers ?: 0,
                 relays = relays,
-                isOneself = pubkeyProvider.isOneself(pubkeyVariations.pubkey),
+                isOneself = pubkeyProvider.isOneself(pubkeyVariations.pubkey), // TODO: Handle in SQL
                 trustScore = trustScore,
             )
         }

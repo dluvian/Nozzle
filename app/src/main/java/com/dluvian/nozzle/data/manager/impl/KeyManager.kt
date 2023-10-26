@@ -22,6 +22,7 @@ import kotlinx.coroutines.launch
 
 private const val TAG: String = "KeyManager"
 private const val PRIVKEY: String = "privkey"
+private const val ACTIVE_INDEX: String = "active_index"
 private const val DELIMITER: String = ";"
 
 class KeyManager(context: Context, private val accountDao: AccountDao) : IKeyManager {
@@ -40,15 +41,21 @@ class KeyManager(context: Context, private val accountDao: AccountDao) : IKeyMan
     private var currentPubkey: Pubkey = ""
 
     init {
-        val privkeys = getPrivkeys().ifEmpty { listOf(generatePrivkey()) }
-        setPrivkeys(privkeys)
+        val privkeys = getPrivkeys().toMutableList()
+        currentPubkey = if (privkeys.isEmpty()) {
+            Log.i(TAG, "Generate initial private key")
+            val initPrivkey = generatePrivkey()
+            privkeys.add(initPrivkey)
+            setPrivkeys(privkeys = privkeys)
+            derivePubkey(initPrivkey)
+        } else {
+            derivePubkey(privkeys[getActiveIndex()])
+        }
 
-        // Do this always for migration
-        if (privkeys.size == 1) {
-            CoroutineScope(Dispatchers.Main).launch {
-                val pubkeys = privkeys.map { derivePubkey(it) }
-                accountDao.setAccounts(pubkeys = pubkeys)
-            }
+        // Ensure data integrity in database
+        CoroutineScope(Dispatchers.Main).launch {
+            val pubkeys = privkeys.map { derivePubkey(it) }
+            accountDao.setAccounts(pubkeys = pubkeys)
         }
     }
 
@@ -59,20 +66,16 @@ class KeyManager(context: Context, private val accountDao: AccountDao) : IKeyMan
     override suspend fun activatePubkey(pubkey: Pubkey) {
         if (!isValidHexKey(pubkey) || getActivePubkey() == pubkey) return
 
-        val privkeys = getPrivkeys()
-        val pubkeys = privkeys.map { derivePubkey(it) }
-        val index = pubkeys.indexOf(pubkey)
-        if (index == -1) {
-            Log.w(TAG, "Pubkey $pubkey not found in derived privkey list (n=${privkeys.size}")
+        val pubkeys = getPrivkeys().map { derivePubkey(it) }
+        val indexToActivate = pubkeys.indexOf(pubkey)
+        if (indexToActivate == -1) {
+            Log.w(TAG, "Pubkey $pubkey not found in derived privkey list")
             return
         }
 
-        val reorderedPrivkeys = mutableListOf<String>()
-        reorderedPrivkeys.add(privkeys[index])
-        privkeys.forEachIndexed { i, key -> if (i != index) reorderedPrivkeys.add(key) }
-
-        setPrivkeys(privkeys = reorderedPrivkeys)
+        setActiveIndex(indexToActivate)
         accountDao.activateAccount(pubkey)
+        currentPubkey = pubkey
         return
     }
 
@@ -85,20 +88,30 @@ class KeyManager(context: Context, private val accountDao: AccountDao) : IKeyMan
         val pubkey = derivePubkey(privkey)
         val newAccount = AccountEntity(pubkey = pubkey, isActive = false)
         setPrivkeys(privkeys = privkeys + privkey)
-        accountDao.insert(newAccount)
+        accountDao.insertAccount(newAccount)
     }
 
     override suspend fun deletePubkey(pubkey: Pubkey) {
         val privkeys = getPrivkeys()
         val pubkeys = privkeys.map { derivePubkey(it) }
-        val index = pubkeys.indexOf(pubkey)
-        if (index == -1) {
+        val indexToDelete = pubkeys.indexOf(pubkey)
+        if (indexToDelete == -1) {
             Log.w(TAG, "Pubkey $pubkey not found in derived privkey list (n=${privkeys.size}")
             return
         }
+        val oldActiveIndex = getActiveIndex()
+        if (oldActiveIndex == indexToDelete) {
+            Log.w(TAG, "Attempt to delete active account")
+            return
+        }
 
-        val newPrivkeys = privkeys.filterIndexed { i, _ -> i != index }
+        if (oldActiveIndex > indexToDelete) {
+            setActiveIndex(oldActiveIndex - 1)
+        }
+
+        val newPrivkeys = privkeys.filterIndexed { i, _ -> i != indexToDelete }
         setPrivkeys(privkeys = newPrivkeys)
+        accountDao.deleteAccount(pubkey = pubkey)
     }
 
     override fun getActiveKeys(): Keys {
@@ -108,25 +121,27 @@ class KeyManager(context: Context, private val accountDao: AccountDao) : IKeyMan
         )
     }
 
-    private fun getActivePrivkey() = getPrivkeys().first()
+    private fun getActivePrivkey() = getPrivkeys()[getActiveIndex()]
 
     private fun getPrivkeys(): List<String> {
-        // TODO: Delete log
-        Log.w(
-            "TO BE DELETED 1",
-            "${preferences.getString(PRIVKEY, "")?.split(DELIMITER) ?: emptyList()}"
-        )
         val saved = preferences.getString(PRIVKEY, "")?.split(DELIMITER) ?: emptyList()
         return saved.filter(String::isNotEmpty)
     }
 
+    private fun getActiveIndex(): Int {
+        return preferences.getInt(ACTIVE_INDEX, 0)
+    }
+
     private fun setPrivkeys(privkeys: List<String>) {
         val combinedString = privkeys.joinToString(separator = DELIMITER)
-        // TODO: Delete log
-        Log.w("TO BE DELETED 2", combinedString)
         preferences.edit()
             .putString(PRIVKEY, combinedString)
             .apply()
-        currentPubkey = derivePubkey(privkey = privkeys.first())
+    }
+
+    private fun setActiveIndex(index: Int) {
+        preferences.edit()
+            .putInt(ACTIVE_INDEX, index)
+            .apply()
     }
 }
