@@ -74,7 +74,11 @@ fun NozzleDrawerScreen(
                     navActions.navigateToProfile(uiState.activeAccount.pubkey)
                     closeDrawer()
                 },
-                onActivateAccount = onActivateAccount,
+                onActivateAccount = { i ->
+                    onActivateAccount(i)
+                    navActions.navigateToFeed()
+                    closeDrawer()
+                },
                 onAddAccount = {
                     navActions.navigateToAddAccount()
                     closeDrawer()

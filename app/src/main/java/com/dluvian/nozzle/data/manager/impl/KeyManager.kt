@@ -42,6 +42,7 @@ class KeyManager(context: Context, private val accountDao: AccountDao) : IKeyMan
 
     init {
         val privkeys = getPrivkeys().toMutableList()
+        val activeIndex = getActiveIndex()
         currentPubkey = if (privkeys.isEmpty()) {
             Log.i(TAG, "Generate initial private key")
             val initPrivkey = generatePrivkey()
@@ -49,13 +50,13 @@ class KeyManager(context: Context, private val accountDao: AccountDao) : IKeyMan
             setPrivkeys(privkeys = privkeys)
             derivePubkey(initPrivkey)
         } else {
-            derivePubkey(privkeys[getActiveIndex()])
+            derivePubkey(privkeys[activeIndex])
         }
 
         // Ensure data integrity in database
         CoroutineScope(Dispatchers.Main).launch {
             val pubkeys = privkeys.map { derivePubkey(it) }
-            accountDao.setAccounts(pubkeys = pubkeys)
+            accountDao.setAccounts(pubkeys = pubkeys, activeIndex = activeIndex)
         }
     }
 

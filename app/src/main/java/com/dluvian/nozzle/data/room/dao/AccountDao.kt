@@ -21,10 +21,10 @@ interface AccountDao {
     fun listAccountsFlow(): Flow<List<AccountEntityExtended>>
 
     @Transaction
-    suspend fun setAccounts(pubkeys: List<Pubkey>) {
+    suspend fun setAccounts(pubkeys: List<Pubkey>, activeIndex: Int) {
         if (pubkeys.isEmpty()) return
         val accounts = pubkeys.mapIndexed { i, key ->
-            AccountEntity(pubkey = key, isActive = i == 0)
+            AccountEntity(pubkey = key, isActive = i == activeIndex)
         }
         deleteAllAccounts()
         insertAccount(*accounts.toTypedArray())
