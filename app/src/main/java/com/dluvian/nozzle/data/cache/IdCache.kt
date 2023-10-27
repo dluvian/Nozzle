@@ -12,6 +12,10 @@ class IdCache : IIdCache {
         return postIds.add(id)
     }
 
+    override fun containsPostId(id: String): Boolean {
+        return postIds.contains(id)
+    }
+
     override fun getPostIds(): Set<String> {
         return postIds.toSet()
     }
