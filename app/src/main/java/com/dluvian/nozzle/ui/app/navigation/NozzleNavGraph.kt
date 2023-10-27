@@ -104,7 +104,6 @@ fun NozzleNavGraph(
             )
         }
         composable(route = NozzleRoute.EDIT_PROFILE) {
-            vmContainer.editProfileViewModel.onResetUiState()
             EditProfileRoute(
                 editProfileViewModel = vmContainer.editProfileViewModel,
                 onGoBack = navActions.popStack,

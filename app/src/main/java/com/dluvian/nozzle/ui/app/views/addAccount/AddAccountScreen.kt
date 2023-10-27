@@ -20,6 +20,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.input.TextFieldValue
 import com.dluvian.nozzle.R
 import com.dluvian.nozzle.ui.components.ChangeableTextField
 import com.dluvian.nozzle.ui.components.ReturnableTopBar
@@ -56,7 +57,7 @@ private fun ScreenContent(
 ) {
     val isVisible = remember { mutableStateOf(false) }
     val focusRequester = remember { FocusRequester() }
-    val input = remember(value) { mutableStateOf(value) }
+    val input = remember(value) { mutableStateOf(TextFieldValue(value)) }
     LaunchedEffect(Unit) { focusRequester.requestFocus() }
 
     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
@@ -69,8 +70,7 @@ private fun ScreenContent(
                     modifier = Modifier
                         .fillMaxWidth()
                         .focusRequester(focusRequester),
-                    onChangeValue = { newValue -> input.value = newValue },
-                    initValue = value,
+                    input = input,
                     placeholder = stringResource(id = R.string.nsec_ellipsis),
                     label = stringResource(id = R.string.nsec),
                     errorLabel = stringResource(id = R.string.invalid_nsec),
@@ -84,7 +84,7 @@ private fun ScreenContent(
                         )
                     }
                 )
-                Buttons(onGenerateNew = onGenerateNew, onLogin = { onLogin(input.value) })
+                Buttons(onGenerateNew = onGenerateNew, onLogin = { onLogin(input.value.text) })
             }
         }
     }

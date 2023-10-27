@@ -164,6 +164,8 @@ class AppContainer(context: Context) {
 
     val personalProfileManager: IPersonalProfileManager = PersonalProfileManager(
         pubkeyProvider = keyManager,
+        relayProvider = relayProvider,
+        nostrService = nostrService,
         profileDao = roomDb.profileDao()
     )
 

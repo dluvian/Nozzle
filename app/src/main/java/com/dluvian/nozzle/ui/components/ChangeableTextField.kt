@@ -7,11 +7,11 @@ import androidx.compose.material.TextField
 import androidx.compose.material.TextFieldColors
 import androidx.compose.material.TextFieldDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalFocusManager
-import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -20,9 +20,9 @@ import androidx.compose.ui.text.input.VisualTransformation
 
 @Composable
 fun ChangeableTextField(
-    onChangeValue: (String) -> Unit,
     modifier: Modifier = Modifier,
-    initValue: String = "",
+    input: MutableState<TextFieldValue> = remember { mutableStateOf(TextFieldValue()) },
+    onChangeInput: ((String) -> Unit)? = null,
     maxLines: Int = 1,
     isError: Boolean = false,
     keyboardType: KeyboardType = KeyboardType.Text,
@@ -36,12 +36,9 @@ fun ChangeableTextField(
     trailingIcon: @Composable() (() -> Unit)? = null,
 ) {
     val focusManager = LocalFocusManager.current
-    val newValue = remember(initValue) {
-        mutableStateOf(TextFieldValue(text = initValue, selection = TextRange(initValue.length)))
-    }
     TextField(
         modifier = modifier,
-        value = newValue.value,
+        value = input.value,
         isError = isError,
         maxLines = maxLines,
         placeholder = if (placeholder != null) {
@@ -51,12 +48,12 @@ fun ChangeableTextField(
         },
         label = if (isError && errorLabel != null) {
             { Text(text = errorLabel) }
-        } else if (label != null && newValue.value.text.isNotEmpty()) {
+        } else if (label != null && input.value.text.isNotEmpty()) {
             { Text(text = label) }
         } else null,
         onValueChange = { change ->
-            newValue.value = change
-            onChangeValue(newValue.value.text)
+            input.value = change
+            onChangeInput?.let { onChangeInput(input.value.text) }
         },
         keyboardOptions = KeyboardOptions(
             keyboardType = keyboardType,

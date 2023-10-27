@@ -4,7 +4,7 @@ import com.dluvian.nozzle.model.AnnotatedMentionedPost
 import com.dluvian.nozzle.model.RelayActive
 
 data class PostViewModelState(
-    val content: String = "",
+    val content: String = "", // TODO: Move this to ui layer
     val relayStatuses: List<RelayActive> = emptyList(),
     val isSendable: Boolean = false,
     val postToQuote: AnnotatedMentionedPost? = null,

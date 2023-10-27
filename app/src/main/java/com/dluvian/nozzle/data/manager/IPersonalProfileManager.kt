@@ -1,7 +1,8 @@
 package com.dluvian.nozzle.data.manager
 
 import com.dluvian.nozzle.data.provider.IPersonalProfileProvider
+import com.dluvian.nozzle.model.nostr.Metadata
 
 interface IPersonalProfileManager : IPersonalProfileProvider {
-    suspend fun setMeta(name: String, about: String, picture: String, nip05: String, lud16: String)
+    suspend fun upsertMetadata(metadata: Metadata)
 }

@@ -12,36 +12,50 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.TextFieldValue
 import com.dluvian.nozzle.R
+import com.dluvian.nozzle.model.nostr.Metadata
 import com.dluvian.nozzle.ui.components.ChangeableTextField
-import com.dluvian.nozzle.ui.components.CheckTopBarButton
 import com.dluvian.nozzle.ui.components.ReturnableTopBar
+import com.dluvian.nozzle.ui.components.SaveIcon
 import com.dluvian.nozzle.ui.theme.spacing
 
 @Composable
 fun EditProfileScreen(
-    uiState: EditProfileViewModelState,
-    onUpdateProfile: () -> Unit,
-    onChangeName: (String) -> Unit,
-    onChangeAbout: (String) -> Unit,
-    onChangePicture: (String) -> Unit,
-    onChangeNip05: (String) -> Unit,
-    onChangeLud16: (String) -> Unit,
-    onResetUiState: () -> Unit,
-    onCanGoBack: () -> Boolean,
+    metadataState: Metadata,
+    onUpsertProfile: (Metadata) -> Unit,
     onGoBack: () -> Unit,
 ) {
-    val resetUI = remember { mutableStateOf(true) }
-    if (resetUI.value) {
-        onResetUiState()
-        resetUI.value = false
+    val nameInput =
+        remember(metadataState.name) { mutableStateOf(TextFieldValue(metadataState.name.orEmpty())) }
+    val aboutInput =
+        remember(metadataState.about) { mutableStateOf(TextFieldValue(metadataState.about.orEmpty())) }
+    val pictureInput =
+        remember(metadataState.picture) { mutableStateOf(TextFieldValue(metadataState.picture.orEmpty())) }
+    val nip05Input =
+        remember(metadataState.nip05) { mutableStateOf(TextFieldValue(metadataState.nip05.orEmpty())) }
+    val lud16Input =
+        remember(metadataState.lud16) { mutableStateOf(TextFieldValue(metadataState.lud16.orEmpty())) }
+
+    val hasChanges = remember(
+        nameInput.value.text,
+        aboutInput.value.text,
+        pictureInput.value.text,
+        nip05Input.value.text,
+        lud16Input.value.text,
+    ) {
+        nameInput.value.text != metadataState.name.orEmpty()
+                || aboutInput.value.text != metadataState.about.orEmpty()
+                || pictureInput.value.text != metadataState.picture.orEmpty()
+                || nip05Input.value.text != metadataState.nip05.orEmpty()
+                || lud16Input.value.text != metadataState.lud16.orEmpty()
     }
 
     Column {
@@ -49,12 +63,22 @@ fun EditProfileScreen(
             text = stringResource(id = R.string.edit_profile),
             onGoBack = onGoBack,
             trailingIcon = {
-                CheckTopBarButton(
-                    hasChanges = uiState.hasChanges,
-                    onCheck = { onUpdateProfile() },
-                    onCanGoBack = onCanGoBack,
-                    onGoBack = onGoBack,
-                )
+                if (hasChanges) {
+                    SaveIcon(
+                        onSave = {
+                            onUpsertProfile(
+                                Metadata(
+                                    name = nameInput.value.text,
+                                    about = aboutInput.value.text,
+                                    picture = pictureInput.value.text,
+                                    nip05 = nip05Input.value.text,
+                                    lud16 = lud16Input.value.text
+                                )
+                            )
+                            onGoBack()
+                        },
+                    )
+                }
             }
         )
         Column(
@@ -65,115 +89,77 @@ fun EditProfileScreen(
                 .imePadding()
                 .verticalScroll(rememberScrollState())
         ) {
-            Username(
-                username = uiState.nameInput,
-                onChangeName = onChangeName
-            )
+            Username(username = nameInput)
             Spacer(modifier = Modifier.height(spacing.xxl))
 
-            About(about = uiState.aboutInput, onChangeAbout = onChangeAbout)
+            About(about = aboutInput)
             Spacer(modifier = Modifier.height(spacing.xxl))
 
-            ProfilePictureUrl(
-                pictureUrl = uiState.pictureInput,
-                isInvalid = uiState.isInvalidPictureUrl,
-                onChangePicture = onChangePicture
-            )
+            ProfilePictureUrl(pictureUrl = pictureInput)
             Spacer(modifier = Modifier.height(spacing.xxl))
 
-            Nip05(
-                nip05 = uiState.nip05Input,
-                onChangeNip05 = onChangeNip05
-            )
+            Nip05(nip05 = nip05Input)
             Spacer(modifier = Modifier.height(spacing.xxl))
 
-            Lud16(
-                lud16 = uiState.lud16Input,
-                onChangeLud16 = onChangeLud16
-            )
+            Lud16(lud16 = lud16Input)
         }
-    }
-    DisposableEffect(key1 = null) {
-        onDispose { onResetUiState() }
     }
 }
 
 @Composable
-private fun Username(
-    username: String,
-    onChangeName: (String) -> Unit,
-) {
+private fun Username(username: MutableState<TextFieldValue>) {
     Text(text = stringResource(id = R.string.username), fontWeight = FontWeight.Bold)
     ChangeableTextField(
         modifier = Modifier.fillMaxWidth(),
-        initValue = username,
+        input = username,
         placeholder = stringResource(id = R.string.enter_your_username),
-        onChangeValue = onChangeName,
     )
 }
 
 @Composable
-private fun About(
-    about: String,
-    onChangeAbout: (String) -> Unit,
-) {
+private fun About(about: MutableState<TextFieldValue>) {
     Text(text = stringResource(id = R.string.about_you), fontWeight = FontWeight.Bold)
     ChangeableTextField(
         modifier = Modifier.fillMaxWidth(),
-        initValue = about,
+        input = about,
         maxLines = 3,
         placeholder = stringResource(id = R.string.describe_yourself),
-        onChangeValue = onChangeAbout,
     )
 }
 
 @Composable
-private fun ProfilePictureUrl(
-    pictureUrl: String,
-    isInvalid: Boolean,
-    onChangePicture: (String) -> Unit,
-) {
+private fun ProfilePictureUrl(pictureUrl: MutableState<TextFieldValue>) {
     Text(text = stringResource(id = R.string.profile_picture_url), fontWeight = FontWeight.Bold)
     ChangeableTextField(
         modifier = Modifier.fillMaxWidth(),
-        initValue = pictureUrl,
-        isError = isInvalid,
+        input = pictureUrl,
         maxLines = 3,
         placeholder = stringResource(id = R.string.enter_a_picture_url),
         errorLabel = stringResource(id = R.string.invalid_url),
         keyboardType = KeyboardType.Uri,
-        onChangeValue = onChangePicture,
     )
 }
 
 @Composable
-private fun Nip05(
-    nip05: String,
-    onChangeNip05: (String) -> Unit,
-) {
+private fun Nip05(nip05: MutableState<TextFieldValue>) {
     Text(text = stringResource(id = R.string.nip05_identifier), fontWeight = FontWeight.Bold)
     ChangeableTextField(
         modifier = Modifier.fillMaxWidth(),
-        initValue = nip05,
+        input = nip05,
         maxLines = 3,
         placeholder = stringResource(id = R.string.enter_nip05),
         keyboardType = KeyboardType.Uri,
-        onChangeValue = onChangeNip05,
     )
 }
 
 @Composable
-private fun Lud16(
-    lud16: String,
-    onChangeLud16: (String) -> Unit,
-) {
+private fun Lud16(lud16: MutableState<TextFieldValue>) {
     Text(text = stringResource(id = R.string.lightning_address), fontWeight = FontWeight.Bold)
     ChangeableTextField(
         modifier = Modifier.fillMaxWidth(),
-        initValue = lud16,
+        input = lud16,
         maxLines = 3,
         placeholder = stringResource(id = R.string.enter_lud16),
         keyboardType = KeyboardType.Uri,
-        onChangeValue = onChangeLud16,
     )
 }
