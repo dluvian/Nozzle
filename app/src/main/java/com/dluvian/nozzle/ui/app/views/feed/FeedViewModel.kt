@@ -38,9 +38,9 @@ class FeedViewModel(
         viewModelScope, SharingStarted.Eagerly, _uiState.value
     )
 
-    val pubkeyState = pubkeyProvider.getActivePubkeyStateFlow().stateIn(
-        viewModelScope, SharingStarted.Eagerly, pubkeyProvider.getActivePubkey()
-    )
+    val pubkeyState = pubkeyProvider.getActivePubkeyStateFlow()
+        .onEach { useCachedFeedSettings() }
+        .stateIn(viewModelScope, SharingStarted.Eagerly, pubkeyProvider.getActivePubkey())
 
     val metadataState = personalProfileProvider.getMetadataStateFlow()
     var feedState: StateFlow<List<PostWithMeta>> = MutableStateFlow(emptyList())
@@ -51,9 +51,7 @@ class FeedViewModel(
     private val isAppending = AtomicBoolean(false)
 
     init {
-        _uiState.update {
-            it.copy(feedSettings = feedSettingsPreferences.getFeedSettings())
-        }
+        useCachedFeedSettings()
         viewModelScope.launch(context = IO) {
             handleRefresh(delayBeforeUpdate = false)
         }
@@ -157,6 +155,12 @@ class FeedViewModel(
                     it.copy(feedSettings = it.feedSettings.copy(relaySelection = newValue))
                 }
             }
+        }
+    }
+
+    private fun useCachedFeedSettings() {
+        _uiState.update {
+            it.copy(feedSettings = feedSettingsPreferences.getFeedSettings())
         }
     }
 

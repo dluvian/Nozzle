@@ -75,6 +75,7 @@ class AutopilotProvider(
     ) {
         nip65Dao.getPubkeysByWriteRelays(pubkeys = pubkeys)
             .toList()
+            .shuffled()
             .sortedByDescending { it.second.size }
             .sortedByDescending { myReadRelays.contains(it.first) } // Prefer my relays
             .forEach {
