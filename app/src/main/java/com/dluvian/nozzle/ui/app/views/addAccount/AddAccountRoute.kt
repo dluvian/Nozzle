@@ -5,7 +5,10 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 
 @Composable
-fun AddAccountRoute(addAccountViewModel: AddAccountViewModel, onGoBack: () -> Unit) {
+fun AddAccountRoute(
+    addAccountViewModel: AddAccountViewModel,
+    onGoBack: () -> Unit
+) {
     val uiState by addAccountViewModel.uiState.collectAsState()
 
     AddAccountScreen(
