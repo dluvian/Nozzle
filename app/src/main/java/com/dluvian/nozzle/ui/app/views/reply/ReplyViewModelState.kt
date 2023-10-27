@@ -6,6 +6,5 @@ data class ReplyViewModelState(
     val recipientName: String = "",
     val reply: String = "",
     val isSendable: Boolean = false,
-    val pubkey: String = "",
     val relaySelection: List<RelayActive> = emptyList(),
 )

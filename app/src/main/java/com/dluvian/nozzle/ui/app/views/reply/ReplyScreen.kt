@@ -18,6 +18,7 @@ import com.dluvian.nozzle.ui.theme.spacing
 fun ReplyScreen(
     uiState: ReplyViewModelState,
     metadataState: Metadata?,
+    pubkeyState: String,
     onChangeReply: (String) -> Unit,
     onToggleRelaySelection: (Int) -> Unit,
     onSend: () -> Unit,
@@ -38,7 +39,7 @@ fun ReplyScreen(
         )
         InputBox(
             picture = metadataState?.picture.orEmpty(),
-            pubkey = uiState.pubkey,
+            pubkey = pubkeyState,
             placeholder = stringResource(id = R.string.post_your_reply),
             onChangeInput = onChangeReply
         )

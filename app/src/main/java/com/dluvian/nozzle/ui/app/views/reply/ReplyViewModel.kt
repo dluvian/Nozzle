@@ -10,6 +10,7 @@ import com.dluvian.nozzle.data.nostr.INostrService
 import com.dluvian.nozzle.data.nostr.utils.ShortenedNameUtils.getShortenedNpubFromPubkey
 import com.dluvian.nozzle.data.postPreparer.IPostPreparer
 import com.dluvian.nozzle.data.provider.IPersonalProfileProvider
+import com.dluvian.nozzle.data.provider.IPubkeyProvider
 import com.dluvian.nozzle.data.provider.IRelayProvider
 import com.dluvian.nozzle.data.room.dao.HashtagDao
 import com.dluvian.nozzle.data.room.dao.PostDao
@@ -31,37 +32,37 @@ import kotlinx.coroutines.launch
 class ReplyViewModel(
     private val nostrService: INostrService,
     private val personalProfileProvider: IPersonalProfileProvider,
+    private val pubkeyProvider: IPubkeyProvider,
     private val relayProvider: IRelayProvider,
     private val postPreparer: IPostPreparer,
     private val postDao: PostDao,
     private val hashtagDao: HashtagDao,
     context: Context,
 ) : ViewModel() {
-    private val viewModelState = MutableStateFlow(ReplyViewModelState())
     private var recipientPubkey: String = ""
     private var postToReplyTo: PostWithMeta? = null
 
-    var metadataState = personalProfileProvider.getMetadataStateFlow()
+    val metadataState = personalProfileProvider.getMetadataStateFlow()
+    val pubkeyState = pubkeyProvider.getActivePubkeyStateFlow()
 
-    val uiState = viewModelState
+    private val _uiState = MutableStateFlow(ReplyViewModelState())
+    val uiState = _uiState
         .stateIn(
             viewModelScope,
             SharingStarted.WhileSubscribed(),
-            viewModelState.value
+            _uiState.value
         )
 
     val onPrepareReply: (PostWithMeta) -> Unit = { post ->
         // TODO: Use flows. This should not be needed
-        metadataState = personalProfileProvider.getMetadataStateFlow()
         postToReplyTo = post
         viewModelScope.launch(context = Dispatchers.IO) {
-            viewModelState.update {
+            _uiState.update {
                 recipientPubkey = post.pubkey
                 it.copy(
                     recipientName = post.name.ifEmpty {
                         getShortenedNpubFromPubkey(post.pubkey) ?: post.pubkey
                     },
-                    pubkey = personalProfileProvider.getActivePubkey(),
                     reply = "",
                     isSendable = false,
                     relaySelection = listRelayStatuses(
@@ -78,7 +79,7 @@ class ReplyViewModel(
 
     val onChangeReply: (String) -> Unit = local@{ input ->
         if (input == uiState.value.reply) return@local
-        viewModelState.update {
+        _uiState.update {
             it.copy(reply = input, isSendable = input.isNotBlank())
         }
     }
@@ -86,7 +87,7 @@ class ReplyViewModel(
     val onToggleRelaySelection: (Int) -> Unit = { index ->
         val toggled = toggleRelay(relays = uiState.value.relaySelection, index = index)
         if (toggled.any { it.isActive }) {
-            viewModelState.update { it.copy(relaySelection = toggled) }
+            _uiState.update { it.copy(relaySelection = toggled) }
         }
     }
 
@@ -130,7 +131,7 @@ class ReplyViewModel(
     }
 
     private fun resetUI() {
-        viewModelState.update {
+        _uiState.update {
             recipientPubkey = ""
             it.copy(
                 recipientName = "",
@@ -156,6 +157,7 @@ class ReplyViewModel(
         fun provideFactory(
             nostrService: INostrService,
             personalProfileProvider: IPersonalProfileProvider,
+            pubkeyProvider: IPubkeyProvider,
             relayProvider: IRelayProvider,
             postPreparer: IPostPreparer,
             postDao: PostDao,
@@ -167,6 +169,7 @@ class ReplyViewModel(
                 return ReplyViewModel(
                     nostrService = nostrService,
                     personalProfileProvider = personalProfileProvider,
+                    pubkeyProvider = pubkeyProvider,
                     relayProvider = relayProvider,
                     postPreparer = postPreparer,
                     postDao = postDao,

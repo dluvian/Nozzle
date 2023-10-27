@@ -27,6 +27,7 @@ class FeedViewModel(
     val clickedMediaUrlCache: IClickedMediaUrlCache,
     val postCardInteractor: IPostCardInteractor,
     private val personalProfileProvider: IPersonalProfileProvider,
+    private val pubkeyProvider: IPubkeyProvider,
     private val feedProvider: IFeedProvider,
     private val relayProvider: IRelayProvider,
     private val autopilotProvider: IAutopilotProvider,
@@ -35,6 +36,10 @@ class FeedViewModel(
     private val _uiState = MutableStateFlow(FeedViewModelState())
     val uiState = _uiState.stateIn(
         viewModelScope, SharingStarted.Eagerly, _uiState.value
+    )
+
+    val pubkeyState = pubkeyProvider.getActivePubkeyStateFlow().stateIn(
+        viewModelScope, SharingStarted.Eagerly, pubkeyProvider.getActivePubkey()
     )
 
     val metadataState = personalProfileProvider.getMetadataStateFlow()
@@ -47,10 +52,7 @@ class FeedViewModel(
 
     init {
         _uiState.update {
-            it.copy(
-                pubkey = personalProfileProvider.getActivePubkey(),
-                feedSettings = feedSettingsPreferences.getFeedSettings(),
-            )
+            it.copy(feedSettings = feedSettingsPreferences.getFeedSettings())
         }
         viewModelScope.launch(context = IO) {
             handleRefresh(delayBeforeUpdate = false)
@@ -262,6 +264,7 @@ class FeedViewModel(
             clickedMediaUrlCache: IClickedMediaUrlCache,
             postCardInteractor: IPostCardInteractor,
             personalProfileProvider: IPersonalProfileProvider,
+            pubkeyProvider: IPubkeyProvider,
             feedProvider: IFeedProvider,
             relayProvider: IRelayProvider,
             autopilotProvider: IAutopilotProvider,
@@ -273,6 +276,7 @@ class FeedViewModel(
                     clickedMediaUrlCache = clickedMediaUrlCache,
                     postCardInteractor = postCardInteractor,
                     personalProfileProvider = personalProfileProvider,
+                    pubkeyProvider = pubkeyProvider,
                     feedProvider = feedProvider,
                     relayProvider = relayProvider,
                     autopilotProvider = autopilotProvider,

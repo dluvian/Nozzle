@@ -47,6 +47,7 @@ import kotlinx.coroutines.launch
 @Composable
 fun FeedScreen(
     uiState: FeedViewModelState,
+    pubkeyState: String,
     feedState: List<PostWithMeta>,
     metadataState: Metadata?,
     postCardNavLambdas: PostCardNavLambdas,
@@ -71,7 +72,7 @@ fun FeedScreen(
         topBar = {
             FeedTopBar(
                 picture = metadataState?.picture.orEmpty(),
-                pubkey = uiState.pubkey,
+                pubkey = pubkeyState,
                 feedSettings = uiState.feedSettings,
                 relayStatuses = uiState.relayStatuses,
                 isRefreshing = uiState.isRefreshing,

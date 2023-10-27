@@ -19,6 +19,7 @@ import com.dluvian.nozzle.ui.theme.spacing
 fun PostScreen(
     uiState: PostViewModelState,
     metadataState: Metadata?,
+    pubkeyState: String,
     onChangeContent: (String) -> Unit,
     onToggleRelaySelection: (Int) -> Unit,
     onSend: () -> Unit,
@@ -36,7 +37,7 @@ fun PostScreen(
             InputBox(
                 modifier = Modifier.weight(weight = 1f, fill = false),
                 picture = metadataState?.picture.orEmpty(),
-                pubkey = uiState.pubkey,
+                pubkey = pubkeyState,
                 placeholder = stringResource(id = R.string.post_your_thoughts),
                 onChangeInput = onChangeContent
             )

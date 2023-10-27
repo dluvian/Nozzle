@@ -33,7 +33,7 @@ class PersonalProfileManager(
         lud16: String
     ) {
         profileDao.updateMetadata(
-            pubkey = getActivePubkey(),
+            pubkey = pubkeyProvider.getActivePubkey(),
             name = name,
             about = about,
             picture = picture,
@@ -45,8 +45,4 @@ class PersonalProfileManager(
     override fun getMetadataStateFlow(): StateFlow<Metadata?> {
         return metadataStateFlow
     }
-
-    override fun getActivePubkey() = pubkeyProvider.getActivePubkey()
-
-    override fun getActiveNpub() = pubkeyProvider.getActiveNpub()
 }

@@ -7,7 +7,6 @@ import com.dluvian.nozzle.model.UserSpecific
 
 data class FeedViewModelState(
     val isRefreshing: Boolean = false,
-    val pubkey: String = "",
     val feedSettings: FeedSettings = FeedSettings(
         isPosts = true,
         isReplies = true,

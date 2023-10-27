@@ -13,6 +13,7 @@ import com.dluvian.nozzle.data.nostr.utils.EncodingUtils.nostrStrToNostrId
 import com.dluvian.nozzle.data.nostr.utils.ShortenedNameUtils.getShortenedNpubFromPubkey
 import com.dluvian.nozzle.data.postPreparer.IPostPreparer
 import com.dluvian.nozzle.data.provider.IPersonalProfileProvider
+import com.dluvian.nozzle.data.provider.IPubkeyProvider
 import com.dluvian.nozzle.data.provider.IRelayProvider
 import com.dluvian.nozzle.data.room.dao.HashtagDao
 import com.dluvian.nozzle.data.room.dao.PostDao
@@ -33,6 +34,7 @@ import java.util.concurrent.atomic.AtomicBoolean
 
 class PostViewModel(
     private val personalProfileProvider: IPersonalProfileProvider,
+    private val pubkeyProvider: IPubkeyProvider,
     private val nostrService: INostrService,
     private val relayProvider: IRelayProvider,
     private val postPreparer: IPostPreparer,
@@ -41,15 +43,16 @@ class PostViewModel(
     private val hashtagDao: HashtagDao,
     context: Context,
 ) : ViewModel() {
-    private val viewModelState = MutableStateFlow(PostViewModelState())
 
     val metadataState = personalProfileProvider.getMetadataStateFlow()
+    val pubkeyState = pubkeyProvider.getActivePubkeyStateFlow()
 
-    val uiState = viewModelState
+    private val _uiState = MutableStateFlow(PostViewModelState())
+    val uiState = _uiState
         .stateIn(
             viewModelScope,
             SharingStarted.WhileSubscribed(),
-            viewModelState.value
+            _uiState.value
         )
 
     val onPreparePost: () -> Unit = {
@@ -62,7 +65,7 @@ class PostViewModel(
         val nostrId = nostrStrToNostrId(postIdToQuote) ?: return@local
 
         isPreparing.set(true)
-        viewModelState.update { it.copy(postToQuote = null) }
+        _uiState.update { it.copy(postToQuote = null) }
         viewModelScope.launch(context = Dispatchers.IO) {
             preparePost(
                 postToQuote = getCleanMentionedPost(postIdHex = nostrId.hex),
@@ -73,7 +76,7 @@ class PostViewModel(
 
     val onChangeContent: (String) -> Unit = local@{ input ->
         if (input == uiState.value.content) return@local
-        viewModelState.update {
+        _uiState.update {
             it.copy(content = input, isSendable = input.isNotBlank() || it.postToQuote != null)
         }
     }
@@ -81,7 +84,7 @@ class PostViewModel(
     val onToggleRelaySelection: (Int) -> Unit = { index ->
         val toggled = toggleRelay(relays = uiState.value.relayStatuses, index = index)
         if (toggled.any { it.isActive }) {
-            viewModelState.update { it.copy(relayStatuses = toggled) }
+            _uiState.update { it.copy(relayStatuses = toggled) }
         }
     }
 
@@ -106,9 +109,8 @@ class PostViewModel(
         postToQuote: AnnotatedMentionedPost?,
         relays: Collection<String> = emptyList()
     ) {
-        viewModelState.update {
+        _uiState.update {
             it.copy(
-                pubkey = personalProfileProvider.getActivePubkey(),
                 content = "",
                 isSendable = postToQuote != null,
                 relayStatuses = getRelayStatuses(),
@@ -158,12 +160,11 @@ class PostViewModel(
     }
 
     private fun resetUI() {
-        viewModelState.update {
+        _uiState.update {
             it.copy(
                 content = "",
                 relayStatuses = getRelayStatuses(),
                 isSendable = false,
-                pubkey = personalProfileProvider.getActivePubkey(),
                 postToQuote = null,
                 quoteRelays = emptyList(),
             )
@@ -193,6 +194,7 @@ class PostViewModel(
     companion object {
         fun provideFactory(
             personalProfileProvider: IPersonalProfileProvider,
+            pubkeyProvider: IPubkeyProvider,
             nostrService: INostrService,
             relayProvider: IRelayProvider,
             postPreparer: IPostPreparer,
@@ -204,8 +206,9 @@ class PostViewModel(
             @Suppress("UNCHECKED_CAST")
             override fun <T : ViewModel> create(modelClass: Class<T>): T {
                 return PostViewModel(
-                    nostrService = nostrService,
                     personalProfileProvider = personalProfileProvider,
+                    pubkeyProvider = pubkeyProvider,
+                    nostrService = nostrService,
                     relayProvider = relayProvider,
                     postPreparer = postPreparer,
                     annotatedContentHandler = annotatedContentHandler,

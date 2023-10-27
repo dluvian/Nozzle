@@ -5,7 +5,6 @@ import com.dluvian.nozzle.model.RelayActive
 
 data class PostViewModelState(
     val content: String = "",
-    val pubkey: String = "",
     val relayStatuses: List<RelayActive> = emptyList(),
     val isSendable: Boolean = false,
     val postToQuote: AnnotatedMentionedPost? = null,

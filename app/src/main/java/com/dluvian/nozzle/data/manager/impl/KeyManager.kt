@@ -17,6 +17,11 @@ import com.dluvian.nozzle.model.nostr.Keys
 import fr.acinq.secp256k1.Hex
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 
@@ -26,6 +31,7 @@ private const val ACTIVE_INDEX: String = "active_index"
 private const val DELIMITER: String = ";"
 
 class KeyManager(context: Context, private val accountDao: AccountDao) : IKeyManager {
+    private val scope = CoroutineScope(Dispatchers.Main)
     private val masterKey = MasterKey.Builder(context)
         .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
         .build()
@@ -38,12 +44,15 @@ class KeyManager(context: Context, private val accountDao: AccountDao) : IKeyMan
         EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
     )
 
-    private var currentPubkey: Pubkey = ""
+    private val _currentPubkey = MutableStateFlow("")
+    private val currentPubkey = _currentPubkey.stateIn(
+        scope, SharingStarted.Eagerly, getActivePubkey()
+    )
 
     init {
         val privkeys = getPrivkeys().toMutableList()
         val activeIndex = getActiveIndex()
-        currentPubkey = if (privkeys.isEmpty()) {
+        val newPubkey = if (privkeys.isEmpty()) {
             Log.i(TAG, "Generate initial private key")
             val initPrivkey = generatePrivkey()
             privkeys.add(initPrivkey)
@@ -52,15 +61,16 @@ class KeyManager(context: Context, private val accountDao: AccountDao) : IKeyMan
         } else {
             derivePubkey(privkeys[activeIndex])
         }
+        _currentPubkey.update { newPubkey }
 
         // Ensure data integrity in database
-        CoroutineScope(Dispatchers.Main).launch {
+        scope.launch {
             val pubkeys = privkeys.map { derivePubkey(it) }
             accountDao.setAccounts(pubkeys = pubkeys, activeIndex = activeIndex)
         }
     }
 
-    override fun getActivePubkey() = currentPubkey
+    override fun getActivePubkey() = _currentPubkey.value
 
     override fun getActiveNsec() = hexToNsec(getActivePrivkey())
 
@@ -76,7 +86,7 @@ class KeyManager(context: Context, private val accountDao: AccountDao) : IKeyMan
 
         setActiveIndex(indexToActivate)
         accountDao.activateAccount(pubkey)
-        currentPubkey = pubkey
+        _currentPubkey.update { pubkey }
         return
     }
 
@@ -121,6 +131,8 @@ class KeyManager(context: Context, private val accountDao: AccountDao) : IKeyMan
             pubkey = Hex.decode(getActivePubkey())
         )
     }
+
+    override fun getActivePubkeyStateFlow(): StateFlow<String> = currentPubkey
 
     private fun getActivePrivkey() = getPrivkeys()[getActiveIndex()]
 

@@ -19,9 +19,11 @@ fun FeedRoute(
     val uiState by feedViewModel.uiState.collectAsState()
     val metadataState by feedViewModel.metadataState.collectAsState()
     val feedState by feedViewModel.feedState.collectAsState()
+    val pubkeyState by feedViewModel.pubkeyState.collectAsState()
 
     FeedScreen(
         uiState = uiState,
+        pubkeyState = pubkeyState,
         feedState = feedState,
         metadataState = metadataState,
         postCardNavLambdas = postCardNavLambdas,
