@@ -126,7 +126,7 @@ interface PostDao {
                 // SELECT likedByMe
                 "(SELECT eventId IS NOT NULL " +
                 "FROM reaction " +
-                "WHERE eventId = mainPost.id AND pubkey NOT IN (SELECT pubkey FROM account WHERE isActive = 1)) " +
+                "WHERE eventId = mainPost.id AND pubkey = (SELECT pubkey FROM account WHERE isActive = 1)) " +
                 "AS isLikedByMe, " +
                 // SELECT name and picture
                 "mainProfile.name, " +

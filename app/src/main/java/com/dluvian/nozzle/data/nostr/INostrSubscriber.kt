@@ -5,10 +5,9 @@ import com.dluvian.nozzle.model.Pubkey
 import com.dluvian.nozzle.model.Relay
 
 interface INostrSubscriber {
-    fun subscribeFullProfile(
-        pubkey: String,
-        relays: Collection<String>? = null
-    ): List<String>
+    fun subscribeFullProfile(pubkey: String, relays: Collection<String>? = null): List<String>
+
+    fun subscribeFullProfiles(pubkeysByRelay: Map<Relay, List<Pubkey>>): List<String>
 
     fun subscribeToFeedPosts(
         authorPubkeys: List<String>?,

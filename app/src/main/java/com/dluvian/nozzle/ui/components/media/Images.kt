@@ -48,7 +48,7 @@ fun ProfilePicture(
     onOpenProfile: (() -> Unit)? = null,
 ) {
     val realPictureUrl =
-        remember(pictureUrl, pubkey) { pictureUrl.ifEmpty { getRobohashUrl(pubkey) } }
+        remember(pictureUrl, pubkey) { pictureUrl.ifEmpty { getRobohashUrl(pubkey = pubkey) } }
     BaseProfilePicture(
         modifier = modifier,
         pictureUrl = realPictureUrl,

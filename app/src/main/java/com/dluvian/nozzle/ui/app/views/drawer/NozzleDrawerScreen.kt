@@ -409,5 +409,3 @@ fun AccountRowMenu(
         }
     }
 }
-
-

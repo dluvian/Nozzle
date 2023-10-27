@@ -34,10 +34,6 @@ class EditProfileViewModel(
             _uiState.value
         )
 
-    init {
-        useCachedValues()
-    }
-
     val onUpdateProfile: () -> Unit = {
         uiState.value.let {
             if (!it.hasChanges) {
@@ -115,7 +111,6 @@ class EditProfileViewModel(
     }
 
     val onResetUiState: () -> Unit = {
-        Log.i(TAG, "Reset UI")
         useCachedValues()
     }
 

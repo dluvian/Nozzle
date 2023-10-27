@@ -44,7 +44,7 @@ fun NozzleApp(appContainer: AppContainer) {
                 drawerViewModel = viewModel(
                     factory = NozzleDrawerViewModel.provideFactory(
                         keyManager = appContainer.keyManager,
-                        accountDao = appContainer.roomDb.accountDao(),
+                        accountProvider = appContainer.accountProvider,
                         nozzleSubscriber = appContainer.nozzleSubscriber
                     )
                 ),

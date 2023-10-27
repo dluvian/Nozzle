@@ -15,7 +15,6 @@ fun AddAccountRoute(addAccountViewModel: AddAccountViewModel, onGoBack: () -> Un
             val success = addAccountViewModel.onLogin(nsec)
             if (success) {
                 onGoBack()
-                addAccountViewModel.onReset()
             }
         },
         onGoBack = onGoBack

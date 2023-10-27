@@ -30,6 +30,7 @@ import com.dluvian.nozzle.data.preferences.IFeedSettingsPreferences
 import com.dluvian.nozzle.data.preferences.NozzlePreferences
 import com.dluvian.nozzle.data.profileFollower.IProfileFollower
 import com.dluvian.nozzle.data.profileFollower.ProfileFollower
+import com.dluvian.nozzle.data.provider.IAccountProvider
 import com.dluvian.nozzle.data.provider.IAutopilotProvider
 import com.dluvian.nozzle.data.provider.IContactListProvider
 import com.dluvian.nozzle.data.provider.IFeedProvider
@@ -38,6 +39,7 @@ import com.dluvian.nozzle.data.provider.IPostWithMetaProvider
 import com.dluvian.nozzle.data.provider.IProfileWithMetaProvider
 import com.dluvian.nozzle.data.provider.IRelayProvider
 import com.dluvian.nozzle.data.provider.IThreadProvider
+import com.dluvian.nozzle.data.provider.impl.AccountProvider
 import com.dluvian.nozzle.data.provider.impl.AutopilotProvider
 import com.dluvian.nozzle.data.provider.impl.ContactListProvider
 import com.dluvian.nozzle.data.provider.impl.FeedProvider
@@ -92,10 +94,13 @@ class AppContainer(context: Context) {
         nip65Dao = roomDb.nip65Dao(),
     )
 
+    val accountProvider: IAccountProvider = AccountProvider(accountDao = roomDb.accountDao())
+
     val nozzleSubscriber: INozzleSubscriber = NozzleSubscriber(
         nostrSubscriber = nostrSubscriber,
         relayProvider = relayProvider,
         pubkeyProvider = keyManager,
+        accountProvider = accountProvider,
         idCache = dbSweepExcludingCache,
         database = roomDb,
     )
@@ -175,6 +180,7 @@ class AppContainer(context: Context) {
     )
 
     val postPreparer: IPostPreparer = PostPreparer()
+
     val inboxFeedProvider: IInboxFeedProvider = InboxFeedProvider(
         nozzleSubscriber = nozzleSubscriber,
         postWithMetaProvider = postWithMetaProvider,

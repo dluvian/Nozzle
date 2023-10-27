@@ -23,7 +23,6 @@ interface ProfileDao {
     )
     fun getProfileEntityExtendedFlow(pubkey: String): Flow<ProfileEntityExtended?>
 
-    // TODO: Rename all dao methods with active=1 to ...active... like here
     @RewriteQueriesToDropUnusedColumns
     @Query("SELECT * FROM profile WHERE pubkey = (SELECT pubkey FROM account WHERE isActive = 1)")
     fun getActiveMetadata(): Flow<Metadata?>

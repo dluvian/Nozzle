@@ -5,7 +5,7 @@ import com.dluvian.nozzle.data.provider.IContactListProvider
 import com.dluvian.nozzle.data.provider.IRelayProvider
 import com.dluvian.nozzle.data.room.dao.Nip65Dao
 import com.dluvian.nozzle.data.room.helper.Nip65Relay
-import com.dluvian.nozzle.data.utils.NORMAL_DEBOUNCE
+import com.dluvian.nozzle.data.utils.SHORT_DEBOUNCE
 import com.dluvian.nozzle.data.utils.firstThenDistinctDebounce
 import com.dluvian.nozzle.model.Pubkey
 import com.dluvian.nozzle.model.Relay
@@ -22,7 +22,7 @@ class RelayProvider(
     private val scope = CoroutineScope(context = Dispatchers.Default)
 
     private val personalNip65State = nip65Dao.getPersonalRelaysFlow()
-        .firstThenDistinctDebounce(NORMAL_DEBOUNCE)
+        .firstThenDistinctDebounce(SHORT_DEBOUNCE)
         .stateIn(scope, SharingStarted.Eagerly, emptyList())
 
     override fun getReadRelays(): List<String> {
@@ -52,7 +52,10 @@ class RelayProvider(
     }
 
     override suspend fun getWriteRelaysOfPubkeys(pubkeys: Collection<String>): Map<Pubkey, List<Relay>> {
-        return nip65Dao.getWriteRelaysOfPubkeys(pubkeys = pubkeys)
+        val dbResult = nip65Dao.getWriteRelaysOfPubkeys(pubkeys = pubkeys).toMutableMap()
+        pubkeys.forEach { pubkey -> dbResult.putIfAbsent(pubkey, emptyList()) }
+
+        return dbResult
     }
 
     override suspend fun getRelaysOfContacts(): List<Relay> {
