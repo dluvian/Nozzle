@@ -7,6 +7,7 @@ import androidx.compose.runtime.getValue
 @Composable
 fun AddAccountRoute(
     addAccountViewModel: AddAccountViewModel,
+    navigateToFeed: () -> Unit,
     onGoBack: () -> Unit
 ) {
     val uiState by addAccountViewModel.uiState.collectAsState()
@@ -18,6 +19,7 @@ fun AddAccountRoute(
             val success = addAccountViewModel.onLogin(nsec)
             if (success) {
                 onGoBack()
+                navigateToFeed()
             }
         },
         onGoBack = onGoBack

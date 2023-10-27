@@ -167,6 +167,7 @@ fun NozzleNavGraph(
             vmContainer.addAccountViewModel.onReset()
             AddAccountRoute(
                 addAccountViewModel = vmContainer.addAccountViewModel,
+                navigateToFeed = navActions.navigateToFeed,
                 onGoBack = navActions.popStack,
             )
         }
