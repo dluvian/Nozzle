@@ -145,7 +145,8 @@ fun NozzleApp(appContainer: AppContainer) {
                 ),
                 addAccountViewModel = viewModel(
                     factory = AddAccountViewModel.provideFactory(
-                        keyManager = appContainer.keyManager
+                        keyManager = appContainer.keyManager,
+                        nozzleSubscriber = appContainer.nozzleSubscriber
                     )
                 ),
             )

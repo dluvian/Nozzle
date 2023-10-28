@@ -7,6 +7,7 @@ import com.dluvian.nozzle.data.SCOPE_TIMEOUT
 import com.dluvian.nozzle.data.manager.IKeyManager
 import com.dluvian.nozzle.data.nostr.utils.EncodingUtils
 import com.dluvian.nozzle.data.nostr.utils.KeyUtils
+import com.dluvian.nozzle.data.subscriber.INozzleSubscriber
 import com.dluvian.nozzle.data.utils.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.*
@@ -16,6 +17,7 @@ import java.util.concurrent.atomic.AtomicBoolean
 
 class AddAccountViewModel(
     private val keyManager: IKeyManager,
+    private val nozzleSubscriber: INozzleSubscriber
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(AddAccountViewModelState())
@@ -52,8 +54,10 @@ class AddAccountViewModel(
         }
 
         viewModelScope.launch(context = Dispatchers.IO) {
+            val pubkey = KeyUtils.derivePubkey(hex)
             keyManager.addPrivkey(privkey = hex)
-            keyManager.activatePubkey(pubkey = KeyUtils.derivePubkey(hex))
+            keyManager.activatePubkey(pubkey = pubkey)
+            nozzleSubscriber.subscribeFullProfile(profileId = pubkey)
         }.invokeOnCompletion {
             isLoggingIn.set(false)
         }
@@ -68,11 +72,13 @@ class AddAccountViewModel(
     companion object {
         fun provideFactory(
             keyManager: IKeyManager,
+            nozzleSubscriber: INozzleSubscriber
         ): ViewModelProvider.Factory = object : ViewModelProvider.Factory {
             @Suppress("UNCHECKED_CAST")
             override fun <T : ViewModel> create(modelClass: Class<T>): T {
                 return AddAccountViewModel(
-                    keyManager = keyManager
+                    keyManager = keyManager,
+                    nozzleSubscriber = nozzleSubscriber,
                 ) as T
             }
         }
