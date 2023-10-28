@@ -36,6 +36,7 @@ class DatabaseSweeper(
             amountToKeep = keepPosts,
             exclude = dbSweepExcludingCache.getPostIds(),
         )
+        dbSweepExcludingCache.clearPostIds()
         Log.i(TAG, "Deleted $deletePostCount posts")
     }
 
@@ -43,6 +44,7 @@ class DatabaseSweeper(
         val deleteProfileCount = database
             .profileDao()
             .deleteOrphaned(exclude = dbSweepExcludingCache.getPubkeys())
+        dbSweepExcludingCache.clearPubkeys()
         Log.i(TAG, "Deleted $deleteProfileCount profiles")
     }
 
@@ -50,6 +52,7 @@ class DatabaseSweeper(
         val deleteContactCount = database
             .contactDao()
             .deleteOrphaned(exclude = dbSweepExcludingCache.getContactListAuthors())
+        dbSweepExcludingCache.clearContactListAuthors()
         Log.i(TAG, "Deleted $deleteContactCount contact entries")
     }
 
@@ -57,6 +60,7 @@ class DatabaseSweeper(
         val deleteNip65Count = database
             .nip65Dao()
             .deleteOrphaned(dbSweepExcludingCache.getNip65Authors())
+        dbSweepExcludingCache.clearNip65Authors()
         Log.i(TAG, "Deleted $deleteNip65Count nip65 entries")
     }
 }
