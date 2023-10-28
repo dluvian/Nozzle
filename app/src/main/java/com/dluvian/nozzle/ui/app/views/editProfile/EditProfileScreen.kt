@@ -33,16 +33,21 @@ fun EditProfileScreen(
     onUpsertProfile: (Metadata) -> Unit,
     onGoBack: () -> Unit,
 ) {
-    val nameInput =
-        remember(metadataState.name) { mutableStateOf(TextFieldValue(metadataState.name.orEmpty())) }
-    val aboutInput =
-        remember(metadataState.about) { mutableStateOf(TextFieldValue(metadataState.about.orEmpty())) }
-    val pictureInput =
-        remember(metadataState.picture) { mutableStateOf(TextFieldValue(metadataState.picture.orEmpty())) }
-    val nip05Input =
-        remember(metadataState.nip05) { mutableStateOf(TextFieldValue(metadataState.nip05.orEmpty())) }
-    val lud16Input =
-        remember(metadataState.lud16) { mutableStateOf(TextFieldValue(metadataState.lud16.orEmpty())) }
+    val nameInput = remember(metadataState.name) {
+        mutableStateOf(TextFieldValue(metadataState.name.orEmpty()))
+    }
+    val aboutInput = remember(metadataState.about) {
+        mutableStateOf(TextFieldValue(metadataState.about.orEmpty()))
+    }
+    val pictureInput = remember(metadataState.picture) {
+        mutableStateOf(TextFieldValue(metadataState.picture.orEmpty()))
+    }
+    val nip05Input = remember(metadataState.nip05) {
+        mutableStateOf(TextFieldValue(metadataState.nip05.orEmpty()))
+    }
+    val lud16Input = remember(metadataState.lud16) {
+        mutableStateOf(TextFieldValue(metadataState.lud16.orEmpty()))
+    }
 
     val hasChanges = remember(
         nameInput.value.text,
