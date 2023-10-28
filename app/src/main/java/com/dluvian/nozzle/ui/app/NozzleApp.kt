@@ -108,7 +108,6 @@ fun NozzleApp(appContainer: AppContainer) {
                         postPreparer = appContainer.postPreparer,
                         postDao = appContainer.roomDb.postDao(),
                         hashtagDao = appContainer.roomDb.hashtagDao(),
-                        context = LocalContext.current,
                     )
                 ),
                 postViewModel = viewModel(
@@ -121,7 +120,6 @@ fun NozzleApp(appContainer: AppContainer) {
                         annotatedContentHandler = appContainer.annotatedContentHandler,
                         postDao = appContainer.roomDb.postDao(),
                         hashtagDao = appContainer.roomDb.hashtagDao(),
-                        context = LocalContext.current,
                     )
                 ),
                 searchViewModel = viewModel(

@@ -92,7 +92,6 @@ private fun BaseTopBar(
             if (trailingIcon != null) {
                 trailingIcon()
             }
-
         }
     }
 }

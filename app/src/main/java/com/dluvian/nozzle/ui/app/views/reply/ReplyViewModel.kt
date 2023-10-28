@@ -1,11 +1,8 @@
 package com.dluvian.nozzle.ui.app.views.reply
 
-import android.content.Context
-import android.widget.Toast
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
-import com.dluvian.nozzle.R
 import com.dluvian.nozzle.data.nostr.INostrService
 import com.dluvian.nozzle.data.nostr.utils.ShortenedNameUtils.getShortenedNpubFromPubkey
 import com.dluvian.nozzle.data.postPreparer.IPostPreparer
@@ -37,7 +34,6 @@ class ReplyViewModel(
     private val postPreparer: IPostPreparer,
     private val postDao: PostDao,
     private val hashtagDao: HashtagDao,
-    context: Context,
 ) : ViewModel() {
     private var recipientPubkey: String = ""
     private var postToReplyTo: PostWithMeta? = null
@@ -63,8 +59,6 @@ class ReplyViewModel(
                     recipientName = post.name.ifEmpty {
                         getShortenedNpubFromPubkey(post.pubkey) ?: post.pubkey
                     },
-                    reply = "",
-                    isSendable = false,
                     relaySelection = listRelayStatuses(
                         allRelayUrls = (relayProvider.getWriteRelays()
                                 + relayProvider.getReadRelaysOfPubkey(recipientPubkey)
@@ -77,13 +71,6 @@ class ReplyViewModel(
         }
     }
 
-    val onChangeReply: (String) -> Unit = local@{ input ->
-        if (input == uiState.value.reply) return@local
-        _uiState.update {
-            it.copy(reply = input, isSendable = input.isNotBlank())
-        }
-    }
-
     val onToggleRelaySelection: (Int) -> Unit = { index ->
         val toggled = toggleRelay(relays = uiState.value.relaySelection, index = index)
         if (toggled.any { it.isActive }) {
@@ -91,9 +78,9 @@ class ReplyViewModel(
         }
     }
 
-    val onSend: () -> Unit = local@{
+    val onSend: (String) -> Unit = local@{ input ->
         val parentPost = postToReplyTo ?: return@local
-        val event = sendReply(parentPost = parentPost, state = uiState.value)
+        val event = sendReply(parentPost = parentPost, state = uiState.value, input = input)
         viewModelScope.launch(context = Dispatchers.IO) {
             postDao.insertIfNotPresent(PostEntity.fromEvent(event))
             // TODO: Insert hashtags in tx
@@ -103,13 +90,15 @@ class ReplyViewModel(
             if (hashtags.isNotEmpty()) {
                 hashtagDao.insertOrIgnore(*hashtags.toTypedArray())
             }
-
         }
-        showReplyPublishedToast()
         resetUI()
     }
 
-    private fun sendReply(parentPost: PostWithMeta, state: ReplyViewModelState): Event {
+    private fun sendReply(
+        parentPost: PostWithMeta,
+        state: ReplyViewModelState,
+        input: String
+    ): Event {
         val replyTo = ReplyTo(
             replyTo = parentPost.entity.id,
             relayUrl = parentPost.relays
@@ -120,7 +109,7 @@ class ReplyViewModel(
         val selectedRelays = state.relaySelection
             .filter { it.isActive }
             .map { it.relayUrl }
-        val post = postPreparer.getCleanPostWithTagsAndMentions(state.reply)
+        val post = postPreparer.getCleanPostWithTagsAndMentions(input)
         return nostrService.sendReply(
             replyTo = replyTo,
             content = post.content,
@@ -135,22 +124,12 @@ class ReplyViewModel(
             recipientPubkey = ""
             it.copy(
                 recipientName = "",
-                reply = "",
-                isSendable = false,
                 relaySelection = listRelayStatuses(
                     allRelayUrls = relayProvider.getWriteRelays(),
                     relaySelection = AllRelays,
                 ),
             )
         }
-    }
-
-    private val showReplyPublishedToast: () -> Unit = {
-        Toast.makeText(
-            context,
-            context.getString(R.string.reply_published),
-            Toast.LENGTH_SHORT
-        ).show()
     }
 
     companion object {
@@ -162,7 +141,6 @@ class ReplyViewModel(
             postPreparer: IPostPreparer,
             postDao: PostDao,
             hashtagDao: HashtagDao,
-            context: Context
         ): ViewModelProvider.Factory = object : ViewModelProvider.Factory {
             @Suppress("UNCHECKED_CAST")
             override fun <T : ViewModel> create(modelClass: Class<T>): T {
@@ -174,7 +152,6 @@ class ReplyViewModel(
                     postPreparer = postPreparer,
                     postDao = postDao,
                     hashtagDao = hashtagDao,
-                    context = context,
                 ) as T
             }
         }

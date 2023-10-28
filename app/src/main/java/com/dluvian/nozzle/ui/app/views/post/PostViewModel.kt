@@ -1,11 +1,8 @@
 package com.dluvian.nozzle.ui.app.views.post
 
-import android.content.Context
-import android.widget.Toast
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
-import com.dluvian.nozzle.R
 import com.dluvian.nozzle.data.annotatedContent.IAnnotatedContentHandler
 import com.dluvian.nozzle.data.nostr.INostrService
 import com.dluvian.nozzle.data.nostr.utils.EncodingUtils.createNeventUri
@@ -41,7 +38,6 @@ class PostViewModel(
     private val annotatedContentHandler: IAnnotatedContentHandler,
     private val postDao: PostDao,
     private val hashtagDao: HashtagDao,
-    context: Context,
 ) : ViewModel() {
 
     val metadataState = personalProfileProvider.getMetadataStateFlow()
@@ -74,13 +70,6 @@ class PostViewModel(
         }.invokeOnCompletion { isPreparing.set(false) }
     }
 
-    val onChangeContent: (String) -> Unit = local@{ input ->
-        if (input == uiState.value.content) return@local
-        _uiState.update {
-            it.copy(content = input, isSendable = input.isNotBlank() || it.postToQuote != null)
-        }
-    }
-
     val onToggleRelaySelection: (Int) -> Unit = { index ->
         val toggled = toggleRelay(relays = uiState.value.relayStatuses, index = index)
         if (toggled.any { it.isActive }) {
@@ -88,8 +77,8 @@ class PostViewModel(
         }
     }
 
-    val onSend: () -> Unit = {
-        val event = sendPost(state = uiState.value)
+    val onSend: (String) -> Unit = { content ->
+        val event = sendPost(state = uiState.value, content = content)
         viewModelScope.launch(context = Dispatchers.IO) {
             postDao.insertIfNotPresent(PostEntity.fromEvent(event))
             // TODO: Insert hashtags in tx
@@ -101,7 +90,6 @@ class PostViewModel(
                 hashtagDao.insertOrIgnore(*hashtags.toTypedArray())
             }
         }
-        showPostPublishedToast()
         resetUI()
     }
 
@@ -111,8 +99,6 @@ class PostViewModel(
     ) {
         _uiState.update {
             it.copy(
-                content = "",
-                isSendable = postToQuote != null,
                 relayStatuses = getRelayStatuses(),
                 postToQuote = postToQuote,
                 quoteRelays = relays
@@ -142,12 +128,12 @@ class PostViewModel(
         return annotatedMentionedPost
     }
 
-    private fun sendPost(state: PostViewModelState): Event {
+    private fun sendPost(state: PostViewModelState, content: String): Event {
         val quote = getNewLineQuoteUri(
             postIdToQuote = state.postToQuote?.mentionedPost?.id,
             relays = state.quoteRelays
         )
-        val post = postPreparer.getCleanPostWithTagsAndMentions(content = state.content + quote)
+        val post = postPreparer.getCleanPostWithTagsAndMentions(content = content + quote)
         val selectedRelays = state.relayStatuses
             .filter { it.isActive }
             .map { it.relayUrl }
@@ -162,21 +148,11 @@ class PostViewModel(
     private fun resetUI() {
         _uiState.update {
             it.copy(
-                content = "",
                 relayStatuses = getRelayStatuses(),
-                isSendable = false,
                 postToQuote = null,
                 quoteRelays = emptyList(),
             )
         }
-    }
-
-    private val showPostPublishedToast: () -> Unit = {
-        Toast.makeText(
-            context,
-            context.getString(R.string.post_published),
-            Toast.LENGTH_SHORT
-        ).show()
     }
 
     private fun getRelayStatuses() = listRelayStatuses(
@@ -201,7 +177,6 @@ class PostViewModel(
             annotatedContentHandler: IAnnotatedContentHandler,
             postDao: PostDao,
             hashtagDao: HashtagDao,
-            context: Context
         ): ViewModelProvider.Factory = object : ViewModelProvider.Factory {
             @Suppress("UNCHECKED_CAST")
             override fun <T : ViewModel> create(modelClass: Class<T>): T {
@@ -214,7 +189,6 @@ class PostViewModel(
                     annotatedContentHandler = annotatedContentHandler,
                     postDao = postDao,
                     hashtagDao = hashtagDao,
-                    context = context,
                 ) as T
             }
         }

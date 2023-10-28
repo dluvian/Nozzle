@@ -11,7 +11,7 @@ import androidx.compose.material.MaterialTheme
 import androidx.compose.material.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
@@ -26,10 +26,10 @@ import com.dluvian.nozzle.ui.theme.spacing
 
 @Composable
 fun InputBox(
+    input: MutableState<TextFieldValue>,
     picture: String,
     pubkey: String,
     placeholder: String,
-    onChangeInput: (String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val focusRequester = remember { FocusRequester() }
@@ -48,7 +48,7 @@ fun InputBox(
                     .fillMaxWidth()
                     .verticalScroll(rememberScrollState())
                     .focusRequester(focusRequester),
-                input = remember { mutableStateOf(TextFieldValue()) },
+                input = input,
                 maxLines = Int.MAX_VALUE,
                 keyboardImeAction = ImeAction.Default,
                 placeholder = placeholder,
@@ -57,7 +57,6 @@ fun InputBox(
                     focusedIndicatorColor = Color.Transparent,
                     unfocusedIndicatorColor = Color.Transparent
                 ),
-                onChangeInput = onChangeInput
             )
         }
     }

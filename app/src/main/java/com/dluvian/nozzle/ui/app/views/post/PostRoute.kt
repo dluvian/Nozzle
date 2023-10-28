@@ -17,7 +17,6 @@ fun PostRoute(
         uiState = uiState,
         metadataState = metadataState,
         pubkeyState = pubkeyState,
-        onChangeContent = postViewModel.onChangeContent,
         onToggleRelaySelection = postViewModel.onToggleRelaySelection,
         onSend = postViewModel.onSend,
         onGoBack = onGoBack,
