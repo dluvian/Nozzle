@@ -47,11 +47,12 @@ class FeedViewModel(
     private val isAppending = AtomicBoolean(false)
 
     val pubkeyState = pubkeyProvider.getActivePubkeyStateFlow()
-        .onEach {
+        .onEach local@{
+            if (it.isEmpty()) return@local
             useCachedFeedSettings()
             handleRefresh(delayBeforeUpdate = false)
         }
-        .stateIn(viewModelScope, SharingStarted.Eagerly, pubkeyProvider.getActivePubkey())
+        .stateIn(viewModelScope, SharingStarted.Eagerly, "")
 
     init {
         useCachedFeedSettings()

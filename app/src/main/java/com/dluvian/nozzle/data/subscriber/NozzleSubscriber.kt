@@ -47,15 +47,6 @@ class NozzleSubscriber(
     private val unknownPubkeySubs = Collections.synchronizedList(mutableListOf<String>())
     private val inboxSubs = Collections.synchronizedList(mutableListOf<String>())
 
-    override fun subscribeActiveProfile() {
-        Log.i(TAG, "Subscribe active profile")
-        val subIds = nostrSubscriber.subscribeFullProfile(
-            pubkey = pubkeyProvider.getActivePubkey(),
-            relays = relayProvider.getWriteRelays()
-        )
-        personalProfileSubs.unsubThenAddAll(subIds)
-    }
-
     override suspend fun subscribePersonalProfiles() {
         Log.i(TAG, "Subscribe personal profiles")
         val accountPubkeys = accountProvider.listAccounts().map { it.pubkey }
@@ -68,7 +59,8 @@ class NozzleSubscriber(
                 }
             }
 
-        nostrSubscriber.subscribeFullProfiles(pubkeysByRelay = pubkeysByRelay)
+        val subIds = nostrSubscriber.subscribeFullProfiles(pubkeysByRelay = pubkeysByRelay)
+        personalProfileSubs.unsubThenAddAll(subIds)
     }
 
     override suspend fun subscribeFullProfile(profileId: String) {
