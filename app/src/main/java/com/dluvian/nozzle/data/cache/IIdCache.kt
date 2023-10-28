@@ -4,7 +4,6 @@ interface IIdCache {
     fun addPostId(id: String): Boolean
     fun containsPostId(id: String): Boolean
     fun getPostIds(): Set<String>
-    fun removePostId(postId: String)
     fun clearPostIds()
 
     fun addPubkey(pubkey: String): Boolean

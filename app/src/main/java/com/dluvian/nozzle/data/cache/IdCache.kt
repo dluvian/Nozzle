@@ -12,9 +12,6 @@ class IdCache : IIdCache {
     override fun containsPostId(id: String): Boolean = postIds.contains(id)
     override fun getPostIds(): Set<String> = postIds.toSet()
     override fun clearPostIds() = postIds.clear()
-    override fun removePostId(postId: String) {
-        postIds.remove(postId)
-    }
 
     override fun addPubkey(pubkey: String): Boolean = pubkeys.add(pubkey)
     override fun getPubkeys(): Set<String> = pubkeys.toSet()
