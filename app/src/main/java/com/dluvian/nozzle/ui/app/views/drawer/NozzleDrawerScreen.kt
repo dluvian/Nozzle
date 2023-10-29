@@ -129,9 +129,7 @@ private fun TopRow(
         val isExpanded = remember { mutableStateOf(false) }
         Column {
             ActiveAccount(
-                picture = activeAccount.picture,
-                pubkey = activeAccount.pubkey,
-                profileName = activeAccount.name,
+                account = activeAccount,
                 isExpanded = isExpanded.value,
                 onToggleExpand = { isExpanded.value = !isExpanded.value },
                 onClick = onActiveProfileClick
@@ -151,9 +149,7 @@ private fun TopRow(
 
 @Composable
 private fun ActiveAccount(
-    picture: String,
-    pubkey: String,
-    profileName: String,
+    account: Account,
     isExpanded: Boolean,
     onToggleExpand: () -> Unit,
     onClick: () -> Unit,
@@ -163,25 +159,7 @@ private fun ActiveAccount(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Row(modifier = Modifier.weight(1f), verticalAlignment = Alignment.CenterVertically) {
-                ProfilePicture(
-                    modifier = Modifier
-                        .width(sizing.largeProfilePicture)
-                        .aspectRatio(1f)
-                        .clip(CircleShape),
-                    pictureUrl = picture,
-                    pubkey = pubkey,
-                    trustType = Oneself
-                )
-                Spacer(Modifier.width(spacing.large))
-                Text(
-                    text = profileName,
-                    maxLines = 2,
-                    overflow = TextOverflow.Ellipsis,
-                    style = MaterialTheme.typography.h6,
-                    color = colors.onSurface
-                )
-            }
+            PictureAndName(modifier = Modifier.weight(1f), account = account, isTop = true)
             ExpandIcon(
                 modifier = Modifier.padding(spacing.small),
                 isExpanded = isExpanded,
@@ -234,37 +212,47 @@ private fun AccountRow(
             modifier = Modifier.combinedClickable(
                 onClick = onActivateAccount,
                 onLongClick = { showMenu.value = true }
-            )
+            ),
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            Row(modifier = Modifier.weight(1f)) {
-                ProfilePicture(
-                    modifier = Modifier
-                        .width(sizing.smallProfilePicture)
-                        .aspectRatio(1f)
-                        .clip(CircleShape),
-                    pictureUrl = account.picture,
-                    pubkey = account.pubkey,
-                    trustType = Oneself
-                )
-                Spacer(Modifier.width(spacing.large))
-                Text(
-                    text = account.name,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                    style = MaterialTheme.typography.h6,
-                    color = colors.onSurface
-                )
-            }
+            PictureAndName(modifier = Modifier.weight(1f), account = account, isTop = false)
             if (account.isActive) CheckIcon()
         }
     }
 }
 
 @Composable
+private fun PictureAndName(account: Account, isTop: Boolean, modifier: Modifier = Modifier) {
+    Row(modifier = modifier, verticalAlignment = Alignment.CenterVertically) {
+        ProfilePicture(
+            modifier = Modifier
+                .width(if (isTop) sizing.largeProfilePicture else sizing.smallProfilePicture)
+                .aspectRatio(1f)
+                .clip(CircleShape),
+            pictureUrl = account.picture,
+            pubkey = account.pubkey,
+            trustType = Oneself
+        )
+        Spacer(Modifier.width(spacing.large))
+        Text(
+            text = account.name,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+            style = if (isTop) MaterialTheme.typography.h6.let {
+                it.copy(fontSize = it.fontSize.times(1.3f))
+            } else MaterialTheme.typography.h6,
+            color = colors.onSurface
+        )
+    }
+}
+
+@Composable
 private fun AddAccountRow(onAddAccount: () -> Unit) {
-    TextButton(onClick = onAddAccount) {
-        AddIcon()
-        Text(text = stringResource(id = R.string.add))
+    TextButton(modifier = Modifier.fillMaxWidth(), onClick = onAddAccount) {
+        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Start) {
+            AddIcon()
+            Text(text = stringResource(id = R.string.add))
+        }
     }
 }
 

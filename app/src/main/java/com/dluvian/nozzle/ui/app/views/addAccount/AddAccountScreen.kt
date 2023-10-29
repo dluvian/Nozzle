@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.Card
 import androidx.compose.material.Text
@@ -96,11 +97,17 @@ private fun Buttons(onGenerateNew: () -> Unit, onLogin: () -> Unit) {
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.End
     ) {
-        TextButton(onClick = onGenerateNew) {
+        TextButton(
+            modifier = Modifier.padding(end = spacing.medium),
+            onClick = onGenerateNew
+        ) {
             Text(stringResource(id = R.string.generate_new))
         }
         Spacer(modifier = Modifier.width(spacing.medium))
-        TextButton(onClick = onLogin) {
+        TextButton(
+            modifier = Modifier.padding(end = spacing.medium),
+            onClick = onLogin
+        ) {
             Text(stringResource(id = R.string.login))
         }
     }
