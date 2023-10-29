@@ -37,8 +37,6 @@ import com.dluvian.nozzle.ui.components.text.*
 import com.dluvian.nozzle.ui.theme.*
 
 
-// TODO: Split file into multiple
-
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun PostCard(

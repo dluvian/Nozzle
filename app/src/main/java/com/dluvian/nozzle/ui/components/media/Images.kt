@@ -17,6 +17,7 @@ import androidx.compose.material.icons.filled.Stars
 import androidx.compose.material.icons.filled.Verified
 import androidx.compose.material.icons.filled.VerifiedUser
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -46,9 +47,12 @@ fun ProfilePicture(
     trustType: TrustType,
     onOpenProfile: (() -> Unit)? = null,
 ) {
+    val realPictureUrl = remember(pictureUrl, pubkey) {
+        pictureUrl.ifEmpty { getRobohashUrl(pubkey = pubkey) }
+    }
     BaseProfilePicture(
         modifier = modifier,
-        pictureUrl = pictureUrl.ifEmpty { getRobohashUrl(pubkey) },
+        pictureUrl = realPictureUrl,
         trustType = trustType,
         onOpenProfile = onOpenProfile,
     )

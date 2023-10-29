@@ -42,11 +42,9 @@ class PostWithMetaProvider(
     override suspend fun getPostsWithMetaFlow(feedInfo: FeedInfo): Flow<List<PostWithMeta>> {
         if (feedInfo.postIds.isEmpty()) return flow { emit(emptyList()) }
 
-        // TODO: No PersonalPubkey. Use extra DB Table for current user
         val extendedPostsFlow = postDao
             .listExtendedPostsFlow(
                 postIds = feedInfo.postIds,
-                personalPubkey = pubkeyProvider.getPubkey()
             )
             .firstThenDistinctDebounce(NORMAL_DEBOUNCE)
 
@@ -60,12 +58,8 @@ class PostWithMetaProvider(
             .getRelaysPerEventIdMapFlow(feedInfo.postIds)
             .firstThenDistinctDebounce(LONG_DEBOUNCE)
 
-        // TODO: No pubkey. Use extra DB Table for current user
         val trustScorePerPubkeyFlow = contactDao
-            .getTrustScoreByPubkeyFlow(
-                pubkey = pubkeyProvider.getPubkey(),
-                contactPubkeys = feedInfo.authorPubkeys
-            )
+            .getTrustScoreByPubkeyFlow(contactPubkeys = feedInfo.authorPubkeys)
             .firstThenDistinctDebounce(NORMAL_DEBOUNCE)
 
         val mentionedNamesAndPostsFlow = getMentionedNamesAndPostsFlow(

@@ -61,8 +61,8 @@ class EventProcessor(
     private fun processPost(event: Event, relayUrl: String?) {
         if (!verify(event)) return
 
-        val isNew = dbSweepExcludingCache.addPostId(event.id)
-        if (!isNew) {
+        val isPresent = dbSweepExcludingCache.containsPostId(event.id)
+        if (isPresent) {
             insertEventRelay(eventId = event.id, relayUrl = relayUrl)
             return
         }
@@ -76,11 +76,11 @@ class EventProcessor(
             )
         }.invokeOnCompletion {
             if (it == null) {
+                dbSweepExcludingCache.addPostId(event.id)
                 insertEventRelay(eventId = event.id, relayUrl = relayUrl)
                 return@invokeOnCompletion
             }
             Log.w(TAG, "Failed to process post ${event.id} from ${event.pubkey}", it)
-            dbSweepExcludingCache.removePostId(event.id)
         }
     }
 
@@ -175,7 +175,7 @@ class EventProcessor(
     }
 
     private fun processReaction(event: Event) {
-        if (event.content != "+") return
+        if (event.content != "+" && event.content.isNotEmpty()) return
         if (otherIdsCache.contains(event.id)) return
         if (!verify(event)) return
 

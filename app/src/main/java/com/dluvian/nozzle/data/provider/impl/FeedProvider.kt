@@ -13,7 +13,9 @@ import com.dluvian.nozzle.model.Contacts
 import com.dluvian.nozzle.model.Everyone
 import com.dluvian.nozzle.model.FeedSettings
 import com.dluvian.nozzle.model.PostWithMeta
+import com.dluvian.nozzle.model.RelaySelection
 import com.dluvian.nozzle.model.SingleAuthor
+import com.dluvian.nozzle.model.UserSpecific
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 
@@ -50,7 +52,7 @@ class FeedProvider(
             isReplies = feedSettings.isReplies,
             hashtag = feedSettings.hashtag,
             authorPubkeys = authorSelectionPubkeys,
-            relays = feedSettings.relaySelection.selectedRelays,
+            relaySelection = feedSettings.relaySelection,
             until = until,
             limit = limit,
         )
@@ -60,10 +62,10 @@ class FeedProvider(
         return postWithMetaProvider.getPostsWithMetaFlow(feedInfo = feedInfo)
     }
 
-    private suspend fun listPubkeys(authorSelection: AuthorSelection): List<String>? {
+    private fun listPubkeys(authorSelection: AuthorSelection): List<String>? {
         return when (authorSelection) {
             is Everyone -> null
-            is Contacts -> contactListProvider.listPersonalContactPubkeys() + pubkeyProvider.getPubkey()
+            is Contacts -> contactListProvider.listPersonalContactPubkeys() + pubkeyProvider.getActivePubkey()
             is SingleAuthor -> listOf(authorSelection.pubkey)
         }
     }
@@ -73,11 +75,12 @@ class FeedProvider(
         isReplies: Boolean,
         hashtag: String?,
         authorPubkeys: List<String>?,
-        relays: Collection<String>?,
+        relaySelection: RelaySelection,
         until: Long,
         limit: Int,
     ): List<PostEntity> {
         if (!isPosts && !isReplies) return emptyList()
+        val relays = if (relaySelection is UserSpecific) null else relaySelection.selectedRelays
 
         // TODO: Check if nullable Collection can be used in queries. Refac into one query if possible
         return if (authorPubkeys == null && relays == null) {

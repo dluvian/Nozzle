@@ -2,6 +2,7 @@ package com.dluvian.nozzle.data.nostr
 
 import android.util.Log
 import com.dluvian.nozzle.data.eventProcessor.IEventProcessor
+import com.dluvian.nozzle.data.getDefaultRelays
 import com.dluvian.nozzle.data.manager.IKeyManager
 import com.dluvian.nozzle.data.room.helper.Nip65Relay
 import com.dluvian.nozzle.model.nostr.Event
@@ -65,7 +66,7 @@ class NostrService(
         Log.i(TAG, "Publish profile $metadata")
         val event = Event.createMetadataEvent(
             metadata = metadata,
-            keys = keyManager.getKeys(),
+            keys = keyManager.getActiveKeys(),
         )
         client.publishToRelays(event = event, relays = relays)
 
@@ -75,9 +76,10 @@ class NostrService(
     override fun publishNip65(nip65Relays: List<Nip65Relay>): Event {
         val event = Event.createNip65Event(
             nip65Relays = nip65Relays,
-            keys = keyManager.getKeys(),
+            keys = keyManager.getActiveKeys(),
         )
         client.addRelays(nip65Relays.map { it.url })
+        client.addRelays(getDefaultRelays())
         client.publishToRelays(event = event)
 
         return event
@@ -94,7 +96,7 @@ class NostrService(
             replyTo = null,
             mentions = mentions,
             hashtags = hashtags,
-            keys = keyManager.getKeys(),
+            keys = keyManager.getActiveKeys(),
         )
         client.publishToRelays(event = event, relays = relays)
 
@@ -106,7 +108,7 @@ class NostrService(
         val event = Event.createReactionEvent(
             eventId = postId,
             eventPubkey = postPubkey,
-            keys = keyManager.getKeys(),
+            keys = keyManager.getActiveKeys(),
         )
         client.publishToRelays(event = event, relays = relays)
 
@@ -125,7 +127,7 @@ class NostrService(
             replyTo = replyTo,
             mentions = mentions,
             hashtags = hashtags,
-            keys = keyManager.getKeys(),
+            keys = keyManager.getActiveKeys(),
         )
         client.publishToRelays(event = event, relays = relays)
 
@@ -139,7 +141,7 @@ class NostrService(
         Log.i(TAG, "Update contact list with ${contactPubkeys.size} contacts")
         val event = Event.createContactListEvent(
             contacts = contactPubkeys,
-            keys = keyManager.getKeys(),
+            keys = keyManager.getActiveKeys(),
         )
         client.publishToRelays(event = event, relays = relays)
 

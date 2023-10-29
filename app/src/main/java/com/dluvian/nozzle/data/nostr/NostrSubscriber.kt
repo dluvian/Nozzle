@@ -32,6 +32,28 @@ class NostrSubscriber(private val nostrService: INostrService) : INostrSubscribe
         )
     }
 
+    override fun subscribeFullProfiles(pubkeysByRelay: Map<Relay, List<Pubkey>>): List<String> {
+        if (pubkeysByRelay.isEmpty()) return emptyList()
+
+        val allSubIds = mutableListOf<String>()
+        for (entry in pubkeysByRelay) {
+            if (entry.value.isEmpty()) continue
+            val nip65Filter = Filter.createNip65Filter(pubkeys = entry.value)
+            val profileFilter = Filter.createProfileFilter(pubkeys = entry.value)
+            val contactListFilter = Filter.createContactListFilter(pubkeys = entry.value)
+            val allFilters = listOf(nip65Filter, profileFilter, contactListFilter)
+
+            val subIds = nostrService.subscribe(
+                filters = allFilters,
+                unsubOnEOSE = true,
+                relays = listOf(entry.key),
+            )
+            allSubIds.addAll(subIds)
+        }
+
+        return allSubIds
+    }
+
     override fun subscribeToFeedPosts(
         authorPubkeys: List<String>?,
         hashtag: String?,
@@ -42,7 +64,7 @@ class NostrSubscriber(private val nostrService: INostrService) : INostrSubscribe
         Log.i(TAG, "Subscribe to feed of ${authorPubkeys?.size} pubkeys in ${relays?.size} relays")
         val postFilter = Filter.createPostFilter(
             pubkeys = authorPubkeys,
-            t = hashtag?.let { listOf(hashtag) },
+            t = hashtag?.let { listOf(hashtag, hashtag.lowercase()).distinct() },
             until = until,
             limit = limit
         )

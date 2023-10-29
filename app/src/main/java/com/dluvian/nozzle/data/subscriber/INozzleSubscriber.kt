@@ -8,7 +8,7 @@ import com.dluvian.nozzle.model.helper.FeedInfo
 
 interface INozzleSubscriber {
 
-    fun subscribePersonalProfile()
+    suspend fun subscribePersonalProfiles()
 
     fun subscribeToFeedPosts(
         isReplies: Boolean,

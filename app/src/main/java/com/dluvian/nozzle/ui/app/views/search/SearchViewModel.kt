@@ -22,14 +22,6 @@ import kotlinx.coroutines.launch
 
 private const val TAG = "SearchViewModel"
 
-data class SearchViewModelState(
-    val input: String = "",
-    val finalId: String = "",
-    val isLoading: Boolean = false,
-    val isInvalidNostrId: Boolean = false,
-    val isInvalidNip05: Boolean = false,
-)
-
 class SearchViewModel(private val nip05Resolver: INip05Resolver) : ViewModel() {
 
     private val viewModelState = MutableStateFlow(SearchViewModelState())
@@ -41,9 +33,9 @@ class SearchViewModel(private val nip05Resolver: INip05Resolver) : ViewModel() {
             viewModelState.value
         )
 
-    val onSearch: () -> Unit = {
-        if (uiState.value.input.isNotBlank()) {
-            val trimmed = uiState.value.input.trim().removePrefix(URI)
+    val onSearch: (String) -> Unit = { input ->
+        if (input.isNotBlank()) {
+            val trimmed = input.trim().removePrefix(URI)
             if (HashtagUtils.isHashtag(trimmed)) setFinalId(trimmed)
             else if (nip05Resolver.isNip05(trimmed)) resolveNip05(trimmed)
             else when (val nostrId = nostrStrToNostrId(nostrStr = trimmed)) {
@@ -61,22 +53,9 @@ class SearchViewModel(private val nip05Resolver: INip05Resolver) : ViewModel() {
         }
     }
 
-    val onChangeInput: (String) -> Unit = { input ->
-        uiState.value.let {
-            viewModelState.update {
-                it.copy(
-                    input = input,
-                    isInvalidNip05 = false,
-                    isInvalidNostrId = false
-                )
-            }
-        }
-    }
-
     val onResetUI: () -> Unit = {
         viewModelState.update {
             it.copy(
-                input = "",
                 finalId = "",
                 isLoading = false,
                 isInvalidNostrId = false,

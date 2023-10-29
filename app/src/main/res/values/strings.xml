@@ -26,10 +26,9 @@
     <string name="public_key_explanation">Your public key identifies your account. You can share it with anyone trying to find you.</string>
     <string name="private_key_description">Your private key verifies your identity.</string>
     <string name="private_key_warning">Do not share it with anyone else!</string>
-    <string name="invalid_private_key">Invalid private key</string>
-    <string name="key_pair_updated">Key pair updated</string>
-    <string name="enter_a_private_key">Enter nsec or hex private key</string>
     <string name="profile_id_copied">Profile ID copied</string>
+    <string name="public_key_copied">Public key copied</string>
+    <string name="private_key_copied">Private key copied</string>
     <string name="enter_your_username">Enter your username</string>
     <string name="username">Username</string>
     <string name="about_you">About you</string>
@@ -56,6 +55,7 @@
     <string name="post_your_thoughts">Post your thoughts</string>
     <string name="add">Add</string>
     <string name="invalid_nostr_id">Invalid nostr ID</string>
+    <string name="invalid_nsec">Invalid nsec</string>
     <string name="open_nostr_id">Open nostr ID, hashtag or nip05</string>
     <string name="post_published">Post published</string>
     <string name="time_abbr_now">Now</string>
@@ -93,6 +93,15 @@
     <string name="save">Save</string>
     <string name="my_friends_relays">My Friends Relays</string>
     <string name="inbox">Inbox</string>
+    <string name="collapse">Collapse</string>
+    <string name="expand">Expand</string>
+    <string name="add_account">Add Account</string>
+    <string name="nsec_ellipsis">nsec…</string>
+    <string name="nsec">nsec</string>
+    <string name="generate_new">Generate new</string>
+    <string name="login">Login</string>
+    <string name="open_profile">Open profile</string>
+    <string name="delete_account">Delete account</string>
     <plurals name="other_relays">
         <item quantity="one">other</item>
         <item quantity="other">others</item>

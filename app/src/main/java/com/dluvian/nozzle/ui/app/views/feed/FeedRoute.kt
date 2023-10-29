@@ -13,16 +13,17 @@ fun FeedRoute(
     feedViewModel: FeedViewModel,
     postCardNavLambdas: PostCardNavLambdas,
     onPrepareReply: (PostWithMeta) -> Unit,
-    onPreparePost: () -> Unit,
     onOpenDrawer: () -> Unit,
     onNavigateToPost: () -> Unit,
 ) {
     val uiState by feedViewModel.uiState.collectAsState()
     val metadataState by feedViewModel.metadataState.collectAsState()
     val feedState by feedViewModel.feedState.collectAsState()
+    val pubkeyState by feedViewModel.pubkeyState.collectAsState()
 
     FeedScreen(
         uiState = uiState,
+        pubkeyState = pubkeyState,
         feedState = feedState,
         metadataState = metadataState,
         postCardNavLambdas = postCardNavLambdas,
@@ -42,7 +43,6 @@ fun FeedRoute(
         onRefreshFeedView = feedViewModel.onRefreshFeedView,
         onRefreshOnMenuDismiss = feedViewModel.onRefreshOnMenuDismiss,
         onPrepareReply = onPrepareReply,
-        onPreparePost = onPreparePost,
         onToggleContactsOnly = feedViewModel.onToggleContactsOnly,
         onTogglePosts = feedViewModel.onTogglePosts,
         onToggleReplies = feedViewModel.onToggleReplies,

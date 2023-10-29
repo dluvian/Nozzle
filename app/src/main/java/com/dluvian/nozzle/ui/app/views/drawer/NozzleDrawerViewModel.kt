@@ -1,72 +1,82 @@
 package com.dluvian.nozzle.ui.app.views.drawer
 
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
-import com.dluvian.nozzle.data.provider.IPersonalProfileProvider
+import com.dluvian.nozzle.data.manager.IKeyManager
+import com.dluvian.nozzle.data.provider.IAccountProvider
 import com.dluvian.nozzle.data.subscriber.INozzleSubscriber
-import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.stateIn
-import kotlinx.coroutines.flow.update
-
-private const val TAG = "NozzleDrawerViewModel"
-
-// TODO: Flow from DB instead of manually setting state
-data class DrawerViewModelState(
-    val pubkey: String = "",
-    val npub: String = "",
-)
+import kotlinx.coroutines.launch
+import java.util.concurrent.atomic.AtomicBoolean
 
 class NozzleDrawerViewModel(
-    private val personalProfileProvider: IPersonalProfileProvider,
+    keyManager: IKeyManager,
+    accountProvider: IAccountProvider,
     nozzleSubscriber: INozzleSubscriber,
 ) : ViewModel() {
-    private val drawerViewModelState = MutableStateFlow(DrawerViewModelState())
 
-    var metadataState = personalProfileProvider.getMetadataStateFlow()
-
-    val pubkeyState = drawerViewModelState
-        .stateIn(
+    val uiState = accountProvider.getAccountsFlow()
+        .mapNotNull { accounts ->
+            NozzleDrawerViewModelState.from(accounts = accounts)
+        }.stateIn(
             viewModelScope,
             SharingStarted.Eagerly,
-            drawerViewModelState.value
+            NozzleDrawerViewModelState()
         )
 
+    private val isActivating = AtomicBoolean(false)
+    val onActivateAccount: (Int) -> Unit = local@{ i ->
+        val active = uiState.value.allAccounts.getOrNull(i)
+        if (active == null
+            || active.isActive
+            || !isActivating.compareAndSet(false, true)
+        ) return@local
+
+        viewModelScope.launch(context = Dispatchers.Main) {
+            keyManager.activatePubkey(pubkey = active.pubkey)
+        }.invokeOnCompletion {
+            isActivating.set(false)
+        }
+    }
+
+    private val isDeleting = AtomicBoolean(false)
+    val onDeleteAccount: (Int) -> Unit = local@{ i ->
+        val toDelete = uiState.value.allAccounts.getOrNull(i)
+        if (toDelete == null
+            || toDelete.isActive
+            || !isDeleting.compareAndSet(false, true)
+        ) return@local
+
+        viewModelScope.launch(context = Dispatchers.Main) {
+            keyManager.deletePubkey(pubkey = toDelete.pubkey)
+        }.invokeOnCompletion {
+            isDeleting.set(false)
+        }
+    }
+
     init {
-        useCachedValues()
-        nozzleSubscriber.subscribePersonalProfile()
-    }
-
-    val onResetUiState: () -> Unit = {
-        Log.i(TAG, "Reset UI")
-        // TODO: USE FLOWS
-        metadataState = personalProfileProvider.getMetadataStateFlow()
-        useCachedValues()
-    }
-
-    private fun useCachedValues() {
-        Log.i(TAG, "Set cached values")
-        drawerViewModelState.update {
-            it.copy(
-                pubkey = personalProfileProvider.getPubkey(),
-                npub = personalProfileProvider.getNpub(),
-            )
+        viewModelScope.launch(context = Dispatchers.IO) {
+            nozzleSubscriber.subscribePersonalProfiles()
         }
     }
 
     companion object {
         fun provideFactory(
-            personalProfileProvider: IPersonalProfileProvider,
+            keyManager: IKeyManager,
+            accountProvider: IAccountProvider,
             nozzleSubscriber: INozzleSubscriber
         ): ViewModelProvider.Factory =
             object : ViewModelProvider.Factory {
                 @Suppress("UNCHECKED_CAST")
                 override fun <T : ViewModel> create(modelClass: Class<T>): T {
                     return NozzleDrawerViewModel(
-                        personalProfileProvider = personalProfileProvider,
+                        keyManager = keyManager,
+                        accountProvider = accountProvider,
                         nozzleSubscriber = nozzleSubscriber
                     ) as T
                 }

@@ -30,6 +30,7 @@ import com.dluvian.nozzle.data.preferences.IFeedSettingsPreferences
 import com.dluvian.nozzle.data.preferences.NozzlePreferences
 import com.dluvian.nozzle.data.profileFollower.IProfileFollower
 import com.dluvian.nozzle.data.profileFollower.ProfileFollower
+import com.dluvian.nozzle.data.provider.IAccountProvider
 import com.dluvian.nozzle.data.provider.IAutopilotProvider
 import com.dluvian.nozzle.data.provider.IContactListProvider
 import com.dluvian.nozzle.data.provider.IFeedProvider
@@ -38,6 +39,7 @@ import com.dluvian.nozzle.data.provider.IPostWithMetaProvider
 import com.dluvian.nozzle.data.provider.IProfileWithMetaProvider
 import com.dluvian.nozzle.data.provider.IRelayProvider
 import com.dluvian.nozzle.data.provider.IThreadProvider
+import com.dluvian.nozzle.data.provider.impl.AccountProvider
 import com.dluvian.nozzle.data.provider.impl.AutopilotProvider
 import com.dluvian.nozzle.data.provider.impl.ContactListProvider
 import com.dluvian.nozzle.data.provider.impl.FeedProvider
@@ -58,10 +60,9 @@ class AppContainer(context: Context) {
         name = "nozzle_database",
     ).fallbackToDestructiveMigration().build()
 
-    val keyManager: IKeyManager = KeyManager(context = context)
+    val keyManager: IKeyManager = KeyManager(context = context, accountDao = roomDb.accountDao())
 
     val contactListProvider: IContactListProvider = ContactListProvider(
-        pubkeyProvider = keyManager,
         contactDao = roomDb.contactDao()
     )
 
@@ -89,15 +90,17 @@ class AppContainer(context: Context) {
     private val nostrSubscriber: INostrSubscriber = NostrSubscriber(nostrService = nostrService)
 
     val relayProvider: IRelayProvider = RelayProvider(
-        pubkeyProvider = keyManager,
         contactListProvider = contactListProvider,
         nip65Dao = roomDb.nip65Dao(),
     )
+
+    val accountProvider: IAccountProvider = AccountProvider(accountDao = roomDb.accountDao())
 
     val nozzleSubscriber: INozzleSubscriber = NozzleSubscriber(
         nostrSubscriber = nostrSubscriber,
         relayProvider = relayProvider,
         pubkeyProvider = keyManager,
+        accountProvider = accountProvider,
         idCache = dbSweepExcludingCache,
         database = roomDb,
     )
@@ -161,6 +164,8 @@ class AppContainer(context: Context) {
 
     val personalProfileManager: IPersonalProfileManager = PersonalProfileManager(
         pubkeyProvider = keyManager,
+        relayProvider = relayProvider,
+        nostrService = nostrService,
         profileDao = roomDb.profileDao()
     )
 
@@ -172,16 +177,14 @@ class AppContainer(context: Context) {
 
     val databaseSweeper: IDatabaseSweeper = DatabaseSweeper(
         keepPosts = SWEEP_THRESHOLD,
-        pubkeyProvider = keyManager,
-        contactListProvider = contactListProvider,
         dbSweepExcludingCache = dbSweepExcludingCache,
         database = roomDb,
     )
 
     val postPreparer: IPostPreparer = PostPreparer()
+
     val inboxFeedProvider: IInboxFeedProvider = InboxFeedProvider(
         nozzleSubscriber = nozzleSubscriber,
-        pubkeyProvider = keyManager,
         postWithMetaProvider = postWithMetaProvider,
         postDao = roomDb.postDao()
     )

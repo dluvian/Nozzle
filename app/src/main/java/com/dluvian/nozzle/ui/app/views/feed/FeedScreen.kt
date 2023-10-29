@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.FloatingActionButton
 import androidx.compose.material.MaterialTheme.typography
 import androidx.compose.material.Scaffold
@@ -22,6 +23,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
@@ -47,6 +49,7 @@ import kotlinx.coroutines.launch
 @Composable
 fun FeedScreen(
     uiState: FeedViewModelState,
+    pubkeyState: String,
     feedState: List<PostWithMeta>,
     metadataState: Metadata?,
     postCardNavLambdas: PostCardNavLambdas,
@@ -56,7 +59,6 @@ fun FeedScreen(
     onRefreshFeedView: () -> Unit,
     onRefreshOnMenuDismiss: () -> Unit,
     onPrepareReply: (PostWithMeta) -> Unit,
-    onPreparePost: () -> Unit,
     onToggleContactsOnly: () -> Unit,
     onTogglePosts: () -> Unit,
     onToggleReplies: () -> Unit,
@@ -72,7 +74,7 @@ fun FeedScreen(
         topBar = {
             FeedTopBar(
                 picture = metadataState?.picture.orEmpty(),
-                pubkey = uiState.pubkey,
+                pubkey = pubkeyState,
                 feedSettings = uiState.feedSettings,
                 relayStatuses = uiState.relayStatuses,
                 isRefreshing = uiState.isRefreshing,
@@ -86,13 +88,7 @@ fun FeedScreen(
                 onScrollToTop = { scope.launch { lazyListState.animateScrollToItem(0) } }
             )
         },
-        floatingActionButton = {
-            FeedFab(onPrepareNewPost = {
-                // TODO: only onNavigateToPost()
-                onPreparePost()
-                onNavigateToPost()
-            })
-        },
+        floatingActionButton = { FeedFab(onNavigateToPost = onNavigateToPost) },
     ) {
         Column(
             modifier = Modifier
@@ -143,7 +139,8 @@ private fun FeedTopBar(
                 ProfilePicture(
                     modifier = Modifier
                         .size(sizing.smallProfilePicture)
-                        .clickable { onPictureClick() },
+                        .clip(CircleShape)
+                        .clickable(onClick = onPictureClick),
                     pictureUrl = picture,
                     pubkey = pubkey,
                     trustType = Oneself
@@ -204,8 +201,8 @@ private fun Headline(
 }
 
 @Composable
-private fun FeedFab(onPrepareNewPost: () -> Unit) {
-    FloatingActionButton(onClick = { onPrepareNewPost() }, contentColor = Color.White) {
+private fun FeedFab(onNavigateToPost: () -> Unit) {
+    FloatingActionButton(onClick = onNavigateToPost, contentColor = Color.White) {
         AddIcon()
     }
 }

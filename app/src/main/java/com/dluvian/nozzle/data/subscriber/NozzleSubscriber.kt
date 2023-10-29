@@ -7,6 +7,7 @@ import com.dluvian.nozzle.data.nostr.utils.EncodingUtils
 import com.dluvian.nozzle.data.nostr.utils.KeyUtils
 import com.dluvian.nozzle.data.nostr.utils.MentionUtils.extractNeventsAndNoteIds
 import com.dluvian.nozzle.data.nostr.utils.MentionUtils.extractNprofilesAndNpubs
+import com.dluvian.nozzle.data.provider.IAccountProvider
 import com.dluvian.nozzle.data.provider.IPubkeyProvider
 import com.dluvian.nozzle.data.provider.IRelayProvider
 import com.dluvian.nozzle.data.room.AppDatabase
@@ -32,6 +33,7 @@ class NozzleSubscriber(
     private val nostrSubscriber: INostrSubscriber,
     private val relayProvider: IRelayProvider,
     private val pubkeyProvider: IPubkeyProvider,
+    private val accountProvider: IAccountProvider,
     private val idCache: IIdCache,
     private val database: AppDatabase,
 ) : INozzleSubscriber {
@@ -45,12 +47,19 @@ class NozzleSubscriber(
     private val unknownPubkeySubs = Collections.synchronizedList(mutableListOf<String>())
     private val inboxSubs = Collections.synchronizedList(mutableListOf<String>())
 
-    override fun subscribePersonalProfile() {
-        Log.i(TAG, "Subscribe personal profile")
-        val subIds = nostrSubscriber.subscribeFullProfile(
-            pubkey = pubkeyProvider.getPubkey(),
-            relays = relayProvider.getWriteRelays()
-        )
+    override suspend fun subscribePersonalProfiles() {
+        Log.i(TAG, "Subscribe personal profiles")
+        val accountPubkeys = accountProvider.listAccounts().map { it.pubkey }
+        val pubkeysByRelay = mutableMapOf<Relay, MutableList<Pubkey>>()
+        relayProvider
+            .getWriteRelaysOfPubkeys(pubkeys = accountPubkeys)
+            .forEach { (pubkey, relays) ->
+                relays.ifEmpty { relayProvider.getReadRelays() }.forEach { relay ->
+                    pubkeysByRelay.putIfAbsent(relay, mutableListOf(pubkey))?.add(pubkey)
+                }
+            }
+
+        val subIds = nostrSubscriber.subscribeFullProfiles(pubkeysByRelay = pubkeysByRelay)
         personalProfileSubs.unsubThenAddAll(subIds)
     }
 
@@ -127,7 +136,7 @@ class NozzleSubscriber(
         if (relays.isEmpty() || limit <= 0) return
 
         val subIds = nostrSubscriber.subscribePostsWithMention(
-            mentionedPubkey = pubkeyProvider.getPubkey(),
+            mentionedPubkey = pubkeyProvider.getActivePubkey(),
             limit = limit,
             until = until,
             relays = relays
@@ -176,7 +185,7 @@ class NozzleSubscriber(
             postIdsByRelay = getPostIdsToSub(replyTos = replyTos, mentionedPosts = mentionedPosts),
             repliesByRelay = getPostIdsToSubReplies(postIds = postIds),
             reactionPostIdsByRelay = getReactionPostIdsToSub(postIds = postIds),
-            reactorPubkey = pubkeyProvider.getPubkey()
+            reactorPubkey = pubkeyProvider.getActivePubkey()
         )
         feedInfoSubs.unsubThenAddAll(subIds)
 
@@ -315,7 +324,7 @@ class NozzleSubscriber(
             getDbPubkeys = { filteredPubkeys ->
                 database.contactDao().filterFriendsWithList(
                     contactPubkeys = filteredPubkeys,
-                    myPubkey = pubkeyProvider.getPubkey()
+                    myPubkey = pubkeyProvider.getActivePubkey()
                 )
             }
         )
@@ -356,7 +365,7 @@ class NozzleSubscriber(
 
         val alreadyLiked = database.reactionDao().filterLikedPostIds(
             postIds = postIds,
-            pubkey = pubkeyProvider.getPubkey()
+            pubkey = pubkeyProvider.getActivePubkey()
         )
         val toSub = postIds.minus(alreadyLiked.toSet())
         if (toSub.isEmpty()) return emptyMap()

@@ -23,34 +23,22 @@ import java.util.concurrent.atomic.AtomicBoolean
 
 private const val TAG = "FeedViewModel"
 
-data class FeedViewModelState(
-    val isRefreshing: Boolean = false,
-    val pubkey: String = "",
-    val feedSettings: FeedSettings = FeedSettings(
-        isPosts = true,
-        isReplies = true,
-        hashtag = null,
-        authorSelection = Contacts,
-        relaySelection = UserSpecific(emptyMap())
-    ),
-    val relayStatuses: List<RelayActive> = emptyList(),
-)
-
 class FeedViewModel(
     val clickedMediaUrlCache: IClickedMediaUrlCache,
     val postCardInteractor: IPostCardInteractor,
     private val personalProfileProvider: IPersonalProfileProvider,
+    private val pubkeyProvider: IPubkeyProvider,
     private val feedProvider: IFeedProvider,
     private val relayProvider: IRelayProvider,
     private val autopilotProvider: IAutopilotProvider,
     private val feedSettingsPreferences: IFeedSettingsPreferences,
 ) : ViewModel() {
-    private val viewModelState = MutableStateFlow(FeedViewModelState())
-    val uiState = viewModelState.stateIn(
-        viewModelScope, SharingStarted.Eagerly, viewModelState.value
+    private val _uiState = MutableStateFlow(FeedViewModelState())
+    val uiState = _uiState.stateIn(
+        viewModelScope, SharingStarted.Eagerly, _uiState.value
     )
 
-    var metadataState = personalProfileProvider.getMetadataStateFlow()
+    val metadataState = personalProfileProvider.getMetadataStateFlow()
     var feedState: StateFlow<List<PostWithMeta>> = MutableStateFlow(emptyList())
 
     private val lastAutopilotResult: MutableMap<String, Set<String>> =
@@ -58,16 +46,16 @@ class FeedViewModel(
 
     private val isAppending = AtomicBoolean(false)
 
-    init {
-        viewModelState.update {
-            it.copy(
-                pubkey = personalProfileProvider.getPubkey(),
-                feedSettings = feedSettingsPreferences.getFeedSettings(),
-            )
-        }
-        viewModelScope.launch(context = IO) {
+    val pubkeyState = pubkeyProvider.getActivePubkeyStateFlow()
+        .onEach local@{
+            if (it.isEmpty()) return@local
+            useCachedFeedSettings()
             handleRefresh(delayBeforeUpdate = false)
         }
+        .stateIn(viewModelScope, SharingStarted.Eagerly, "")
+
+    init {
+        useCachedFeedSettings()
     }
 
     val onRefreshFeedView: () -> Unit = {
@@ -97,7 +85,7 @@ class FeedViewModel(
         if (toggledContacts || toggledPosts || toggledReplies || toggledAutopilot || toggledRelay) {
             onRefreshFeedView()
             if (toggledContacts || toggledPosts || toggledReplies) {
-                feedSettingsPreferences.setFeedSettings(viewModelState.value.feedSettings)
+                feedSettingsPreferences.setFeedSettings(_uiState.value.feedSettings)
             }
         }
         toggledContacts = false
@@ -108,8 +96,8 @@ class FeedViewModel(
     }
 
     val onToggleContactsOnly: () -> Unit = {
-        viewModelState.value.feedSettings.authorSelection.let { oldValue ->
-            viewModelState.update {
+        _uiState.value.feedSettings.authorSelection.let { oldValue ->
+            _uiState.update {
                 this.toggledContacts = !this.toggledContacts
                 val newValue = when (oldValue) {
                     is Everyone -> Contacts
@@ -133,10 +121,10 @@ class FeedViewModel(
     }
 
     val onTogglePosts: () -> Unit = {
-        viewModelState.value.feedSettings.let { oldSettings ->
+        _uiState.value.feedSettings.let { oldSettings ->
             // Only changeable when isReplies is active
             if (oldSettings.isReplies) {
-                viewModelState.update {
+                _uiState.update {
                     this.toggledPosts = !this.toggledPosts
                     it.copy(feedSettings = it.feedSettings.copy(isPosts = !oldSettings.isPosts))
                 }
@@ -145,10 +133,10 @@ class FeedViewModel(
     }
 
     val onToggleReplies: () -> Unit = {
-        viewModelState.value.feedSettings.let { oldSettings ->
+        _uiState.value.feedSettings.let { oldSettings ->
             // Only changeable when isPosts is active
             if (oldSettings.isPosts) {
-                viewModelState.update {
+                _uiState.update {
                     this.toggledReplies = !this.toggledReplies
                     it.copy(feedSettings = it.feedSettings.copy(isReplies = !oldSettings.isReplies))
                 }
@@ -159,38 +147,35 @@ class FeedViewModel(
     val onToggleAutopilot: () -> Unit = {
         if (autopilotIsToggleable()) {
             this.toggledAutopilot = !this.toggledAutopilot
-            viewModelState.value.feedSettings.relaySelection.let { oldValue ->
+            _uiState.value.feedSettings.relaySelection.let { oldValue ->
                 // No need to set input. It will be updated in onRefreshOnMenuDismiss
                 val newValue = if (oldValue is UserSpecific) {
                     MultipleRelays(relays = emptyList())
                 } else UserSpecific(pubkeysPerRelay = lastAutopilotResult)
-                viewModelState.update {
+                _uiState.update {
                     it.copy(feedSettings = it.feedSettings.copy(relaySelection = newValue))
                 }
             }
         }
     }
 
+    private fun useCachedFeedSettings() {
+        _uiState.update {
+            it.copy(feedSettings = feedSettingsPreferences.getFeedSettings())
+        }
+    }
+
     private fun autopilotIsToggleable(): Boolean {
-        return viewModelState.value.feedSettings.authorSelection !is Everyone
+        return _uiState.value.feedSettings.authorSelection !is Everyone
     }
 
     val onToggleRelayIndex: (Int) -> Unit = { index ->
         this.toggledRelay = true
-        val toggled = toggleRelay(relays = viewModelState.value.relayStatuses, index = index)
+        val toggled = toggleRelay(relays = _uiState.value.relayStatuses, index = index)
         if (toggled.any { it.isActive }) {
-            viewModelState.update {
+            _uiState.update {
                 it.copy(relayStatuses = toggled)
             }
-        }
-    }
-
-    // TODO: This should be handled with a flow, not manually
-    val onResetProfileIconUiState: () -> Unit = {
-        Log.i(TAG, "Reset profile icon")
-        metadataState = personalProfileProvider.getMetadataStateFlow()
-        viewModelState.update {
-            it.copy(pubkey = personalProfileProvider.getPubkey())
         }
     }
 
@@ -204,7 +189,7 @@ class FeedViewModel(
     private suspend fun updateScreen() {
         updateRelaySelection()
         feedState = feedProvider.getFeedFlow(
-            feedSettings = viewModelState.value.feedSettings,
+            feedSettings = _uiState.value.feedSettings,
             limit = DB_BATCH_SIZE,
             waitForSubscription = WAIT_TIME,
         ).stateIn(
@@ -219,7 +204,7 @@ class FeedViewModel(
         setUIRefresh(true)
         currentFeed.lastOrNull()?.let { last ->
             feedState = feedProvider.getFeedFlow(
-                feedSettings = viewModelState.value.feedSettings,
+                feedSettings = _uiState.value.feedSettings,
                 limit = DB_APPEND_BATCH_SIZE,
                 until = last.entity.createdAt,
             ).distinctUntilChanged()
@@ -235,11 +220,11 @@ class FeedViewModel(
     }
 
     private fun setUIRefresh(value: Boolean) {
-        viewModelState.update { it.copy(isRefreshing = value) }
+        _uiState.update { it.copy(isRefreshing = value) }
     }
 
     private suspend fun updateRelaySelection(newRelayStatuses: List<RelayActive>? = null) {
-        val relaySelection = when (viewModelState.value.feedSettings.relaySelection) {
+        val relaySelection = when (_uiState.value.feedSettings.relaySelection) {
             is UserSpecific -> {
                 val autopilotRelays = getAndCacheAutopilotRelays()
                 if (autopilotRelays.any { it.value.isNotEmpty() }) {
@@ -250,7 +235,7 @@ class FeedViewModel(
             }
 
             is MultipleRelays -> {
-                val selectedRelays = (newRelayStatuses ?: viewModelState.value.relayStatuses)
+                val selectedRelays = (newRelayStatuses ?: _uiState.value.relayStatuses)
                     .filter { it.isActive }
                     .map { it.relayUrl }
                 MultipleRelays(relays = selectedRelays)
@@ -263,7 +248,7 @@ class FeedViewModel(
                 .distinct(),
             relaySelection = relaySelection
         )
-        viewModelState.update {
+        _uiState.update {
             it.copy(
                 relayStatuses = newStatuses,
                 feedSettings = it.feedSettings.copy(relaySelection = relaySelection)
@@ -284,6 +269,7 @@ class FeedViewModel(
             clickedMediaUrlCache: IClickedMediaUrlCache,
             postCardInteractor: IPostCardInteractor,
             personalProfileProvider: IPersonalProfileProvider,
+            pubkeyProvider: IPubkeyProvider,
             feedProvider: IFeedProvider,
             relayProvider: IRelayProvider,
             autopilotProvider: IAutopilotProvider,
@@ -295,6 +281,7 @@ class FeedViewModel(
                     clickedMediaUrlCache = clickedMediaUrlCache,
                     postCardInteractor = postCardInteractor,
                     personalProfileProvider = personalProfileProvider,
+                    pubkeyProvider = pubkeyProvider,
                     feedProvider = feedProvider,
                     relayProvider = relayProvider,
                     autopilotProvider = autopilotProvider,

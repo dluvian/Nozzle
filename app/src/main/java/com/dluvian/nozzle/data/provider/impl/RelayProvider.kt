@@ -2,11 +2,10 @@ package com.dluvian.nozzle.data.provider.impl
 
 import com.dluvian.nozzle.data.getDefaultRelays
 import com.dluvian.nozzle.data.provider.IContactListProvider
-import com.dluvian.nozzle.data.provider.IPubkeyProvider
 import com.dluvian.nozzle.data.provider.IRelayProvider
 import com.dluvian.nozzle.data.room.dao.Nip65Dao
 import com.dluvian.nozzle.data.room.helper.Nip65Relay
-import com.dluvian.nozzle.data.utils.NORMAL_DEBOUNCE
+import com.dluvian.nozzle.data.utils.SHORT_DEBOUNCE
 import com.dluvian.nozzle.data.utils.firstThenDistinctDebounce
 import com.dluvian.nozzle.model.Pubkey
 import com.dluvian.nozzle.model.Relay
@@ -17,22 +16,16 @@ import kotlinx.coroutines.flow.stateIn
 
 
 class RelayProvider(
-    private val pubkeyProvider: IPubkeyProvider,
     private val contactListProvider: IContactListProvider,
     private val nip65Dao: Nip65Dao,
 ) : IRelayProvider {
     private val scope = CoroutineScope(context = Dispatchers.Default)
 
-    // TODO: Determine current pubkey by db table. PubkeyProvider should not be needed
-    private var personalPubkey = pubkeyProvider.getPubkey()
-    private var personalNip65State = nip65Dao.getRelaysOfPubkeyFlow(personalPubkey)
-        .firstThenDistinctDebounce(NORMAL_DEBOUNCE)
-        .stateIn(
-            scope, SharingStarted.Eagerly, emptyList()
-        )
+    private val personalNip65State = nip65Dao.getPersonalRelaysFlow()
+        .firstThenDistinctDebounce(SHORT_DEBOUNCE)
+        .stateIn(scope, SharingStarted.Eagerly, emptyList())
 
     override fun getReadRelays(): List<String> {
-        updateFlow()
         return personalNip65State.value
             .filter { it.isRead }
             .map { it.url }
@@ -40,7 +33,6 @@ class RelayProvider(
     }
 
     override fun getWriteRelays(): List<String> {
-        updateFlow()
         return personalNip65State.value
             .filter { it.isWrite }
             .map { it.url }
@@ -48,7 +40,6 @@ class RelayProvider(
     }
 
     override fun getNip65Relays(): List<Nip65Relay> {
-        updateFlow()
         return personalNip65State.value.ifEmpty { getDefaultNip65s() }
     }
 
@@ -61,24 +52,14 @@ class RelayProvider(
     }
 
     override suspend fun getWriteRelaysOfPubkeys(pubkeys: Collection<String>): Map<Pubkey, List<Relay>> {
-        return nip65Dao.getWriteRelaysOfPubkeys(pubkeys = pubkeys)
+        val dbResult = nip65Dao.getWriteRelaysOfPubkeys(pubkeys = pubkeys).toMutableMap()
+        pubkeys.forEach { pubkey -> dbResult.putIfAbsent(pubkey, emptyList()) }
+
+        return dbResult
     }
 
     override suspend fun getRelaysOfContacts(): List<Relay> {
         return nip65Dao.getRelaysOfPubkeys(pubkeys = contactListProvider.listPersonalContactPubkeys())
-    }
-
-    private fun updateFlow() {
-        // TODO: Obsolete this check. See TODO above
-        if (personalPubkey == pubkeyProvider.getPubkey()) return
-        personalPubkey = pubkeyProvider.getPubkey()
-        personalNip65State = nip65Dao.getRelaysOfPubkeyFlow(personalPubkey)
-            .firstThenDistinctDebounce(NORMAL_DEBOUNCE)
-            .stateIn(
-                scope,
-                SharingStarted.Eagerly,
-                getDefaultNip65s()
-            )
     }
 
     private fun getDefaultNip65s() = getDefaultRelays()

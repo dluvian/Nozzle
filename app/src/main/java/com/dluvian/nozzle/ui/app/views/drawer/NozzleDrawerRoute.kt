@@ -14,14 +14,14 @@ fun NozzleDrawerRoute(
     closeDrawer: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val pubkeyState by nozzleDrawerViewModel.pubkeyState.collectAsState()
-    val metadataState by nozzleDrawerViewModel.metadataState.collectAsState()
+    val uiState by nozzleDrawerViewModel.uiState.collectAsState()
 
     NozzleDrawerScreen(
         modifier = modifier,
-        pubkeyState = pubkeyState,
-        metadataState = metadataState,
+        uiState = uiState,
         navActions = navActions,
+        onActivateAccount = nozzleDrawerViewModel.onActivateAccount,
+        onDeleteAccount = nozzleDrawerViewModel.onDeleteAccount,
         closeDrawer = closeDrawer,
     )
 }

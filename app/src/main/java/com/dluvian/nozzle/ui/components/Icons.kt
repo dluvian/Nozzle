@@ -3,6 +3,7 @@ package com.dluvian.nozzle.ui.components
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Icon
 import androidx.compose.material.LocalContentAlpha
 import androidx.compose.material.LocalContentColor
@@ -12,6 +13,8 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.CellTower
 import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.ExpandLess
+import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.FormatQuote
@@ -19,6 +22,7 @@ import androidx.compose.material.icons.filled.Save
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material.icons.outlined.Chat
+import androidx.compose.material.icons.rounded.Check
 import androidx.compose.material.icons.rounded.Search
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -27,13 +31,15 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import com.dluvian.nozzle.R
 import com.dluvian.nozzle.ui.theme.sizing
+import com.dluvian.nozzle.ui.theme.spacing
 
 @Composable
 fun CopyIcon(onCopy: () -> Unit) {
     CopyIcon(
         modifier = Modifier
             .size(sizing.smallItem)
-            .clickable { onCopy() },
+            .clip(RoundedCornerShape(spacing.medium))
+            .clickable(onClick = onCopy),
         description = stringResource(id = R.string.copy_content),
     )
 }
@@ -156,10 +162,23 @@ fun SaveIcon(
 }
 
 @Composable
+fun CheckIcon(
+    modifier: Modifier = Modifier,
+    description: String? = null,
+) {
+    Icon(
+        modifier = modifier,
+        imageVector = Icons.Rounded.Check,
+        contentDescription = description,
+    )
+}
+
+@Composable
 fun VisibilityIcon(isVisible: Boolean, onToggle: () -> Unit) {
     Icon(
         modifier = Modifier
             .size(sizing.smallItem)
+            .clip(CircleShape)
             .clickable { onToggle() },
         imageVector = if (isVisible) {
             Icons.Default.VisibilityOff
@@ -178,5 +197,18 @@ fun RelayIcon(onClick: () -> Unit) {
             .clickable(onClick = onClick),
         imageVector = Icons.Default.CellTower,
         contentDescription = stringResource(id = R.string.relays)
+    )
+}
+
+@Composable
+fun ExpandIcon(isExpanded: Boolean, onToggle: () -> Unit, modifier: Modifier = Modifier) {
+    Icon(
+        modifier = modifier
+            .clip(CircleShape)
+            .clickable(onClick = onToggle),
+        imageVector = if (isExpanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
+        contentDescription = stringResource(
+            id = if (isExpanded) R.string.collapse else R.string.expand
+        )
     )
 }

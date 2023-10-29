@@ -37,7 +37,6 @@ class ProfileWithMetaProvider(
 
         val pubkey = profileIdToNostrId(profileId)?.hex ?: profileId
 
-
         val profileExtendedFlow = profileDao.getProfileEntityExtendedFlow(pubkey = pubkey)
             .distinctUntilChanged()
 
@@ -49,10 +48,9 @@ class ProfileWithMetaProvider(
         val nprofileFlow = relaysFlow.map { createNprofileStr(pubkey = pubkey, relays = it) }
 
         // No debounce because of immediate user interaction response
-        val trustScoreFlow = contactDao.getTrustScoreFlow(
-            pubkey = pubkeyProvider.getPubkey(),
-            contactPubkey = pubkey
-        ).distinctUntilChanged()
+        val trustScoreFlow = contactDao
+            .getTrustScoreFlow(contactPubkey = pubkey)
+            .distinctUntilChanged()
 
         return getFinalFlow(
             pubkeyVariations = PubkeyVariations.fromPubkey(pubkey),
@@ -84,7 +82,7 @@ class ProfileWithMetaProvider(
                 numOfFollowing = profile?.numOfFollowing ?: 0,
                 numOfFollowers = profile?.numOfFollowers ?: 0,
                 relays = relays,
-                isOneself = pubkeyProvider.isOneself(pubkeyVariations.pubkey),
+                isOneself = pubkeyProvider.isOneself(pubkeyVariations.pubkey), // TODO: Handle in SQL
                 trustScore = trustScore,
             )
         }

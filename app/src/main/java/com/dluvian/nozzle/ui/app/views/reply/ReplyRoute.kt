@@ -11,11 +11,12 @@ fun ReplyRoute(
 ) {
     val uiState by replyViewModel.uiState.collectAsState()
     val metadataState by replyViewModel.metadataState.collectAsState()
+    val pubkeyState by replyViewModel.pubkeyState.collectAsState()
 
     ReplyScreen(
         uiState = uiState,
         metadataState = metadataState,
-        onChangeReply = replyViewModel.onChangeReply,
+        pubkeyState = pubkeyState,
         onToggleRelaySelection = replyViewModel.onToggleRelaySelection,
         onSend = replyViewModel.onSend,
         onGoBack = onGoBack,

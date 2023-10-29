@@ -19,6 +19,7 @@ import androidx.navigation.compose.rememberNavController
 import com.dluvian.nozzle.AppContainer
 import com.dluvian.nozzle.ui.app.navigation.NozzleNavActions
 import com.dluvian.nozzle.ui.app.navigation.NozzleNavGraph
+import com.dluvian.nozzle.ui.app.views.addAccount.AddAccountViewModel
 import com.dluvian.nozzle.ui.app.views.drawer.NozzleDrawerRoute
 import com.dluvian.nozzle.ui.app.views.drawer.NozzleDrawerViewModel
 import com.dluvian.nozzle.ui.app.views.editProfile.EditProfileViewModel
@@ -42,16 +43,14 @@ fun NozzleApp(appContainer: AppContainer) {
             val vmContainer = VMContainer(
                 drawerViewModel = viewModel(
                     factory = NozzleDrawerViewModel.provideFactory(
-                        personalProfileProvider = appContainer.personalProfileManager,
+                        keyManager = appContainer.keyManager,
+                        accountProvider = appContainer.accountProvider,
                         nozzleSubscriber = appContainer.nozzleSubscriber
                     )
                 ),
                 editProfileViewModel = viewModel(
                     factory = EditProfileViewModel.provideFactory(
                         personalProfileManager = appContainer.personalProfileManager,
-                        nostrService = appContainer.nostrService,
-                        relayProvider = appContainer.relayProvider,
-                        context = LocalContext.current,
                     )
                 ),
                 profileViewModel = viewModel(
@@ -71,10 +70,6 @@ fun NozzleApp(appContainer: AppContainer) {
                 keysViewModel = viewModel(
                     factory = KeysViewModel.provideFactory(
                         keyManager = appContainer.keyManager,
-                        personalProfileManager = appContainer.personalProfileManager,
-                        nozzleSubscriber = appContainer.nozzleSubscriber,
-                        context = LocalContext.current,
-                        clip = LocalClipboardManager.current,
                     )
                 ),
                 feedViewModel = viewModel(
@@ -82,6 +77,7 @@ fun NozzleApp(appContainer: AppContainer) {
                         clickedMediaUrlCache = appContainer.clickedMediaUrlCache,
                         postCardInteractor = appContainer.postCardInteractor,
                         personalProfileProvider = appContainer.personalProfileManager,
+                        pubkeyProvider = appContainer.keyManager,
                         feedProvider = appContainer.feedProvider,
                         relayProvider = appContainer.relayProvider,
                         autopilotProvider = appContainer.autopilotProvider,
@@ -107,23 +103,23 @@ fun NozzleApp(appContainer: AppContainer) {
                     factory = ReplyViewModel.provideFactory(
                         nostrService = appContainer.nostrService,
                         personalProfileProvider = appContainer.personalProfileManager,
+                        pubkeyProvider = appContainer.keyManager,
                         relayProvider = appContainer.relayProvider,
                         postPreparer = appContainer.postPreparer,
                         postDao = appContainer.roomDb.postDao(),
                         hashtagDao = appContainer.roomDb.hashtagDao(),
-                        context = LocalContext.current,
                     )
                 ),
                 postViewModel = viewModel(
                     factory = PostViewModel.provideFactory(
                         nostrService = appContainer.nostrService,
                         personalProfileProvider = appContainer.personalProfileManager,
+                        pubkeyProvider = appContainer.keyManager,
                         relayProvider = appContainer.relayProvider,
                         postPreparer = appContainer.postPreparer,
                         annotatedContentHandler = appContainer.annotatedContentHandler,
                         postDao = appContainer.roomDb.postDao(),
                         hashtagDao = appContainer.roomDb.hashtagDao(),
-                        context = LocalContext.current,
                     )
                 ),
                 searchViewModel = viewModel(
@@ -145,6 +141,12 @@ fun NozzleApp(appContainer: AppContainer) {
                         relayProvider = appContainer.relayProvider,
                         pubkeyProvider = appContainer.keyManager,
                         nip65Dao = appContainer.roomDb.nip65Dao()
+                    )
+                ),
+                addAccountViewModel = viewModel(
+                    factory = AddAccountViewModel.provideFactory(
+                        keyManager = appContainer.keyManager,
+                        nozzleSubscriber = appContainer.nozzleSubscriber
                     )
                 ),
             )

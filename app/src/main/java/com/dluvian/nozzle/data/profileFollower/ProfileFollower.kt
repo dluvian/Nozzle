@@ -20,21 +20,21 @@ class ProfileFollower(
         Log.i(TAG, "Follow $pubkeyToFollow")
         contactDao.insertOrIgnore(
             ContactEntity(
-                pubkey = pubkeyProvider.getPubkey(),
+                pubkey = pubkeyProvider.getActivePubkey(),
                 contactPubkey = pubkeyToFollow,
                 createdAt = 0
             )
         )
-        updateContactList(personalPubkey = pubkeyProvider.getPubkey())
+        updateContactList(personalPubkey = pubkeyProvider.getActivePubkey())
     }
 
     override suspend fun unfollow(pubkeyToUnfollow: String) {
         Log.i(TAG, "Unfollow $pubkeyToUnfollow")
         contactDao.deleteContact(
-            pubkey = pubkeyProvider.getPubkey(),
+            pubkey = pubkeyProvider.getActivePubkey(),
             contactPubkey = pubkeyToUnfollow
         )
-        updateContactList(personalPubkey = pubkeyProvider.getPubkey())
+        updateContactList(personalPubkey = pubkeyProvider.getActivePubkey())
     }
 
     private suspend fun updateContactList(personalPubkey: String) {

@@ -13,5 +13,6 @@ object NozzleRoute {
     const val POST = "post"
     const val QUOTE = "quote"
     const val HASHTAG = "hashtag"
+    const val ADD_ACCOUNT = "add_account"
     const val ROUTER = "router"
 }

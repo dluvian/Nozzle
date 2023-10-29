@@ -68,7 +68,7 @@ interface PostDao {
                 "AND id IN (SELECT DISTINCT eventId FROM eventRelay WHERE relayUrl IN (:relays)) " +
                 "AND createdAt < :until " +
                 "AND (:hashtag IS NULL OR id IN (SELECT eventId FROM hashtag WHERE hashtag = :hashtag)) " +
-                "AND (:mentionedPubkey IS NULL OR id IN (SELECT eventId FROM mention WHERE pubkey = :mentionedPubkey)) " +
+                "AND (:isMention = 0 OR id IN (SELECT eventId FROM mention WHERE pubkey = (SELECT pubkey FROM account WHERE isActive = 1))) " +
                 "ORDER BY createdAt DESC " +
                 "LIMIT :limit"
     )
@@ -79,7 +79,7 @@ interface PostDao {
         relays: Collection<String>,
         until: Long,
         limit: Int,
-        mentionedPubkey: Pubkey? = null,
+        isMention: Boolean = false,
     ): List<PostEntity>
 
     /**
@@ -105,7 +105,6 @@ interface PostDao {
 
     // TODO: Determine mentionedPubkey via db table
     suspend fun getInboxBasePosts(
-        mentionedPubkey: Pubkey,
         until: Long,
         limit: Int,
         relays: Collection<String>
@@ -117,7 +116,7 @@ interface PostDao {
             relays = relays,
             until = until,
             limit = limit,
-            mentionedPubkey = mentionedPubkey
+            isMention = true
         )
     }
 
@@ -127,7 +126,7 @@ interface PostDao {
                 // SELECT likedByMe
                 "(SELECT eventId IS NOT NULL " +
                 "FROM reaction " +
-                "WHERE eventId = mainPost.id AND pubkey = :personalPubkey) " +
+                "WHERE eventId = mainPost.id AND pubkey = (SELECT pubkey FROM account WHERE isActive = 1)) " +
                 "AS isLikedByMe, " +
                 // SELECT name and picture
                 "mainProfile.name, " +
@@ -156,8 +155,7 @@ interface PostDao {
                 "ORDER BY createdAt DESC "
     )
     fun listExtendedPostsFlow(
-        postIds: Collection<String>,
-        personalPubkey: String
+        postIds: Collection<String>
     ): Flow<List<PostEntityExtended>>
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
@@ -177,7 +175,9 @@ interface PostDao {
         }
 
         if (hashtags.isNotEmpty()) {
-            val entities = hashtags.map { HashtagEntity(eventId = postEntity.id, hashtag = it) }
+            val entities = hashtags.map {
+                HashtagEntity(eventId = postEntity.id, hashtag = it.lowercase())
+            }
             hashtagDao.insertOrIgnore(*entities.toTypedArray())
         }
 
@@ -224,20 +224,18 @@ interface PostDao {
 
     @Query(
         "DELETE FROM post " +
-                "WHERE " +
-                "id NOT IN (:exclude) " +
-                "AND pubkey IS NOT :excludeAuthor " +
+                "WHERE id NOT IN (:exclude) " +
+                "AND pubkey NOT IN (SELECT pubkey FROM account) " +
                 "AND id NOT IN (" +
                 // Exclude newest without the ones already excluded
                 "SELECT id FROM post WHERE id NOT IN (:exclude) " +
-                "AND pubkey IS NOT :excludeAuthor " +
+                "AND pubkey NOT IN (SELECT pubkey FROM account) " +
                 "ORDER BY createdAt DESC LIMIT :amountToKeep" +
                 ")"
     )
     suspend fun deleteAllExceptNewest(
         amountToKeep: Int,
         exclude: Collection<String>,
-        excludeAuthor: String
     ): Int
 
     @Query(

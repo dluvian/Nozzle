@@ -1,5 +1,6 @@
 package com.dluvian.nozzle.ui.app
 
+import com.dluvian.nozzle.ui.app.views.addAccount.AddAccountViewModel
 import com.dluvian.nozzle.ui.app.views.drawer.NozzleDrawerViewModel
 import com.dluvian.nozzle.ui.app.views.editProfile.EditProfileViewModel
 import com.dluvian.nozzle.ui.app.views.feed.FeedViewModel
@@ -26,4 +27,5 @@ data class VMContainer(
     val searchViewModel: SearchViewModel,
     val hashtagViewModel: HashtagViewModel,
     val relayEditorViewModel: RelayEditorViewModel,
+    val addAccountViewModel: AddAccountViewModel,
 )

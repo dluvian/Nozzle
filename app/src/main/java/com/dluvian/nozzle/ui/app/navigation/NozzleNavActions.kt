@@ -14,7 +14,7 @@ private const val TAG = "NozzleNavActions"
 
 class NozzleNavActions(
     private val navController: NavHostController,
-    private val vmContainer: VMContainer
+    private val vmContainer: VMContainer,
 ) {
     val navigateToProfile: (String) -> Unit = { profileId ->
         if (profileId.isNotEmpty()) {
@@ -41,11 +41,11 @@ class NozzleNavActions(
     }
 
     val navigateToKeys: () -> Unit = {
+        vmContainer.keysViewModel.onOpenKeys()
         navController.navigateToNozzleRoute(NozzleRoute.KEYS)
     }
 
     val navigateToEditProfile: () -> Unit = {
-        vmContainer.editProfileViewModel.onResetUiState() // TODO: Is name of lambda correct?
         navController.navigateToNozzleRoute(NozzleRoute.EDIT_PROFILE)
     }
 
@@ -53,16 +53,21 @@ class NozzleNavActions(
         navController.navigateToNozzleRoute("${NozzleRoute.THREAD}/$postId")
     }
 
-    val navigateToReply: () -> Unit =
+    val navigateToPost: () -> Unit = {
+        vmContainer.postViewModel.onPreparePost()
+        navController.navigateToNozzleRoute(NozzleRoute.POST)
+    }
+
+    val navigateToAddAccount: () -> Unit = {
+        navController.navigateToNozzleRoute(NozzleRoute.ADD_ACCOUNT)
+    }
+
+    private val navigateToReply: () -> Unit =
         { // TODO: PostWithMeta as input and call replyViewModel.onPrepareReply
             navController.navigateToNozzleRoute(NozzleRoute.REPLY)
         }
 
-    val navigateToPost: () -> Unit = {
-        navController.navigateToNozzleRoute(NozzleRoute.POST)
-    }
-
-    val navigateToQuote: (String) -> Unit = { postId ->
+    private val navigateToQuote: (String) -> Unit = { postId ->
         navController.navigateToNozzleRoute("${NozzleRoute.QUOTE}/${postId}")
     }
 

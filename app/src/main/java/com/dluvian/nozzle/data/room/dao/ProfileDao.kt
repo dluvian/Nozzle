@@ -24,26 +24,11 @@ interface ProfileDao {
     fun getProfileEntityExtendedFlow(pubkey: String): Flow<ProfileEntityExtended?>
 
     @RewriteQueriesToDropUnusedColumns
-    @Query("SELECT * FROM profile WHERE pubkey = :pubkey")
-    fun getMetadata(pubkey: String): Flow<Metadata?>
+    @Query("SELECT * FROM profile WHERE pubkey = (SELECT pubkey FROM account WHERE isActive = 1)")
+    fun getActiveMetadata(): Flow<Metadata?>
 
-    @Query(
-        "UPDATE profile " +
-                "SET name = :name, " +
-                "about = :about, " +
-                "picture = :picture, " +
-                "nip05 = :nip05, " +
-                "lud16 = :lud16 " +
-                "WHERE pubkey = :pubkey"
-    )
-    suspend fun updateMetadata(
-        pubkey: String,
-        name: String,
-        about: String,
-        picture: String,
-        nip05: String,
-        lud16: String,
-    )
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun upsertProfile(vararg profile: ProfileEntity)
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insertOrIgnore(vararg profile: ProfileEntity)
@@ -67,7 +52,9 @@ interface ProfileDao {
     @Query(
         "DELETE FROM profile " +
                 "WHERE pubkey NOT IN (SELECT pubkey FROM post) " +
-                "AND pubkey NOT IN (:exclude)"
+                "AND pubkey NOT IN (:exclude)" +
+                "AND pubkey NOT IN (SELECT pubkey FROM account) " +
+                "AND pubkey NOT IN (SELECT contactPubkey FROM contact WHERE pubkey IN (SELECT pubkey FROM account))"
     )
     suspend fun deleteOrphaned(exclude: Collection<String>): Int
 

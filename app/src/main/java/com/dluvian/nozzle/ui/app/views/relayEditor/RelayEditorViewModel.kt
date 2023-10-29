@@ -20,14 +20,6 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-data class RelayEditorViewModelState(
-    val myRelays: List<Nip65Relay> = emptyList(),
-    val popularRelays: List<String> = emptyList(),
-    val hasChanges: Boolean = false,
-    val isError: Boolean = false,
-    val isLoading: Boolean = false,
-)
-
 class RelayEditorViewModel(
     private val nostrService: INostrService,
     private val relayProvider: IRelayProvider,
@@ -57,7 +49,6 @@ class RelayEditorViewModel(
                     isLoading = false
                 )
             }
-
         }
     }
 
@@ -150,12 +141,12 @@ class RelayEditorViewModel(
                 url = it.url,
                 isRead = it.isRead,
                 isWrite = it.isWrite,
-                pubkey = pubkeyProvider.getPubkey(),
+                pubkey = pubkeyProvider.getActivePubkey(),
                 createdAt = event.createdAt
             )
         }
         nip65Dao.insertAndDeleteOutdated(
-            pubkey = pubkeyProvider.getPubkey(),
+            pubkey = pubkeyProvider.getActivePubkey(),
             timestamp = event.createdAt,
             nip65Entities = entities.toTypedArray()
         )
