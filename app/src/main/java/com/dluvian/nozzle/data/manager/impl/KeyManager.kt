@@ -36,6 +36,7 @@ class KeyManager(context: Context, private val accountDao: AccountDao) : IKeyMan
         .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
         .build()
 
+    // TODO: Save encrypted in room. No more sharedRef
     private val preferences = EncryptedSharedPreferences.create(
         context,
         PreferenceFileNames.KEYS,

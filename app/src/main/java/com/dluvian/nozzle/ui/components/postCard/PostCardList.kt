@@ -7,6 +7,7 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import com.dluvian.nozzle.data.DB_BATCH_SIZE
 import com.dluvian.nozzle.model.PostWithMeta
 import com.dluvian.nozzle.ui.app.navigation.PostCardNavLambdas
 import com.dluvian.nozzle.ui.components.PullRefreshBox
@@ -37,7 +38,9 @@ fun PostCardList(
                     onShowMedia = onShowMedia,
                     onShouldShowMedia = onShouldShowMedia
                 )
-                if (index == posts.size - 7 || index == posts.size - 1) {
+                if ((index == posts.size - 7 || index == posts.size - 1)
+                    && posts.size >= DB_BATCH_SIZE
+                ) {
                     onLoadMore()
                 }
             }

@@ -239,7 +239,7 @@ private fun PictureAndName(account: Account, isTop: Boolean, modifier: Modifier 
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
             style = if (isTop) MaterialTheme.typography.h6.let {
-                it.copy(fontSize = it.fontSize.times(1.3f))
+                it.copy(fontSize = it.fontSize.times(1.1f))
             } else MaterialTheme.typography.h6,
             color = colors.onSurface
         )

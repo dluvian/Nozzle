@@ -37,7 +37,7 @@ class NozzleDrawerViewModel(
             || !isActivating.compareAndSet(false, true)
         ) return@local
 
-        viewModelScope.launch(context = Dispatchers.IO) {
+        viewModelScope.launch(context = Dispatchers.Main) {
             keyManager.activatePubkey(pubkey = active.pubkey)
         }.invokeOnCompletion {
             isActivating.set(false)
@@ -52,7 +52,7 @@ class NozzleDrawerViewModel(
             || !isDeleting.compareAndSet(false, true)
         ) return@local
 
-        viewModelScope.launch(context = Dispatchers.IO) {
+        viewModelScope.launch(context = Dispatchers.Main) {
             keyManager.deletePubkey(pubkey = toDelete.pubkey)
         }.invokeOnCompletion {
             isDeleting.set(false)

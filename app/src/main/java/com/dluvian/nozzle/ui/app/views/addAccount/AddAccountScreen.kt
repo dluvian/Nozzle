@@ -21,6 +21,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
 import com.dluvian.nozzle.R
 import com.dluvian.nozzle.ui.components.ChangeableTextField
@@ -58,8 +59,10 @@ private fun ScreenContent(
 ) {
     val isVisible = remember { mutableStateOf(false) }
     val focusRequester = remember { FocusRequester() }
-    val input = remember(value) { mutableStateOf(TextFieldValue(value)) }
     LaunchedEffect(Unit) { focusRequester.requestFocus() }
+    val input = remember(value) {
+        mutableStateOf(TextFieldValue(text = value, selection = TextRange(value.length)))
+    }
 
     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
         Card(

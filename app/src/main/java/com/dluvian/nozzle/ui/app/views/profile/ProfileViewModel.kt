@@ -65,6 +65,7 @@ class ProfileViewModel(
 
     var feedState: StateFlow<List<PostWithMeta>> = MutableStateFlow(emptyList())
 
+    // TODO: Check if this can replaced with SQL query and calling follow with Dispatchers.Main
     private val _isFollowedByMeState = MutableStateFlow(false)
     val isFollowedByMeState = _isFollowedByMeState
         .stateIn(
