@@ -249,7 +249,11 @@ private fun PictureAndName(account: Account, isTop: Boolean, modifier: Modifier 
 @Composable
 private fun AddAccountRow(onAddAccount: () -> Unit) {
     TextButton(modifier = Modifier.fillMaxWidth(), onClick = onAddAccount) {
-        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Start) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.Start,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
             AddIcon()
             Text(text = stringResource(id = R.string.add))
         }

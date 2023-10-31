@@ -22,6 +22,10 @@ import com.dluvian.nozzle.data.room.entity.ProfileEntity
 import com.dluvian.nozzle.data.room.entity.ReactionEntity
 
 @Database(
+    version = 19,
+//    autoMigrations = [
+//        AutoMigration (from = 19, to = 20)
+//    ],
     entities = [
         ContactEntity::class,
         EventRelayEntity::class,
@@ -33,7 +37,6 @@ import com.dluvian.nozzle.data.room.entity.ReactionEntity
         MentionEntity::class,
         AccountEntity::class,
     ],
-    version = 19
 )
 abstract class AppDatabase : RoomDatabase() {
     abstract fun contactDao(): ContactDao

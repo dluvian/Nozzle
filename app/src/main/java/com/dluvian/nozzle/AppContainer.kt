@@ -58,7 +58,7 @@ class AppContainer(context: Context) {
         context = context,
         klass = AppDatabase::class.java,
         name = "nozzle_database",
-    ).fallbackToDestructiveMigration().build()
+    ).build()
 
     val keyManager: IKeyManager = KeyManager(context = context, accountDao = roomDb.accountDao())
 
