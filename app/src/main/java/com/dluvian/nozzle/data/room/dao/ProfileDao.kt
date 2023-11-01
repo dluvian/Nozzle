@@ -3,6 +3,7 @@ package com.dluvian.nozzle.data.room.dao
 import androidx.room.*
 import com.dluvian.nozzle.data.room.entity.ProfileEntity
 import com.dluvian.nozzle.data.room.helper.extended.ProfileEntityExtended
+import com.dluvian.nozzle.model.Pubkey
 import com.dluvian.nozzle.model.nostr.Metadata
 import kotlinx.coroutines.flow.Flow
 
@@ -33,20 +34,32 @@ interface ProfileDao {
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insertOrIgnore(vararg profile: ProfileEntity)
 
+    @Query("DELETE FROM profile WHERE pubkey IN (:pubkeys)")
+    suspend fun delete(pubkeys: Collection<String>)
+
     @Query(
-        "DELETE FROM profile " +
-                "WHERE pubkey = :pubkey AND createdAt < :newTimestamp"
+        "SELECT pubkey, createdAt " +
+                "FROM profile " +
+                "WHERE pubkey IN (:pubkeys)" +
+                "GROUP BY pubkey"
     )
-    suspend fun deleteIfOutdated(pubkey: String, newTimestamp: Long)
+    suspend fun getTimestampByPubkey(pubkeys: Collection<String>): Map<
+            @MapColumn("pubkey") Pubkey,
+            @MapColumn("createdAt") Long
+            >
 
     @Transaction
-    suspend fun insertAndDeleteOutdated(
-        pubkey: String,
-        newTimestamp: Long,
-        profile: ProfileEntity
-    ) {
-        deleteIfOutdated(pubkey = pubkey, newTimestamp = newTimestamp)
-        insertOrIgnore(profile)
+    suspend fun insertAndDeleteOutdated(profiles: Collection<ProfileEntity>) {
+        if (profiles.isEmpty()) return
+
+        val timestamps = getTimestampByPubkey(pubkeys = profiles.map(ProfileEntity::pubkey))
+        val outdatedPubkeys = profiles
+            .filter { it.createdAt < (timestamps[it.pubkey] ?: 0L) }
+            .map { it.pubkey }
+
+        if (outdatedPubkeys.isNotEmpty()) delete(pubkeys = outdatedPubkeys)
+
+        insertOrIgnore(*profiles.toTypedArray())
     }
 
     @Query(

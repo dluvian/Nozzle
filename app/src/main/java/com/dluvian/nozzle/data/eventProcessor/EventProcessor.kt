@@ -10,6 +10,7 @@ import com.dluvian.nozzle.data.room.entity.HashtagEntity
 import com.dluvian.nozzle.data.room.entity.MentionEntity
 import com.dluvian.nozzle.data.room.entity.Nip65Entity
 import com.dluvian.nozzle.data.room.entity.PostEntity
+import com.dluvian.nozzle.data.room.entity.ProfileEntity
 import com.dluvian.nozzle.data.utils.JsonUtils.gson
 import com.dluvian.nozzle.data.utils.TimeConstants
 import com.dluvian.nozzle.data.utils.getCurrentTimeInSeconds
@@ -80,8 +81,8 @@ class EventProcessor(
         val posts = items.filter { it.event.isPost() }
         processPosts(posts = posts)
 
-        val profiles = items.filter { it.event.isProfileMetadata() }
-//        processProfiles(profiles = profiles)
+        val profiles = items.filter { it.event.isProfileMetadata() }.map { it.event }
+        processProfiles(profiles = profiles)
 
 //        val contactLists = items.filter { it.event.isContactList() }
 //        processContactLists(contactLists = contactLists)
@@ -129,30 +130,29 @@ class EventProcessor(
 
         val metadata = profiles.associate { Pair(it.id, deserializeMetadata(it.content)) }
 
-//        scope.launch {
-//            database.profileDao().insertAndDeleteOutdated(
-//                pubkey = event.pubkey,
-//                newTimestamp = event.createdAt,
-//                ProfileEntity(
-//                    pubkey = event.pubkey,
-//                    metadata = Metadata(
-//                        name = metadata.name.orEmpty().trim(),
-//                        about = metadata.about.orEmpty().trim(),
-//                        picture = metadata.picture.orEmpty().trim(),
-//                        nip05 = metadata.nip05.orEmpty().trim(),
-//                        lud16 = metadata.lud16.orEmpty().trim(),
-//                    ),
-//                    createdAt = event.createdAt,
-//                )
-//            )
-//        }.invokeOnCompletion {
-//            if (it == null) {
-//                dbSweepExcludingCache.addPubkey(event.pubkey)
-//                return@invokeOnCompletion
-//            }
-//            Log.w(TAG, "Failed to process profile ${event.id} of ${event.pubkey}", it)
-//            otherIdsCache.remove(event.id)
-//        }
+        val profileEntities = profiles
+            .sortedByDescending { it.createdAt }
+            .distinct()
+            .mapNotNull { event ->
+                metadata[event.id]?.let { meta ->
+                    ProfileEntity(
+                        pubkey = event.pubkey,
+                        createdAt = event.createdAt,
+                        metadata = meta
+                    )
+                }
+            }
+
+        scope.launch {
+            database.profileDao().insertAndDeleteOutdated(profiles = profileEntities)
+        }.invokeOnCompletion {
+            if (it == null) {
+                dbSweepExcludingCache.addPubkeys(profiles.map(Event::pubkey))
+                return@invokeOnCompletion
+            }
+            Log.w(TAG, "Failed to process profiles", it)
+            otherIdsCache.removeAll(profiles.map(Event::id).toSet())
+        }
     }
 
     private fun processContactList(event: Event) {

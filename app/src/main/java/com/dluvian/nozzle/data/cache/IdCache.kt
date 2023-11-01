@@ -13,7 +13,7 @@ class IdCache : IIdCache {
     override fun getPostIds(): Set<String> = postIds.toSet()
     override fun clearPostIds() = postIds.clear()
 
-    override fun addPubkey(pubkey: String): Boolean = pubkeys.add(pubkey)
+    override fun addPubkeys(pubkeys: Collection<String>) = this.pubkeys.addAll(pubkeys)
     override fun getPubkeys(): Set<String> = pubkeys.toSet()
     override fun clearPubkeys() = pubkeys.clear()
 
