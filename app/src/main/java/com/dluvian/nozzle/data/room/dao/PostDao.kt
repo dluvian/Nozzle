@@ -6,7 +6,6 @@ import com.dluvian.nozzle.data.room.entity.MentionEntity
 import com.dluvian.nozzle.data.room.entity.PostEntity
 import com.dluvian.nozzle.data.room.helper.extended.PostEntityExtended
 import com.dluvian.nozzle.model.MentionedPost
-import com.dluvian.nozzle.model.Pubkey
 import kotlinx.coroutines.flow.Flow
 
 @Dao
@@ -159,31 +158,26 @@ interface PostDao {
     ): Flow<List<PostEntityExtended>>
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
-    suspend fun insertIfNotPresent(post: PostEntity): Long
+    suspend fun insertOrIgnore(vararg posts: PostEntity)
 
     @Transaction
     suspend fun insertWithHashtagsAndMentions(
-        postEntity: PostEntity,
+        posts: List<PostEntity>,
+        hashtags: List<HashtagEntity>,
+        mentions: List<MentionEntity>,
         hashtagDao: HashtagDao,
-        hashtags: Collection<String>,
         mentionDao: MentionDao,
-        mentions: Collection<Pubkey>
     ) {
-        val inserted = insertIfNotPresent(postEntity)
-        if (inserted == -1L) {
-            return
-        }
+        if (posts.isEmpty()) return
+
+        insertOrIgnore(*posts.toTypedArray())
 
         if (hashtags.isNotEmpty()) {
-            val entities = hashtags.map {
-                HashtagEntity(eventId = postEntity.id, hashtag = it.lowercase())
-            }
-            hashtagDao.insertOrIgnore(*entities.toTypedArray())
+            hashtagDao.insertOrIgnore(*hashtags.toTypedArray())
         }
 
         if (mentions.isNotEmpty()) {
-            val entities = mentions.map { MentionEntity(eventId = postEntity.id, pubkey = it) }
-            mentionDao.insertOrIgnore(*entities.toTypedArray())
+            mentionDao.insertOrIgnore(*mentions.toTypedArray())
         }
     }
 

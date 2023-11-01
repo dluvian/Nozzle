@@ -1,8 +1,11 @@
 package com.dluvian.nozzle.data.room.dao
 
 import androidx.room.Dao
+import androidx.room.Insert
 import androidx.room.MapInfo
+import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import com.dluvian.nozzle.data.room.entity.EventRelayEntity
 import com.dluvian.nozzle.model.CountedRelayUsage
 import kotlinx.coroutines.flow.Flow
 
@@ -11,11 +14,9 @@ import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface EventRelayDao {
-    @Query(
-        "INSERT OR IGNORE INTO eventRelay (eventId, relayUrl) " +
-                "VALUES (:eventId, :relayUrl)"
-    )
-    suspend fun insertOrIgnore(eventId: String, relayUrl: String)
+
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    suspend fun insertOrIgnore(vararg eventRelays: EventRelayEntity)
 
     @MapInfo(keyColumn = "eventId", valueColumn = "relayUrl")
     @Query(

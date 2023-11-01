@@ -82,7 +82,7 @@ class ReplyViewModel(
         val parentPost = postToReplyTo ?: return@local
         val event = sendReply(parentPost = parentPost, state = uiState.value, input = input)
         viewModelScope.launch(context = Dispatchers.IO) {
-            postDao.insertIfNotPresent(PostEntity.fromEvent(event))
+            postDao.insertOrIgnore(PostEntity.fromEvent(event))
             // TODO: Insert hashtags in tx
             // TODO: dbSweepExcludingCache.addPostId(event.id)
             val hashtags = event.getHashtags()

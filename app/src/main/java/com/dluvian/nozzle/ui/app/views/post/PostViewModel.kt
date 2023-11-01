@@ -80,7 +80,7 @@ class PostViewModel(
     val onSend: (String) -> Unit = { content ->
         val event = sendPost(state = uiState.value, content = content)
         viewModelScope.launch(context = Dispatchers.IO) {
-            postDao.insertIfNotPresent(PostEntity.fromEvent(event))
+            postDao.insertOrIgnore(PostEntity.fromEvent(event))
             // TODO: Insert hashtags in tx
             // TODO: dbSweepExcludingCache.addPostId(event.id)
             val hashtags = event.getHashtags().map {

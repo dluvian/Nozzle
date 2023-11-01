@@ -256,7 +256,9 @@ class Event(
         .filter { KeyUtils.isValidHexKey(it) }
         .distinct()
 
-    fun isReaction() = this.kind == Kind.REACTION
+    fun isLikeReaction() =
+        this.kind == Kind.REACTION && (this.content.isEmpty() || this.content == "+")
+
     fun isPost() = this.kind == Kind.TEXT_NOTE
     fun isProfileMetadata() = this.kind == Kind.METADATA
     fun isContactList() = this.kind == Kind.CONTACT_LIST

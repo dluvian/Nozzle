@@ -8,7 +8,7 @@ class IdCache : IIdCache {
     private val nip65Pubkeys = Collections.synchronizedSet(mutableSetOf<String>())
     private val contactListAuthors = Collections.synchronizedSet(mutableSetOf<String>())
 
-    override fun addPostId(id: String): Boolean = postIds.add(id)
+    override fun addPostIds(ids: Collection<String>): Boolean = postIds.addAll(ids)
     override fun containsPostId(id: String): Boolean = postIds.contains(id)
     override fun getPostIds(): Set<String> = postIds.toSet()
     override fun clearPostIds() = postIds.clear()
