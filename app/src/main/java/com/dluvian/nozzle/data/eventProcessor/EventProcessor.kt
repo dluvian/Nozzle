@@ -6,6 +6,7 @@ import com.dluvian.nozzle.data.MAX_PROCESSING_DELAY
 import com.dluvian.nozzle.data.cache.IIdCache
 import com.dluvian.nozzle.data.nostr.utils.KeyUtils
 import com.dluvian.nozzle.data.room.AppDatabase
+import com.dluvian.nozzle.data.room.entity.ContactEntity
 import com.dluvian.nozzle.data.room.entity.HashtagEntity
 import com.dluvian.nozzle.data.room.entity.MentionEntity
 import com.dluvian.nozzle.data.room.entity.Nip65Entity
@@ -34,8 +35,8 @@ class EventProcessor(
     private val otherIdsCache = Collections.synchronizedSet(mutableSetOf<String>())
     private var upperTimeBoundary = getUpperTimeBoundary()
 
-    private val maxBatchSize = DB_BATCH_SIZE
-    private val queue = Collections.synchronizedSet(mutableSetOf<RelayedEvent>())
+    // Not a synchronized set bc we synchronize with `synchronized()`
+    private val queue = mutableSetOf<RelayedEvent>()
     private val lastProcessingTime = AtomicLong(0L)
 
 
@@ -48,23 +49,26 @@ class EventProcessor(
             Log.w(TAG, "Discard event from the future ${event.id}")
             return
         }
-
-        if (isSubmittable(event)) {
-            queue.add(RelayedEvent(event = event, relayUrl = relayUrl))
-        }
+        if (!isSubmittable(event)) return
 
         val currentTime = System.currentTimeMillis()
         val items = mutableSetOf<RelayedEvent>()
+
         synchronized(queue) {
+            queue.add(RelayedEvent(event = event, relayUrl = relayUrl))
+
             val delayElapsed = currentTime - lastProcessingTime.get() >= MAX_PROCESSING_DELAY
-            if (queue.size < maxBatchSize && !delayElapsed) return
+            if (queue.size < DB_BATCH_SIZE && !delayElapsed) return
 
             // TODO: bg task that takes every 1s
+
             items.addAll(queue.toSet())
             queue.clear()
         }
-        lastProcessingTime.set(currentTime)
-        processQueue(items = items)
+        if (items.isNotEmpty()) {
+            lastProcessingTime.set(currentTime)
+            processQueue(items = items)
+        }
     }
 
     private fun isSubmittable(event: Event): Boolean {
@@ -81,18 +85,17 @@ class EventProcessor(
         val posts = items.filter { it.event.isPost() }
         processPosts(posts = posts)
 
-        val profiles = items.filter { it.event.isProfileMetadata() }.map { it.event }
+        val profiles = items.filter { it.event.isProfileMetadata() }.map(RelayedEvent::event)
         processProfiles(profiles = profiles)
 
-//        val contactLists = items.filter { it.event.isContactList() }
-//        processContactLists(contactLists = contactLists)
-//
+        val contactLists = items.filter { it.event.isContactList() }.map(RelayedEvent::event)
+        processContactLists(contactLists = contactLists)
+
 //        val nip65s = items.filter { it.event.isNip65() }
 //        processContactLists(nip65s = nip65s)
 //
 //        val reactions = items.filter { it.event.isLikeReaction() }
 //        processReactions(reactions = reactions)
-
     }
 
     private fun processPosts(posts: Collection<RelayedEvent>) {
@@ -128,11 +131,14 @@ class EventProcessor(
     private fun processProfiles(profiles: Collection<Event>) {
         if (profiles.isEmpty()) return
 
+        val ids = profiles.map(Event::id)
+        otherIdsCache.addAll(ids)
+
         val metadata = profiles.associate { Pair(it.id, deserializeMetadata(it.content)) }
 
         val profileEntities = profiles
             .sortedByDescending { it.createdAt }
-            .distinct()
+            .distinctBy(Event::pubkey)
             .mapNotNull { event ->
                 metadata[event.id]?.let { meta ->
                     ProfileEntity(
@@ -143,6 +149,8 @@ class EventProcessor(
                 }
             }
 
+        if (profileEntities.isEmpty()) return
+
         scope.launch {
             database.profileDao().insertAndDeleteOutdated(profiles = profileEntities)
         }.invokeOnCompletion {
@@ -151,29 +159,39 @@ class EventProcessor(
                 return@invokeOnCompletion
             }
             Log.w(TAG, "Failed to process profiles", it)
-            otherIdsCache.removeAll(profiles.map(Event::id).toSet())
+            otherIdsCache.removeAll(ids.toSet())
         }
     }
 
-    private fun processContactList(event: Event) {
-        if (otherIdsCache.contains(event.id)) return
-        if (!verify(event)) return
+    private fun processContactLists(contactLists: Collection<Event>) {
+        if (contactLists.isEmpty()) return
 
-        otherIdsCache.add(event.id)
+        val ids = contactLists.map(Event::id)
+        otherIdsCache.addAll(ids)
+
+        val contactEntities = contactLists
+            .sortedByDescending { it.createdAt }
+            .distinctBy(Event::pubkey)
+            .flatMap { event ->
+                getContactPubkeys(event.tags).map { contactPubkey ->
+                    ContactEntity(
+                        pubkey = event.pubkey,
+                        createdAt = event.createdAt,
+                        contactPubkey = contactPubkey
+                    )
+                }
+            }
 
         scope.launch {
-            database.contactDao().insertAndDeleteOutdated(
-                pubkey = event.pubkey,
-                newTimestamp = event.createdAt,
-                contactPubkeys = getContactPubkeys(event.tags),
-            )
+            database.contactDao().insertAndDeleteOutdated(contacts = contactEntities)
         }.invokeOnCompletion {
             if (it == null) {
-                dbSweepExcludingCache.addContactListAuthor(event.pubkey)
+                val pubkeys = contactEntities.map(ContactEntity::pubkey)
+                dbSweepExcludingCache.addContactListAuthors(pubkeys = pubkeys)
                 return@invokeOnCompletion
             }
-            Log.w(TAG, "Failed to process contact list ${event.id} from ${event.pubkey}", it)
-            otherIdsCache.remove(event.id)
+            Log.w(TAG, "Failed to process contact lists", it)
+            otherIdsCache.removeAll(ids.toSet())
         }
     }
 

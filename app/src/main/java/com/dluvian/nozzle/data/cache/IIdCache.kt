@@ -14,7 +14,7 @@ interface IIdCache {
     fun getNip65Authors(): Set<String>
     fun clearNip65Authors()
 
-    fun addContactListAuthor(pubkey: String): Boolean
+    fun addContactListAuthors(pubkeys: Collection<String>): Boolean
     fun getContactListAuthors(): Set<String>
     fun clearContactListAuthors()
 }

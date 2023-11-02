@@ -21,7 +21,10 @@ class IdCache : IIdCache {
     override fun getNip65Authors(): Set<String> = nip65Pubkeys.toSet()
     override fun clearNip65Authors() = nip65Pubkeys.clear()
 
-    override fun addContactListAuthor(pubkey: String): Boolean = contactListAuthors.add(pubkey)
+    override fun addContactListAuthors(pubkeys: Collection<String>): Boolean {
+        return contactListAuthors.addAll(pubkeys)
+    }
+
     override fun getContactListAuthors(): Set<String> = contactListAuthors.toSet()
     override fun clearContactListAuthors() = contactListAuthors.clear()
 }
