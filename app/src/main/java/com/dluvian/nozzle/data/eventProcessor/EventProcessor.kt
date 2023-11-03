@@ -32,7 +32,7 @@ class EventProcessor(
     private val database: AppDatabase,
 ) : IEventProcessor {
     private val scope = CoroutineScope(Dispatchers.IO)
-    private val otherIdsCache = Collections.synchronizedSet(mutableSetOf<String>())
+    private val eventIdCache = Collections.synchronizedSet(mutableSetOf<String>())
     private var upperTimeBoundary = getUpperTimeBoundary()
 
     // Not a synchronized set bc we synchronize with `synchronized()`
@@ -49,7 +49,7 @@ class EventProcessor(
             Log.w(TAG, "Discard event from the future ${event.id}")
             return
         }
-        if (!isSubmittable(event)) return
+        if (!isNewAndValid(event)) return
 
         val currentTime = System.currentTimeMillis()
         val items = mutableSetOf<RelayedEvent>()
@@ -71,41 +71,50 @@ class EventProcessor(
         }
     }
 
-    private fun isSubmittable(event: Event): Boolean {
+    private fun isNewAndValid(event: Event): Boolean {
         return event.isPost() && verify(event) ||
-                event.isProfileMetadata() && !otherIdsCache.contains(event.id) && verify(event) ||
-                event.isContactList() && !otherIdsCache.contains(event.id) && verify(event) ||
-                event.isNip65() && !otherIdsCache.contains(event.id) && verify(event) ||
-                event.isLikeReaction() && !otherIdsCache.contains(event.id) && verify(event)
+                (event.isProfileMetadata() ||
+                        event.isContactList() ||
+                        event.isNip65() ||
+                        event.isLikeReaction()
+                        ) && !eventIdCache.contains(event.id) && verify(event)
     }
 
     private fun processQueue(items: Set<RelayedEvent>) {
         Log.i(TAG, "Process ${items.size} events")
 
-        val posts = items.filter { it.event.isPost() }
-        processPosts(posts = posts)
+        val posts = mutableListOf<RelayedEvent>()
+        val profiles = mutableListOf<Event>()
+        val contactLists = mutableListOf<Event>()
+        val nip65s = mutableListOf<Event>()
+        val reactions = mutableListOf<Event>()
 
-        val profiles = items.filter { it.event.isProfileMetadata() }.map(RelayedEvent::event)
-        processProfiles(profiles = profiles)
+        items.forEach {
+            if (it.event.isPost()) posts.add(it)
+            else if (it.event.isProfileMetadata()) profiles.add(it.event)
+            else if (it.event.isContactList()) contactLists.add(it.event)
+            else if (it.event.isNip65()) nip65s.add(it.event)
+            else if (it.event.isLikeReaction()) reactions.add(it.event)
+        }
 
-        val contactLists = items.filter { it.event.isContactList() }.map(RelayedEvent::event)
-        processContactLists(contactLists = contactLists)
+        processPosts(relayedEvents = posts)
+        processProfiles(events = profiles)
+        processContactLists(events = contactLists)
+        processNip65s(events = nip65s)
 
-//        val nip65s = items.filter { it.event.isNip65() }
-//        processContactLists(nip65s = nip65s)
-//
 //        val reactions = items.filter { it.event.isLikeReaction() }
 //        processReactions(reactions = reactions)
     }
 
-    private fun processPosts(posts: Collection<RelayedEvent>) {
-        if (posts.isEmpty()) return
+    private fun processPosts(relayedEvents: Collection<RelayedEvent>) {
+        if (relayedEvents.isEmpty()) return
 
-        val alreadyPresent = posts.filter { dbSweepExcludingCache.containsPostId(it.event.id) }
+        val alreadyPresent = relayedEvents
+            .filter { dbSweepExcludingCache.containsPostId(it.event.id) }
         if (alreadyPresent.isNotEmpty()) insertEventRelays(relayedEvents = alreadyPresent)
-        if (alreadyPresent.size == posts.size) return
+        if (alreadyPresent.size == relayedEvents.size) return
 
-        val newPosts = posts - alreadyPresent.toSet()
+        val newPosts = relayedEvents - alreadyPresent.toSet()
         val postEntities = newPosts.map { PostEntity.fromEvent(it.event) }
         val hashtags = newPosts.flatMap { HashtagEntity.fromEvent(it.event) }
         val mentions = newPosts.flatMap { MentionEntity.fromEvent(it.event) }
@@ -128,15 +137,15 @@ class EventProcessor(
         }
     }
 
-    private fun processProfiles(profiles: Collection<Event>) {
-        if (profiles.isEmpty()) return
+    private fun processProfiles(events: Collection<Event>) {
+        if (events.isEmpty()) return
 
-        val ids = profiles.map(Event::id)
-        otherIdsCache.addAll(ids)
+        val ids = events.map(Event::id)
+        eventIdCache.addAll(ids)
 
-        val metadata = profiles.associate { Pair(it.id, deserializeMetadata(it.content)) }
+        val metadata = events.associate { Pair(it.id, deserializeMetadata(it.content)) }
 
-        val profileEntities = profiles
+        val profileEntities = events
             .sortedByDescending { it.createdAt }
             .distinctBy(Event::pubkey)
             .mapNotNull { event ->
@@ -155,21 +164,21 @@ class EventProcessor(
             database.profileDao().insertAndDeleteOutdated(profiles = profileEntities)
         }.invokeOnCompletion {
             if (it == null) {
-                dbSweepExcludingCache.addPubkeys(profiles.map(Event::pubkey))
+                dbSweepExcludingCache.addPubkeys(events.map(Event::pubkey))
                 return@invokeOnCompletion
             }
             Log.w(TAG, "Failed to process profiles", it)
-            otherIdsCache.removeAll(ids.toSet())
+            eventIdCache.removeAll(ids.toSet())
         }
     }
 
-    private fun processContactLists(contactLists: Collection<Event>) {
-        if (contactLists.isEmpty()) return
+    private fun processContactLists(events: Collection<Event>) {
+        if (events.isEmpty()) return
 
-        val ids = contactLists.map(Event::id)
-        otherIdsCache.addAll(ids)
+        val ids = events.map(Event::id)
+        eventIdCache.addAll(ids)
 
-        val contactEntities = contactLists
+        val contactEntities = events
             .sortedByDescending { it.createdAt }
             .distinctBy(Event::pubkey)
             .flatMap { event ->
@@ -191,50 +200,50 @@ class EventProcessor(
                 return@invokeOnCompletion
             }
             Log.w(TAG, "Failed to process contact lists", it)
-            otherIdsCache.removeAll(ids.toSet())
+            eventIdCache.removeAll(ids.toSet())
         }
     }
 
-    private fun processNip65(event: Event) {
-        if (otherIdsCache.contains(event.id)) return
+    private fun processNip65s(events: Collection<Event>) {
+        if (events.isEmpty()) return
 
-        val nip65Entries = event.getNip65Entries()
-        if (nip65Entries.isEmpty()) return
-        if (!verify(event)) return
+        val ids = events.map(Event::id)
+        eventIdCache.addAll(ids)
 
-        otherIdsCache.add(event.id)
+        val nip65Entities = events
+            .sortedByDescending { it.createdAt }
+            .distinctBy { it.pubkey }
+            .flatMap { event ->
+                event.getNip65Entries().map { entry ->
+                    Nip65Entity(
+                        pubkey = event.pubkey,
+                        url = entry.url,
+                        isRead = entry.isRead,
+                        isWrite = entry.isWrite,
+                        createdAt = event.createdAt,
+                    )
+                }
+            }
 
         scope.launch {
-            val entities = nip65Entries.map {
-                Nip65Entity(
-                    pubkey = event.pubkey,
-                    url = it.url,
-                    isRead = it.isRead,
-                    isWrite = it.isWrite,
-                    createdAt = event.createdAt,
-                )
-            }
-            database.nip65Dao().insertAndDeleteOutdated(
-                pubkey = event.pubkey,
-                timestamp = event.createdAt,
-                nip65Entities = entities.toTypedArray()
-            )
+            database.nip65Dao().insertAndDeleteOutdated(nip65s = nip65Entities)
         }.invokeOnCompletion {
             if (it == null) {
-                dbSweepExcludingCache.addNip65Author(event.pubkey)
+                val pubkeys = nip65Entities.map { it.pubkey }
+                dbSweepExcludingCache.addNip65Authors(pubkeys = pubkeys)
                 return@invokeOnCompletion
             }
-            Log.w(TAG, "Failed to process nip65 ${event.id} of ${event.pubkey}", it)
-            otherIdsCache.remove(event.id)
+            Log.w(TAG, "Failed to process nip65s", it)
+            eventIdCache.removeAll(ids)
         }
     }
 
     private fun processReaction(event: Event) {
         if (event.content != "+" && event.content.isNotEmpty()) return
-        if (otherIdsCache.contains(event.id)) return
+        if (eventIdCache.contains(event.id)) return
         if (!verify(event)) return
 
-        otherIdsCache.add(event.id)
+        eventIdCache.add(event.id)
 
         val reactedToId = event.getReactedToId() ?: return
 
@@ -247,7 +256,7 @@ class EventProcessor(
         }.invokeOnCompletion {
             if (it == null) return@invokeOnCompletion
             Log.w(TAG, "Failed to process reaction ${event.id} from ${event.pubkey}", it)
-            otherIdsCache.remove(event.id)
+            eventIdCache.remove(event.id)
         }
     }
 
@@ -260,12 +269,9 @@ class EventProcessor(
     }
 
     private fun deserializeMetadata(json: String): Metadata? {
-        try {
-            return gson.fromJson(json, Metadata::class.java)
-        } catch (t: Throwable) {
-            Log.w(TAG, "Failed to deserialize $json")
-        }
-        return null
+        return runCatching { gson.fromJson(json, Metadata::class.java) }
+            .onFailure { e -> Log.w(TAG, "Failed to deserialize $json", e) }
+            .getOrNull()
     }
 
     private fun getContactPubkeys(tags: List<Tag>): List<String> {
