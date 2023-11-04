@@ -244,6 +244,14 @@ class Event(
             .distinctBy { it.url }
     }
 
+    fun getContactPubkeys(): List<String> {
+        return tags
+            .filter { tag -> tag.size >= 2 && tag[0] == "p" }
+            .map { tag -> tag[1] }
+            .filter { KeyUtils.isValidHexKey(hexKey = it) }
+            .toList()
+    }
+
     fun getHashtags() = tags
         .filter { it[0] == "t" }
         .mapNotNull { it.getOrNull(1)?.trim() }

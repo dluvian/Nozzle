@@ -3,7 +3,6 @@ package com.dluvian.nozzle.data.eventProcessor
 import android.util.Log
 import com.dluvian.nozzle.data.EVENT_PROCESSING_DELAY
 import com.dluvian.nozzle.data.cache.IIdCache
-import com.dluvian.nozzle.data.nostr.utils.KeyUtils
 import com.dluvian.nozzle.data.room.AppDatabase
 import com.dluvian.nozzle.data.room.entity.ContactEntity
 import com.dluvian.nozzle.data.room.entity.HashtagEntity
@@ -18,7 +17,6 @@ import com.dluvian.nozzle.data.utils.getCurrentTimeInSeconds
 import com.dluvian.nozzle.model.nostr.Event
 import com.dluvian.nozzle.model.nostr.Metadata
 import com.dluvian.nozzle.model.nostr.RelayedEvent
-import com.dluvian.nozzle.model.nostr.Tag
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -185,7 +183,7 @@ class EventProcessor(
             .sortedByDescending { it.createdAt }
             .distinctBy(Event::pubkey)
             .flatMap { event ->
-                getContactPubkeys(event.tags).map { contactPubkey ->
+                event.getContactPubkeys().map { contactPubkey ->
                     ContactEntity(
                         pubkey = event.pubkey,
                         createdAt = event.createdAt,
@@ -274,14 +272,6 @@ class EventProcessor(
         return runCatching { gson.fromJson(json, Metadata::class.java) }
             .onFailure { e -> Log.w(TAG, "Failed to deserialize $json", e) }
             .getOrNull()
-    }
-
-    private fun getContactPubkeys(tags: List<Tag>): List<String> {
-        return tags
-            .filter { tag -> tag.size >= 2 && tag[0] == "p" }
-            .map { tag -> tag[1] }
-            .filter { KeyUtils.isValidHexKey(hexKey = it) }
-            .toList()
     }
 
     private fun insertEventRelays(relayedEvents: Collection<RelayedEvent>) {
