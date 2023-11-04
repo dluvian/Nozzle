@@ -1,8 +1,7 @@
 package com.dluvian.nozzle.data.eventProcessor
 
 import android.util.Log
-import com.dluvian.nozzle.data.DB_BATCH_SIZE
-import com.dluvian.nozzle.data.MAX_PROCESSING_DELAY
+import com.dluvian.nozzle.data.EVENT_PROCESSING_DELAY
 import com.dluvian.nozzle.data.cache.IIdCache
 import com.dluvian.nozzle.data.nostr.utils.KeyUtils
 import com.dluvian.nozzle.data.room.AppDatabase
@@ -12,6 +11,7 @@ import com.dluvian.nozzle.data.room.entity.MentionEntity
 import com.dluvian.nozzle.data.room.entity.Nip65Entity
 import com.dluvian.nozzle.data.room.entity.PostEntity
 import com.dluvian.nozzle.data.room.entity.ProfileEntity
+import com.dluvian.nozzle.data.room.entity.ReactionEntity
 import com.dluvian.nozzle.data.utils.JsonUtils.gson
 import com.dluvian.nozzle.data.utils.TimeConstants
 import com.dluvian.nozzle.data.utils.getCurrentTimeInSeconds
@@ -21,9 +21,10 @@ import com.dluvian.nozzle.model.nostr.RelayedEvent
 import com.dluvian.nozzle.model.nostr.Tag
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.util.Collections
-import java.util.concurrent.atomic.AtomicLong
+import java.util.concurrent.atomic.AtomicBoolean
 
 private const val TAG = "EventProcessor"
 
@@ -37,8 +38,11 @@ class EventProcessor(
 
     // Not a synchronized set bc we synchronize with `synchronized()`
     private val queue = mutableSetOf<RelayedEvent>()
-    private val lastProcessingTime = AtomicLong(0L)
+    private val isProcessingEvents = AtomicBoolean(false)
 
+    init {
+        startProcessingJob()
+    }
 
     override fun submit(event: Event, relayUrl: String?) {
         if (relayUrl == null) {
@@ -51,37 +55,35 @@ class EventProcessor(
         }
         if (!isNewAndValid(event)) return
 
-        val currentTime = System.currentTimeMillis()
-        val items = mutableSetOf<RelayedEvent>()
-
         synchronized(queue) {
             queue.add(RelayedEvent(event = event, relayUrl = relayUrl))
-
-            val delayElapsed = currentTime - lastProcessingTime.get() >= MAX_PROCESSING_DELAY
-            if (queue.size < DB_BATCH_SIZE && !delayElapsed) return
-
-            // TODO: bg task that takes every 1s
-
-            items.addAll(queue.toSet())
-            queue.clear()
         }
-        if (items.isNotEmpty()) {
-            lastProcessingTime.set(currentTime)
-            processQueue(items = items)
-        }
+        if (!isProcessingEvents.get()) startProcessingJob()
     }
 
-    private fun isNewAndValid(event: Event): Boolean {
-        return event.isPost() && verify(event) ||
-                (event.isProfileMetadata() ||
-                        event.isContactList() ||
-                        event.isNip65() ||
-                        event.isLikeReaction()
-                        ) && !eventIdCache.contains(event.id) && verify(event)
+    private fun startProcessingJob() {
+        if (!isProcessingEvents.compareAndSet(false, true)) return
+        Log.i(TAG, "Start job")
+        scope.launch {
+            while (true) {
+                delay(EVENT_PROCESSING_DELAY)
+
+                val items = mutableSetOf<RelayedEvent>()
+                synchronized(queue) {
+                    items.addAll(queue.toSet())
+                    queue.clear()
+                }
+                processQueue(items = items)
+            }
+        }.invokeOnCompletion {
+            Log.w(TAG, "Processing job completed", it)
+            isProcessingEvents.set(false)
+        }
     }
 
     private fun processQueue(items: Set<RelayedEvent>) {
-        Log.i(TAG, "Process ${items.size} events")
+        if (items.isEmpty()) return
+        Log.d(TAG, "Process queue of ${items.size} events")
 
         val posts = mutableListOf<RelayedEvent>()
         val profiles = mutableListOf<Event>()
@@ -101,9 +103,16 @@ class EventProcessor(
         processProfiles(events = profiles)
         processContactLists(events = contactLists)
         processNip65s(events = nip65s)
+        processReactions(events = reactions)
+    }
 
-//        val reactions = items.filter { it.event.isLikeReaction() }
-//        processReactions(reactions = reactions)
+    private fun isNewAndValid(event: Event): Boolean {
+        return event.isPost() && verify(event) ||
+                (event.isProfileMetadata() ||
+                        event.isContactList() ||
+                        event.isNip65() ||
+                        event.isLikeReaction()
+                        ) && !eventIdCache.contains(event.id) && verify(event)
     }
 
     private fun processPosts(relayedEvents: Collection<RelayedEvent>) {
@@ -128,20 +137,17 @@ class EventProcessor(
                 mentionDao = database.mentionDao(),
             )
         }.invokeOnCompletion { exception ->
-            if (exception == null) {
-                dbSweepExcludingCache.addPostIds(newPosts.map { post -> post.event.id })
-                insertEventRelays(relayedEvents = newPosts)
+            if (exception != null) {
+                Log.w(TAG, "Failed to process posts", exception)
                 return@invokeOnCompletion
             }
-            Log.w(TAG, "Failed to process posts", exception)
+            dbSweepExcludingCache.addPostIds(newPosts.map { post -> post.event.id })
+            insertEventRelays(relayedEvents = newPosts)
         }
     }
 
     private fun processProfiles(events: Collection<Event>) {
         if (events.isEmpty()) return
-
-        val ids = events.map(Event::id)
-        eventIdCache.addAll(ids)
 
         val metadata = events.associate { Pair(it.id, deserializeMetadata(it.content)) }
 
@@ -163,20 +169,17 @@ class EventProcessor(
         scope.launch {
             database.profileDao().insertAndDeleteOutdated(profiles = profileEntities)
         }.invokeOnCompletion {
-            if (it == null) {
-                dbSweepExcludingCache.addPubkeys(events.map(Event::pubkey))
+            if (it != null) {
+                Log.w(TAG, "Failed to process profiles", it)
                 return@invokeOnCompletion
             }
-            Log.w(TAG, "Failed to process profiles", it)
-            eventIdCache.removeAll(ids.toSet())
+            eventIdCache.addAll(elements = events.map(Event::id))
+            dbSweepExcludingCache.addPubkeys(events.map(Event::pubkey))
         }
     }
 
     private fun processContactLists(events: Collection<Event>) {
         if (events.isEmpty()) return
-
-        val ids = events.map(Event::id)
-        eventIdCache.addAll(ids)
 
         val contactEntities = events
             .sortedByDescending { it.createdAt }
@@ -194,21 +197,18 @@ class EventProcessor(
         scope.launch {
             database.contactDao().insertAndDeleteOutdated(contacts = contactEntities)
         }.invokeOnCompletion {
-            if (it == null) {
-                val pubkeys = contactEntities.map(ContactEntity::pubkey)
-                dbSweepExcludingCache.addContactListAuthors(pubkeys = pubkeys)
+            if (it != null) {
+                Log.w(TAG, "Failed to process contact lists", it)
                 return@invokeOnCompletion
             }
-            Log.w(TAG, "Failed to process contact lists", it)
-            eventIdCache.removeAll(ids.toSet())
+            eventIdCache.addAll(elements = events.map(Event::id))
+            val pubkeys = contactEntities.map(ContactEntity::pubkey)
+            dbSweepExcludingCache.addContactListAuthors(pubkeys = pubkeys)
         }
     }
 
     private fun processNip65s(events: Collection<Event>) {
         if (events.isEmpty()) return
-
-        val ids = events.map(Event::id)
-        eventIdCache.addAll(ids)
 
         val nip65Entities = events
             .sortedByDescending { it.createdAt }
@@ -228,43 +228,45 @@ class EventProcessor(
         scope.launch {
             database.nip65Dao().insertAndDeleteOutdated(nip65s = nip65Entities)
         }.invokeOnCompletion {
-            if (it == null) {
-                val pubkeys = nip65Entities.map { it.pubkey }
-                dbSweepExcludingCache.addNip65Authors(pubkeys = pubkeys)
+            if (it != null) {
+                Log.w(TAG, "Failed to process nip65s", it)
                 return@invokeOnCompletion
             }
-            Log.w(TAG, "Failed to process nip65s", it)
-            eventIdCache.removeAll(ids)
+            eventIdCache.addAll(elements = events.map(Event::id))
+            dbSweepExcludingCache.addNip65Authors(pubkeys = nip65Entities.map(Nip65Entity::pubkey))
         }
     }
 
-    private fun processReaction(event: Event) {
-        if (event.content != "+" && event.content.isNotEmpty()) return
-        if (eventIdCache.contains(event.id)) return
-        if (!verify(event)) return
+    private fun processReactions(events: Collection<Event>) {
+        if (events.isEmpty()) return
 
-        eventIdCache.add(event.id)
-
-        val reactedToId = event.getReactedToId() ?: return
+        val reactionEntities = events.mapNotNull { event ->
+            val reactedToId = event.getReactedToId()
+            if (reactedToId == null) null
+            else ReactionEntity(eventId = reactedToId, pubkey = event.pubkey)
+        }
+        if (reactionEntities.isEmpty()) return
 
         scope.launch {
             runCatching {
-                database.reactionDao().like(eventId = reactedToId, pubkey = event.pubkey)
+                database.reactionDao()
+                    .insertOrIgnore(reactionEntities = reactionEntities.toTypedArray())
             }.onFailure {
-                Log.w(TAG, "Failed to insert reaction ${event.id} from ${event.pubkey}")
+                Log.w(TAG, "Failed to insert reaction")
             }
         }.invokeOnCompletion {
-            if (it == null) return@invokeOnCompletion
-            Log.w(TAG, "Failed to process reaction ${event.id} from ${event.pubkey}", it)
-            eventIdCache.remove(event.id)
+            if (it != null) {
+                Log.w(TAG, "Failed to process reactions", it)
+                return@invokeOnCompletion
+            }
+            eventIdCache.addAll(elements = events.map(Event::id))
         }
     }
 
     private fun verify(event: Event): Boolean {
         val isValid = event.verify()
-        if (!isValid) {
-            Log.w(TAG, "Invalid event kind ${event.kind} id ${event.id} ")
-        }
+        if (!isValid) Log.w(TAG, "Invalid event kind ${event.kind} id ${event.id} ")
+
         return isValid
     }
 

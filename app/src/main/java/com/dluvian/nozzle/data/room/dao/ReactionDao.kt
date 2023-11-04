@@ -1,15 +1,15 @@
 package com.dluvian.nozzle.data.room.dao
 
 import androidx.room.Dao
+import androidx.room.Insert
+import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import com.dluvian.nozzle.data.room.entity.ReactionEntity
 
 @Dao
 interface ReactionDao {
-    @Query(
-        "INSERT OR IGNORE INTO reaction (eventId, pubkey) " +
-                "VALUES (:eventId, :pubkey)"
-    )
-    suspend fun like(eventId: String, pubkey: String)
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    suspend fun insertOrIgnore(vararg reactionEntities: ReactionEntity)
 
     @Query(
         "SELECT eventId " +
