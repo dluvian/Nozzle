@@ -5,6 +5,7 @@ import com.dluvian.nozzle.data.EVENT_PROCESSING_DELAY
 import com.dluvian.nozzle.data.cache.IIdCache
 import com.dluvian.nozzle.data.room.AppDatabase
 import com.dluvian.nozzle.data.room.entity.ContactEntity
+import com.dluvian.nozzle.data.room.entity.EventRelayEntity
 import com.dluvian.nozzle.data.room.entity.HashtagEntity
 import com.dluvian.nozzle.data.room.entity.MentionEntity
 import com.dluvian.nozzle.data.room.entity.Nip65Entity
@@ -13,6 +14,7 @@ import com.dluvian.nozzle.data.room.entity.ProfileEntity
 import com.dluvian.nozzle.data.room.entity.ReactionEntity
 import com.dluvian.nozzle.data.utils.JsonUtils.gson
 import com.dluvian.nozzle.data.utils.TimeConstants
+import com.dluvian.nozzle.data.utils.UrlUtils.removeTrailingSlashes
 import com.dluvian.nozzle.data.utils.getCurrentTimeInSeconds
 import com.dluvian.nozzle.model.nostr.Event
 import com.dluvian.nozzle.model.nostr.Metadata
@@ -96,6 +98,12 @@ class EventProcessor(
             else if (it.event.isNip65()) nip65s.add(it.event)
             else if (it.event.isLikeReaction()) reactions.add(it.event)
         }
+        Log.d(TAG, "posts ${posts.size}")
+        Log.d(TAG, "profiles ${profiles.size}")
+        Log.d(TAG, "contactLists ${contactLists.size}")
+        Log.d(TAG, "nip65s ${nip65s.size}")
+        Log.d(TAG, "reactions ${reactions.size}")
+
 
         processPosts(relayedEvents = posts)
         processProfiles(events = profiles)
@@ -263,7 +271,7 @@ class EventProcessor(
 
     private fun verify(event: Event): Boolean {
         val isValid = event.verify()
-        if (!isValid) Log.w(TAG, "Invalid event kind ${event.kind} id ${event.id} ")
+        if (!isValid) Log.w(TAG, "Invalid event kind=${event.kind} id=${event.id} ")
 
         return isValid
     }
@@ -275,23 +283,22 @@ class EventProcessor(
     }
 
     private fun insertEventRelays(relayedEvents: Collection<RelayedEvent>) {
-//        val cleanUrlMap = events.
-//        val specialIds = events.map { it.event.id + }
-//
-//        val cleanRelayUrl = relayUrl?.removeTrailingSlashes() ?: return
-//
-//
-//        val specialId = eventId + cleanRelayUrl
-//        val isNew = otherIdsCache.add(specialId)
-//        if (!isNew) return
-//
-//        scope.launch {
-//            database.eventRelayDao().insertOrIgnore(eventId = eventId, relayUrl = cleanRelayUrl)
-//        }.invokeOnCompletion {
-//            if (it == null) return@invokeOnCompletion
-//            Log.w(TAG, "Failed to process eventRelay $cleanRelayUrl of event $eventId", it)
-//            otherIdsCache.remove(specialId)
-//        }
+        if (relayedEvents.isEmpty()) return
+
+        val eventRelayEntities = relayedEvents.map {
+            EventRelayEntity(eventId = it.event.id, relayUrl = it.relayUrl.removeTrailingSlashes())
+        }
+
+        scope.launch {
+            database.eventRelayDao().insertOrIgnore(*eventRelayEntities.toTypedArray())
+        }.invokeOnCompletion { exception ->
+            if (exception != null) {
+                Log.w(TAG, "Failed to process eventRelays", exception)
+                return@invokeOnCompletion
+            }
+            val specialIds = eventRelayEntities.map { "${it.eventId}${it.relayUrl}" }
+            eventIdCache.addAll(specialIds)
+        }
     }
 
     private fun getUpperTimeBoundary(): Long {
