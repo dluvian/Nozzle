@@ -98,12 +98,6 @@ class EventProcessor(
             else if (it.event.isNip65()) nip65s.add(it.event)
             else if (it.event.isLikeReaction()) reactions.add(it.event)
         }
-        Log.d(TAG, "posts ${posts.size}")
-        Log.d(TAG, "profiles ${profiles.size}")
-        Log.d(TAG, "contactLists ${contactLists.size}")
-        Log.d(TAG, "nip65s ${nip65s.size}")
-        Log.d(TAG, "reactions ${reactions.size}")
-
 
         processPosts(relayedEvents = posts)
         processProfiles(events = profiles)
