@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.material.DrawerState
 import androidx.compose.material.DrawerValue
 import androidx.compose.material.ModalDrawer
 import androidx.compose.material.Surface
@@ -15,10 +16,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import com.dluvian.nozzle.AppContainer
 import com.dluvian.nozzle.ui.app.navigation.NozzleNavActions
 import com.dluvian.nozzle.ui.app.navigation.NozzleNavGraph
+import com.dluvian.nozzle.ui.app.navigation.NozzleRoute
 import com.dluvian.nozzle.ui.app.views.addAccount.AddAccountViewModel
 import com.dluvian.nozzle.ui.app.views.drawer.NozzleDrawerRoute
 import com.dluvian.nozzle.ui.app.views.drawer.NozzleDrawerViewModel
@@ -34,6 +37,7 @@ import com.dluvian.nozzle.ui.app.views.reply.ReplyViewModel
 import com.dluvian.nozzle.ui.app.views.search.SearchViewModel
 import com.dluvian.nozzle.ui.app.views.thread.ThreadViewModel
 import com.dluvian.nozzle.ui.theme.NozzleTheme
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
 @Composable
@@ -146,7 +150,7 @@ fun NozzleApp(appContainer: AppContainer) {
                 addAccountViewModel = viewModel(
                     factory = AddAccountViewModel.provideFactory(
                         keyManager = appContainer.keyManager,
-                        nozzleSubscriber = appContainer.nozzleSubscriber
+                        nozzleSubscriber = appContainer.nozzleSubscriber,
                     )
                 ),
             )
@@ -155,36 +159,96 @@ fun NozzleApp(appContainer: AppContainer) {
             val navActions = remember(navController) {
                 NozzleNavActions(navController = navController, vmContainer = vmContainer)
             }
+            val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
 
-            val coroutineScope = rememberCoroutineScope()
-            val drawerState = rememberDrawerState(DrawerValue.Closed)
-
-            ModalDrawer(
+            Screen(
                 drawerState = drawerState,
-                drawerContent = {
-                    NozzleDrawerRoute(
-                        nozzleDrawerViewModel = vmContainer.drawerViewModel,
-                        navActions = navActions,
-                        closeDrawer = { coroutineScope.launch { drawerState.close() } },
-                        modifier = Modifier
-                            .statusBarsPadding()
-                            .navigationBarsPadding()
-                    )
-                },
-            ) {
-                Row(
-                    Modifier
-                        .fillMaxSize()
-                        .statusBarsPadding()
-                ) {
-                    NozzleNavGraph(
-                        vmContainer = vmContainer,
-                        navController = navController,
-                        navActions = navActions,
-                        drawerState = drawerState,
-                    )
-                }
-            }
+                vmContainer = vmContainer,
+                navActions = navActions,
+                navController = navController,
+                hasPrivkey = appContainer.keyManager.hasPrivkey.value
+            )
         }
+    }
+}
+
+@Composable
+private fun Screen(
+    drawerState: DrawerState,
+    vmContainer: VMContainer,
+    navActions: NozzleNavActions,
+    navController: NavHostController,
+    hasPrivkey: Boolean,
+) {
+    if (hasPrivkey) {
+        Drawer(
+            drawerState = drawerState,
+            vmContainer = vmContainer,
+            navActions = navActions,
+            navController = navController,
+            scope = rememberCoroutineScope()
+        )
+    } else {
+        NozzleContent(
+            drawerState = drawerState,
+            vmContainer = vmContainer,
+            navActions = navActions,
+            navController = navController,
+            hasPrivkey = false
+        )
+    }
+}
+
+@Composable
+private fun Drawer(
+    drawerState: DrawerState,
+    vmContainer: VMContainer,
+    navActions: NozzleNavActions,
+    navController: NavHostController,
+    scope: CoroutineScope,
+) {
+    ModalDrawer(
+        drawerState = drawerState,
+        drawerContent = {
+            NozzleDrawerRoute(
+                nozzleDrawerViewModel = vmContainer.drawerViewModel,
+                navActions = navActions,
+                closeDrawer = { scope.launch { drawerState.close() } },
+                modifier = Modifier
+                    .statusBarsPadding()
+                    .navigationBarsPadding()
+            )
+        },
+    ) {
+        NozzleContent(
+            vmContainer = vmContainer,
+            navActions = navActions,
+            drawerState = drawerState,
+            navController = navController,
+            hasPrivkey = true
+        )
+    }
+}
+
+@Composable
+private fun NozzleContent(
+    drawerState: DrawerState,
+    vmContainer: VMContainer,
+    navActions: NozzleNavActions,
+    navController: NavHostController,
+    hasPrivkey: Boolean,
+) {
+    Row(
+        Modifier
+            .fillMaxSize()
+            .statusBarsPadding()
+    ) {
+        NozzleNavGraph(
+            vmContainer = vmContainer,
+            navActions = navActions,
+            drawerState = drawerState,
+            navController = navController,
+            startDestination = if (hasPrivkey) NozzleRoute.FEED else NozzleRoute.ADD_ACCOUNT
+        )
     }
 }

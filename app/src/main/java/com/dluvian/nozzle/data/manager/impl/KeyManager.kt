@@ -2,13 +2,13 @@ package com.dluvian.nozzle.data.manager.impl
 
 import android.content.Context
 import android.util.Log
+import androidx.compose.runtime.mutableStateOf
 import androidx.security.crypto.EncryptedSharedPreferences
 import androidx.security.crypto.MasterKey
 import com.dluvian.nozzle.data.PreferenceFileNames
 import com.dluvian.nozzle.data.manager.IKeyManager
 import com.dluvian.nozzle.data.nostr.utils.EncodingUtils.hexToNsec
 import com.dluvian.nozzle.data.nostr.utils.KeyUtils.derivePubkey
-import com.dluvian.nozzle.data.nostr.utils.KeyUtils.generatePrivkey
 import com.dluvian.nozzle.data.nostr.utils.KeyUtils.isValidHexKey
 import com.dluvian.nozzle.data.room.dao.AccountDao
 import com.dluvian.nozzle.data.room.entity.AccountEntity
@@ -50,24 +50,20 @@ class KeyManager(context: Context, private val accountDao: AccountDao) : IKeyMan
         scope, SharingStarted.Eagerly, getActivePubkey()
     )
 
+    override val hasPrivkey = mutableStateOf(false)
+
     init {
         val privkeys = getPrivkeys().toMutableList()
-        val activeIndex = getActiveIndex()
-        val newPubkey = if (privkeys.isEmpty()) {
-            Log.i(TAG, "Generate initial private key")
-            val initPrivkey = generatePrivkey()
-            privkeys.add(initPrivkey)
-            setPrivkeys(privkeys = privkeys)
-            derivePubkey(initPrivkey)
-        } else {
-            derivePubkey(privkeys[activeIndex])
-        }
-        _currentPubkey.update { newPubkey }
-
-        // Ensure data integrity in database
-        scope.launch {
-            val pubkeys = privkeys.map { derivePubkey(it) }
-            accountDao.setAccounts(pubkeys = pubkeys, activeIndex = activeIndex)
+        if (privkeys.isNotEmpty()) {
+            hasPrivkey.value = true
+            val activeIndex = getActiveIndex()
+            val pubkey = derivePubkey(privkeys[activeIndex])
+            _currentPubkey.update { pubkey }
+            // Ensure data integrity in database
+            scope.launch {
+                val pubkeys = privkeys.map { derivePubkey(it) }
+                accountDao.setAccounts(pubkeys = pubkeys, activeIndex = activeIndex)
+            }
         }
     }
 
@@ -147,6 +143,7 @@ class KeyManager(context: Context, private val accountDao: AccountDao) : IKeyMan
     }
 
     private fun setPrivkeys(privkeys: List<String>) {
+        hasPrivkey.value = privkeys.isNotEmpty()
         val combinedString = privkeys.joinToString(separator = DELIMITER)
         preferences.edit()
             .putString(PRIVKEY, combinedString)
