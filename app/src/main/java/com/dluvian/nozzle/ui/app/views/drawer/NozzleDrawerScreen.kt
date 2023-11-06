@@ -5,6 +5,7 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
@@ -64,9 +65,8 @@ fun NozzleDrawerScreen(
     modifier: Modifier = Modifier,
 ) {
     LazyColumn(
-        modifier = modifier
-            .fillMaxSize()
-            .padding(vertical = spacing.screenEdge),
+        modifier = modifier.fillMaxSize(),
+        contentPadding = PaddingValues(vertical = spacing.screenEdge),
         verticalArrangement = Arrangement.SpaceBetween
     ) {
         item {
