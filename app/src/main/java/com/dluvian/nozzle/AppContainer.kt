@@ -26,6 +26,7 @@ import com.dluvian.nozzle.data.postCardInteractor.IPostCardInteractor
 import com.dluvian.nozzle.data.postCardInteractor.PostCardInteractor
 import com.dluvian.nozzle.data.postPreparer.IPostPreparer
 import com.dluvian.nozzle.data.postPreparer.PostPreparer
+import com.dluvian.nozzle.data.preferences.IDarkModePreferences
 import com.dluvian.nozzle.data.preferences.IFeedSettingsPreferences
 import com.dluvian.nozzle.data.preferences.NozzlePreferences
 import com.dluvian.nozzle.data.profileFollower.IProfileFollower
@@ -69,6 +70,8 @@ class AppContainer(context: Context) {
     private val nozzlePreferences = NozzlePreferences(context = context)
 
     val feedSettingsPreferences: IFeedSettingsPreferences = nozzlePreferences
+
+    val darkModePreferences: IDarkModePreferences = nozzlePreferences
 
     private val dbSweepExcludingCache: IIdCache = IdCache()
 

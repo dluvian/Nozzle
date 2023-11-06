@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.dluvian.nozzle.data.manager.IKeyManager
+import com.dluvian.nozzle.data.preferences.IDarkModePreferences
 import com.dluvian.nozzle.data.provider.IAccountProvider
 import com.dluvian.nozzle.data.subscriber.INozzleSubscriber
 import kotlinx.coroutines.Dispatchers
@@ -17,9 +18,10 @@ import java.util.concurrent.atomic.AtomicBoolean
 class NozzleDrawerViewModel(
     keyManager: IKeyManager,
     accountProvider: IAccountProvider,
+    darkModePreferences: IDarkModePreferences,
     nozzleSubscriber: INozzleSubscriber,
 ) : ViewModel() {
-
+    val isDarkMode = darkModePreferences.isDarkMode
     val uiState = accountProvider.getAccountsFlow()
         .mapNotNull { accounts ->
             NozzleDrawerViewModelState.from(accounts = accounts)
@@ -59,6 +61,10 @@ class NozzleDrawerViewModel(
         }
     }
 
+    val onToggleDarkMode: () -> Unit = {
+        darkModePreferences.setDarkMode(!isDarkMode.value)
+    }
+
     init {
         viewModelScope.launch(context = Dispatchers.IO) {
             nozzleSubscriber.subscribePersonalProfiles()
@@ -69,6 +75,7 @@ class NozzleDrawerViewModel(
         fun provideFactory(
             keyManager: IKeyManager,
             accountProvider: IAccountProvider,
+            darkModePreferences: IDarkModePreferences,
             nozzleSubscriber: INozzleSubscriber
         ): ViewModelProvider.Factory =
             object : ViewModelProvider.Factory {
@@ -77,6 +84,7 @@ class NozzleDrawerViewModel(
                     return NozzleDrawerViewModel(
                         keyManager = keyManager,
                         accountProvider = accountProvider,
+                        darkModePreferences = darkModePreferences,
                         nozzleSubscriber = nozzleSubscriber
                     ) as T
                 }

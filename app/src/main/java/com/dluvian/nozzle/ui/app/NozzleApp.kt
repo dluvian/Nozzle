@@ -10,6 +10,7 @@ import androidx.compose.material.ModalDrawer
 import androidx.compose.material.Surface
 import androidx.compose.material.rememberDrawerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
@@ -42,13 +43,15 @@ import kotlinx.coroutines.launch
 
 @Composable
 fun NozzleApp(appContainer: AppContainer) {
-    NozzleTheme {
+    val isDarkMode by appContainer.darkModePreferences.isDarkMode
+    NozzleTheme(isDarkMode = isDarkMode) {
         Surface(modifier = Modifier.fillMaxSize()) {
             val vmContainer = VMContainer(
                 drawerViewModel = viewModel(
                     factory = NozzleDrawerViewModel.provideFactory(
                         keyManager = appContainer.keyManager,
                         accountProvider = appContainer.accountProvider,
+                        darkModePreferences = appContainer.darkModePreferences,
                         nozzleSubscriber = appContainer.nozzleSubscriber
                     )
                 ),

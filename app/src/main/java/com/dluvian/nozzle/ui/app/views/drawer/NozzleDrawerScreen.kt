@@ -20,9 +20,11 @@ import androidx.compose.material.Icon
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.MaterialTheme.colors
 import androidx.compose.material.Surface
+import androidx.compose.material.Switch
 import androidx.compose.material.Text
 import androidx.compose.material.TextButton
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.DarkMode
 import androidx.compose.material.icons.rounded.CellTower
 import androidx.compose.material.icons.rounded.Inbox
 import androidx.compose.material.icons.rounded.Key
@@ -53,9 +55,11 @@ import com.dluvian.nozzle.ui.theme.spacing
 @Composable
 fun NozzleDrawerScreen(
     uiState: NozzleDrawerViewModelState,
+    isDarkMode: Boolean,
     navActions: NozzleNavActions,
     onActivateAccount: (Int) -> Unit,
     onDeleteAccount: (Int) -> Unit,
+    onToggleDarkMode: () -> Unit,
     closeDrawer: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -96,6 +100,8 @@ fun NozzleDrawerScreen(
             )
             MainRows(
                 modifier = Modifier.padding(spacing.screenEdge),
+                isDarkMode = isDarkMode,
+                onToggleDarkMode = onToggleDarkMode,
                 navigateToFeed = navActions.navigateToFeed,
                 navigateToSearch = navActions.navigateToSearch,
                 navigateToRelayEditor = navActions.navigateToRelayEditor,
@@ -262,6 +268,8 @@ private fun AddAccountRow(onAddAccount: () -> Unit) {
 
 @Composable
 private fun MainRows(
+    isDarkMode: Boolean,
+    onToggleDarkMode: () -> Unit,
     navigateToFeed: () -> Unit,
     navigateToInbox: () -> Unit,
     navigateToSearch: () -> Unit,
@@ -311,6 +319,19 @@ private fun MainRows(
                 closeDrawer()
             }
         )
+        DrawerRow(
+            imageVector = Icons.Default.DarkMode,
+            label = stringResource(id = R.string.dark_mode),
+            action = onToggleDarkMode,
+            trailingContent = {
+                Switch(
+                    checked = isDarkMode,
+                    onCheckedChange = {
+                        onToggleDarkMode()
+                    }
+                )
+            }
+        )
     }
 }
 
@@ -335,7 +356,8 @@ private fun DrawerRow(
     action: () -> Unit,
     modifier: Modifier = Modifier,
     iconModifier: Modifier = Modifier,
-    iconTint: Color = colors.primary
+    iconTint: Color = colors.primary,
+    trailingContent: @Composable () -> Unit = {},
 ) {
     Surface(
         modifier = modifier
@@ -348,25 +370,30 @@ private fun DrawerRow(
             onClick = action,
             modifier = Modifier.fillMaxWidth()
         ) {
-            Row(
-                horizontalArrangement = Arrangement.Start,
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Icon(
-                    modifier = iconModifier,
-                    imageVector = imageVector,
-                    contentDescription = null,
-                    tint = iconTint,
-                )
-                Spacer(Modifier.width(spacing.large))
-                Text(
-                    text = label,
-                    maxLines = 3,
-                    overflow = TextOverflow.Ellipsis,
-                    style = MaterialTheme.typography.h6,
-                    color = colors.onSurface
-                )
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Row(
+                    horizontalArrangement = Arrangement.Start,
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(1f)
+                ) {
+                    Icon(
+                        modifier = iconModifier,
+                        imageVector = imageVector,
+                        contentDescription = null,
+                        tint = iconTint,
+                    )
+                    Spacer(Modifier.width(spacing.large))
+                    Text(
+                        text = label,
+                        maxLines = 3,
+                        overflow = TextOverflow.Ellipsis,
+                        style = MaterialTheme.typography.h6,
+                        color = colors.onSurface
+                    )
+                }
+                trailingContent()
             }
         }
     }
