@@ -56,6 +56,7 @@ interface ProfileDao {
         val outdatedPubkeys = profiles
             .filter { it.createdAt < (timestamps[it.pubkey] ?: 0L) }
             .map { it.pubkey }
+            .toSet()
 
         if (outdatedPubkeys.isNotEmpty()) delete(pubkeys = outdatedPubkeys)
 
