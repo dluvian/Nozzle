@@ -13,6 +13,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
@@ -43,7 +44,9 @@ import kotlinx.coroutines.launch
 
 @Composable
 fun NozzleApp(appContainer: AppContainer) {
-    val isDarkMode by appContainer.darkModePreferences.isDarkMode
+    val isDarkMode by rememberSaveable(appContainer.darkModePreferences.isDarkMode) {
+        appContainer.darkModePreferences.isDarkMode
+    }
     NozzleTheme(isDarkMode = isDarkMode) {
         Surface(modifier = Modifier.fillMaxSize()) {
             val vmContainer = VMContainer(
@@ -164,12 +167,15 @@ fun NozzleApp(appContainer: AppContainer) {
             }
             val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
 
+            val hasPrivkey by rememberSaveable(appContainer.keyManager.hasPrivkey) {
+                appContainer.keyManager.hasPrivkey
+            }
             Screen(
                 drawerState = drawerState,
                 vmContainer = vmContainer,
                 navActions = navActions,
                 navController = navController,
-                hasPrivkey = appContainer.keyManager.hasPrivkey.value
+                hasPrivkey = hasPrivkey
             )
         }
     }
