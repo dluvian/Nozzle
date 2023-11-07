@@ -14,22 +14,33 @@ interface Nip65Dao {
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insertOrIgnore(vararg nip65Entries: Nip65Entity)
 
+    @Query("DELETE FROM nip65 WHERE pubkey IN (:pubkeys)")
+    suspend fun delete(pubkeys: Collection<Pubkey>)
+
     @Query(
-        "DELETE FROM nip65 " +
-                "WHERE pubkey = :pubkey AND createdAt < :newTimestamp"
+        "SELECT pubkey, createdAt " +
+                "FROM nip65 " +
+                "WHERE pubkey IN (:pubkeys)" +
+                "GROUP BY pubkey"
     )
-    suspend fun deleteIfOutdated(pubkey: String, newTimestamp: Long)
+    suspend fun getTimestampByPubkey(pubkeys: Collection<String>): Map<
+            @MapColumn("pubkey") Pubkey,
+            @MapColumn("createdAt") Long
+            >
 
     @Transaction
-    suspend fun insertAndDeleteOutdated(
-        pubkey: String,
-        timestamp: Long,
-        vararg nip65Entities: Nip65Entity
-    ) {
-        if (nip65Entities.isEmpty()) return
+    suspend fun insertAndDeleteOutdated(nip65s: Collection<Nip65Entity>) {
+        if (nip65s.isEmpty()) return
 
-        deleteIfOutdated(pubkey = pubkey, newTimestamp = timestamp)
-        insertOrIgnore(*nip65Entities)
+        val pubkeys = nip65s.map(Nip65Entity::pubkey).toSet()
+        val timestamps = getTimestampByPubkey(pubkeys = pubkeys)
+        val outdatedPubkeys = nip65s
+            .filter { it.createdAt < (timestamps[it.pubkey] ?: 0L) }
+            .map { it.pubkey }
+
+        if (outdatedPubkeys.isNotEmpty()) delete(pubkeys = outdatedPubkeys)
+
+        insertOrIgnore(*nip65s.toTypedArray())
     }
 
     @MapInfo(keyColumn = "url", valueColumn = "pubkey")

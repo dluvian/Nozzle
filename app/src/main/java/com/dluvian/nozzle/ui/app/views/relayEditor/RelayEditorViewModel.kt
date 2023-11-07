@@ -145,11 +145,7 @@ class RelayEditorViewModel(
                 createdAt = event.createdAt
             )
         }
-        nip65Dao.insertAndDeleteOutdated(
-            pubkey = pubkeyProvider.getActivePubkey(),
-            timestamp = event.createdAt,
-            nip65Entities = entities.toTypedArray()
-        )
+        nip65Dao.insertAndDeleteOutdated(nip65s = entities)
     }
 
     private fun clearAndAddRelays(list: MutableList<Nip65Relay>, toAdd: List<Nip65Relay>) {

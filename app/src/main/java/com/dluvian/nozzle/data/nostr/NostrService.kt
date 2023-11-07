@@ -27,7 +27,7 @@ class NostrService(
         }
 
         override fun onEvent(subscriptionId: String, event: Event, relayUrl: String?) {
-            eventProcessor.process(event = event, relayUrl = relayUrl)
+            eventProcessor.submit(event = event, relayUrl = relayUrl)
         }
 
         override fun onError(msg: String, throwable: Throwable?) {

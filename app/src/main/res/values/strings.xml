@@ -102,6 +102,7 @@
     <string name="login">Login</string>
     <string name="open_profile">Open profile</string>
     <string name="delete_account">Delete account</string>
+    <string name="dark_mode">Dark Mode</string>
     <plurals name="other_relays">
         <item quantity="one">other</item>
         <item quantity="other">others</item>

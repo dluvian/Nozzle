@@ -244,6 +244,14 @@ class Event(
             .distinctBy { it.url }
     }
 
+    fun getContactPubkeys(): List<String> {
+        return tags
+            .filter { tag -> tag.size >= 2 && tag[0] == "p" }
+            .map { tag -> tag[1] }
+            .filter { KeyUtils.isValidHexKey(hexKey = it) }
+            .toList()
+    }
+
     fun getHashtags() = tags
         .filter { it[0] == "t" }
         .mapNotNull { it.getOrNull(1)?.trim() }
@@ -256,7 +264,9 @@ class Event(
         .filter { KeyUtils.isValidHexKey(it) }
         .distinct()
 
-    fun isReaction() = this.kind == Kind.REACTION
+    fun isLikeReaction() =
+        this.kind == Kind.REACTION && (this.content.isEmpty() || this.content == "+")
+
     fun isPost() = this.kind == Kind.TEXT_NOTE
     fun isProfileMetadata() = this.kind == Kind.METADATA
     fun isContactList() = this.kind == Kind.CONTACT_LIST

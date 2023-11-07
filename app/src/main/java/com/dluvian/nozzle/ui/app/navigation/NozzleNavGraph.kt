@@ -39,12 +39,12 @@ private const val TAG = "NozzleNavGraph"
 
 @Composable
 fun NozzleNavGraph(
-    modifier: Modifier = Modifier,
-    navController: NavHostController = rememberNavController(),
-    startDestination: String = NozzleRoute.FEED,
     vmContainer: VMContainer,
     navActions: NozzleNavActions,
     drawerState: DrawerState,
+    modifier: Modifier = Modifier,
+    navController: NavHostController = rememberNavController(),
+    startDestination: String = NozzleRoute.FEED,
 ) {
     val scope = rememberCoroutineScope()
     val postCardNavLambdas = remember { navActions.getPostCardNavigation() }

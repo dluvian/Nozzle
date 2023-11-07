@@ -86,25 +86,28 @@ interface ContactDao {
     fun isFollowedFlow(pubkey: String, contactPubkey: String): Flow<Boolean>
 
     @Query(
-        "DELETE FROM contact " +
-                "WHERE pubkey = :pubkey AND createdAt < :newTimestamp"
+        "SELECT pubkey, createdAt " +
+                "FROM contact " +
+                "WHERE pubkey IN (:pubkeys)" +
+                "GROUP BY pubkey"
     )
-    suspend fun deleteIfOutdated(pubkey: String, newTimestamp: Long)
+    suspend fun getTimestampByPubkey(pubkeys: Collection<String>): Map<
+            @MapColumn("pubkey") Pubkey,
+            @MapColumn("createdAt") Long
+            >
 
     @Transaction
-    suspend fun insertAndDeleteOutdated(
-        pubkey: String,
-        newTimestamp: Long,
-        contactPubkeys: Collection<String>
-    ) {
-        deleteIfOutdated(pubkey = pubkey, newTimestamp = newTimestamp)
-        val contacts = contactPubkeys.map { contactPubkey ->
-            ContactEntity(
-                pubkey = pubkey,
-                contactPubkey = contactPubkey,
-                createdAt = newTimestamp
-            )
-        }
+    suspend fun insertAndDeleteOutdated(contacts: Collection<ContactEntity>) {
+        if (contacts.isEmpty()) return
+
+        val pubkeys = contacts.map(ContactEntity::pubkey).toSet()
+        val timestamps = getTimestampByPubkey(pubkeys = pubkeys)
+        val outdatedPubkeys = contacts
+            .filter { it.createdAt < (timestamps[it.pubkey] ?: 0L) }
+            .map { it.pubkey }
+
+        if (outdatedPubkeys.isNotEmpty()) delete(pubkeys = outdatedPubkeys)
+
         insertOrIgnore(*contacts.toTypedArray())
     }
 
@@ -192,6 +195,9 @@ interface ContactDao {
                 "AND pubkey NOT IN (SELECT contactPubkey FROM contact WHERE pubkey IN (SELECT pubkey FROM account))"
     )
     suspend fun deleteOrphaned(exclude: Collection<String>): Int
+
+    @Query("DELETE FROM contact WHERE pubkey IN (:pubkeys)")
+    suspend fun delete(pubkeys: Collection<String>)
 
     @Query(
         "SELECT contactPubkey " +

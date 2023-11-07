@@ -4,6 +4,7 @@ import android.util.Log
 import com.dluvian.nozzle.data.nostr.INostrService
 import com.dluvian.nozzle.data.provider.IRelayProvider
 import com.dluvian.nozzle.data.room.dao.ReactionDao
+import com.dluvian.nozzle.data.room.entity.ReactionEntity
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -24,7 +25,7 @@ class PostCardInteractor(
                 relays = relayProvider.getReadRelaysOfPubkey(postPubkey).toSet()
                         + relayProvider.getWriteRelays()
             )
-            reactionDao.like(pubkey = event.pubkey, eventId = postId)
+            reactionDao.insertOrIgnore(ReactionEntity(eventId = postId, pubkey = event.pubkey))
         }
     }
 }
