@@ -6,7 +6,6 @@ import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.style.TextDecoration
-import com.dluvian.nozzle.data.nostr.utils.EncodingUtils.URI
 import com.dluvian.nozzle.data.nostr.utils.EncodingUtils.nostrUriToNostrId
 import com.dluvian.nozzle.data.nostr.utils.EncodingUtils.note1ToHex
 import com.dluvian.nozzle.data.nostr.utils.EncodingUtils.readNevent
@@ -122,7 +121,7 @@ class AnnotatedContentHandler : IAnnotatedContentHandler {
                                 tag = NOTE1_TAG,
                                 annotation = nostrId.note1,
                                 style = mentionAndHashtagStyle,
-                                text = URI + (getShortenedNote1(nostrId.note1) ?: nostrId.note1)
+                                text = getShortenedNote1(nostrId.note1) ?: nostrId.note1
                             )
                         }
 
@@ -131,7 +130,7 @@ class AnnotatedContentHandler : IAnnotatedContentHandler {
                                 tag = NEVENT_TAG,
                                 annotation = nostrId.nevent,
                                 style = mentionAndHashtagStyle,
-                                text = URI + (getShortenedNevent(nostrId.nevent) ?: nostrId.nevent)
+                                text = getShortenedNevent(nostrId.nevent) ?: nostrId.nevent
                             )
                         }
 
