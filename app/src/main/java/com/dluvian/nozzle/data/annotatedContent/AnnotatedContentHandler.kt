@@ -27,7 +27,6 @@ import com.dluvian.nozzle.model.nostr.NoteNostrId
 import com.dluvian.nozzle.model.nostr.NprofileNostrId
 import com.dluvian.nozzle.model.nostr.NpubNostrId
 import java.util.Collections
-import kotlin.random.Random
 
 private const val TAG = "AnnotatedContentHandler"
 
@@ -54,9 +53,7 @@ class AnnotatedContentHandler : IAnnotatedContentHandler {
     ): AnnotatedString {
         if (content.isEmpty()) return AnnotatedString("")
         val cached = cache[content]
-        if (cached != null && (mentionedNamesByPubkey.isEmpty() || Random.nextBoolean())) {
-            return cached
-        }
+        if (cached != null) return cached
 
         val urls = UrlUtils.extractUrls(content)
         val nostrUris = MentionUtils.extractNostrUris(content)
@@ -70,6 +67,7 @@ class AnnotatedContentHandler : IAnnotatedContentHandler {
         tokens.sortBy { it.range.first }
 
         val editedContent = StringBuilder(content)
+        var isCacheable = true
         val result = buildAnnotatedString {
             for (token in tokens) {
                 val firstIndex = editedContent.indexOf(token.value)
@@ -92,7 +90,9 @@ class AnnotatedContentHandler : IAnnotatedContentHandler {
                 } else {
                     when (val nostrId = nostrUriToNostrId(token.value)) {
                         is NpubNostrId -> {
-                            val name = "@" + (mentionedNamesByPubkey[nostrId.pubkeyHex]
+                            val mentionedName = mentionedNamesByPubkey[nostrId.pubkeyHex]
+                            if (mentionedName.isNullOrBlank()) isCacheable = false
+                            val name = "@" + (mentionedName
                                 ?.ifBlank { getShortenedNpub(nostrId.npub) }
                                 ?: getShortenedNpub(nostrId.npub)
                                 ?: nostrId.npub)
@@ -105,7 +105,9 @@ class AnnotatedContentHandler : IAnnotatedContentHandler {
                         }
 
                         is NprofileNostrId -> {
-                            val name = "@" + (mentionedNamesByPubkey[nostrId.pubkeyHex]
+                            val mentionedName = mentionedNamesByPubkey[nostrId.pubkeyHex]
+                            if (mentionedName.isNullOrBlank()) isCacheable = false
+                            val name = "@" + (mentionedName
                                 ?.ifBlank { getShortenedNprofile(nostrId.nprofile) }
                                 ?: getShortenedNprofile(nostrId.nprofile)
                                 ?: nostrId.nprofile)
@@ -145,7 +147,7 @@ class AnnotatedContentHandler : IAnnotatedContentHandler {
             }
             append(editedContent)
         }
-        cache[content] = result
+        if (isCacheable) cache[content] = result
         return result
     }
 
