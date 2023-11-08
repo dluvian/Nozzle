@@ -12,6 +12,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.CellTower
 import androidx.compose.material.icons.filled.ContentCopy
+import androidx.compose.material.icons.filled.Dangerous
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.ExpandLess
 import androidx.compose.material.icons.filled.ExpandMore
@@ -210,5 +211,15 @@ fun ExpandIcon(isExpanded: Boolean, onToggle: () -> Unit, modifier: Modifier = M
         contentDescription = stringResource(
             id = if (isExpanded) R.string.collapse else R.string.expand
         )
+    )
+}
+
+@Composable
+fun FailedIcon(modifier: Modifier = Modifier) {
+    Icon(
+        modifier = modifier.clip(CircleShape),
+        imageVector = Icons.Default.Dangerous,
+        contentDescription = stringResource(R.string.failed),
+        tint = Color.Red
     )
 }
