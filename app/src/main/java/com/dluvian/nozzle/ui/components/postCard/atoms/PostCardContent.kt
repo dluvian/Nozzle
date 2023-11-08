@@ -26,7 +26,7 @@ fun PostCardContentBase(
     if (annotatedContent.text.isNotBlank()) {
         AnnotatedText(
             text = annotatedContent,
-            maxLines = if (isCurrent) null else 12,
+            maxLines = if (isCurrent) null else 24,
             onClickNonLink = onNavigateToThread,
             onNavigateToId = onNavigateToId,
         )
