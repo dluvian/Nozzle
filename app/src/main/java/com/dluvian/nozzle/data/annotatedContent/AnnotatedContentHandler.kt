@@ -1,7 +1,6 @@
 package com.dluvian.nozzle.data.annotatedContent
 
 import android.util.Log
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.compose.ui.text.SpanStyle
@@ -26,6 +25,7 @@ import com.dluvian.nozzle.model.nostr.NeventNostrId
 import com.dluvian.nozzle.model.nostr.NoteNostrId
 import com.dluvian.nozzle.model.nostr.NprofileNostrId
 import com.dluvian.nozzle.model.nostr.NpubNostrId
+import com.dluvian.nozzle.ui.theme.HyperlinkBlue
 import java.util.Collections
 
 private const val TAG = "AnnotatedContentHandler"
@@ -37,12 +37,10 @@ class AnnotatedContentHandler : IAnnotatedContentHandler {
     private val NPUB_TAG = "NPUB"
     private val HASHTAG = "HASHTAG"
 
-    private val hyperlinkStyle = SpanStyle(
-        color = Color.Blue,
+    private val mentionAndHashtagStyle = SpanStyle(color = HyperlinkBlue)
+    private val hyperlinkStyle = mentionAndHashtagStyle.copy(
         textDecoration = TextDecoration.Underline
     )
-    private val mentionStyle = SpanStyle(color = Color.Blue)
-    private val hashtagStyle = SpanStyle(color = Color.Blue)
 
     private val cache: MutableMap<String, AnnotatedString> =
         Collections.synchronizedMap(mutableMapOf())
@@ -84,7 +82,7 @@ class AnnotatedContentHandler : IAnnotatedContentHandler {
                     pushAnnotatedString(
                         tag = HASHTAG,
                         annotation = token.value,
-                        style = hashtagStyle,
+                        style = mentionAndHashtagStyle,
                         text = token.value
                     )
                 } else {
@@ -99,7 +97,7 @@ class AnnotatedContentHandler : IAnnotatedContentHandler {
                             pushAnnotatedString(
                                 tag = NPUB_TAG,
                                 annotation = nostrId.npub,
-                                style = mentionStyle,
+                                style = mentionAndHashtagStyle,
                                 text = name
                             )
                         }
@@ -114,7 +112,7 @@ class AnnotatedContentHandler : IAnnotatedContentHandler {
                             pushAnnotatedString(
                                 tag = NPROFILE_TAG,
                                 annotation = nostrId.nprofile,
-                                style = mentionStyle,
+                                style = mentionAndHashtagStyle,
                                 text = name
                             )
                         }
@@ -123,7 +121,7 @@ class AnnotatedContentHandler : IAnnotatedContentHandler {
                             pushAnnotatedString(
                                 tag = NOTE1_TAG,
                                 annotation = nostrId.note1,
-                                style = mentionStyle,
+                                style = mentionAndHashtagStyle,
                                 text = URI + (getShortenedNote1(nostrId.note1) ?: nostrId.note1)
                             )
                         }
@@ -132,7 +130,7 @@ class AnnotatedContentHandler : IAnnotatedContentHandler {
                             pushAnnotatedString(
                                 tag = NEVENT_TAG,
                                 annotation = nostrId.nevent,
-                                style = mentionStyle,
+                                style = mentionAndHashtagStyle,
                                 text = URI + (getShortenedNevent(nostrId.nevent) ?: nostrId.nevent)
                             )
                         }
