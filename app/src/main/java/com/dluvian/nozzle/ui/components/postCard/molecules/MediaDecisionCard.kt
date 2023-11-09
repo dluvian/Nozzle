@@ -24,11 +24,12 @@ import com.dluvian.nozzle.ui.components.postCard.atoms.CenteredBox
 fun MediaDecisionCard(
     mediaUrl: String,
     onShowMedia: (String) -> Unit,
-    onShouldShowMedia: (String) -> Boolean
+    onShouldShowMedia: (String) -> Boolean,
+    modifier: Modifier = Modifier,
 ) {
     // showMedia is not in PostWithMeta because the posts before infinite scroll activates are cold
     // to save resources
-    BorderedCard(modifier = Modifier.fillMaxWidth()) {
+    BorderedCard(modifier = modifier) {
         val showMedia = remember(mediaUrl) { mutableStateOf(onShouldShowMedia(mediaUrl)) }
         val subModifier = remember {
             Modifier

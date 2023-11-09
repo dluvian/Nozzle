@@ -152,6 +152,7 @@ fun PostCard(
             post.mediaUrls.forEach { mediaUrl ->
                 Spacer(Modifier.height(spacing.medium))
                 MediaDecisionCard(
+                    modifier = Modifier.fillMaxWidth(0.95f),
                     mediaUrl = mediaUrl,
                     onShowMedia = onShowMedia,
                     onShouldShowMedia = onShouldShowMedia,
@@ -168,8 +169,9 @@ fun PostCard(
                 )
             }
 
-            Spacer(Modifier.height(spacing.medium))
+            Spacer(Modifier.height(spacing.large))
             PostCardActions(
+                modifier = Modifier.fillMaxWidth(0.95f),
                 numOfReplies = post.numOfReplies,
                 post = post,
                 onLike = onLike,
@@ -238,25 +240,22 @@ private fun PostCardActions(
     onPrepareReply: (PostWithMeta) -> Unit,
     onNavigateToReply: () -> Unit,
     onNavigateToQuote: (String) -> Unit,
+    modifier: Modifier = Modifier
 ) {
     Row(
-        modifier = Modifier.fillMaxWidth(0.85f),
+        modifier = modifier,
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
         ReplyAction(
-            modifier = Modifier
-                .fillMaxWidth()
-                .weight(1f),
+            modifier = Modifier.weight(1f),
             numOfReplies = numOfReplies,
             postToReplyTo = post,
             onPrepareReply = onPrepareReply,
             onNavigateToReply = onNavigateToReply
         )
         QuoteAction(
-            modifier = Modifier
-                .fillMaxWidth()
-                .weight(1f),
+            modifier = Modifier.weight(1f),
             onNavigateToQuote = {
                 // TODO: Move this out of UI layer
                 onNavigateToQuote(
@@ -268,9 +267,7 @@ private fun PostCardActions(
             }
         )
         LikeAction(
-            modifier = Modifier
-                .fillMaxWidth()
-                .weight(1f),
+            modifier = Modifier.weight(1f),
             isLikedByMe = post.isLikedByMe,
             onLike = onLike
         )
@@ -293,11 +290,10 @@ private fun ReplyAction(
                 onPrepareReply(postToReplyTo)
                 onNavigateToReply()
             })
-        Spacer(Modifier.width(spacing.medium))
-        Text(
-            text = numOfReplies.toString(),
-            color = if (numOfReplies > 0) Color.Unspecified else Color.Transparent
-        )
+        if (numOfReplies > 0) {
+            Spacer(Modifier.width(spacing.medium))
+            Text(text = numOfReplies.toString())
+        }
     }
 }
 
