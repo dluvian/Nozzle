@@ -171,7 +171,7 @@ fun PostCard(
 
             Spacer(Modifier.height(spacing.large))
             PostCardActions(
-                modifier = Modifier.fillMaxWidth(0.95f),
+                modifier = Modifier.fillMaxWidth(0.85f),
                 numOfReplies = post.numOfReplies,
                 post = post,
                 onLike = onLike,
