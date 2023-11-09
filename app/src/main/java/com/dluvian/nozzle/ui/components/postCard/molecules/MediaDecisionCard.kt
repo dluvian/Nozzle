@@ -56,7 +56,7 @@ fun MediaDecisionCard(
 
 @Composable
 private fun ShowMediaCard(onClick: () -> Unit, modifier: Modifier = Modifier) {
-    CenteredBox(modifier = modifier) {
+    CenteredBox(modifier = modifier.clickable(onClick = onClick)) {
         Text(
             modifier = Modifier.clickable(onClick = onClick),
             text = stringResource(id = R.string.click_to_show_media),
