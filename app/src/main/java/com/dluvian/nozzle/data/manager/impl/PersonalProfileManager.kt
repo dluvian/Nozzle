@@ -40,7 +40,7 @@ class PersonalProfileManager(
             metadata = metadata,
             createdAt = event.createdAt
         )
-        profileDao.upsertProfile(profileEntity)
+        profileDao.upsertProfiles(profileEntity)
     }
 
     override fun getMetadataStateFlow(): StateFlow<Metadata?> {

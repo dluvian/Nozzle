@@ -29,38 +29,29 @@ interface ProfileDao {
     fun getActiveMetadata(): Flow<Metadata?>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun upsertProfile(vararg profile: ProfileEntity)
-
-    @Insert(onConflict = OnConflictStrategy.IGNORE)
-    suspend fun insertOrIgnore(vararg profile: ProfileEntity)
-
-    @Query("DELETE FROM profile WHERE pubkey IN (:pubkeys)")
-    suspend fun delete(pubkeys: Collection<String>)
+    suspend fun upsertProfiles(vararg profile: ProfileEntity)
 
     @Query(
-        "SELECT pubkey, createdAt " +
+        "SELECT pubkey, MAX(createdAt) as maxCreatedAt " +
                 "FROM profile " +
                 "WHERE pubkey IN (:pubkeys)" +
                 "GROUP BY pubkey"
     )
     suspend fun getTimestampByPubkey(pubkeys: Collection<String>): Map<
             @MapColumn("pubkey") Pubkey,
-            @MapColumn("createdAt") Long
+            @MapColumn("maxCreatedAt") Long
             >
 
     @Transaction
-    suspend fun insertAndDeleteOutdated(profiles: Collection<ProfileEntity>) {
+    suspend fun insertAndReplaceOutdated(profiles: Collection<ProfileEntity>) {
         if (profiles.isEmpty()) return
 
         val timestamps = getTimestampByPubkey(pubkeys = profiles.map(ProfileEntity::pubkey))
-        val outdatedPubkeys = profiles
-            .filter { it.createdAt < (timestamps[it.pubkey] ?: 0L) }
-            .map { it.pubkey }
-            .toSet()
+        val toInsert = profiles.filter { new -> new.createdAt > (timestamps[new.pubkey] ?: 0L) }
 
-        if (outdatedPubkeys.isNotEmpty()) delete(pubkeys = outdatedPubkeys)
+        if (toInsert.isEmpty()) return
 
-        insertOrIgnore(*profiles.toTypedArray())
+        upsertProfiles(*toInsert.toTypedArray())
     }
 
     @Query(

@@ -86,14 +86,14 @@ interface ContactDao {
     fun isFollowedFlow(pubkey: String, contactPubkey: String): Flow<Boolean>
 
     @Query(
-        "SELECT pubkey, createdAt " +
+        "SELECT pubkey, MAX(createdAt) AS maxCreatedAt " +
                 "FROM contact " +
                 "WHERE pubkey IN (:pubkeys)" +
                 "GROUP BY pubkey"
     )
     suspend fun getTimestampByPubkey(pubkeys: Collection<String>): Map<
             @MapColumn("pubkey") Pubkey,
-            @MapColumn("createdAt") Long
+            @MapColumn("maxCreatedAt") Long
             >
 
     @Transaction
@@ -103,7 +103,7 @@ interface ContactDao {
         val pubkeys = contacts.map(ContactEntity::pubkey).toSet()
         val timestamps = getTimestampByPubkey(pubkeys = pubkeys)
         val outdatedPubkeys = contacts
-            .filter { it.createdAt < (timestamps[it.pubkey] ?: 0L) }
+            .filter { it.createdAt > (timestamps[it.pubkey] ?: Long.MAX_VALUE) }
             .map { it.pubkey }
             .toSet()
 
