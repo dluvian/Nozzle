@@ -1,13 +1,11 @@
 package com.dluvian.nozzle.data.annotatedContent
 
 import android.util.Log
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.style.TextDecoration
-import com.dluvian.nozzle.data.nostr.utils.EncodingUtils.URI
 import com.dluvian.nozzle.data.nostr.utils.EncodingUtils.nostrUriToNostrId
 import com.dluvian.nozzle.data.nostr.utils.EncodingUtils.note1ToHex
 import com.dluvian.nozzle.data.nostr.utils.EncodingUtils.readNevent
@@ -26,8 +24,8 @@ import com.dluvian.nozzle.model.nostr.NeventNostrId
 import com.dluvian.nozzle.model.nostr.NoteNostrId
 import com.dluvian.nozzle.model.nostr.NprofileNostrId
 import com.dluvian.nozzle.model.nostr.NpubNostrId
+import com.dluvian.nozzle.ui.theme.HyperlinkBlue
 import java.util.Collections
-import kotlin.random.Random
 
 private const val TAG = "AnnotatedContentHandler"
 
@@ -38,12 +36,10 @@ class AnnotatedContentHandler : IAnnotatedContentHandler {
     private val NPUB_TAG = "NPUB"
     private val HASHTAG = "HASHTAG"
 
-    private val hyperlinkStyle = SpanStyle(
-        color = Color.Blue,
+    private val mentionAndHashtagStyle = SpanStyle(color = HyperlinkBlue)
+    private val hyperlinkStyle = mentionAndHashtagStyle.copy(
         textDecoration = TextDecoration.Underline
     )
-    private val mentionStyle = SpanStyle(color = Color.Blue)
-    private val hashtagStyle = SpanStyle(color = Color.Blue)
 
     private val cache: MutableMap<String, AnnotatedString> =
         Collections.synchronizedMap(mutableMapOf())
@@ -54,9 +50,7 @@ class AnnotatedContentHandler : IAnnotatedContentHandler {
     ): AnnotatedString {
         if (content.isEmpty()) return AnnotatedString("")
         val cached = cache[content]
-        if (cached != null && (mentionedNamesByPubkey.isEmpty() || Random.nextBoolean())) {
-            return cached
-        }
+        if (cached != null) return cached
 
         val urls = UrlUtils.extractUrls(content)
         val nostrUris = MentionUtils.extractNostrUris(content)
@@ -70,6 +64,7 @@ class AnnotatedContentHandler : IAnnotatedContentHandler {
         tokens.sortBy { it.range.first }
 
         val editedContent = StringBuilder(content)
+        var isCacheable = true
         val result = buildAnnotatedString {
             for (token in tokens) {
                 val firstIndex = editedContent.indexOf(token.value)
@@ -86,33 +81,37 @@ class AnnotatedContentHandler : IAnnotatedContentHandler {
                     pushAnnotatedString(
                         tag = HASHTAG,
                         annotation = token.value,
-                        style = hashtagStyle,
+                        style = mentionAndHashtagStyle,
                         text = token.value
                     )
                 } else {
                     when (val nostrId = nostrUriToNostrId(token.value)) {
                         is NpubNostrId -> {
-                            val name = "@" + (mentionedNamesByPubkey[nostrId.pubkeyHex]
+                            val mentionedName = mentionedNamesByPubkey[nostrId.pubkeyHex]
+                            if (mentionedName.isNullOrBlank()) isCacheable = false
+                            val name = "@" + (mentionedName
                                 ?.ifBlank { getShortenedNpub(nostrId.npub) }
                                 ?: getShortenedNpub(nostrId.npub)
                                 ?: nostrId.npub)
                             pushAnnotatedString(
                                 tag = NPUB_TAG,
                                 annotation = nostrId.npub,
-                                style = mentionStyle,
+                                style = mentionAndHashtagStyle,
                                 text = name
                             )
                         }
 
                         is NprofileNostrId -> {
-                            val name = "@" + (mentionedNamesByPubkey[nostrId.pubkeyHex]
+                            val mentionedName = mentionedNamesByPubkey[nostrId.pubkeyHex]
+                            if (mentionedName.isNullOrBlank()) isCacheable = false
+                            val name = "@" + (mentionedName
                                 ?.ifBlank { getShortenedNprofile(nostrId.nprofile) }
                                 ?: getShortenedNprofile(nostrId.nprofile)
                                 ?: nostrId.nprofile)
                             pushAnnotatedString(
                                 tag = NPROFILE_TAG,
                                 annotation = nostrId.nprofile,
-                                style = mentionStyle,
+                                style = mentionAndHashtagStyle,
                                 text = name
                             )
                         }
@@ -121,8 +120,8 @@ class AnnotatedContentHandler : IAnnotatedContentHandler {
                             pushAnnotatedString(
                                 tag = NOTE1_TAG,
                                 annotation = nostrId.note1,
-                                style = mentionStyle,
-                                text = URI + (getShortenedNote1(nostrId.note1) ?: nostrId.note1)
+                                style = mentionAndHashtagStyle,
+                                text = getShortenedNote1(nostrId.note1) ?: nostrId.note1
                             )
                         }
 
@@ -130,8 +129,8 @@ class AnnotatedContentHandler : IAnnotatedContentHandler {
                             pushAnnotatedString(
                                 tag = NEVENT_TAG,
                                 annotation = nostrId.nevent,
-                                style = mentionStyle,
-                                text = URI + (getShortenedNevent(nostrId.nevent) ?: nostrId.nevent)
+                                style = mentionAndHashtagStyle,
+                                text = getShortenedNevent(nostrId.nevent) ?: nostrId.nevent
                             )
                         }
 
@@ -145,7 +144,7 @@ class AnnotatedContentHandler : IAnnotatedContentHandler {
             }
             append(editedContent)
         }
-        cache[content] = result
+        if (isCacheable) cache[content] = result
         return result
     }
 

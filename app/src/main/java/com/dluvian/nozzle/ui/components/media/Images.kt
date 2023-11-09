@@ -22,13 +22,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import coil.compose.AsyncImage
+import coil.compose.SubcomposeAsyncImage
 import coil.request.ImageRequest
 import com.dluvian.nozzle.R
 import com.dluvian.nozzle.data.utils.getRobohashUrl
@@ -63,38 +63,37 @@ fun BaseProfilePicture(
     modifier: Modifier = Modifier,
     pictureUrl: String,
     trustType: TrustType,
-    onError: (() -> Unit)? = null,
     onOpenProfile: (() -> Unit)? = null,
 ) {
     Box(modifier = modifier) {
         val imgModifier = Modifier
             .clip(CircleShape)
-            .background(color = Color.LightGray)
             .fillMaxSize()
-        AsyncImage(
-            modifier = if (onOpenProfile != null)
-                imgModifier.clickable { onOpenProfile() }
-            else {
-                imgModifier
+        SubcomposeAsyncImage(
+            modifier = imgModifier.let {
+                if (onOpenProfile != null) it.clickable(onClick = onOpenProfile)
+                else it
             },
             model = ImageRequest.Builder(LocalContext.current)
                 .data(pictureUrl)
                 .crossfade(true)
                 .size(300)
                 .build(),
-            onError = {
-                if (onError != null) {
-                    onError()
-                }
-            },
-            error = painterResource(R.drawable.ic_default_profile),
-            fallback = painterResource(R.drawable.ic_default_profile),
             contentScale = ContentScale.Crop,
-            placeholder = painterResource(R.drawable.ic_default_profile),
+            loading = { DefaultPicture() },
+            error = { DefaultPicture() },
             contentDescription = stringResource(id = R.string.profile_picture)
         )
         PictureIndicator(modifier = Modifier.fillMaxWidth(), trustType = trustType)
     }
+}
+
+@Composable
+private fun DefaultPicture() {
+    val primary = colors.primary
+    val secondary = colors.secondary
+    val gradient = remember(primary, secondary) { listOf(primary, secondary) }
+    Box(modifier = Modifier.background(brush = Brush.linearGradient(colors = gradient)))
 }
 
 @Composable

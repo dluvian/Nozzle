@@ -23,7 +23,7 @@ object AnnotatedStringUtils {
         style: SpanStyle
     ) {
         pushUrlAnnotation(UrlAnnotation(url = url))
-        pushStyledString(style = style, text = url)
+        pushStyledString(style = style, text = UrlUtils.shortenUrl(url))
         pop()
     }
 

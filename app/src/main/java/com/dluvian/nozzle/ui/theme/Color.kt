@@ -8,4 +8,4 @@ val Purple700 = Color(0xFF3700B3)
 val Orange700 = Color(0xFFF57C00)
 val Orange500 = Color(0xFFFF9800)
 
-val LightYellow = Color.Yellow.copy(alpha = 0.1f)
+val HyperlinkBlue = Color(0xFF007AFF)
