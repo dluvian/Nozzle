@@ -152,7 +152,7 @@ fun PostCard(
             post.mediaUrls.forEach { mediaUrl ->
                 Spacer(Modifier.height(spacing.medium))
                 MediaDecisionCard(
-                    modifier = Modifier.fillMaxWidth(0.95f),
+                    modifier = Modifier.fillMaxWidth(),
                     mediaUrl = mediaUrl,
                     onShowMedia = onShowMedia,
                     onShouldShowMedia = onShouldShowMedia,
