@@ -167,7 +167,7 @@ class EventProcessor(
         if (profileEntities.isEmpty()) return
 
         scope.launch {
-            database.profileDao().insertAndDeleteOutdated(profiles = profileEntities)
+            database.profileDao().insertAndReplaceOutdated(profiles = profileEntities)
         }.invokeOnCompletion {
             if (it != null) {
                 Log.w(TAG, "Failed to process profiles", it)

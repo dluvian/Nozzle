@@ -18,14 +18,14 @@ interface Nip65Dao {
     suspend fun delete(pubkeys: Collection<Pubkey>)
 
     @Query(
-        "SELECT pubkey, createdAt " +
+        "SELECT pubkey, MAX(createdAt) as maxCreatedAt " +
                 "FROM nip65 " +
                 "WHERE pubkey IN (:pubkeys)" +
                 "GROUP BY pubkey"
     )
     suspend fun getTimestampByPubkey(pubkeys: Collection<String>): Map<
             @MapColumn("pubkey") Pubkey,
-            @MapColumn("createdAt") Long
+            @MapColumn("maxCreatedAt") Long
             >
 
     @Transaction
@@ -35,7 +35,7 @@ interface Nip65Dao {
         val pubkeys = nip65s.map(Nip65Entity::pubkey).toSet()
         val timestamps = getTimestampByPubkey(pubkeys = pubkeys)
         val outdatedPubkeys = nip65s
-            .filter { it.createdAt < (timestamps[it.pubkey] ?: 0L) }
+            .filter { it.createdAt > (timestamps[it.pubkey] ?: Long.MAX_VALUE) }
             .map { it.pubkey }
             .toSet()
 
