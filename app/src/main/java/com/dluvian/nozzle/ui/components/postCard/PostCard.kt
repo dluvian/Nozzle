@@ -4,6 +4,7 @@ import android.widget.Toast
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.MaterialTheme
 import androidx.compose.material.MaterialTheme.shapes
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
@@ -349,11 +350,14 @@ fun NoPostsHint() {
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier.fillMaxSize()
     ) {
-        SearchIcon(modifier = Modifier.fillMaxSize(0.1f), tint = Color.LightGray)
+        SearchIcon(
+            modifier = Modifier.fillMaxSize(0.1f),
+            tint = MaterialTheme.colors.hintGray
+        )
         Text(
             text = stringResource(id = R.string.no_posts_found),
             textAlign = TextAlign.Center,
-            color = Color.LightGray
+            color = MaterialTheme.colors.hintGray
         )
     }
 }
