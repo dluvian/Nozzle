@@ -67,7 +67,9 @@ interface PostDao {
                 "AND id IN (SELECT DISTINCT eventId FROM eventRelay WHERE relayUrl IN (:relays)) " +
                 "AND createdAt < :until " +
                 "AND (:hashtag IS NULL OR id IN (SELECT eventId FROM hashtag WHERE hashtag = :hashtag)) " +
-                "AND (:isMention = 0 OR id IN (SELECT eventId FROM mention WHERE pubkey = (SELECT pubkey FROM account WHERE isActive = 1))) " +
+                "AND (:isMention = 0 OR (id IN (SELECT eventId FROM mention WHERE pubkey = (SELECT pubkey FROM account WHERE isActive = 1)) " +
+                "  AND pubkey != (SELECT pubkey FROM account WHERE isActive = 1)" +
+                ")) " +
                 "ORDER BY createdAt DESC " +
                 "LIMIT :limit"
     )
@@ -115,7 +117,7 @@ interface PostDao {
             relays = relays,
             until = until,
             limit = limit,
-            isMention = true
+            isMention = true,
         )
     }
 
