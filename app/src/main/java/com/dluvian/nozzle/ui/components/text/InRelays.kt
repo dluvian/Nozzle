@@ -2,6 +2,7 @@ package com.dluvian.nozzle.ui.components.text
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Row
+import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
@@ -20,6 +21,7 @@ import com.dluvian.nozzle.R
 import com.dluvian.nozzle.data.utils.UrlUtils.removeWebsocketPrefix
 import com.dluvian.nozzle.ui.components.dialog.RelaysDialog
 import com.dluvian.nozzle.ui.theme.Shapes
+import com.dluvian.nozzle.ui.theme.hintGray
 
 @Composable
 fun InRelays(relays: List<String>) {
@@ -50,7 +52,11 @@ fun InRelays(relays: List<String>) {
 }
 
 @Composable
-private fun InRelay(relay: String, modifier: Modifier = Modifier, color: Color = Color.LightGray) {
+private fun InRelay(
+    modifier: Modifier = Modifier,
+    relay: String,
+    color: Color = MaterialTheme.colors.hintGray
+) {
     Text(
         modifier = modifier,
         text = buildAnnotatedString {
@@ -71,7 +77,7 @@ private fun InRelay(relay: String, modifier: Modifier = Modifier, color: Color =
 private fun AndOthers(
     otherRelaysCount: Int,
     modifier: Modifier = Modifier,
-    color: Color = Color.LightGray
+    color: Color = MaterialTheme.colors.hintGray
 ) {
     Text(
         modifier = modifier,
