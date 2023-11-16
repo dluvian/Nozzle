@@ -14,7 +14,7 @@ fun ProfileRoute(
     onPrepareReply: (PostWithMeta) -> Unit,
     onNavigateToEditProfile: () -> Unit,
 ) {
-    val isRefreshing by profileViewModel.isRefreshingState.collectAsState()
+    val isRefreshing by profileViewModel.isRefreshing.collectAsState()
     val profile by profileViewModel.profileState.collectAsState()
     val feed by profileViewModel.feedState.collectAsState()
     val isFollowedByMe by profileViewModel.isFollowedByMeState.collectAsState()

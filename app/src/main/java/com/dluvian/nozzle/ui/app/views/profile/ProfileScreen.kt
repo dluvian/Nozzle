@@ -34,8 +34,8 @@ import com.dluvian.nozzle.ui.components.CopyIcon
 import com.dluvian.nozzle.ui.components.EditProfileButton
 import com.dluvian.nozzle.ui.components.FollowButton
 import com.dluvian.nozzle.ui.components.dialog.RelaysDialog
+import com.dluvian.nozzle.ui.components.hint.NoPostsHint
 import com.dluvian.nozzle.ui.components.media.ProfilePicture
-import com.dluvian.nozzle.ui.components.postCard.NoPostsHint
 import com.dluvian.nozzle.ui.components.postCard.PostCardList
 import com.dluvian.nozzle.ui.components.text.AnnotatedText
 import com.dluvian.nozzle.ui.components.text.NumberedCategory
@@ -149,6 +149,14 @@ private fun ProfilePictureAndActions(
     onUnfollow: (String) -> Unit,
     onNavToEditProfile: () -> Unit,
 ) {
+    val trustType = remember(pubkey, isOneself, isFollowed, trustScore) {
+        TrustType.determineTrustType(
+            pubkey = pubkey,
+            isOneself = isOneself,
+            isFollowed = isFollowed,
+            trustScore = trustScore,
+        )
+    }
     Row(
         modifier = Modifier
             .padding(spacing.screenEdge)
@@ -162,12 +170,7 @@ private fun ProfilePictureAndActions(
                 .aspectRatio(1f),
             pictureUrl = pictureUrl,
             pubkey = pubkey,
-            trustType = TrustType.determineTrustType(
-                pubkey = pubkey,
-                isOneself = isOneself,
-                isFollowed = isFollowed,
-                trustScore = trustScore,
-            )
+            trustType = trustType
         )
         FollowOrEditButton(
             isOneself = isOneself,

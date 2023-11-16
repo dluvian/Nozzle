@@ -1,4 +1,4 @@
-package com.dluvian.nozzle.model.helper
+package com.dluvian.nozzle.model
 
 data class FeedInfo(
     val postIds: List<String>,

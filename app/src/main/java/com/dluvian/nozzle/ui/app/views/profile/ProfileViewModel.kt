@@ -51,8 +51,8 @@ class ProfileViewModel(
     context: Context,
     clip: ClipboardManager,
 ) : ViewModel() {
-    private val isRefreshingFlow = MutableStateFlow(false)
-    val isRefreshingState = isRefreshingFlow
+    private val _isRefreshing = MutableStateFlow(false)
+    val isRefreshing = _isRefreshing
         .stateIn(
             viewModelScope,
             SharingStarted.WhileSubscribed(),
@@ -105,11 +105,11 @@ class ProfileViewModel(
     val onRefreshProfileView: () -> Unit = {
         viewModelScope.launch(context = Dispatchers.IO) {
             Log.i(TAG, "Refresh profile view")
-            isRefreshingFlow.update { true }
+            _isRefreshing.update { true }
             failedAppendAttempts.set(0)
             setFeed(pubkey = profileState.value.pubkey)
             delay(1000)
-            isRefreshingFlow.update { false }
+            _isRefreshing.update { false }
         }
     }
 
@@ -213,7 +213,7 @@ class ProfileViewModel(
 
     // TODO: Append in FeedProvider to reduce duplicate code in ProvileVM and FeedVM
     private suspend fun appendFeed(pubkey: String, currentFeed: List<PostWithMeta>) {
-        isRefreshingFlow.update { (true) }
+        _isRefreshing.update { (true) }
         feedState.value.lastOrNull()?.let { last ->
             feedState = feedProvider.getFeedFlow(
                 feedSettings = getCurrentFeedSettings(
@@ -229,7 +229,7 @@ class ProfileViewModel(
                     currentFeed,
                 )
         }
-        isRefreshingFlow.update { (false) }
+        _isRefreshing.update { (false) }
     }
 
     private fun getCurrentFeedSettings(pubkey: String, relays: List<String>): FeedSettings {

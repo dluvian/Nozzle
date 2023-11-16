@@ -24,7 +24,7 @@ sealed class TrustType {
     }
 }
 
-object Oneself : TrustType()
+data object Oneself : TrustType()
 
 class Unknown(val isVerified: Boolean = false) : TrustType()
 

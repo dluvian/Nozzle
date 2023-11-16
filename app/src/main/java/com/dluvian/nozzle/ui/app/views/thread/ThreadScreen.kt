@@ -23,7 +23,7 @@ import com.dluvian.nozzle.model.ThreadPosition
 import com.dluvian.nozzle.ui.app.navigation.PostCardNavLambdas
 import com.dluvian.nozzle.ui.components.PullRefreshBox
 import com.dluvian.nozzle.ui.components.ReturnableTopBar
-import com.dluvian.nozzle.ui.components.postCard.NoPostsHint
+import com.dluvian.nozzle.ui.components.hint.NoPostsHint
 import com.dluvian.nozzle.ui.components.postCard.PostCard
 import com.dluvian.nozzle.ui.components.postCard.PostNotFound
 import com.dluvian.nozzle.ui.theme.spacing

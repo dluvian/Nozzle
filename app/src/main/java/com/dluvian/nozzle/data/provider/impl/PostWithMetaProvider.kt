@@ -18,10 +18,10 @@ import com.dluvian.nozzle.data.utils.NORMAL_DEBOUNCE
 import com.dluvian.nozzle.data.utils.SHORT_DEBOUNCE
 import com.dluvian.nozzle.data.utils.firstThenDistinctDebounce
 import com.dluvian.nozzle.model.AnnotatedMentionedPost
+import com.dluvian.nozzle.model.FeedInfo
+import com.dluvian.nozzle.model.MentionedNamesAndPosts
 import com.dluvian.nozzle.model.MentionedPost
 import com.dluvian.nozzle.model.PostWithMeta
-import com.dluvian.nozzle.model.helper.FeedInfo
-import com.dluvian.nozzle.model.helper.MentionedNamesAndPosts
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine

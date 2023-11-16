@@ -1,4 +1,4 @@
-package com.dluvian.nozzle.model.helper
+package com.dluvian.nozzle.model
 
 import com.dluvian.nozzle.data.nostr.utils.EncodingUtils.hexToNpub
 import com.dluvian.nozzle.data.nostr.utils.ShortenedNameUtils.getShortenedNpub

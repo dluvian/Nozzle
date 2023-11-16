@@ -13,7 +13,7 @@ import com.dluvian.nozzle.data.subscriber.INozzleSubscriber
 import com.dluvian.nozzle.data.utils.LONG_DEBOUNCE
 import com.dluvian.nozzle.data.utils.firstThenDistinctDebounce
 import com.dluvian.nozzle.model.ProfileWithMeta
-import com.dluvian.nozzle.model.helper.PubkeyVariations
+import com.dluvian.nozzle.model.PubkeyVariations
 import com.dluvian.nozzle.model.nostr.Metadata
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine

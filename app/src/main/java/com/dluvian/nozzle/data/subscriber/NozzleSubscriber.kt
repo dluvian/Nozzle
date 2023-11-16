@@ -14,14 +14,14 @@ import com.dluvian.nozzle.data.room.AppDatabase
 import com.dluvian.nozzle.data.room.entity.PostEntity
 import com.dluvian.nozzle.data.utils.takeRandom80percent
 import com.dluvian.nozzle.model.AllRelays
+import com.dluvian.nozzle.model.FeedInfo
+import com.dluvian.nozzle.model.IdAndRelays
 import com.dluvian.nozzle.model.MultipleRelays
 import com.dluvian.nozzle.model.PostWithMeta
 import com.dluvian.nozzle.model.Pubkey
 import com.dluvian.nozzle.model.Relay
 import com.dluvian.nozzle.model.RelaySelection
 import com.dluvian.nozzle.model.UserSpecific
-import com.dluvian.nozzle.model.helper.FeedInfo
-import com.dluvian.nozzle.model.helper.IdAndRelays
 import com.dluvian.nozzle.model.nostr.Nevent
 import com.dluvian.nozzle.model.nostr.Nprofile
 import com.dluvian.nozzle.model.nostr.ReplyTo
