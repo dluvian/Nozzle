@@ -12,7 +12,6 @@ fun ProfileListRoute(
     onNavigateToProfile: (Pubkey) -> Unit,
     onGoBack: () -> Unit,
 ) {
-    val isRefreshing by profileListViewModel.isRefreshing.collectAsState()
     val profileList by profileListViewModel.profileList.collectAsState()
     val forcedFollowState by profileListViewModel.forcedFollowState.collectAsState()
 
@@ -22,20 +21,15 @@ fun ProfileListRoute(
                 val followState = forcedFollowState[it.pubkey] ?: return@map it
                 it.copy(isFollowedByMe = followState)
             }
-            when (list) {
-                is FollowerList -> FollowerList(profiles = profiles)
-                is FollowedByList -> FollowedByList(profiles = profiles)
-            }
+            list.copy(profiles = profiles)
         }
     }
 
     if (adjustedProfileList != null) {
         ProfileListScreen(
             profileList = adjustedProfileList,
-            isRefreshing = isRefreshing,
             onFollow = profileListViewModel.onFollow,
             onUnfollow = profileListViewModel.onUnfollow,
-            onRefresh = profileListViewModel.onRefresh,
             onNavigateToProfile = onNavigateToProfile,
             onGoBack = onGoBack
         )

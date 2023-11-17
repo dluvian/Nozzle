@@ -5,5 +5,6 @@ data class SimpleProfile(
     val picture: PictureUrl,
     val pubkey: Pubkey,
     val trustScore: Float,
+    val isOneself: Boolean,
     val isFollowedByMe: Boolean
 )

@@ -4,13 +4,19 @@ import androidx.room.*
 import com.dluvian.nozzle.data.room.entity.ProfileEntity
 import com.dluvian.nozzle.data.room.helper.extended.ProfileEntityExtended
 import com.dluvian.nozzle.model.Pubkey
+import com.dluvian.nozzle.model.SimpleProfile
 import com.dluvian.nozzle.model.nostr.Metadata
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChanged
 
 @Dao
 interface ProfileDao {
     @Query("SELECT * FROM profile WHERE pubkey = :pubkey")
     suspend fun getProfile(pubkey: String): ProfileEntity?
+
+    @Query("SELECT * FROM profile WHERE pubkey IN (:pubkeys)")
+    fun listProfiles(pubkeys: Collection<Pubkey>): Flow<List<ProfileEntity>>
 
     @Query(
         // SELECT metadata
@@ -73,4 +79,26 @@ interface ProfileDao {
                 "WHERE pubkey IN (:pubkeys)"
     )
     suspend fun filterExistingPubkeys(pubkeys: Collection<String>): List<String>
+
+    fun getSimpleProfilesFlow(
+        pubkeys: Collection<Pubkey>,
+        contactDao: ContactDao,
+    ): Flow<List<SimpleProfile>> {
+        val profiles = listProfiles(pubkeys = pubkeys).distinctUntilChanged()
+        val trustScore = contactDao.getTrustScoreByPubkeyFlow(contactPubkeys = pubkeys)
+        val myFollowerList = contactDao.listPersonalContactPubkeysFlow()
+
+        return combine(profiles, trustScore, myFollowerList) { profile, score, followers ->
+            profile.map {
+                SimpleProfile(
+                    name = it.metadata.name.orEmpty(),
+                    picture = it.metadata.picture.orEmpty(),
+                    pubkey = it.pubkey,
+                    trustScore = score[it.pubkey] ?: 0f,
+                    isOneself = false, // TODO: Get real value
+                    isFollowedByMe = followers.contains(it.pubkey)
+                )
+            }
+        }
+    }
 }
