@@ -37,7 +37,7 @@ fun ProfileListScreen(
     onNavigateToProfile: (Pubkey) -> Unit,
     onGoBack: () -> Unit
 ) {
-    val followerListStr = stringResource(id = R.string.follower_list)
+    val followerListStr = stringResource(id = R.string.following)
     val followedByStr = stringResource(id = R.string.followed_by)
     val title = remember(profileList.type) {
         when (profileList.type) {
