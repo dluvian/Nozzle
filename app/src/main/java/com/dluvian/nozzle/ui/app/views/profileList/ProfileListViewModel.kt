@@ -38,8 +38,12 @@ class ProfileListViewModel(
 
     var profileList: StateFlow<ProfileList?> = MutableStateFlow(null)
 
-    val onSetProfileList: (Pubkey, ProfileListType) -> Unit = local@{ pubkey, type ->
-        setProfileList(pubkey = pubkey, type = type)
+    val onSetFollowerList: (Pubkey) -> Unit = local@{ pubkey ->
+        setProfileList(pubkey = pubkey, type = ProfileListType.FOLLOWER_LIST)
+    }
+
+    val onSetFollowedByList: (Pubkey) -> Unit = local@{ pubkey ->
+        setProfileList(pubkey = pubkey, type = ProfileListType.FOLLOWED_BY_LIST)
     }
 
     private val isSettingList = AtomicBoolean(false)

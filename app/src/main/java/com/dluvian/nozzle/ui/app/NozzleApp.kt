@@ -34,6 +34,7 @@ import com.dluvian.nozzle.ui.app.views.inbox.InboxViewModel
 import com.dluvian.nozzle.ui.app.views.keys.KeysViewModel
 import com.dluvian.nozzle.ui.app.views.post.PostViewModel
 import com.dluvian.nozzle.ui.app.views.profile.ProfileViewModel
+import com.dluvian.nozzle.ui.app.views.profileList.ProfileListViewModel
 import com.dluvian.nozzle.ui.app.views.relayEditor.RelayEditorViewModel
 import com.dluvian.nozzle.ui.app.views.reply.ReplyViewModel
 import com.dluvian.nozzle.ui.app.views.search.SearchViewModel
@@ -75,6 +76,13 @@ fun NozzleApp(appContainer: AppContainer) {
                         contactListProvider = appContainer.contactListProvider,
                         context = LocalContext.current,
                         clip = LocalClipboardManager.current,
+                    )
+                ),
+                profileListViewModel = viewModel(
+                    factory = ProfileListViewModel.provideFactory(
+                        profileFollower = appContainer.profileFollower,
+                        profileDao = appContainer.roomDb.profileDao(),
+                        contactDao = appContainer.roomDb.contactDao()
                     )
                 ),
                 keysViewModel = viewModel(

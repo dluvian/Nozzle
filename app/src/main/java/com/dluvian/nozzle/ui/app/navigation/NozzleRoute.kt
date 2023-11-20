@@ -3,6 +3,8 @@ package com.dluvian.nozzle.ui.app.navigation
 object NozzleRoute {
     const val PROFILE = "profile"
     const val EDIT_PROFILE = "edit_profile"
+    const val FOLLOWER_LIST = "follower_list"
+    const val FOLLOWED_BY_LIST = "followed_by_list"
     const val FEED = "feed"
     const val INBOX = "inbox"
     const val SEARCH = "search"

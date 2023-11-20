@@ -28,6 +28,7 @@ import com.dluvian.nozzle.ui.app.views.inbox.InboxRoute
 import com.dluvian.nozzle.ui.app.views.keys.KeysRoute
 import com.dluvian.nozzle.ui.app.views.post.PostRoute
 import com.dluvian.nozzle.ui.app.views.profile.ProfileRoute
+import com.dluvian.nozzle.ui.app.views.profileList.ProfileListRoute
 import com.dluvian.nozzle.ui.app.views.relayEditor.RelayEditorRoute
 import com.dluvian.nozzle.ui.app.views.reply.ReplyRoute
 import com.dluvian.nozzle.ui.app.views.search.SearchRoute
@@ -74,6 +75,32 @@ fun NozzleNavGraph(
                 postCardNavLambdas = postCardNavLambdas,
                 onPrepareReply = vmContainer.replyViewModel.onPrepareReply,
                 onNavigateToEditProfile = navActions.navigateToEditProfile,
+            )
+        }
+        composable(
+            route = NozzleRoute.FOLLOWER_LIST + "/{pubkey}",
+            arguments = listOf(navArgument("pubkey") { type = NavType.StringType })
+        ) { backStackEntry ->
+            vmContainer.profileListViewModel.onSetFollowerList(
+                backStackEntry.arguments?.getString("profileId").orEmpty()
+            )
+            ProfileListRoute(
+                profileListViewModel = vmContainer.profileListViewModel,
+                onNavigateToProfile = navActions.navigateToProfile,
+                onGoBack = navActions.popStack,
+            )
+        }
+        composable(
+            route = NozzleRoute.FOLLOWED_BY_LIST + "/{pubkey}",
+            arguments = listOf(navArgument("pubkey") { type = NavType.StringType })
+        ) { backStackEntry ->
+            vmContainer.profileListViewModel.onSetFollowedByList(
+                backStackEntry.arguments?.getString("profileId").orEmpty()
+            )
+            ProfileListRoute(
+                profileListViewModel = vmContainer.profileListViewModel,
+                onNavigateToProfile = navActions.navigateToProfile,
+                onGoBack = navActions.popStack,
             )
         }
         composable(route = NozzleRoute.INBOX) {

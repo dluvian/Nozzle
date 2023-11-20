@@ -9,6 +9,7 @@ import com.dluvian.nozzle.ui.app.views.inbox.InboxViewModel
 import com.dluvian.nozzle.ui.app.views.keys.KeysViewModel
 import com.dluvian.nozzle.ui.app.views.post.PostViewModel
 import com.dluvian.nozzle.ui.app.views.profile.ProfileViewModel
+import com.dluvian.nozzle.ui.app.views.profileList.ProfileListViewModel
 import com.dluvian.nozzle.ui.app.views.relayEditor.RelayEditorViewModel
 import com.dluvian.nozzle.ui.app.views.reply.ReplyViewModel
 import com.dluvian.nozzle.ui.app.views.search.SearchViewModel
@@ -17,6 +18,7 @@ import com.dluvian.nozzle.ui.app.views.thread.ThreadViewModel
 data class VMContainer(
     val drawerViewModel: NozzleDrawerViewModel,
     val profileViewModel: ProfileViewModel,
+    val profileListViewModel: ProfileListViewModel,
     val feedViewModel: FeedViewModel,
     val inboxViewModel: InboxViewModel,
     val keysViewModel: KeysViewModel,
