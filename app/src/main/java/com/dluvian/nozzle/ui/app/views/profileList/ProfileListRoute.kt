@@ -1,6 +1,5 @@
 package com.dluvian.nozzle.ui.app.views.profileList
 
-import android.util.Log
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -21,7 +20,6 @@ fun ProfileListRoute(
         profileList.let { list ->
             val profiles = list.profiles.map {
                 val followState = forcedFollowState[it.pubkey] ?: return@map it
-                Log.i("LOLOL", "new follow state = $followState")
                 it.copy(isFollowedByMe = followState)
             }
             list.copy(profiles = profiles)

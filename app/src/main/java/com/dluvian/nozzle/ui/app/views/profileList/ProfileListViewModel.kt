@@ -40,6 +40,7 @@ class ProfileListViewModel(
     var profileList: StateFlow<ProfileList> = MutableStateFlow(ProfileList())
 
     private val isSettingList = AtomicBoolean(false)
+
     val onSetFollowerList: (Pubkey) -> Unit = local@{ pubkey ->
         viewModelScope.launch(Dispatchers.IO) {
             setProfileList(pubkey = pubkey, type = ProfileListType.FOLLOWER_LIST)
@@ -63,6 +64,9 @@ class ProfileListViewModel(
     // It's not working when doing it in the function below.
     private suspend fun setProfileList(pubkey: Pubkey, type: ProfileListType) {
         if (!isSettingList.compareAndSet(false, true)) return
+        val currentValue = profileList.value
+        if (currentValue.pubkey == pubkey && currentValue.type == type) return
+
         profileList = MutableStateFlow(ProfileList(type = type))
         val pubkeys = when (type) {
             ProfileListType.FOLLOWER_LIST -> contactDao.listContactPubkeys(pubkey = pubkey)
@@ -72,11 +76,11 @@ class ProfileListViewModel(
         profileList = profileDao
             .getSimpleProfilesFlow(pubkeys = pubkeys, contactDao = contactDao)
             .distinctUntilChanged()
-            .map { ProfileList(profiles = it, type = type) }
+            .map { ProfileList(pubkey = pubkey, profiles = it, type = type) }
             .stateIn(
                 viewModelScope,
                 SharingStarted.Eagerly,
-                ProfileList(type = type)
+                ProfileList(pubkey = pubkey, type = type)
             )
     }
 
