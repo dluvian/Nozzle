@@ -1,7 +1,6 @@
 package com.dluvian.nozzle.data.nostr.utils
 
 import com.dluvian.nozzle.data.nostr.utils.EncodingUtils.npubToHex
-import com.dluvian.nozzle.data.nostr.utils.EncodingUtils.nsecToHex
 import com.dluvian.nozzle.data.utils.isHex
 import fr.acinq.secp256k1.Secp256k1
 import java.security.SecureRandom
@@ -30,8 +29,8 @@ object KeyUtils {
             .toHex()
     }
 
-    fun isValidPrivkey(privkey: String): Boolean {
-        return isValidHexKey(privkey) || nsecToHex(privkey) != null
+    fun isValidPrivkeyHex(hex: String): Boolean {
+        return isValidHexKey(hex) && hex.any { it != '0' } && hex.any { it != '1' }
     }
 
     fun isValidPubkey(pubkey: String): Boolean {

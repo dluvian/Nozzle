@@ -45,7 +45,7 @@ class AddAccountViewModel(
         }
 
         val trimmed = nsec.trim()
-        val hex = if (KeyUtils.isValidHexKey(trimmed)) trimmed
+        val hex = if (KeyUtils.isValidPrivkeyHex(trimmed)) trimmed
         else EncodingUtils.nsecToHex(nsec.trim())
         _uiState.update { it.copy(isInvalid = hex == null) }
         if (hex == null) {
