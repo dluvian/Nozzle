@@ -1,5 +1,6 @@
 package com.dluvian.nozzle.ui.app.views.profileList
 
+import android.util.Log
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -16,22 +17,22 @@ fun ProfileListRoute(
     val forcedFollowState by profileListViewModel.forcedFollowState.collectAsState()
 
     val adjustedProfileList = remember(profileList, forcedFollowState) {
-        profileList?.let { list ->
+        if (forcedFollowState.isEmpty()) return@remember profileList
+        profileList.let { list ->
             val profiles = list.profiles.map {
                 val followState = forcedFollowState[it.pubkey] ?: return@map it
+                Log.i("LOLOL", "new follow state = $followState")
                 it.copy(isFollowedByMe = followState)
             }
             list.copy(profiles = profiles)
         }
     }
 
-    if (adjustedProfileList != null) {
-        ProfileListScreen(
-            profileList = adjustedProfileList,
-            onFollow = profileListViewModel.onFollow,
-            onUnfollow = profileListViewModel.onUnfollow,
-            onNavigateToProfile = onNavigateToProfile,
-            onGoBack = onGoBack
-        )
-    }
+    ProfileListScreen(
+        profileList = adjustedProfileList,
+        onFollow = profileListViewModel.onFollow,
+        onUnfollow = profileListViewModel.onUnfollow,
+        onNavigateToProfile = onNavigateToProfile,
+        onGoBack = onGoBack
+    )
 }

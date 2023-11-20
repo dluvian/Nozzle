@@ -73,6 +73,8 @@ fun NozzleNavGraph(
             ProfileRoute(
                 profileViewModel = vmContainer.profileViewModel,
                 postCardNavLambdas = postCardNavLambdas,
+                onOpenFollowerList = navActions.navigateToFollowerList,
+                onOpenFollowedByList = navActions.navigateToFollowedByList,
                 onPrepareReply = vmContainer.replyViewModel.onPrepareReply,
                 onNavigateToEditProfile = navActions.navigateToEditProfile,
             )
@@ -82,7 +84,7 @@ fun NozzleNavGraph(
             arguments = listOf(navArgument("pubkey") { type = NavType.StringType })
         ) { backStackEntry ->
             vmContainer.profileListViewModel.onSetFollowerList(
-                backStackEntry.arguments?.getString("profileId").orEmpty()
+                backStackEntry.arguments?.getString("pubkey").orEmpty()
             )
             ProfileListRoute(
                 profileListViewModel = vmContainer.profileListViewModel,
@@ -95,7 +97,7 @@ fun NozzleNavGraph(
             arguments = listOf(navArgument("pubkey") { type = NavType.StringType })
         ) { backStackEntry ->
             vmContainer.profileListViewModel.onSetFollowedByList(
-                backStackEntry.arguments?.getString("profileId").orEmpty()
+                backStackEntry.arguments?.getString("pubkey").orEmpty()
             )
             ProfileListRoute(
                 profileListViewModel = vmContainer.profileListViewModel,

@@ -13,6 +13,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
@@ -36,40 +37,52 @@ class ProfileListViewModel(
         mapOf()
     )
 
-    var profileList: StateFlow<ProfileList?> = MutableStateFlow(null)
+    var profileList: StateFlow<ProfileList> = MutableStateFlow(ProfileList())
 
+    private val isSettingList = AtomicBoolean(false)
     val onSetFollowerList: (Pubkey) -> Unit = local@{ pubkey ->
-        setProfileList(pubkey = pubkey, type = ProfileListType.FOLLOWER_LIST)
+        viewModelScope.launch(Dispatchers.IO) {
+            setProfileList(pubkey = pubkey, type = ProfileListType.FOLLOWER_LIST)
+        }.invokeOnCompletion {
+            isSettingList.set(false)
+            if (it != null) Log.w(TAG, "Failed to set follower list of $pubkey")
+        }
     }
 
     val onSetFollowedByList: (Pubkey) -> Unit = local@{ pubkey ->
-        setProfileList(pubkey = pubkey, type = ProfileListType.FOLLOWED_BY_LIST)
-    }
-
-    private val isSettingList = AtomicBoolean(false)
-
-    private fun setProfileList(pubkey: Pubkey, type: ProfileListType) {
-        if (!isSettingList.compareAndSet(false, true)) return
-        profileList = MutableStateFlow(null)
         viewModelScope.launch(Dispatchers.IO) {
-            val pubkeys = when (type) {
-                ProfileListType.FOLLOWER_LIST -> contactDao.listContactPubkeys(pubkey = pubkey)
-                ProfileListType.FOLLOWED_BY_LIST -> contactDao.listFollowedByPubkeys(pubkey = pubkey)
-            }
-
-            profileList = profileDao
-                .getSimpleProfilesFlow(pubkeys = pubkeys, contactDao = contactDao)
-                .map { ProfileList(profiles = it, type = type) }
-                .stateIn(viewModelScope, SharingStarted.WhileSubscribed(), null)
+            setProfileList(pubkey = pubkey, type = ProfileListType.FOLLOWED_BY_LIST)
         }.invokeOnCompletion {
             isSettingList.set(false)
-            if (it != null) Log.w(TAG, "Failed to set profile list pubkey=$pubkey, type=$type")
+            if (it != null) Log.w(TAG, "Failed to set followed by list of $pubkey")
         }
+    }
+
+
+    // The IO coroutine needs to be started in the lambda itself?
+    // It's not working when doing it in the function below.
+    private suspend fun setProfileList(pubkey: Pubkey, type: ProfileListType) {
+        if (!isSettingList.compareAndSet(false, true)) return
+        profileList = MutableStateFlow(ProfileList(type = type))
+        val pubkeys = when (type) {
+            ProfileListType.FOLLOWER_LIST -> contactDao.listContactPubkeys(pubkey = pubkey)
+            ProfileListType.FOLLOWED_BY_LIST -> contactDao.listFollowedByPubkeys(pubkey = pubkey)
+        }
+
+        profileList = profileDao
+            .getSimpleProfilesFlow(pubkeys = pubkeys, contactDao = contactDao)
+            .distinctUntilChanged()
+            .map { ProfileList(profiles = it, type = type) }
+            .stateIn(
+                viewModelScope,
+                SharingStarted.Eagerly,
+                ProfileList(type = type)
+            )
     }
 
     private var followProcesses: MutableMap<Pubkey, Job?> = mutableMapOf()
     val onFollow: (Int) -> Unit = local@{ indexToFollow ->
-        val pubkey = profileList.value?.profiles?.get(indexToFollow)?.pubkey ?: return@local
+        val pubkey = profileList.value.profiles[indexToFollow].pubkey
         if (_forcedFollowState.value[pubkey] == true) return@local
 
         followProcesses[pubkey]?.cancel(CancellationException("Cancelled to start follow process"))
@@ -83,7 +96,7 @@ class ProfileListViewModel(
     }
 
     val onUnfollow: (Int) -> Unit = local@{ indexToUnfollow ->
-        val pubkey = profileList.value?.profiles?.get(indexToUnfollow)?.pubkey ?: return@local
+        val pubkey = profileList.value.profiles[indexToUnfollow].pubkey
         if (_forcedFollowState.value[pubkey] == false) return@local
 
         followProcesses[pubkey]?.cancel(

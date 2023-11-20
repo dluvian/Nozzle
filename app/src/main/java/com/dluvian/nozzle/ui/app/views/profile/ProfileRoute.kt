@@ -11,6 +11,8 @@ import com.dluvian.nozzle.ui.app.navigation.PostCardNavLambdas
 fun ProfileRoute(
     profileViewModel: ProfileViewModel,
     postCardNavLambdas: PostCardNavLambdas,
+    onOpenFollowerList: (String) -> Unit,
+    onOpenFollowedByList: (String) -> Unit,
     onPrepareReply: (PostWithMeta) -> Unit,
     onNavigateToEditProfile: () -> Unit,
 ) {
@@ -35,6 +37,8 @@ fun ProfileRoute(
         },
         onFollow = profileViewModel.onFollow,
         onUnfollow = profileViewModel.onUnfollow,
+        onOpenFollowerList = onOpenFollowerList,
+        onOpenFollowedByList = onOpenFollowedByList,
         onShowMedia = { mediaUrl ->
             profileViewModel.clickedMediaUrlCache.insert(mediaUrl)
         },

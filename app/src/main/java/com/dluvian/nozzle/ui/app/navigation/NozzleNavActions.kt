@@ -22,6 +22,14 @@ class NozzleNavActions(
         }
     }
 
+    val navigateToFollowerList: (String) -> Unit = { pubkey ->
+        navController.navigateToNozzleRoute("${NozzleRoute.FOLLOWER_LIST}/${pubkey}")
+    }
+
+    val navigateToFollowedByList: (String) -> Unit = { pubkey ->
+        navController.navigateToNozzleRoute("${NozzleRoute.FOLLOWED_BY_LIST}/${pubkey}")
+    }
+
     val navigateToFeed: () -> Unit = {
         navController.navigateToNozzleRoute(NozzleRoute.FEED)
     }
@@ -84,14 +92,6 @@ class NozzleNavActions(
             }
             navController.navigateToNozzleRoute(route)
         }
-    }
-
-    private val navigateToFollowerList: (String) -> Unit = { pubkey ->
-        navController.navigateToNozzleRoute("${NozzleRoute.FOLLOWER_LIST}/${pubkey}")
-    }
-
-    private val navigateToFollowedByList: (String) -> Unit = { pubkey ->
-        navController.navigateToNozzleRoute("${NozzleRoute.FOLLOWED_BY_LIST}/${pubkey}")
     }
 
     val popStack: () -> Unit = {

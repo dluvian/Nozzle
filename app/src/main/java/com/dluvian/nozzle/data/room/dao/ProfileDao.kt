@@ -3,12 +3,13 @@ package com.dluvian.nozzle.data.room.dao
 import androidx.room.*
 import com.dluvian.nozzle.data.room.entity.ProfileEntity
 import com.dluvian.nozzle.data.room.helper.extended.ProfileEntityExtended
+import com.dluvian.nozzle.data.utils.NORMAL_DEBOUNCE
+import com.dluvian.nozzle.data.utils.firstThenDistinctDebounce
 import com.dluvian.nozzle.model.Pubkey
 import com.dluvian.nozzle.model.SimpleProfile
 import com.dluvian.nozzle.model.nostr.Metadata
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.distinctUntilChanged
 
 @Dao
 interface ProfileDao {
@@ -84,7 +85,8 @@ interface ProfileDao {
         pubkeys: Collection<Pubkey>,
         contactDao: ContactDao,
     ): Flow<List<SimpleProfile>> {
-        val profiles = listProfiles(pubkeys = pubkeys).distinctUntilChanged()
+        val profiles = listProfiles(pubkeys = pubkeys)
+            .firstThenDistinctDebounce(NORMAL_DEBOUNCE)
         val trustScore = contactDao.getTrustScoreByPubkeyFlow(contactPubkeys = pubkeys)
         val myFollowerList = contactDao.listPersonalContactPubkeysFlow()
 

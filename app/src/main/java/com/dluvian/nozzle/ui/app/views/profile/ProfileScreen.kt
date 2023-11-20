@@ -19,7 +19,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
@@ -39,7 +38,6 @@ import com.dluvian.nozzle.ui.components.media.ProfilePicture
 import com.dluvian.nozzle.ui.components.postCard.PostCardList
 import com.dluvian.nozzle.ui.components.text.AnnotatedText
 import com.dluvian.nozzle.ui.components.text.NumberedCategory
-import com.dluvian.nozzle.ui.theme.Shapes
 import com.dluvian.nozzle.ui.theme.sizing
 import com.dluvian.nozzle.ui.theme.spacing
 
@@ -55,6 +53,8 @@ fun ProfileScreen(
     onLike: (PostWithMeta) -> Unit,
     onFollow: (String) -> Unit,
     onUnfollow: (String) -> Unit,
+    onOpenFollowerList: (String) -> Unit,
+    onOpenFollowedByList: (String) -> Unit,
     onShowMedia: (String) -> Unit,
     onShouldShowMedia: (String) -> Boolean,
     onRefreshProfileView: () -> Unit,
@@ -77,6 +77,8 @@ fun ProfileScreen(
             numOfFollowing = profile.numOfFollowing,
             numOfFollowers = profile.numOfFollowers,
             relays = profile.relays,
+            onOpenFollowerList = { onOpenFollowerList(profile.pubkey) },
+            onOpenFollowedByList = { onOpenFollowedByList(profile.pubkey) }
         )
         Spacer(Modifier.height(spacing.xl))
         Divider()
@@ -206,6 +208,8 @@ private fun NumberedCategories(
     numOfFollowing: Int,
     numOfFollowers: Int,
     relays: List<String>,
+    onOpenFollowerList: () -> Unit,
+    onOpenFollowedByList: () -> Unit,
 ) {
     Row(
         Modifier
@@ -215,12 +219,14 @@ private fun NumberedCategories(
         Row {
             NumberedCategory(
                 number = numOfFollowing,
-                category = stringResource(id = R.string.following)
+                category = stringResource(id = R.string.following),
+                onClick = onOpenFollowerList
             )
             Spacer(Modifier.width(spacing.large))
             NumberedCategory(
                 number = numOfFollowers,
-                category = stringResource(id = R.string.followers)
+                category = stringResource(id = R.string.followers),
+                onClick = onOpenFollowedByList
             )
             Spacer(Modifier.width(spacing.large))
             val openRelayDialog = remember { mutableStateOf(false) }
@@ -228,11 +234,9 @@ private fun NumberedCategories(
                 RelaysDialog(relays = relays, onCloseDialog = { openRelayDialog.value = false })
             }
             NumberedCategory(
-                modifier = Modifier
-                    .clip(Shapes.small)
-                    .clickable { openRelayDialog.value = true },
                 number = relays.size,
-                category = stringResource(id = R.string.relays)
+                category = stringResource(id = R.string.relays),
+                onClick = { openRelayDialog.value = true }
             )
         }
     }
