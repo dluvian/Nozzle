@@ -104,7 +104,6 @@
     <string name="delete_account">Delete account</string>
     <string name="dark_mode">Dark Mode</string>
     <string name="failed">Failed</string>
-    <string name="followed_by">Followed By</string>
     <string name="list_is_empty">List is empty</string>
     <plurals name="other_relays">
         <item quantity="one">other</item>

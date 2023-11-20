@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.material.Card
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
@@ -38,7 +39,7 @@ fun ProfileListScreen(
     onGoBack: () -> Unit
 ) {
     val followerListStr = stringResource(id = R.string.following)
-    val followedByStr = stringResource(id = R.string.followed_by)
+    val followedByStr = stringResource(id = R.string.followers)
     val title = remember(profileList.type) {
         when (profileList.type) {
             ProfileListType.FOLLOWER_LIST -> followerListStr
@@ -69,35 +70,37 @@ private fun ProfileRow(
     onUnfollow: () -> Unit,
     onNavigateToProfile: (Pubkey) -> Unit
 ) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(spacing.medium),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            PostCardProfilePicture(
-                modifier = Modifier.size(sizing.profilePicture),
-                pictureUrl = profile.picture,
-                pubkey = profile.pubkey,
-                trustType = TrustType.determineTrustType(
+    Card {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = spacing.medium, horizontal = spacing.screenEdge),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                PostCardProfilePicture(
+                    modifier = Modifier.size(sizing.profilePicture),
+                    pictureUrl = profile.picture,
                     pubkey = profile.pubkey,
-                    isOneself = profile.isOneself,
-                    isFollowed = profile.isFollowedByMe,
-                    trustScore = profile.trustScore,
-                ),
-                onNavigateToProfile = onNavigateToProfile
+                    trustType = TrustType.determineTrustType(
+                        pubkey = profile.pubkey,
+                        isOneself = profile.isOneself,
+                        isFollowed = profile.isFollowedByMe,
+                        trustScore = profile.trustScore,
+                    ),
+                    onNavigateToProfile = onNavigateToProfile
+                )
+                Spacer(Modifier.width(spacing.large))
+                Text(text = profile.name.ifBlank {
+                    ShortenedNameUtils.getShortenedNpubFromPubkey(profile.pubkey).orEmpty()
+                })
+            }
+            FollowButton(
+                isFollowed = profile.isFollowedByMe,
+                onFollow = onFollow,
+                onUnfollow = onUnfollow,
             )
-            Spacer(Modifier.width(spacing.large))
-            Text(text = profile.name.ifBlank {
-                ShortenedNameUtils.getShortenedNpubFromPubkey(profile.pubkey).orEmpty()
-            })
         }
-        FollowButton(
-            isFollowed = profile.isFollowedByMe,
-            onFollow = onFollow,
-            onUnfollow = onUnfollow,
-        )
     }
 }

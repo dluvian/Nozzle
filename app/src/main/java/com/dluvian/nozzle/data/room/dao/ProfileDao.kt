@@ -10,6 +10,7 @@ import com.dluvian.nozzle.model.SimpleProfile
 import com.dluvian.nozzle.model.nostr.Metadata
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.flowOf
 
 @Dao
 interface ProfileDao {
@@ -84,21 +85,29 @@ interface ProfileDao {
     fun getSimpleProfilesFlow(
         pubkeys: Collection<Pubkey>,
         contactDao: ContactDao,
+        myPubkey: String,
     ): Flow<List<SimpleProfile>> {
-        val profiles = listProfiles(pubkeys = pubkeys)
+        val baseFlow = flowOf(pubkeys.toSet())
+        val profileFlow = listProfiles(pubkeys = pubkeys)
             .firstThenDistinctDebounce(NORMAL_DEBOUNCE)
-        val trustScore = contactDao.getTrustScoreByPubkeyFlow(contactPubkeys = pubkeys)
-        val myFollowerList = contactDao.listPersonalContactPubkeysFlow()
+        val trustScoreFlow = contactDao.getTrustScoreByPubkeyFlow(contactPubkeys = pubkeys)
+        val myFollowerListFlow = contactDao.listPersonalContactPubkeysFlow()
 
-        return combine(profiles, trustScore, myFollowerList) { profile, score, followers ->
-            profile.map {
+        return combine(
+            baseFlow,
+            profileFlow,
+            trustScoreFlow,
+            myFollowerListFlow
+        ) { baseList, profiles, score, followers ->
+            baseList.map { pubkey ->
+                val profile = profiles.find { it.pubkey == pubkey }
                 SimpleProfile(
-                    name = it.metadata.name.orEmpty(),
-                    picture = it.metadata.picture.orEmpty(),
-                    pubkey = it.pubkey,
-                    trustScore = score[it.pubkey] ?: 0f,
-                    isOneself = false, // TODO: Get real value
-                    isFollowedByMe = followers.contains(it.pubkey)
+                    name = profile?.metadata?.name.orEmpty(),
+                    picture = profile?.metadata?.picture.orEmpty(),
+                    pubkey = pubkey,
+                    trustScore = score[pubkey] ?: 0f,
+                    isOneself = pubkey == myPubkey,
+                    isFollowedByMe = followers.contains(pubkey)
                 )
             }
         }

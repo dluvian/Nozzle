@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.dluvian.nozzle.data.profileFollower.IProfileFollower
+import com.dluvian.nozzle.data.provider.IPubkeyProvider
 import com.dluvian.nozzle.data.room.dao.ContactDao
 import com.dluvian.nozzle.data.room.dao.ProfileDao
 import com.dluvian.nozzle.model.Pubkey
@@ -26,6 +27,7 @@ const val TAG = "ProfileListViewModel"
 
 class ProfileListViewModel(
     profileFollower: IProfileFollower,
+    val pubkeyProvider: IPubkeyProvider,
     val profileDao: ProfileDao,
     val contactDao: ContactDao,
 ) : ViewModel() {
@@ -74,7 +76,11 @@ class ProfileListViewModel(
         }
 
         profileList = profileDao
-            .getSimpleProfilesFlow(pubkeys = pubkeys, contactDao = contactDao)
+            .getSimpleProfilesFlow(
+                pubkeys = pubkeys,
+                contactDao = contactDao,
+                myPubkey = pubkeyProvider.getActivePubkey()
+            )
             .distinctUntilChanged()
             .map { ProfileList(pubkey = pubkey, profiles = it, type = type) }
             .stateIn(
@@ -118,6 +124,7 @@ class ProfileListViewModel(
     companion object {
         fun provideFactory(
             profileFollower: IProfileFollower,
+            pubkeyProvider: IPubkeyProvider,
             profileDao: ProfileDao,
             contactDao: ContactDao,
         ): ViewModelProvider.Factory =
@@ -126,6 +133,7 @@ class ProfileListViewModel(
                 override fun <T : ViewModel> create(modelClass: Class<T>): T {
                     return ProfileListViewModel(
                         profileFollower = profileFollower,
+                        pubkeyProvider = pubkeyProvider,
                         profileDao = profileDao,
                         contactDao = contactDao
                     ) as T
