@@ -195,7 +195,7 @@ class ProfileViewModel(
                 viewModelScope,
                 SharingStarted.WhileSubscribed(stopTimeoutMillis = SCOPE_TIMEOUT),
                 if (profileState.value.pubkey == pubkey) profileState.value
-                else ProfileWithMeta.createEmpty(),
+                else ProfileWithMeta.createEmpty(pubkey = pubkey),
             )
     }
 
