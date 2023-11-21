@@ -84,7 +84,6 @@ private fun ProfileRow(
                     pictureUrl = profile.picture,
                     pubkey = profile.pubkey,
                     trustType = TrustType.determineTrustType(
-                        pubkey = profile.pubkey,
                         isOneself = profile.isOneself,
                         isFollowed = profile.isFollowedByMe,
                         trustScore = profile.trustScore,

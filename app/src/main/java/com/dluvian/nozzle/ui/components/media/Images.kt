@@ -13,7 +13,6 @@ import androidx.compose.material.Icon
 import androidx.compose.material.MaterialTheme.colors
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Help
-import androidx.compose.material.icons.filled.Stars
 import androidx.compose.material.icons.filled.Verified
 import androidx.compose.material.icons.filled.VerifiedUser
 import androidx.compose.runtime.Composable
@@ -101,29 +100,24 @@ private fun PictureIndicator(
         is Friend -> PictureIndicatorBase(
             modifier = modifier,
             color = Color.Green,
-            imageVector = if (trustType.isVerified) Icons.Filled.Stars
-            else Icons.Filled.Verified,
+            imageVector = Icons.Filled.Verified,
             trustScore = null
         )
 
         is FollowedByFriend -> PictureIndicatorBase(
             modifier = modifier,
             color = Orange500,
-            imageVector = if (trustType.isVerified) Icons.Filled.Stars
-            else Icons.Filled.VerifiedUser,
+            imageVector = Icons.Filled.VerifiedUser,
             trustScore = trustType.trustScore
         )
 
         is Unknown -> PictureIndicatorBase(
             modifier = modifier,
-            color = if (trustType.isVerified) Orange500 else Color.Gray,
-            imageVector = if (trustType.isVerified) Icons.Filled.Stars
-            else Icons.Filled.Help,
+            color = Color.Gray,
+            imageVector = Icons.Filled.Help,
             trustScore = null
         )
-
     }
-
 }
 
 @Composable

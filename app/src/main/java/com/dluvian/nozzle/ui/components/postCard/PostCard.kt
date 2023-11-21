@@ -128,7 +128,6 @@ fun PostCard(
             pictureUrl = post.pictureUrl,
             pubkey = post.pubkey,
             trustType = TrustType.determineTrustType(
-                pubkey = post.pubkey,
                 isOneself = post.isOneself,
                 isFollowed = post.isFollowedByMe,
                 trustScore = post.trustScore,

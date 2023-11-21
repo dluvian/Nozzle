@@ -151,9 +151,8 @@ private fun ProfilePictureAndActions(
     onUnfollow: (String) -> Unit,
     onNavToEditProfile: () -> Unit,
 ) {
-    val trustType = remember(pubkey, isOneself, isFollowed, trustScore) {
+    val trustType = remember(isOneself, isFollowed, trustScore) {
         TrustType.determineTrustType(
-            pubkey = pubkey,
             isOneself = isOneself,
             isFollowed = isFollowed,
             trustScore = trustScore,
