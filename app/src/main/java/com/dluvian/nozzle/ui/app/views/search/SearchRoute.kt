@@ -7,7 +7,6 @@ import androidx.compose.runtime.getValue
 @Composable
 fun SearchRoute(
     searchViewModel: SearchViewModel,
-    onNavigateToId: (String) -> Unit,
     onGoBack: () -> Unit,
 ) {
     val uiState by searchViewModel.uiState.collectAsState()
@@ -15,7 +14,6 @@ fun SearchRoute(
     SearchScreen(
         uiState = uiState,
         onSearch = searchViewModel.onSearch,
-        onNavigateToId = onNavigateToId,
         onResetUI = searchViewModel.onResetUI,
         onGoBack = onGoBack,
     )

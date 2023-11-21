@@ -5,7 +5,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.dluvian.nozzle.data.nostr.nip05.INip05Resolver
-import com.dluvian.nozzle.data.nostr.utils.EncodingUtils.URI
 import com.dluvian.nozzle.data.nostr.utils.EncodingUtils.createNprofileStr
 import com.dluvian.nozzle.data.nostr.utils.EncodingUtils.nostrStrToNostrId
 import com.dluvian.nozzle.data.utils.HashtagUtils
@@ -33,33 +32,36 @@ class SearchViewModel(private val nip05Resolver: INip05Resolver) : ViewModel() {
             viewModelState.value
         )
 
-    val onSearch: (String) -> Unit = { input ->
-        if (input.isNotBlank()) {
-            val trimmed = input.trim().removePrefix(URI)
-            if (HashtagUtils.isHashtag(trimmed)) setFinalId(trimmed)
-            else if (nip05Resolver.isNip05(trimmed)) resolveNip05(trimmed)
-            else when (val nostrId = nostrStrToNostrId(nostrStr = trimmed)) {
-                is NpubNostrId,
-                is NprofileNostrId,
-                is NoteNostrId,
-                is NeventNostrId -> setFinalId(nostrId.nostrStr)
-
-                null -> {
-                    Log.i(TAG, "Failed to resolve $trimmed")
-                    setNostrIdInvalid()
-                }
+    val onSearch: (String) -> Unit = local@{ input ->
+        val trimmed = input.trim()
+        if (trimmed.isBlank()) return@local
+        val results = mutableListOf<SearchResult>()
+        if (HashtagUtils.isHashtag(trimmed)) {
+            results.add(HashtagSearchResult(hashtag = trimmed.removePrefix("#")))
+        } else if (nip05Resolver.isNip05(trimmed)) resolveNip05(trimmed) // TODO: Get profile and add to results
+        else when (val nostrId = nostrStrToNostrId(nostrStr = trimmed)) {
+            is NpubNostrId,
+            is NprofileNostrId,
+            is NoteNostrId,
+            is NeventNostrId -> {
+                TODO("Get ")
             }
 
+            null -> {
+                Log.i(TAG, "Failed to resolve $trimmed")
+            }
         }
+
+        // TODO: Simple name search against db
+
     }
 
     val onResetUI: () -> Unit = {
         viewModelState.update {
             it.copy(
-                finalId = "",
                 isLoading = false,
-                isInvalidNostrId = false,
                 isInvalidNip05 = false,
+                searchResults = emptyList() // TODO: Use latest search results
             )
         }
     }
@@ -71,7 +73,7 @@ class SearchViewModel(private val nip05Resolver: INip05Resolver) : ViewModel() {
             val result = nip05Resolver.resolve(nip05)
             if (result != null) {
                 val nprofile = createNprofileStr(pubkey = result.pubkey, relays = result.relays)
-                if (nprofile != null) setFinalId(nprofile)
+                if (nprofile != null) TODO("Add to searchResults")
                 else setNip05Invalid()
             } else {
                 setNip05Invalid()
@@ -80,16 +82,8 @@ class SearchViewModel(private val nip05Resolver: INip05Resolver) : ViewModel() {
         }
     }
 
-    private fun setNostrIdInvalid() {
-        viewModelState.update { it.copy(isInvalidNostrId = true) }
-    }
-
     private fun setNip05Invalid() {
         viewModelState.update { it.copy(isInvalidNip05 = true) }
-    }
-
-    private fun setFinalId(finalId: String) {
-        viewModelState.update { it.copy(finalId = finalId) }
     }
 
     private fun setLoading(isLoading: Boolean) {

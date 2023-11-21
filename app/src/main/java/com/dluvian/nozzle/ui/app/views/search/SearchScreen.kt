@@ -1,7 +1,11 @@
 package com.dluvian.nozzle.ui.app.views.search
 
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -16,6 +20,7 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.TextFieldValue
 import com.dluvian.nozzle.R
 import com.dluvian.nozzle.ui.components.ChangeableTextField
+import com.dluvian.nozzle.ui.components.ItemRow
 import com.dluvian.nozzle.ui.components.ReturnableTopBar
 import com.dluvian.nozzle.ui.components.SearchTopBarButton
 import com.dluvian.nozzle.ui.components.TopBarCircleProgressIndicator
@@ -25,7 +30,6 @@ import com.dluvian.nozzle.ui.components.TopBarCircleProgressIndicator
 fun SearchScreen(
     uiState: SearchViewModelState,
     onSearch: (String) -> Unit,
-    onNavigateToId: (String) -> Unit,
     onResetUI: () -> Unit,
     onGoBack: () -> Unit,
 ) {
@@ -45,15 +49,16 @@ fun SearchScreen(
         )
         SearchBar(
             input = input,
-            isInvalidNostrId = uiState.isInvalidNostrId,
             isInvalidNip05 = uiState.isInvalidNip05,
             focusRequester = focusRequester,
             onSearch = { onSearch(input.value.text) }
         )
+        LazyColumn(modifier = Modifier.fillMaxSize()) {
+            items(uiState.searchResults) {
+                ItemRow(content = { Text(it.text) }, onClick = {})
+            }
+        }
     }
-
-    val finalIdIsNotEmpty = remember(uiState.finalId) { uiState.finalId.isNotEmpty() }
-    if (finalIdIsNotEmpty) onNavigateToId(uiState.finalId)
 
     DisposableEffect(true) {
         onDispose { onResetUI() }
@@ -66,7 +71,6 @@ fun SearchScreen(
 @Composable
 private fun SearchBar(
     input: MutableState<TextFieldValue>,
-    isInvalidNostrId: Boolean,
     isInvalidNip05: Boolean,
     focusRequester: FocusRequester,
     onSearch: () -> Unit,
@@ -75,12 +79,12 @@ private fun SearchBar(
         modifier = Modifier
             .fillMaxWidth()
             .focusRequester(focusRequester),
-        isError = isInvalidNostrId || isInvalidNip05,
+        isError = isInvalidNip05,
         input = input,
         maxLines = Int.MAX_VALUE,
         placeholder = stringResource(id = R.string.open_nostr_id),
-        errorLabel = if (isInvalidNostrId) stringResource(id = R.string.invalid_nostr_id)
-        else stringResource(id = R.string.failed_to_resolve_nip05),
+        errorLabel = if (isInvalidNip05) stringResource(id = R.string.failed_to_resolve_nip05)
+        else null,
         keyboardImeAction = ImeAction.Search,
         onImeAction = onSearch,
     )
