@@ -28,6 +28,8 @@ interface INozzleSubscriber {
     // TODO: NostrId instead of String. Prevents parsing nostrStr multiple times
     suspend fun subscribeFullProfile(profileId: String)
 
+    suspend fun subscribeSimpleProfiles(pubkeys: Collection<String>)
+
     suspend fun subscribeFeedInfo(posts: List<PostEntity>): FeedInfo
 
     suspend fun subscribeUnknowns(posts: List<PostWithMeta>)

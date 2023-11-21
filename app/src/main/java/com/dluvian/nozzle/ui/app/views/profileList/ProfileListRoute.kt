@@ -30,6 +30,7 @@ fun ProfileListRoute(
         profileList = adjustedProfileList,
         onFollow = profileListViewModel.onFollow,
         onUnfollow = profileListViewModel.onUnfollow,
+        onSubscribeToUnknowns = profileListViewModel.onSubscribeToUnknowns,
         onNavigateToProfile = onNavigateToProfile,
         onGoBack = onGoBack
     )

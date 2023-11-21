@@ -82,6 +82,7 @@ fun NozzleApp(appContainer: AppContainer) {
                     factory = ProfileListViewModel.provideFactory(
                         profileFollower = appContainer.profileFollower,
                         pubkeyProvider = appContainer.keyManager,
+                        nozzleSubscriber = appContainer.nozzleSubscriber,
                         profileDao = appContainer.roomDb.profileDao(),
                         contactDao = appContainer.roomDb.contactDao()
                     )

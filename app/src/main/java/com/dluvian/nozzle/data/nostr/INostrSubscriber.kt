@@ -9,6 +9,11 @@ interface INostrSubscriber {
 
     fun subscribeFullProfiles(pubkeysByRelay: Map<Relay, List<Pubkey>>): List<String>
 
+    fun subscribeSimpleProfiles(
+        relaysByPubkey: Map<Pubkey, List<Relay>>,
+        defaultRelays: Collection<Relay>,
+    ): Collection<String>
+
     fun subscribeToFeedPosts(
         authorPubkeys: List<String>?,
         hashtag: String?,

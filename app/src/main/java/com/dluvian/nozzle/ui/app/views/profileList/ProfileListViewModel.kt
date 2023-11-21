@@ -8,6 +8,7 @@ import com.dluvian.nozzle.data.profileFollower.IProfileFollower
 import com.dluvian.nozzle.data.provider.IPubkeyProvider
 import com.dluvian.nozzle.data.room.dao.ContactDao
 import com.dluvian.nozzle.data.room.dao.ProfileDao
+import com.dluvian.nozzle.data.subscriber.INozzleSubscriber
 import com.dluvian.nozzle.model.Pubkey
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -27,6 +28,7 @@ const val TAG = "ProfileListViewModel"
 
 class ProfileListViewModel(
     profileFollower: IProfileFollower,
+    val nozzleSubscriber: INozzleSubscriber,
     val pubkeyProvider: IPubkeyProvider,
     val profileDao: ProfileDao,
     val contactDao: ContactDao,
@@ -121,10 +123,26 @@ class ProfileListViewModel(
         }
     }
 
+    private var lastOwnerPubkey: Pubkey = ""
+    val onSubscribeToUnknowns: (Pubkey) -> Unit = local@{
+        synchronized(lastOwnerPubkey) {
+            if (it == lastOwnerPubkey) return@local
+            lastOwnerPubkey = it
+        }
+        val unknownPubkeys = profileList.value
+            .profiles
+            .filter { it.name.isEmpty() }
+            .map { it.pubkey }
+        viewModelScope.launch(Dispatchers.IO) {
+            nozzleSubscriber.subscribeSimpleProfiles(pubkeys = unknownPubkeys)
+        }
+    }
+
     companion object {
         fun provideFactory(
             profileFollower: IProfileFollower,
             pubkeyProvider: IPubkeyProvider,
+            nozzleSubscriber: INozzleSubscriber,
             profileDao: ProfileDao,
             contactDao: ContactDao,
         ): ViewModelProvider.Factory =
@@ -134,6 +152,7 @@ class ProfileListViewModel(
                     return ProfileListViewModel(
                         profileFollower = profileFollower,
                         pubkeyProvider = pubkeyProvider,
+                        nozzleSubscriber = nozzleSubscriber,
                         profileDao = profileDao,
                         contactDao = contactDao
                     ) as T

@@ -54,6 +54,36 @@ class NostrSubscriber(private val nostrService: INostrService) : INostrSubscribe
         return allSubIds
     }
 
+
+    // TODO: Review the code later
+    override fun subscribeSimpleProfiles(
+        relaysByPubkey: Map<Pubkey, List<Relay>>,
+        defaultRelays: Collection<Relay>
+    ): Collection<String> {
+        if (relaysByPubkey.isEmpty()) return emptyList()
+
+        val allSubIds = mutableListOf<String>()
+
+        val pubkeysByRelays = mutableMapOf<Relay, MutableList<Pubkey>>()
+        for ((pubkey, relays) in relaysByPubkey) {
+            relays.ifEmpty { defaultRelays }.forEach { relay ->
+                val present = pubkeysByRelays.putIfAbsent(relay, mutableListOf(pubkey))
+                present?.add(pubkey)
+            }
+        }
+        pubkeysByRelays.forEach { (relay, pubkeys) ->
+            val profileFilter = Filter.createProfileFilter(pubkeys = pubkeys)
+            val subIds = nostrService.subscribe(
+                filters = listOf(profileFilter),
+                unsubOnEOSE = true,
+                relays = listOf(relay),
+            )
+            allSubIds.addAll(subIds)
+        }
+
+        return allSubIds
+    }
+
     override fun subscribeToFeedPosts(
         authorPubkeys: List<String>?,
         hashtag: String?,

@@ -1,6 +1,7 @@
 package com.dluvian.nozzle.data.subscriber
 
 import android.util.Log
+import com.dluvian.nozzle.data.WAIT_TIME
 import com.dluvian.nozzle.data.cache.IIdCache
 import com.dluvian.nozzle.data.nostr.INostrSubscriber
 import com.dluvian.nozzle.data.nostr.utils.EncodingUtils
@@ -25,6 +26,7 @@ import com.dluvian.nozzle.model.UserSpecific
 import com.dluvian.nozzle.model.nostr.Nevent
 import com.dluvian.nozzle.model.nostr.Nprofile
 import com.dluvian.nozzle.model.nostr.ReplyTo
+import kotlinx.coroutines.delay
 import java.util.Collections
 
 private const val TAG = "NozzleSubscriber"
@@ -39,6 +41,7 @@ class NozzleSubscriber(
 ) : INozzleSubscriber {
     private val personalProfileSubs = Collections.synchronizedList(mutableListOf<String>())
     private val fullProfileSubs = Collections.synchronizedList(mutableListOf<String>())
+    private val simpleProfileSubs = Collections.synchronizedList(mutableListOf<String>())
     private val feedPostSubs = Collections.synchronizedList(mutableListOf<String>())
     private val feedInfoSubs = Collections.synchronizedList(mutableListOf<String>())
     private val nip65Subs = Collections.synchronizedList(mutableListOf<String>())
@@ -74,6 +77,33 @@ class NozzleSubscriber(
 
         val subIds = nostrSubscriber.subscribeFullProfile(pubkey = hex, relays = relays)
         fullProfileSubs.unsubThenAddAll(subIds)
+    }
+
+    override suspend fun subscribeSimpleProfiles(pubkeys: Collection<String>) {
+        Log.i(TAG, "Subscribe ${pubkeys.size} simple profiles")
+        if (pubkeys.isEmpty()) return
+
+        val allSubIds = mutableListOf<String>()
+
+        val relaysByPubkey = relayProvider.getWriteRelaysOfPubkeys(pubkeys = pubkeys)
+        val pubkeysWithMissingRelays = relaysByPubkey
+            .filter { (_, relays) -> relays.isEmpty() }
+            .map { (pubkey, _) -> pubkey }
+        if (pubkeysWithMissingRelays.isNotEmpty()) {
+            val subIds = nostrSubscriber.subscribeNip65(pubkeys = pubkeysWithMissingRelays)
+            allSubIds.addAll(subIds)
+        }
+
+        delay(WAIT_TIME)
+
+        val relaysByPubkey2 = relayProvider.getWriteRelaysOfPubkeys(pubkeys = pubkeys)
+        val subIds = nostrSubscriber.subscribeSimpleProfiles(
+            relaysByPubkey = relaysByPubkey2,
+            defaultRelays = relayProvider.getReadRelays()
+        )
+        allSubIds.addAll(subIds)
+
+        simpleProfileSubs.unsubThenAddAll(subIds)
     }
 
     override fun subscribeToFeedPosts(
@@ -322,10 +352,7 @@ class NozzleSubscriber(
             profiles = mentionedProfiles,
             getSessionPubkeys = { idCache.getContactListAuthors() },
             getDbPubkeys = { filteredPubkeys ->
-                database.contactDao().filterFriendsWithList(
-                    contactPubkeys = filteredPubkeys,
-                    myPubkey = pubkeyProvider.getActivePubkey()
-                )
+                database.contactDao().filterFriendsWithList(contactPubkeys = filteredPubkeys)
             }
         )
         if (filtered.isEmpty()) return emptyMap()
