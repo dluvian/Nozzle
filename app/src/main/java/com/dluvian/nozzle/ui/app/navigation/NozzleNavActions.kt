@@ -39,6 +39,11 @@ class NozzleNavActions(
         navController.navigateToNozzleRoute(NozzleRoute.INBOX)
     }
 
+    val navigateToLikes: () -> Unit = {
+        vmContainer.likesViewModel.onOpenLikes()
+        navController.navigateToNozzleRoute(NozzleRoute.LIKES)
+    }
+
     val navigateToSearch: () -> Unit = {
         navController.navigateToNozzleRoute(NozzleRoute.SEARCH)
     }

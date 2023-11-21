@@ -44,6 +44,7 @@
     <string name="post_not_found">Post not found</string>
     <string name="reply">Reply</string>
     <string name="like">Like</string>
+    <string name="likes">Likes</string>
     <string name="follow">Follow</string>
     <string name="close">Close</string>
     <string name="send">Send</string>

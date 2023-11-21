@@ -26,6 +26,7 @@ import com.dluvian.nozzle.ui.app.views.feed.FeedRoute
 import com.dluvian.nozzle.ui.app.views.hashtag.HashtagRoute
 import com.dluvian.nozzle.ui.app.views.inbox.InboxRoute
 import com.dluvian.nozzle.ui.app.views.keys.KeysRoute
+import com.dluvian.nozzle.ui.app.views.likes.LikesRoute
 import com.dluvian.nozzle.ui.app.views.post.PostRoute
 import com.dluvian.nozzle.ui.app.views.profile.ProfileRoute
 import com.dluvian.nozzle.ui.app.views.profileList.ProfileListRoute
@@ -108,6 +109,14 @@ fun NozzleNavGraph(
         composable(route = NozzleRoute.INBOX) {
             InboxRoute(
                 inboxViewModel = vmContainer.inboxViewModel,
+                postCardNavLambdas = postCardNavLambdas,
+                onPrepareReply = vmContainer.replyViewModel.onPrepareReply,
+                onGoBack = navActions.popStack,
+            )
+        }
+        composable(route = NozzleRoute.LIKES) {
+            LikesRoute(
+                likesViewModel = vmContainer.likesViewModel,
                 postCardNavLambdas = postCardNavLambdas,
                 onPrepareReply = vmContainer.replyViewModel.onPrepareReply,
                 onGoBack = navActions.popStack,

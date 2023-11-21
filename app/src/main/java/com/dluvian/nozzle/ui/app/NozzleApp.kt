@@ -32,6 +32,7 @@ import com.dluvian.nozzle.ui.app.views.feed.FeedViewModel
 import com.dluvian.nozzle.ui.app.views.hashtag.HashtagViewModel
 import com.dluvian.nozzle.ui.app.views.inbox.InboxViewModel
 import com.dluvian.nozzle.ui.app.views.keys.KeysViewModel
+import com.dluvian.nozzle.ui.app.views.likes.LikesViewModel
 import com.dluvian.nozzle.ui.app.views.post.PostViewModel
 import com.dluvian.nozzle.ui.app.views.profile.ProfileViewModel
 import com.dluvian.nozzle.ui.app.views.profileList.ProfileListViewModel
@@ -110,6 +111,11 @@ fun NozzleApp(appContainer: AppContainer) {
                         postCardInteractor = appContainer.postCardInteractor,
                         inboxFeedProvider = appContainer.inboxFeedProvider,
                         relayProvider = appContainer.relayProvider,
+                    )
+                ),
+                likesViewModel = viewModel(
+                    factory = LikesViewModel.provideFactory(
+                        clickedMediaUrlCache = appContainer.clickedMediaUrlCache,
                     )
                 ),
                 threadViewModel = viewModel(
