@@ -14,6 +14,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextOverflow
 import com.dluvian.nozzle.R
 import com.dluvian.nozzle.data.nostr.utils.ShortenedNameUtils
 import com.dluvian.nozzle.model.Pubkey
@@ -101,7 +102,12 @@ private fun PictureAndName(profile: SimpleProfile, onNavigateToProfile: (Pubkey)
         onNavigateToProfile = onNavigateToProfile
     )
     Spacer(Modifier.width(spacing.large))
-    Text(text = profile.name.ifBlank {
-        ShortenedNameUtils.getShortenedNpubFromPubkey(profile.pubkey).orEmpty()
-    })
+    Text(
+        text = profile.name.ifBlank {
+            ShortenedNameUtils.getShortenedNpubFromPubkey(profile.pubkey).orEmpty()
+        },
+        maxLines = 1,
+        overflow = TextOverflow.Ellipsis,
+
+        )
 }
