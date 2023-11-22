@@ -27,7 +27,7 @@ import androidx.compose.material.TextButton
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DarkMode
 import androidx.compose.material.icons.rounded.CellTower
-import androidx.compose.material.icons.rounded.FavoriteBorder
+import androidx.compose.material.icons.rounded.Favorite
 import androidx.compose.material.icons.rounded.Inbox
 import androidx.compose.material.icons.rounded.Key
 import androidx.compose.material.icons.rounded.Newspaper
@@ -299,18 +299,18 @@ private fun MainRows(
             }
         )
         DrawerRow(
-            imageVector = Icons.Rounded.FavoriteBorder,
-            label = stringResource(id = R.string.likes),
-            action = {
-                navigateToLikes()
-                closeDrawer()
-            }
-        )
-        DrawerRow(
             imageVector = Icons.Rounded.Search,
             label = stringResource(id = R.string.search),
             action = {
                 navigateToSearch()
+                closeDrawer()
+            }
+        )
+        DrawerRow(
+            imageVector = Icons.Rounded.Favorite,
+            label = stringResource(id = R.string.likes),
+            action = {
+                navigateToLikes()
                 closeDrawer()
             }
         )
