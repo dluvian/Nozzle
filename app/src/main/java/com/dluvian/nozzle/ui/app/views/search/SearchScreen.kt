@@ -5,7 +5,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -19,18 +18,23 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.TextFieldValue
 import com.dluvian.nozzle.R
+import com.dluvian.nozzle.model.Pubkey
 import com.dluvian.nozzle.ui.components.ChangeableTextField
-import com.dluvian.nozzle.ui.components.ItemRow
 import com.dluvian.nozzle.ui.components.ReturnableTopBar
 import com.dluvian.nozzle.ui.components.SearchTopBarButton
 import com.dluvian.nozzle.ui.components.TopBarCircleProgressIndicator
+import com.dluvian.nozzle.ui.components.itemRow.ItemRow
+import com.dluvian.nozzle.ui.components.itemRow.PictureAndName
 
 
 @Composable
 fun SearchScreen(
     uiState: SearchViewModelState,
+    profileSearchResult: List<ProfileSearchResult>,
     onSearch: (String) -> Unit,
     onResetUI: () -> Unit,
+    onNavigateToId: (String) -> Unit,
+    onNavigateToProfile: (Pubkey) -> Unit,
     onGoBack: () -> Unit,
 ) {
     val focusRequester = remember { FocusRequester() }
@@ -54,10 +58,17 @@ fun SearchScreen(
             onSearch = { onSearch(input.value.text) }
         )
         LazyColumn(modifier = Modifier.fillMaxSize()) {
-            items(uiState.searchResults) {
-                ItemRow(content = { Text(it.text) }, onClick = {})
+            items(profileSearchResult) {
+                ItemRow(content = {
+                    PictureAndName(
+                        profile = it.profile,
+                        onNavigateToProfile = onNavigateToProfile
+                    )
+                }, onClick = { onNavigateToProfile(it.profile.pubkey) })
             }
         }
+        val finalIdIsNotEmpty = remember(uiState.finalId) { uiState.finalId.isNotEmpty() }
+        if (finalIdIsNotEmpty) onNavigateToId(uiState.finalId)
     }
 
     DisposableEffect(true) {

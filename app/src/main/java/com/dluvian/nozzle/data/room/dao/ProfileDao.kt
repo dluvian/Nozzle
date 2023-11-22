@@ -3,14 +3,9 @@ package com.dluvian.nozzle.data.room.dao
 import androidx.room.*
 import com.dluvian.nozzle.data.room.entity.ProfileEntity
 import com.dluvian.nozzle.data.room.helper.extended.ProfileEntityExtended
-import com.dluvian.nozzle.data.utils.NORMAL_DEBOUNCE
-import com.dluvian.nozzle.data.utils.firstThenDistinctDebounce
 import com.dluvian.nozzle.model.Pubkey
-import com.dluvian.nozzle.model.SimpleProfile
 import com.dluvian.nozzle.model.nostr.Metadata
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.flowOf
 
 @Dao
 interface ProfileDao {
@@ -82,34 +77,30 @@ interface ProfileDao {
     )
     suspend fun filterExistingPubkeys(pubkeys: Collection<String>): List<String>
 
-    fun getSimpleProfilesFlow(
-        pubkeys: Collection<Pubkey>,
-        contactDao: ContactDao,
-        myPubkey: String,
-    ): Flow<List<SimpleProfile>> {
-        val baseFlow = flowOf(pubkeys.toSet())
-        val profileFlow = listProfiles(pubkeys = pubkeys)
-            .firstThenDistinctDebounce(NORMAL_DEBOUNCE)
-        val trustScoreFlow = contactDao.getTrustScoreByPubkeyFlow(contactPubkeys = pubkeys)
-        val myFollowerListFlow = contactDao.listPersonalContactPubkeysFlow()
+    // UNION ALL retains order
+    @Query(
+        "SELECT pubkey FROM profile WHERE name = :name " +
+                "UNION ALL " +
+                "SELECT pubkey FROM profile WHERE name LIKE :start " +
+                "UNION ALL " +
+                "SELECT pubkey FROM profile WHERE name LIKE :somewhere " +
+                "UNION ALL " +
+                "SELECT pubkey FROM profile WHERE about LIKE :start " +
+                "UNION ALL " +
+                "SELECT pubkey FROM profile WHERE about LIKE :somewhere "
+    )
+    suspend fun internalGetPubkeysWithNameLike(
+        name: String,
+        start: String,
+        somewhere: String,
+    ): List<Pubkey>
 
-        return combine(
-            baseFlow,
-            profileFlow,
-            trustScoreFlow,
-            myFollowerListFlow
-        ) { baseList, profiles, score, followers ->
-            baseList.map { pubkey ->
-                val profile = profiles.find { it.pubkey == pubkey }
-                SimpleProfile(
-                    name = profile?.metadata?.name.orEmpty(),
-                    picture = profile?.metadata?.picture.orEmpty(),
-                    pubkey = pubkey,
-                    trustScore = score[pubkey] ?: 0f,
-                    isOneself = pubkey == myPubkey,
-                    isFollowedByMe = followers.contains(pubkey)
-                )
-            }
-        }
+    suspend fun getPubkeysWithNameLike(name: String): List<Pubkey> {
+        val fixedName = name.filter { it != '%' }
+        return internalGetPubkeysWithNameLike(
+            name = fixedName,
+            start = "$fixedName%",
+            somewhere = "%$fixedName%",
+        )
     }
 }

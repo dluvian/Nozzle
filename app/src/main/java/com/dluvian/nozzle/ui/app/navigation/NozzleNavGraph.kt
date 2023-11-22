@@ -125,6 +125,8 @@ fun NozzleNavGraph(
         composable(route = NozzleRoute.SEARCH) {
             SearchRoute(
                 searchViewModel = vmContainer.searchViewModel,
+                onNavigateToId = navActions.navigateToId,
+                onNavigateToProfile = navActions.navigateToProfile,
                 onGoBack = navActions.popStack,
             )
         }

@@ -1,4 +1,4 @@
-package com.dluvian.nozzle.ui.components
+package com.dluvian.nozzle.ui.components.itemRow
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement

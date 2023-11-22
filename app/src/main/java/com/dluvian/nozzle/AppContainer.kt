@@ -39,6 +39,7 @@ import com.dluvian.nozzle.data.provider.IInboxFeedProvider
 import com.dluvian.nozzle.data.provider.IPostWithMetaProvider
 import com.dluvian.nozzle.data.provider.IProfileWithMetaProvider
 import com.dluvian.nozzle.data.provider.IRelayProvider
+import com.dluvian.nozzle.data.provider.ISimpleProfileProvider
 import com.dluvian.nozzle.data.provider.IThreadProvider
 import com.dluvian.nozzle.data.provider.impl.AccountProvider
 import com.dluvian.nozzle.data.provider.impl.AutopilotProvider
@@ -48,6 +49,7 @@ import com.dluvian.nozzle.data.provider.impl.InboxFeedProvider
 import com.dluvian.nozzle.data.provider.impl.PostWithMetaProvider
 import com.dluvian.nozzle.data.provider.impl.ProfileWithMetaProvider
 import com.dluvian.nozzle.data.provider.impl.RelayProvider
+import com.dluvian.nozzle.data.provider.impl.SimpleProfileProvider
 import com.dluvian.nozzle.data.provider.impl.ThreadProvider
 import com.dluvian.nozzle.data.room.AppDatabase
 import com.dluvian.nozzle.data.subscriber.INozzleSubscriber
@@ -190,5 +192,11 @@ class AppContainer(context: Context) {
         nozzleSubscriber = nozzleSubscriber,
         postWithMetaProvider = postWithMetaProvider,
         postDao = roomDb.postDao()
+    )
+
+    val simpleProfileProvider: ISimpleProfileProvider = SimpleProfileProvider(
+        pubkeyProvider = keyManager,
+        profileDao = roomDb.profileDao(),
+        contactDao = roomDb.contactDao(),
     )
 }

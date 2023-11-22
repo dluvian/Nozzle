@@ -5,9 +5,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.dluvian.nozzle.data.profileFollower.IProfileFollower
-import com.dluvian.nozzle.data.provider.IPubkeyProvider
+import com.dluvian.nozzle.data.provider.ISimpleProfileProvider
 import com.dluvian.nozzle.data.room.dao.ContactDao
-import com.dluvian.nozzle.data.room.dao.ProfileDao
 import com.dluvian.nozzle.data.subscriber.INozzleSubscriber
 import com.dluvian.nozzle.model.Pubkey
 import kotlinx.coroutines.Dispatchers
@@ -28,9 +27,8 @@ const val TAG = "ProfileListViewModel"
 
 class ProfileListViewModel(
     profileFollower: IProfileFollower,
-    val nozzleSubscriber: INozzleSubscriber,
-    val pubkeyProvider: IPubkeyProvider,
-    val profileDao: ProfileDao,
+    private val simpleProfileProvider: ISimpleProfileProvider,
+    private val nozzleSubscriber: INozzleSubscriber,
     val contactDao: ContactDao,
 ) : ViewModel() {
     private val _forcedFollowState: MutableStateFlow<MutableMap<Pubkey, Boolean>> =
@@ -77,12 +75,8 @@ class ProfileListViewModel(
             ProfileListType.FOLLOWED_BY_LIST -> contactDao.listFollowedByPubkeys(pubkey = pubkey)
         }
 
-        profileList = profileDao
-            .getSimpleProfilesFlow(
-                pubkeys = pubkeys,
-                contactDao = contactDao,
-                myPubkey = pubkeyProvider.getActivePubkey()
-            )
+        profileList = simpleProfileProvider
+            .getSimpleProfilesFlow(pubkeys = pubkeys)
             .distinctUntilChanged()
             .map { ProfileList(pubkey = pubkey, profiles = it, type = type) }
             .stateIn(
@@ -141,9 +135,8 @@ class ProfileListViewModel(
     companion object {
         fun provideFactory(
             profileFollower: IProfileFollower,
-            pubkeyProvider: IPubkeyProvider,
+            simpleProfileProvider: ISimpleProfileProvider,
             nozzleSubscriber: INozzleSubscriber,
-            profileDao: ProfileDao,
             contactDao: ContactDao,
         ): ViewModelProvider.Factory =
             object : ViewModelProvider.Factory {
@@ -151,9 +144,8 @@ class ProfileListViewModel(
                 override fun <T : ViewModel> create(modelClass: Class<T>): T {
                     return ProfileListViewModel(
                         profileFollower = profileFollower,
-                        pubkeyProvider = pubkeyProvider,
+                        simpleProfileProvider = simpleProfileProvider,
                         nozzleSubscriber = nozzleSubscriber,
-                        profileDao = profileDao,
                         contactDao = contactDao
                     ) as T
                 }

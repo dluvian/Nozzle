@@ -82,9 +82,8 @@ fun NozzleApp(appContainer: AppContainer) {
                 profileListViewModel = viewModel(
                     factory = ProfileListViewModel.provideFactory(
                         profileFollower = appContainer.profileFollower,
-                        pubkeyProvider = appContainer.keyManager,
+                        simpleProfileProvider = appContainer.simpleProfileProvider,
                         nozzleSubscriber = appContainer.nozzleSubscriber,
-                        profileDao = appContainer.roomDb.profileDao(),
                         contactDao = appContainer.roomDb.contactDao()
                     )
                 ),
@@ -150,7 +149,8 @@ fun NozzleApp(appContainer: AppContainer) {
                 ),
                 searchViewModel = viewModel(
                     factory = SearchViewModel.provideFactory(
-                        nip05Resolver = appContainer.nip05Resolver
+                        nip05Resolver = appContainer.nip05Resolver,
+                        simpleProfileProvider = appContainer.simpleProfileProvider
                     )
                 ),
                 hashtagViewModel = viewModel(
