@@ -6,6 +6,7 @@ import com.dluvian.nozzle.data.room.entity.MentionEntity
 import com.dluvian.nozzle.data.room.entity.PostEntity
 import com.dluvian.nozzle.data.room.helper.extended.PostEntityExtended
 import com.dluvian.nozzle.model.MentionedPost
+import com.dluvian.nozzle.model.nostr.Event
 import kotlinx.coroutines.flow.Flow
 
 @Dao
@@ -177,20 +178,22 @@ interface PostDao {
 
     @Transaction
     suspend fun insertWithHashtagsAndMentions(
-        posts: List<PostEntity>,
-        hashtags: List<HashtagEntity>,
-        mentions: List<MentionEntity>,
+        events: Collection<Event>,
         hashtagDao: HashtagDao,
         mentionDao: MentionDao,
     ) {
-        if (posts.isEmpty()) return
+        val postEvents = events.filter { it.isPost() }
+        if (postEvents.isEmpty()) return
 
+        val posts = postEvents.map { PostEntity.fromEvent(it) }
         insertOrIgnore(*posts.toTypedArray())
 
+        val hashtags = postEvents.flatMap { HashtagEntity.fromEvent(it) }
         if (hashtags.isNotEmpty()) {
             hashtagDao.insertOrIgnore(*hashtags.toTypedArray())
         }
 
+        val mentions = postEvents.flatMap { MentionEntity.fromEvent(it) }
         if (mentions.isNotEmpty()) {
             mentionDao.insertOrIgnore(*mentions.toTypedArray())
         }

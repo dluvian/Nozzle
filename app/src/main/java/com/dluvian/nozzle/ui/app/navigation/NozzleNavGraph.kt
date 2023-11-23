@@ -189,7 +189,6 @@ fun NozzleNavGraph(
             route = "${NozzleRoute.HASHTAG}/{hashtag}",
             arguments = listOf(navArgument("hashtag") { type = NavType.StringType })
         ) { backStackEntry ->
-            // TODO: Handle this in navActions
             val hashtag = backStackEntry.arguments?.getString("hashtag")
             if (hashtag != null) {
                 vmContainer.hashtagViewModel.onOpenHashtag(hashtag)

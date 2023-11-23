@@ -142,6 +142,7 @@ fun NozzleApp(appContainer: AppContainer) {
                         annotatedContentHandler = appContainer.annotatedContentHandler,
                         postDao = appContainer.roomDb.postDao(),
                         hashtagDao = appContainer.roomDb.hashtagDao(),
+                        mentionDao = appContainer.roomDb.mentionDao()
                     )
                 ),
                 searchViewModel = viewModel(
