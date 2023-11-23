@@ -3,36 +3,69 @@ package com.dluvian.nozzle.data.utils
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import com.dluvian.nozzle.ui.theme.Orange500
+import androidx.compose.ui.graphics.SolidColor
+import com.dluvian.nozzle.ui.theme.ProfilePictureApricot
+import com.dluvian.nozzle.ui.theme.ProfilePictureBlue
+import com.dluvian.nozzle.ui.theme.ProfilePictureBrown
+import com.dluvian.nozzle.ui.theme.ProfilePictureCyan
+import com.dluvian.nozzle.ui.theme.ProfilePictureGreen
+import com.dluvian.nozzle.ui.theme.ProfilePictureLavender
+import com.dluvian.nozzle.ui.theme.ProfilePictureLime
+import com.dluvian.nozzle.ui.theme.ProfilePictureMagenta
+import com.dluvian.nozzle.ui.theme.ProfilePictureMint
+import com.dluvian.nozzle.ui.theme.ProfilePictureOlive
+import com.dluvian.nozzle.ui.theme.ProfilePictureOrange
+import com.dluvian.nozzle.ui.theme.ProfilePicturePink
+import com.dluvian.nozzle.ui.theme.ProfilePicturePurple
+import com.dluvian.nozzle.ui.theme.ProfilePictureRed
+import com.dluvian.nozzle.ui.theme.ProfilePictureTeal
+import com.dluvian.nozzle.ui.theme.ProfilePictureYellow
 
 @Composable
 fun getDefaultPictureBrush(pubkey: String): Brush {
-    if (pubkey.isBlank()) return Brush.linearGradient(colors = listOf(Color.Transparent, Orange500))
+    if (pubkey.isBlank()) return SolidColor(Color.Transparent)
 
-    val num = pubkey.takeLast(7).toInt(radix = 16)
-    val gradient = when (num % 22) {
-        0 -> listOf(Color.Transparent, Color(0xFF9d0208))
-        1 -> listOf(Color.Transparent, Color(0xFFd00000))
-        2 -> listOf(Color.Transparent, Color(0xFFdc2f02))
-        3 -> listOf(Color.Transparent, Color(0xFFe85d04))
-        4 -> listOf(Color.Transparent, Color(0xFFf48c06))
-        5 -> listOf(Color.Transparent, Color(0xFFfaa307))
-        6 -> listOf(Color.Transparent, Color(0xFFffc300))
-        7 -> listOf(Color.Transparent, Color(0xFFffdd00))
-        8 -> listOf(Color.Transparent, Color(0xFFffea00))
-        9 -> listOf(Color.Transparent, Color(0xFF7b2cbf))
-        10 -> listOf(Color.Transparent, Color(0xFF9d4edd))
-        11 -> listOf(Color.Transparent, Color(0xFFc77dff))
-        12 -> listOf(Color.Transparent, Color(0xFF008000))
-        13 -> listOf(Color.Transparent, Color(0xFF38b000))
-        14 -> listOf(Color.Transparent, Color(0xFF70e000))
-        15 -> listOf(Color.Transparent, Color(0xFF023e8a))
-        16 -> listOf(Color.Transparent, Color(0xFF0096c7))
-        17 -> listOf(Color.Transparent, Color(0xFF48cae4))
-        18 -> listOf(Color.Transparent, Color(0xFF582f0e))
-        19 -> listOf(Color.Transparent, Color(0xFF7f4f24))
-        else -> listOf(Color.Transparent, Color(0xFF936639))
+    val hashCode = pubkey.hashCode()
+
+    val firstColor = getColor(hashCode)
+
+    val secondNumber = pubkey
+        .dropLastWhile { it == '0' }
+        .takeLast(4)
+        .ifEmpty { "0" }
+        .toInt(radix = 16)
+    val secondColor = getColor(secondNumber)
+
+    val gradient = listOf(
+        if (firstColor == secondColor) Color.Transparent else firstColor,
+        secondColor
+    )
+
+    return when (hashCode % 4) {
+        0 -> Brush.linearGradient(gradient)
+        1 -> Brush.horizontalGradient(gradient)
+        2 -> Brush.verticalGradient(gradient)
+        else -> Brush.radialGradient(gradient)
     }
+}
 
-    return Brush.linearGradient(colors = gradient)
+private fun getColor(number: Int): Color {
+    return when (number % 16) {
+        0 -> ProfilePictureRed
+        1 -> ProfilePictureGreen
+        2 -> ProfilePictureYellow
+        3 -> ProfilePictureBlue
+        4 -> ProfilePictureOrange
+        5 -> ProfilePicturePurple
+        6 -> ProfilePictureCyan
+        7 -> ProfilePictureMagenta
+        8 -> ProfilePictureLime
+        9 -> ProfilePicturePink
+        10 -> ProfilePictureTeal
+        11 -> ProfilePictureLavender
+        12 -> ProfilePictureBrown
+        13 -> ProfilePictureMint
+        14 -> ProfilePictureOlive
+        else -> ProfilePictureApricot
+    }
 }

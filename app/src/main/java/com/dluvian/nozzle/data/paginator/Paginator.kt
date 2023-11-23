@@ -41,7 +41,10 @@ class Paginator(
             val lastItem = feed.value.value.lastOrNull() ?: return@launch
             val newPage = onGetPage(lastItem.entity.createdAt).stateIn(
                 scope = scope,
-                started = SharingStarted.WhileSubscribed(stopTimeoutMillis = SCOPE_TIMEOUT),
+                started = SharingStarted.WhileSubscribed(
+                    stopTimeoutMillis = SCOPE_TIMEOUT,
+                    replayExpirationMillis = 0
+                ),
                 initialValue = emptyList(),
             )
             if (pages.size >= maxPageSize) pages.removeFirst()
@@ -66,7 +69,10 @@ class Paginator(
         scope.launch(context = Dispatchers.IO) {
             val newPage = onGetPage(getCurrentTimeInSeconds()).stateIn(
                 scope = scope,
-                started = SharingStarted.WhileSubscribed(stopTimeoutMillis = SCOPE_TIMEOUT),
+                started = SharingStarted.WhileSubscribed(
+                    stopTimeoutMillis = SCOPE_TIMEOUT,
+                    replayExpirationMillis = 0
+                ),
                 initialValue = initialValue,
             )
             pages.add(newPage)
@@ -89,7 +95,10 @@ class Paginator(
         ) { p1, p2, p3, p4 -> p1 + p2 + p3 + p4 }
             .stateIn(
                 scope = scope,
-                started = SharingStarted.WhileSubscribed(stopTimeoutMillis = SCOPE_TIMEOUT),
+                started = SharingStarted.WhileSubscribed(
+                    stopTimeoutMillis = SCOPE_TIMEOUT,
+                    replayExpirationMillis = 0
+                ),
                 initialValue = initialValue
             )
     }

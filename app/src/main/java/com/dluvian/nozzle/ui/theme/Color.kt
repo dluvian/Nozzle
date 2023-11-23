@@ -12,6 +12,24 @@ val Orange500 = Color(0xFFFF9800)
 
 val HyperlinkBlue = Color(0xFF007AFF)
 
+// Colors from https://sashamaps.net/docs/resources/20-colors/
+val ProfilePictureRed = Color(0xFFe6194B)
+val ProfilePictureGreen = Color(0xFF3cb44b)
+val ProfilePictureYellow = Color(0xFFffe119)
+val ProfilePictureBlue = Color(0xFF4363d8)
+val ProfilePictureOrange = Color(0xFFf58231)
+val ProfilePicturePurple = Color(0xFF911eb4)
+val ProfilePictureCyan = Color(0xFF42d4f4)
+val ProfilePictureMagenta = Color(0xFFf032e6)
+val ProfilePictureLime = Color(0xFFbfef45)
+val ProfilePicturePink = Color(0xFFfabed4)
+val ProfilePictureTeal = Color(0xFF469990)
+val ProfilePictureLavender = Color(0xFFdcbeff)
+val ProfilePictureBrown = Color(0xFF9A6324)
+val ProfilePictureMint = Color(0xFFaaffc3)
+val ProfilePictureOlive = Color(0xFF808000)
+val ProfilePictureApricot = Color(0xFFffd8b1)
+
 val Colors.hintGray: Color
     @Composable
     get() = if (isLight) Color.LightGray else Color.DarkGray

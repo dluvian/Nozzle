@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.dluvian.nozzle.data.DB_BATCH_SIZE
 import com.dluvian.nozzle.data.SCOPE_TIMEOUT
 import com.dluvian.nozzle.data.cache.IClickedMediaUrlCache
+import com.dluvian.nozzle.data.paginator.IPaginator
 import com.dluvian.nozzle.data.paginator.Paginator
 import com.dluvian.nozzle.data.postCardInteractor.IPostCardInteractor
 import com.dluvian.nozzle.data.provider.IFeedProvider
@@ -31,7 +32,7 @@ class HashtagViewModel(
         _uiState.value
     )
 
-    private val paginator = Paginator(
+    private val paginator: IPaginator = Paginator(
         scope = viewModelScope,
         onSetRefreshing = { bool -> _uiState.update { it.copy(isRefreshing = bool) } },
         onGetPage = { lastCreatedAt ->
