@@ -14,8 +14,8 @@ import com.dluvian.nozzle.ui.components.postCard.PostCardList
 
 @Composable
 fun LikesScreen(
-    uiState: String,
-    likedPosts: List<PostWithMeta>,
+    feed: List<PostWithMeta>,
+    isRefreshing: Boolean,
     postCardNavLambdas: PostCardNavLambdas,
     onShowMedia: (String) -> Unit,
     onShouldShowMedia: (String) -> Boolean,
@@ -31,8 +31,8 @@ fun LikesScreen(
         )
         Column(modifier = Modifier.fillMaxSize()) {
             PostCardList(
-                posts = likedPosts,
-                isRefreshing = false, // TODO: uiState.isRefreshing,
+                posts = feed,
+                isRefreshing = isRefreshing,
                 postCardNavLambdas = postCardNavLambdas,
                 onRefresh = onRefresh,
                 onLike = { /** Everything is already liked and likes are irreversable*/ },
@@ -43,5 +43,5 @@ fun LikesScreen(
             )
         }
     }
-    if (likedPosts.isEmpty()) NoPostsHint()
+    if (feed.isEmpty()) NoPostsHint()
 }

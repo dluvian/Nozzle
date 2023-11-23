@@ -11,6 +11,7 @@ import com.dluvian.nozzle.data.paginator.Paginator
 import com.dluvian.nozzle.data.postCardInteractor.IPostCardInteractor
 import com.dluvian.nozzle.data.preferences.IFeedSettingsPreferences
 import com.dluvian.nozzle.data.provider.*
+import com.dluvian.nozzle.data.provider.feed.IFeedProvider
 import com.dluvian.nozzle.data.utils.*
 import com.dluvian.nozzle.model.*
 import kotlinx.coroutines.Dispatchers
@@ -44,7 +45,7 @@ class FeedViewModel(
             feedProvider.getFeedFlow(
                 feedSettings = _uiState.value.feedSettings,
                 limit = DB_BATCH_SIZE,
-                until = lastCreatedAt
+                until = lastCreatedAt,
             )
         }
     )

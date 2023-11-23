@@ -27,6 +27,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.flowOf
 import java.util.concurrent.atomic.AtomicInteger
 
 class PostWithMetaProvider(
@@ -40,7 +41,7 @@ class PostWithMetaProvider(
     private val profileDao: ProfileDao,
 ) : IPostWithMetaProvider {
     override suspend fun getPostsWithMetaFlow(feedInfo: FeedInfo): Flow<List<PostWithMeta>> {
-        if (feedInfo.postIds.isEmpty()) return flow { emit(emptyList()) }
+        if (feedInfo.postIds.isEmpty()) return flowOf(emptyList())
 
         val extendedPostsFlow = postDao
             .listExtendedPostsFlow(

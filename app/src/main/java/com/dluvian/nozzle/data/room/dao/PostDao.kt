@@ -67,7 +67,7 @@ interface PostDao {
                 "AND id IN (SELECT DISTINCT eventId FROM eventRelay WHERE relayUrl IN (:relays)) " +
                 "AND createdAt < :until " +
                 "AND (:hashtag IS NULL OR id IN (SELECT eventId FROM hashtag WHERE hashtag = :hashtag)) " +
-                "AND (:isMention = 0 OR (id IN (SELECT eventId FROM mention WHERE pubkey = (SELECT pubkey FROM account WHERE isActive = 1)) " +
+                "AND (:isOnlyMention = 0 OR (id IN (SELECT eventId FROM mention WHERE pubkey = (SELECT pubkey FROM account WHERE isActive = 1)) " +
                 "  AND pubkey != (SELECT pubkey FROM account WHERE isActive = 1)" +
                 ")) " +
                 "ORDER BY createdAt DESC " +
@@ -80,7 +80,7 @@ interface PostDao {
         relays: Collection<String>,
         until: Long,
         limit: Int,
-        isMention: Boolean = false,
+        isOnlyMention: Boolean = false,
     ): List<PostEntity>
 
     /**
@@ -92,6 +92,7 @@ interface PostDao {
                 "WHERE ((:isReplies AND replyToId IS NOT NULL) OR (:isPosts AND replyToId IS NULL)) " +
                 "AND createdAt < :until " +
                 "AND (:hashtag IS NULL OR id IN (SELECT eventId FROM hashtag WHERE hashtag = :hashtag)) " +
+                "AND (:isOnlyLikedByMe = 0 OR (id IN (SELECT eventId FROM reaction WHERE pubkey = (SELECT pubkey FROM account WHERE isActive = 1)))) " +
                 "ORDER BY createdAt DESC " +
                 "LIMIT :limit"
     )
@@ -101,6 +102,7 @@ interface PostDao {
         hashtag: String?,
         until: Long,
         limit: Int,
+        isOnlyLikedByMe: Boolean = false,
     ): List<PostEntity>
 
 
@@ -117,7 +119,18 @@ interface PostDao {
             relays = relays,
             until = until,
             limit = limit,
-            isMention = true,
+            isOnlyMention = true,
+        )
+    }
+
+    suspend fun getLikedPosts(until: Long, limit: Int): List<PostEntity> {
+        return getGlobalFeedBasePosts(
+            isPosts = true,
+            isReplies = true,
+            hashtag = null,
+            until = until,
+            limit = limit,
+            isOnlyLikedByMe = true
         )
     }
 

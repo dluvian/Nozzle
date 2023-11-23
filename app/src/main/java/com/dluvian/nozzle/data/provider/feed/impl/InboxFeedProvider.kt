@@ -1,13 +1,13 @@
-package com.dluvian.nozzle.data.provider.impl
+package com.dluvian.nozzle.data.provider.feed.impl
 
-import com.dluvian.nozzle.data.provider.IInboxFeedProvider
 import com.dluvian.nozzle.data.provider.IPostWithMetaProvider
+import com.dluvian.nozzle.data.provider.feed.IInboxFeedProvider
 import com.dluvian.nozzle.data.room.dao.PostDao
 import com.dluvian.nozzle.data.subscriber.INozzleSubscriber
 import com.dluvian.nozzle.model.PostWithMeta
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.flowOf
 
 class InboxFeedProvider(
     private val nozzleSubscriber: INozzleSubscriber,
@@ -20,7 +20,7 @@ class InboxFeedProvider(
         until: Long,
         waitForSubscription: Long
     ): Flow<List<PostWithMeta>> {
-        if (relays.isEmpty() || limit <= 0) return flow { emit(emptyList()) }
+        if (relays.isEmpty() || limit <= 0) return flowOf(emptyList())
 
         nozzleSubscriber.subscribeToInbox(
             relays = relays,

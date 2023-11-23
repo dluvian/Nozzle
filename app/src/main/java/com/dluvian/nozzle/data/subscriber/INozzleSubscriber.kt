@@ -25,6 +25,11 @@ interface INozzleSubscriber {
         until: Long = getCurrentTimeInSeconds()
     )
 
+    fun subscribeToLikes(
+        limit: Int,
+        until: Long = getCurrentTimeInSeconds()
+    )
+
     // TODO: NostrId instead of String. Prevents parsing nostrStr multiple times
     suspend fun subscribeFullProfile(profileId: String)
 

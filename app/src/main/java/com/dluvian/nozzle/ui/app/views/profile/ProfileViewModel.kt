@@ -19,10 +19,10 @@ import com.dluvian.nozzle.data.paginator.Paginator
 import com.dluvian.nozzle.data.postCardInteractor.IPostCardInteractor
 import com.dluvian.nozzle.data.profileFollower.IProfileFollower
 import com.dluvian.nozzle.data.provider.IContactListProvider
-import com.dluvian.nozzle.data.provider.IFeedProvider
 import com.dluvian.nozzle.data.provider.IProfileWithMetaProvider
 import com.dluvian.nozzle.data.provider.IPubkeyProvider
 import com.dluvian.nozzle.data.provider.IRelayProvider
+import com.dluvian.nozzle.data.provider.feed.IFeedProvider
 import com.dluvian.nozzle.model.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job

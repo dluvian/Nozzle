@@ -49,6 +49,7 @@ class NozzleSubscriber(
     private val parentPostSubs = Collections.synchronizedList(mutableListOf<String>())
     private val unknownPubkeySubs = Collections.synchronizedList(mutableListOf<String>())
     private val inboxSubs = Collections.synchronizedList(mutableListOf<String>())
+    private val likeSubs = Collections.synchronizedList(mutableListOf<String>())
 
     override suspend fun subscribePersonalProfiles() {
         Log.i(TAG, "Subscribe personal profiles")
@@ -172,6 +173,19 @@ class NozzleSubscriber(
             relays = relays
         )
         inboxSubs.unsubThenAddAll(subIds)
+    }
+
+    override fun subscribeToLikes(limit: Int, until: Long) {
+        Log.i(TAG, "Subscribe likes")
+        if (limit <= 0) return
+
+        val subIds = nostrSubscriber.subscribeLikes(
+            pubkey = pubkeyProvider.getActivePubkey(),
+            limit = limit,
+            until = until,
+            relays = relayProvider.getWriteRelays()
+        )
+        likeSubs.unsubThenAddAll(subIds)
     }
 
     override suspend fun subscribeFeedInfo(posts: List<PostEntity>): FeedInfo {

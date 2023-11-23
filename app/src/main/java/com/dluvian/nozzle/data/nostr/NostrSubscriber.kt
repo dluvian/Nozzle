@@ -257,6 +257,25 @@ class NostrSubscriber(private val nostrService: INostrService) : INostrSubscribe
         )
     }
 
+    override fun subscribeLikes(
+        pubkey: Pubkey,
+        limit: Int,
+        until: Long,
+        relays: Collection<String>?
+    ): List<String> {
+        val likeFilter = Filter.createReactionFilter(
+            pubkeys = listOf(pubkey),
+            limit = limit,
+            until = until,
+        )
+
+        return nostrService.subscribe(
+            filters = listOf(likeFilter),
+            unsubOnEOSE = true,
+            relays = relays,
+        )
+    }
+
     // No relaySelection needed because nip65 could be anywhere
     override fun subscribeNip65(pubkeys: List<String>): List<String> {
         if (pubkeys.isEmpty()) return emptyList()

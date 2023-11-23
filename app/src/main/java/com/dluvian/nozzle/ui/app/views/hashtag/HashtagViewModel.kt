@@ -9,8 +9,8 @@ import com.dluvian.nozzle.data.cache.IClickedMediaUrlCache
 import com.dluvian.nozzle.data.paginator.IPaginator
 import com.dluvian.nozzle.data.paginator.Paginator
 import com.dluvian.nozzle.data.postCardInteractor.IPostCardInteractor
-import com.dluvian.nozzle.data.provider.IFeedProvider
 import com.dluvian.nozzle.data.provider.IRelayProvider
+import com.dluvian.nozzle.data.provider.feed.IFeedProvider
 import com.dluvian.nozzle.data.utils.*
 import com.dluvian.nozzle.data.utils.HashtagUtils.removeHashtagPrefix
 import com.dluvian.nozzle.model.MultipleRelays

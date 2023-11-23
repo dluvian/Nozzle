@@ -115,6 +115,7 @@ fun NozzleApp(appContainer: AppContainer) {
                 likesViewModel = viewModel(
                     factory = LikesViewModel.provideFactory(
                         clickedMediaUrlCache = appContainer.clickedMediaUrlCache,
+                        likeFeedProvider = appContainer.likeFeedProvider
                     )
                 ),
                 threadViewModel = viewModel(

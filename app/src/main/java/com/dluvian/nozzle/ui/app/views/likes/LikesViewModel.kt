@@ -3,54 +3,59 @@ package com.dluvian.nozzle.ui.app.views.likes
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import com.dluvian.nozzle.data.DB_BATCH_SIZE
 import com.dluvian.nozzle.data.SCOPE_TIMEOUT
 import com.dluvian.nozzle.data.cache.IClickedMediaUrlCache
-import com.dluvian.nozzle.model.PostWithMeta
-import kotlinx.coroutines.Dispatchers
+import com.dluvian.nozzle.data.paginator.IPaginator
+import com.dluvian.nozzle.data.paginator.Paginator
+import com.dluvian.nozzle.data.provider.feed.ILikeFeedProvider
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.update
 
 class LikesViewModel(
-    val clickedMediaUrlCache: IClickedMediaUrlCache
+    val clickedMediaUrlCache: IClickedMediaUrlCache,
+    private val likeFeedProvider: ILikeFeedProvider
 ) : ViewModel() {
-    private val _uiState = MutableStateFlow("LOL")
-    val uiState = _uiState.stateIn(
+    private val _isRefreshing = MutableStateFlow(false)
+    val isRefreshing = _isRefreshing.stateIn(
         viewModelScope,
         SharingStarted.WhileSubscribed(stopTimeoutMillis = SCOPE_TIMEOUT),
-        _uiState.value
+        _isRefreshing.value
     )
 
-    var likedPosts: StateFlow<List<PostWithMeta>> = MutableStateFlow(emptyList())
-
-    val onOpenLikes: () -> Unit = {
-        viewModelScope.launch(context = Dispatchers.IO) {
-            // TODO
+    private val paginator: IPaginator = Paginator(
+        scope = viewModelScope,
+        onSetRefreshing = { bool -> _isRefreshing.update { bool } },
+        onGetPage = { lastCreatedAt ->
+            likeFeedProvider.getLikeFeedFlow(
+                limit = DB_BATCH_SIZE,
+                until = lastCreatedAt
+            )
         }
-    }
+    )
 
-    val onRefresh: () -> Unit = {
-        viewModelScope.launch(context = Dispatchers.IO) {
-            // TODO
-        }
-    }
+    val feed = paginator.getFeed()
 
-    val onLoadMore: () -> Unit = local@{
-        // TODO
-    }
+    val onOpenLikes: () -> Unit = { paginator.reset() }
+
+    val onRefresh: () -> Unit = { paginator.refresh() }
+
+    val onLoadMore: () -> Unit = { paginator.loadMore() }
 
 
     companion object {
         fun provideFactory(
             clickedMediaUrlCache: IClickedMediaUrlCache,
+            likeFeedProvider: ILikeFeedProvider,
         ): ViewModelProvider.Factory =
             object : ViewModelProvider.Factory {
                 @Suppress("UNCHECKED_CAST")
                 override fun <T : ViewModel> create(modelClass: Class<T>): T {
                     return LikesViewModel(
-                        clickedMediaUrlCache = clickedMediaUrlCache
+                        clickedMediaUrlCache = clickedMediaUrlCache,
+                        likeFeedProvider = likeFeedProvider
                     ) as T
                 }
             }

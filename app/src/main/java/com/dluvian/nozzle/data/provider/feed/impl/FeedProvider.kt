@@ -1,10 +1,10 @@
-package com.dluvian.nozzle.data.provider.impl
+package com.dluvian.nozzle.data.provider.feed.impl
 
 import android.util.Log
 import com.dluvian.nozzle.data.provider.IContactListProvider
-import com.dluvian.nozzle.data.provider.IFeedProvider
 import com.dluvian.nozzle.data.provider.IPostWithMetaProvider
 import com.dluvian.nozzle.data.provider.IPubkeyProvider
+import com.dluvian.nozzle.data.provider.feed.IFeedProvider
 import com.dluvian.nozzle.data.room.dao.PostDao
 import com.dluvian.nozzle.data.room.entity.PostEntity
 import com.dluvian.nozzle.data.subscriber.INozzleSubscriber

@@ -48,13 +48,17 @@ class Filter(
         }
 
         fun createReactionFilter(
-            e: List<String>,
-            pubkeys: List<String>? = null,
+            pubkeys: List<String>,
+            e: List<String>? = null,
+            until: Long? = null,
+            limit: Int? = null,
         ): Filter {
             return Filter(
                 authors = pubkeys,
                 kinds = listOf(Event.Kind.REACTION),
                 e = e,
+                until = until,
+                limit = limit
             )
         }
 

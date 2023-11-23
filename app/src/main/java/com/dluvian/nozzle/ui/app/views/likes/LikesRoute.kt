@@ -13,12 +13,13 @@ fun LikesRoute(
     onPrepareReply: (PostWithMeta) -> Unit,
     onGoBack: () -> Unit,
 ) {
-    val uiState by likesViewModel.uiState.collectAsState()
-    val likedPosts by likesViewModel.likedPosts.collectAsState()
+    val isRefreshing by likesViewModel.isRefreshing.collectAsState()
+    val feedFlow by likesViewModel.feed.collectAsState()
+    val feed by feedFlow.collectAsState()
 
     LikesScreen(
-        uiState = uiState,
-        likedPosts = likedPosts,
+        feed = feed,
+        isRefreshing = isRefreshing,
         postCardNavLambdas = postCardNavLambdas,
         onShowMedia = { mediaUrl ->
             likesViewModel.clickedMediaUrlCache.insert(mediaUrl)
