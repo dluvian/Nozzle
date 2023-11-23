@@ -24,14 +24,18 @@ import com.dluvian.nozzle.ui.theme.ProfilePictureYellow
 @Composable
 fun getDefaultPictureBrush(pubkey: String): Brush {
     if (pubkey.isBlank()) return SolidColor(Color.Transparent)
+    val maxHexLength = 7
 
-    val hashCode = pubkey.hashCode()
-
-    val firstColor = getColor(hashCode)
+    val firstNumber = pubkey
+        .dropWhile { it == '0' }
+        .take(maxHexLength)
+        .ifEmpty { "0" }
+        .toInt(radix = 16)
+    val firstColor = getColor(firstNumber)
 
     val secondNumber = pubkey
         .dropLastWhile { it == '0' }
-        .takeLast(4)
+        .takeLast(maxHexLength)
         .ifEmpty { "0" }
         .toInt(radix = 16)
     val secondColor = getColor(secondNumber)
@@ -41,11 +45,10 @@ fun getDefaultPictureBrush(pubkey: String): Brush {
         secondColor
     )
 
-    return when (hashCode % 4) {
+    return when (firstNumber % 3) {
         0 -> Brush.linearGradient(gradient)
         1 -> Brush.horizontalGradient(gradient)
-        2 -> Brush.verticalGradient(gradient)
-        else -> Brush.radialGradient(gradient)
+        else -> Brush.verticalGradient(gradient)
     }
 }
 
