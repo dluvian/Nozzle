@@ -20,11 +20,14 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalClipboardManager
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.style.TextOverflow
 import com.dluvian.nozzle.R
 import com.dluvian.nozzle.data.nostr.utils.ShortenedNameUtils.getShortenedNpubFromPubkey
+import com.dluvian.nozzle.data.utils.copyAndToast
 import com.dluvian.nozzle.model.PostWithMeta
 import com.dluvian.nozzle.model.ProfileWithMeta
 import com.dluvian.nozzle.model.TrustType
@@ -58,7 +61,6 @@ fun ProfileScreen(
     onShowMedia: (String) -> Unit,
     onShouldShowMedia: (String) -> Boolean,
     onRefresh: () -> Unit,
-    onCopyNprofile: () -> Unit,
     onLoadMore: () -> Unit,
     onNavigateToEditProfile: () -> Unit,
 ) {
@@ -68,7 +70,6 @@ fun ProfileScreen(
             isFollowedByMe = isFollowedByMe,
             onFollow = onFollow,
             onUnfollow = onUnfollow,
-            onCopyNprofile = onCopyNprofile,
             onNavToEditProfile = onNavigateToEditProfile,
             onNavigateToId = postCardNavLambdas.onNavigateToId,
         )
@@ -103,7 +104,6 @@ private fun ProfileData(
     isFollowedByMe: Boolean,
     onFollow: (String) -> Unit,
     onUnfollow: (String) -> Unit,
-    onCopyNprofile: () -> Unit,
     onNavToEditProfile: () -> Unit,
     onNavigateToId: (String) -> Unit
 ) {
@@ -125,7 +125,6 @@ private fun ProfileData(
             name = profile.metadata.name.orEmpty()
                 .ifEmpty { getShortenedNpubFromPubkey(profile.pubkey) ?: profile.pubkey },
             nprofile = profile.nprofile,
-            onCopyNprofile = onCopyNprofile,
         )
         Spacer(Modifier.height(spacing.medium))
         profile.metadata.about?.let { about ->
@@ -245,7 +244,6 @@ private fun NumberedCategories(
 private fun NameAndNprofile(
     name: String,
     nprofile: String,
-    onCopyNprofile: () -> Unit,
 ) {
     Row(
         modifier = Modifier.fillMaxWidth(),
@@ -258,9 +256,18 @@ private fun NameAndNprofile(
                 overflow = TextOverflow.Ellipsis,
                 style = MaterialTheme.typography.h6,
             )
+            val clip = LocalClipboardManager.current
+            val context = LocalContext.current
             CopyableNprofile(
                 nprofile = nprofile,
-                onCopyNprofile = onCopyNprofile
+                onCopyNprofile = {
+                    copyAndToast(
+                        text = nprofile,
+                        toast = context.getString(R.string.profile_id_copied),
+                        context = context,
+                        clip = clip
+                    )
+                }
             )
         }
     }

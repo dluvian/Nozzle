@@ -1,6 +1,5 @@
 package com.dluvian.nozzle.ui.components.postCard
 
-import android.widget.Toast
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -20,10 +19,10 @@ import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.style.TextAlign
 import com.dluvian.nozzle.R
 import com.dluvian.nozzle.data.nostr.utils.EncodingUtils.createNeventStr
+import com.dluvian.nozzle.data.utils.copyAndToast
 import com.dluvian.nozzle.model.PostWithMeta
 import com.dluvian.nozzle.model.ThreadPosition
 import com.dluvian.nozzle.model.TrustType
@@ -54,7 +53,7 @@ fun PostCard(
     val yTop = spacing.screenEdge
     val yBottom = sizing.profilePicture + spacing.screenEdge
     val small = spacing.small
-    val clipboard = LocalClipboardManager.current
+    val clip = LocalClipboardManager.current
     val context = LocalContext.current
     Row(modifier
         .combinedClickable(
@@ -66,15 +65,12 @@ fun PostCard(
                     postId = post.entity.id,
                     relays = post.relays
                 ).orEmpty()
-                clipboard.setText(AnnotatedString(nevent))
-                Toast
-                    .makeText(
-                        context,
-                        context.getString(R.string.note_id_copied),
-                        Toast.LENGTH_SHORT
-                    )
-                    .show()
-
+                copyAndToast(
+                    text = nevent,
+                    toast = context.getString(R.string.note_id_copied),
+                    context = context,
+                    clip = clip
+                )
             })
         .fillMaxWidth()
         .drawBehind {

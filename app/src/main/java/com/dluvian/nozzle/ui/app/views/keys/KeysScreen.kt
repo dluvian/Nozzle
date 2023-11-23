@@ -1,6 +1,5 @@
 package com.dluvian.nozzle.ui.app.views.keys
 
-import android.widget.Toast
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -17,12 +16,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.input.VisualTransformation
 import com.dluvian.nozzle.R
+import com.dluvian.nozzle.data.utils.copyAndToast
 import com.dluvian.nozzle.ui.components.CopyIcon
 import com.dluvian.nozzle.ui.components.ReturnableTopBar
 import com.dluvian.nozzle.ui.components.VisibilityIcon
@@ -63,12 +62,12 @@ private fun Npub(npub: String) {
         onValueChange = { /* Always disabled*/ },
         trailingIcon = {
             CopyIcon(onCopy = {
-                clip.setText(AnnotatedString(npub))
-                Toast.makeText(
-                    context,
-                    context.getString(R.string.public_key_copied),
-                    Toast.LENGTH_SHORT
-                ).show()
+                copyAndToast(
+                    text = npub,
+                    toast = context.getString(R.string.public_key_copied),
+                    context = context,
+                    clip = clip
+                )
             })
         }
     )
@@ -109,12 +108,12 @@ private fun NsecTrailingIcons(nsec: String, isVisible: Boolean, onToggleVisibili
         )
         Spacer(modifier = Modifier.width(spacing.medium))
         CopyIcon(onCopy = {
-            clip.setText(AnnotatedString(nsec))
-            Toast.makeText(
-                context,
-                context.getString(R.string.private_key_copied),
-                Toast.LENGTH_SHORT
-            ).show()
+            copyAndToast(
+                text = nsec,
+                toast = context.getString(R.string.private_key_copied),
+                context = context,
+                clip = clip
+            )
         })
     }
 }

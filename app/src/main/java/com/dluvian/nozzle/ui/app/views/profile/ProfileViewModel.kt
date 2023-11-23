@@ -1,14 +1,9 @@
 package com.dluvian.nozzle.ui.app.views.profile
 
-import android.content.Context
 import android.util.Log
-import android.widget.Toast
-import androidx.compose.ui.platform.ClipboardManager
-import androidx.compose.ui.text.AnnotatedString
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
-import com.dluvian.nozzle.R
 import com.dluvian.nozzle.data.DB_BATCH_SIZE
 import com.dluvian.nozzle.data.MAX_RELAYS
 import com.dluvian.nozzle.data.SCOPE_TIMEOUT
@@ -44,8 +39,6 @@ class ProfileViewModel(
     private val profileFollower: IProfileFollower,
     private val pubkeyProvider: IPubkeyProvider,
     private val contactListProvider: IContactListProvider,
-    context: Context,
-    clip: ClipboardManager,
 ) : ViewModel() {
     private val _isRefreshing = MutableStateFlow(false)
     val isRefreshing = _isRefreshing
@@ -114,20 +107,6 @@ class ProfileViewModel(
 
     val onLoadMore: () -> Unit = {
         paginator.loadMore()
-    }
-
-    // TODO: Move this to UI
-    val onCopyNprofile: () -> Unit = {
-        profileState.value.nprofile.let {
-            Log.i(TAG, "Copy nprofile $it")
-            clip.setText(AnnotatedString(it))
-            Toast.makeText(
-                context,
-                context.getString(R.string.profile_id_copied),
-                Toast.LENGTH_SHORT
-            )
-                .show()
-        }
     }
 
     private var followProcess: Job? = null
@@ -216,8 +195,6 @@ class ProfileViewModel(
             pubkeyProvider: IPubkeyProvider,
             clickedMediaUrlCache: IClickedMediaUrlCache,
             contactListProvider: IContactListProvider,
-            context: Context,
-            clip: ClipboardManager,
         ): ViewModelProvider.Factory =
             object : ViewModelProvider.Factory {
                 @Suppress("UNCHECKED_CAST")
@@ -231,8 +208,6 @@ class ProfileViewModel(
                         profileFollower = profileFollower,
                         pubkeyProvider = pubkeyProvider,
                         contactListProvider = contactListProvider,
-                        context = context,
-                        clip = clip,
                     ) as T
                 }
             }
