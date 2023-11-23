@@ -60,13 +60,11 @@ fun PostCard(
             enabled = !isCurrent,
             onClick = { postCardNavLambdas.onNavigateToThread(post.entity.id) },
             onLongClick = {
-                // TODO: Move this out of UI layer
-                val nevent = createNeventStr(
-                    postId = post.entity.id,
-                    relays = post.relays
-                ).orEmpty()
                 copyAndToast(
-                    text = nevent,
+                    text = createNeventStr(
+                        postId = post.entity.id,
+                        relays = post.relays
+                    ).orEmpty(),
                     toast = context.getString(R.string.note_id_copied),
                     context = context,
                     clip = clip
@@ -252,7 +250,6 @@ private fun PostCardActions(
         QuoteAction(
             modifier = Modifier.weight(1f),
             onNavigateToQuote = {
-                // TODO: Move this out of UI layer
                 onNavigateToQuote(
                     createNeventStr(
                         postId = post.entity.id,

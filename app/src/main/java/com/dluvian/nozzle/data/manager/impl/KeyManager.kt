@@ -45,7 +45,6 @@ class KeyManager(context: Context, private val accountDao: AccountDao) : IKeyMan
         EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
     )
 
-    // TODO: MutableState is enough? Why FLow?
     private val _currentPubkey = MutableStateFlow("")
     private val currentPubkey = _currentPubkey.stateIn(
         scope, SharingStarted.Eagerly, getActivePubkey()

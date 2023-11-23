@@ -50,7 +50,6 @@ fun ReplyingTo(name: String, replyRelayHint: String?, modifier: Modifier = Modif
                 }
             }
         },
-        // TODO: Don't we have a NozzleText that has overflow and maxLines set which we could use?
         overflow = TextOverflow.Ellipsis,
         maxLines = 1
     )
