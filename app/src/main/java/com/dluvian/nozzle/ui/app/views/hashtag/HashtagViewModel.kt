@@ -44,7 +44,7 @@ class HashtagViewModel(
         }
     )
 
-    var feed = paginator.getFeed()
+    val feed = paginator.getFeed()
 
     val onOpenHashtag: (String) -> Unit = local@{ hashtag ->
         val lowerCaseHashtag = hashtag.lowercase().removeHashtagPrefix()

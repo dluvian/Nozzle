@@ -4,22 +4,19 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
-import com.dluvian.nozzle.data.DB_APPEND_BATCH_SIZE
 import com.dluvian.nozzle.data.DB_BATCH_SIZE
-import com.dluvian.nozzle.data.MAX_FEED_LENGTH
-import com.dluvian.nozzle.data.WAIT_TIME
 import com.dluvian.nozzle.data.cache.IClickedMediaUrlCache
+import com.dluvian.nozzle.data.paginator.IPaginator
+import com.dluvian.nozzle.data.paginator.Paginator
 import com.dluvian.nozzle.data.postCardInteractor.IPostCardInteractor
 import com.dluvian.nozzle.data.preferences.IFeedSettingsPreferences
 import com.dluvian.nozzle.data.provider.*
 import com.dluvian.nozzle.data.utils.*
 import com.dluvian.nozzle.model.*
-import kotlinx.coroutines.Dispatchers.IO
-import kotlinx.coroutines.delay
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import java.util.*
-import java.util.concurrent.atomic.AtomicBoolean
 
 private const val TAG = "FeedViewModel"
 
@@ -39,18 +36,29 @@ class FeedViewModel(
     )
 
     val metadataState = personalProfileProvider.getMetadataStateFlow()
-    var feedState: StateFlow<List<PostWithMeta>> = MutableStateFlow(emptyList())
+
+    private val paginator: IPaginator = Paginator(
+        scope = viewModelScope,
+        onSetRefreshing = { bool -> _uiState.update { it.copy(isRefreshing = bool) } },
+        onGetPage = { lastCreatedAt ->
+            feedProvider.getFeedFlow(
+                feedSettings = _uiState.value.feedSettings,
+                limit = DB_BATCH_SIZE,
+                until = lastCreatedAt
+            )
+        }
+    )
+
+    val feed = paginator.getFeed()
 
     private val lastAutopilotResult: MutableMap<String, Set<String>> =
         Collections.synchronizedMap(mutableMapOf<String, Set<String>>())
-
-    private val isAppending = AtomicBoolean(false)
 
     val pubkeyState = pubkeyProvider.getActivePubkeyStateFlow()
         .onEach local@{
             if (it.isEmpty()) return@local
             useCachedFeedSettings()
-            handleRefresh(delayBeforeUpdate = false)
+            handleRefresh()
         }
         .stateIn(viewModelScope, SharingStarted.Eagerly, "")
 
@@ -58,21 +66,14 @@ class FeedViewModel(
         useCachedFeedSettings()
     }
 
-    val onRefreshFeedView: () -> Unit = {
-        viewModelScope.launch(context = IO) {
-            handleRefresh(delayBeforeUpdate = true)
+    val onRefresh: () -> Unit = {
+        viewModelScope.launch(Dispatchers.IO) {
+            handleRefresh()
         }
     }
 
     val onLoadMore: () -> Unit = {
-        if (!isAppending.get()) {
-            isAppending.set(true)
-            viewModelScope.launch(context = IO) {
-                Log.i(TAG, "Load more")
-                appendFeed(currentFeed = feedState.value)
-                isAppending.set(false)
-            }
-        }
+        paginator.loadMore()
     }
 
     private var toggledContacts = false
@@ -83,7 +84,7 @@ class FeedViewModel(
 
     val onRefreshOnMenuDismiss: () -> Unit = {
         if (toggledContacts || toggledPosts || toggledReplies || toggledAutopilot || toggledRelay) {
-            onRefreshFeedView()
+            onRefresh()
             if (toggledContacts || toggledPosts || toggledReplies) {
                 feedSettingsPreferences.setFeedSettings(_uiState.value.feedSettings)
             }
@@ -179,48 +180,9 @@ class FeedViewModel(
         }
     }
 
-    private suspend fun handleRefresh(delayBeforeUpdate: Boolean) {
-        setUIRefresh(true)
-        updateScreen()
-        if (delayBeforeUpdate) delay(WAIT_TIME)
-        setUIRefresh(false)
-    }
-
-    private suspend fun updateScreen() {
+    private suspend fun handleRefresh() {
         updateRelaySelection()
-        feedState = feedProvider.getFeedFlow(
-            feedSettings = _uiState.value.feedSettings,
-            limit = DB_BATCH_SIZE,
-            waitForSubscription = WAIT_TIME,
-        ).stateIn(
-            viewModelScope,
-            SharingStarted.Eagerly,
-            feedState.value,
-        )
-    }
-
-    // TODO: This is too slow and sucks. Same in ProfileViewModel. Use pagination
-    private suspend fun appendFeed(currentFeed: List<PostWithMeta>) {
-        setUIRefresh(true)
-        currentFeed.lastOrNull()?.let { last ->
-            feedState = feedProvider.getFeedFlow(
-                feedSettings = _uiState.value.feedSettings,
-                limit = DB_APPEND_BATCH_SIZE,
-                until = last.entity.createdAt,
-            ).distinctUntilChanged()
-                .map { toAppend -> currentFeed.takeLast(MAX_FEED_LENGTH) + toAppend }
-                .stateIn(
-                    viewModelScope,
-                    SharingStarted.Eagerly,
-                    currentFeed,
-                )
-        }
-        delay(WAIT_TIME)
-        setUIRefresh(false)
-    }
-
-    private fun setUIRefresh(value: Boolean) {
-        _uiState.update { it.copy(isRefreshing = value) }
+        paginator.refresh()
     }
 
     private suspend fun updateRelaySelection(newRelayStatuses: List<RelayActive>? = null) {

@@ -50,13 +50,13 @@ import kotlinx.coroutines.launch
 fun FeedScreen(
     uiState: FeedViewModelState,
     pubkeyState: String,
-    feedState: List<PostWithMeta>,
+    feed: List<PostWithMeta>,
     metadataState: Metadata?,
     postCardNavLambdas: PostCardNavLambdas,
     onLike: (PostWithMeta) -> Unit,
     onShowMedia: (String) -> Unit,
     onShouldShowMedia: (String) -> Boolean,
-    onRefreshFeedView: () -> Unit,
+    onRefresh: () -> Unit,
     onRefreshOnMenuDismiss: () -> Unit,
     onPrepareReply: (PostWithMeta) -> Unit,
     onToggleContactsOnly: () -> Unit,
@@ -96,10 +96,10 @@ fun FeedScreen(
                 .padding(it)
         ) {
             PostCardList(
-                posts = feedState,
+                posts = feed,
                 isRefreshing = uiState.isRefreshing,
                 postCardNavLambdas = postCardNavLambdas,
-                onRefresh = onRefreshFeedView,
+                onRefresh = onRefresh,
                 onLike = onLike,
                 onShowMedia = onShowMedia,
                 onShouldShowMedia = onShouldShowMedia,
@@ -108,7 +108,7 @@ fun FeedScreen(
                 lazyListState = lazyListState,
             )
         }
-        if (feedState.isEmpty()) NoPostsHint()
+        if (feed.isEmpty()) NoPostsHint()
     }
 }
 

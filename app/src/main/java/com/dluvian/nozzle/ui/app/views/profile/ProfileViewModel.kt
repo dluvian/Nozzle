@@ -9,15 +9,13 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.dluvian.nozzle.R
-import com.dluvian.nozzle.data.APPEND_RETRY_TIME
-import com.dluvian.nozzle.data.DB_APPEND_BATCH_SIZE
 import com.dluvian.nozzle.data.DB_BATCH_SIZE
-import com.dluvian.nozzle.data.MAX_APPEND_ATTEMPTS
-import com.dluvian.nozzle.data.MAX_FEED_LENGTH
 import com.dluvian.nozzle.data.MAX_RELAYS
 import com.dluvian.nozzle.data.SCOPE_TIMEOUT
 import com.dluvian.nozzle.data.cache.IClickedMediaUrlCache
 import com.dluvian.nozzle.data.nostr.utils.EncodingUtils.profileIdToNostrId
+import com.dluvian.nozzle.data.paginator.IPaginator
+import com.dluvian.nozzle.data.paginator.Paginator
 import com.dluvian.nozzle.data.postCardInteractor.IPostCardInteractor
 import com.dluvian.nozzle.data.profileFollower.IProfileFollower
 import com.dluvian.nozzle.data.provider.IContactListProvider
@@ -28,12 +26,10 @@ import com.dluvian.nozzle.data.provider.IRelayProvider
 import com.dluvian.nozzle.model.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import java.util.concurrent.CancellationException
 import java.util.concurrent.atomic.AtomicBoolean
-import java.util.concurrent.atomic.AtomicInteger
 
 private const val TAG = "ProfileViewModel"
 
@@ -63,8 +59,6 @@ class ProfileViewModel(
         ProfileWithMeta.createEmpty()
     )
 
-    var feedState: StateFlow<List<PostWithMeta>> = MutableStateFlow(emptyList())
-
     // TODO: Check if this can replaced with SQL query and calling follow with Dispatchers.Main
     private val _isFollowedByMeState = MutableStateFlow(false)
     val isFollowedByMeState = _isFollowedByMeState
@@ -74,9 +68,22 @@ class ProfileViewModel(
             false
         )
 
-    private val recommendedRelays = mutableListOf<String>()
+    private val paginator: IPaginator = Paginator(
+        scope = viewModelScope,
+        onSetRefreshing = { bool -> _isRefreshing.update { bool } },
+        onGetPage = { lastCreatedAt ->
+            val pubkey = profileState.value.pubkey
+            feedProvider.getFeedFlow(
+                feedSettings = getCurrentFeedSettings(pubkey = pubkey, relays = getRelays(pubkey)),
+                limit = DB_BATCH_SIZE,
+                until = lastCreatedAt
+            )
+        }
+    )
 
-    private val failedAppendAttempts = AtomicInteger(0)
+    val feed = paginator.getFeed()
+
+    private val recommendedRelays = mutableListOf<String>()
 
     private val isSettingPubkey = AtomicBoolean(false)
     val onSetProfileId: (String?) -> Unit = { profileId ->
@@ -91,7 +98,6 @@ class ProfileViewModel(
                 isSettingPubkey.set(false)
             } else {
                 Log.i(TAG, "Set UI for $nonNullPubkey")
-                failedAppendAttempts.set(0)
                 followProcess = null
                 viewModelScope.launch(context = Dispatchers.IO) {
                     setProfileAndFeed(profileId = nonNullProfileId)
@@ -102,36 +108,15 @@ class ProfileViewModel(
         }
     }
 
-    val onRefreshProfileView: () -> Unit = {
-        viewModelScope.launch(context = Dispatchers.IO) {
-            Log.i(TAG, "Refresh profile view")
-            _isRefreshing.update { true }
-            failedAppendAttempts.set(0)
-            setFeed(pubkey = profileState.value.pubkey)
-            delay(1000)
-            _isRefreshing.update { false }
-        }
+    val onRefresh: () -> Unit = {
+        paginator.refresh()
     }
 
-    private val isAppending = AtomicBoolean(false)
     val onLoadMore: () -> Unit = {
-        if (!isAppending.get() && failedAppendAttempts.get() <= MAX_APPEND_ATTEMPTS) {
-            isAppending.set(true)
-            viewModelScope.launch(context = Dispatchers.IO) {
-                Log.i(TAG, "Load more")
-                val pubkey = profileState.value.pubkey
-                val currentFeed = feedState.value
-                appendFeed(pubkey = pubkey, currentFeed = currentFeed)
-                delay(APPEND_RETRY_TIME)
-                if (currentFeed.lastOrNull()?.entity?.id.orEmpty() == feedState.value.lastOrNull()?.entity?.id.orEmpty()) {
-                    val attempt = failedAppendAttempts.getAndIncrement()
-                    Log.w(TAG, "Failed to append profile feed. Attempt $attempt")
-                }
-                isAppending.set(false)
-            }
-        }
+        paginator.loadMore()
     }
 
+    // TODO: Move this to UI
     val onCopyNprofile: () -> Unit = {
         profileState.value.nprofile.let {
             Log.i(TAG, "Copy nprofile $it")
@@ -177,7 +162,7 @@ class ProfileViewModel(
         val pubkey = nostrProfileId?.hex ?: profileId
         setProfile(profileId = profileId, pubkey = pubkey)
         setRecommendedRelays(recommended = nostrProfileId?.recommendedRelays.orEmpty())
-        setFeed(pubkey = pubkey)
+        paginator.reset()
     }
 
     private fun setRecommendedRelays(recommended: List<String>) {
@@ -199,39 +184,6 @@ class ProfileViewModel(
             )
     }
 
-    private suspend fun setFeed(pubkey: String) {
-        Log.i(TAG, "Set feed of $pubkey")
-        feedState = feedProvider.getFeedFlow(
-            feedSettings = getCurrentFeedSettings(pubkey = pubkey, relays = getRelays(pubkey)),
-            limit = DB_BATCH_SIZE
-        ).stateIn(
-            viewModelScope,
-            SharingStarted.WhileSubscribed(stopTimeoutMillis = SCOPE_TIMEOUT),
-            if (profileState.value.pubkey == pubkey) feedState.value else emptyList()
-        )
-    }
-
-    // TODO: Append in FeedProvider to reduce duplicate code in ProvileVM and FeedVM
-    private suspend fun appendFeed(pubkey: String, currentFeed: List<PostWithMeta>) {
-        _isRefreshing.update { (true) }
-        feedState.value.lastOrNull()?.let { last ->
-            feedState = feedProvider.getFeedFlow(
-                feedSettings = getCurrentFeedSettings(
-                    pubkey = pubkey,
-                    relays = getRelays(pubkey)
-                ),
-                limit = DB_APPEND_BATCH_SIZE,
-                until = last.entity.createdAt
-            ).map { toAppend -> currentFeed.takeLast(MAX_FEED_LENGTH) + toAppend }
-                .stateIn(
-                    viewModelScope,
-                    SharingStarted.WhileSubscribed(stopTimeoutMillis = SCOPE_TIMEOUT),
-                    currentFeed,
-                )
-        }
-        _isRefreshing.update { (false) }
-    }
-
     private fun getCurrentFeedSettings(pubkey: String, relays: List<String>): FeedSettings {
         return FeedSettings(
             isPosts = true,
@@ -241,7 +193,6 @@ class ProfileViewModel(
             relaySelection = MultipleRelays(relays = relays)
         )
     }
-
 
     private suspend fun getRelays(pubkey: String): List<String> {
         // TODO: Refactor into util function. Same in ProfileWithAdditionalInfoProvider

@@ -18,13 +18,14 @@ fun FeedRoute(
 ) {
     val uiState by feedViewModel.uiState.collectAsState()
     val metadataState by feedViewModel.metadataState.collectAsState()
-    val feedState by feedViewModel.feedState.collectAsState()
     val pubkeyState by feedViewModel.pubkeyState.collectAsState()
+    val feedFlow by feedViewModel.feed.collectAsState()
+    val feed by feedFlow.collectAsState()
 
     FeedScreen(
         uiState = uiState,
         pubkeyState = pubkeyState,
-        feedState = feedState,
+        feed = feed,
         metadataState = metadataState,
         postCardNavLambdas = postCardNavLambdas,
         onLike = { post ->
@@ -40,7 +41,7 @@ fun FeedRoute(
         onShouldShowMedia = { mediaUrl ->
             feedViewModel.clickedMediaUrlCache.contains(mediaUrl)
         },
-        onRefreshFeedView = feedViewModel.onRefreshFeedView,
+        onRefresh = feedViewModel.onRefresh,
         onRefreshOnMenuDismiss = feedViewModel.onRefreshOnMenuDismiss,
         onPrepareReply = onPrepareReply,
         onToggleContactsOnly = feedViewModel.onToggleContactsOnly,

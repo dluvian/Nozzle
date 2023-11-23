@@ -18,8 +18,9 @@ fun ProfileRoute(
 ) {
     val isRefreshing by profileViewModel.isRefreshing.collectAsState()
     val profile by profileViewModel.profileState.collectAsState()
-    val feed by profileViewModel.feedState.collectAsState()
     val isFollowedByMe by profileViewModel.isFollowedByMeState.collectAsState()
+    val feedFlow by profileViewModel.feed.collectAsState()
+    val feed by feedFlow.collectAsState()
 
     ProfileScreen(
         isRefreshing = isRefreshing,
@@ -45,7 +46,7 @@ fun ProfileRoute(
         onShouldShowMedia = { mediaUrl ->
             profileViewModel.clickedMediaUrlCache.contains(mediaUrl)
         },
-        onRefreshProfileView = profileViewModel.onRefreshProfileView,
+        onRefresh = profileViewModel.onRefresh,
         onCopyNprofile = profileViewModel.onCopyNprofile,
         onLoadMore = profileViewModel.onLoadMore,
         onNavigateToEditProfile = onNavigateToEditProfile,
