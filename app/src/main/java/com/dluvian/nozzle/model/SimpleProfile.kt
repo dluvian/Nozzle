@@ -7,4 +7,6 @@ data class SimpleProfile(
     val trustScore: Float,
     val isOneself: Boolean,
     val isFollowedByMe: Boolean
-)
+) : Identifiable {
+    override fun getId() = pubkey
+}

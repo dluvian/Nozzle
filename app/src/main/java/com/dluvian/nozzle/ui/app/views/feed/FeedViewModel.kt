@@ -38,19 +38,21 @@ class FeedViewModel(
 
     val metadataState = personalProfileProvider.getMetadataStateFlow()
 
-    private val paginator: IPaginator = Paginator(
+    private val paginator: IPaginator<PostWithMeta, CreatedAt> = Paginator(
         scope = viewModelScope,
-        onSetRefreshing = { bool -> _uiState.update { it.copy(isRefreshing = bool) } }
-    ) { lastCreatedAt, waitForSubscription ->
-        feedProvider.getFeedFlow(
-            feedSettings = _uiState.value.feedSettings,
-            limit = DB_BATCH_SIZE,
-            until = lastCreatedAt,
-            waitForSubscription = waitForSubscription
-        )
-    }
+        onSetRefreshing = { bool -> _uiState.update { it.copy(isRefreshing = bool) } },
+        onGetPage = { lastCreatedAt, waitForSubscription ->
+            feedProvider.getFeedFlow(
+                feedSettings = _uiState.value.feedSettings,
+                limit = DB_BATCH_SIZE,
+                until = lastCreatedAt,
+                waitForSubscription = waitForSubscription
+            )
+        },
+        onIdentifyLastParam = { post -> post?.entity?.createdAt ?: getCurrentTimeInSeconds() }
+    )
 
-    val feed = paginator.getFeed()
+    val feed = paginator.getList()
 
     private val lastAutopilotResult: MutableMap<String, Set<String>> =
         Collections.synchronizedMap(mutableMapOf<String, Set<String>>())

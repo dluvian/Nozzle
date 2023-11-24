@@ -28,6 +28,7 @@ fun PostCardList(
     lazyListState: LazyListState = rememberLazyListState(),
 ) {
     PullRefreshBox(isRefreshing = isRefreshing, onRefresh = onRefresh) {
+        val lastIdForLoadingMore = remember { mutableStateOf("") }
         LazyColumn(
             modifier = Modifier.fillMaxSize(), state = lazyListState
         ) {
@@ -40,11 +41,11 @@ fun PostCardList(
                     onShowMedia = onShowMedia,
                     onShouldShowMedia = onShouldShowMedia
                 )
-                val lastIdForLoadingMore = remember { mutableStateOf("") }
                 if (index == posts.size - 3
                     && posts.size >= DB_BATCH_SIZE
                     && lastIdForLoadingMore.value != posts.lastOrNull()?.entity?.id.orEmpty()
                 ) {
+                    lastIdForLoadingMore.value = posts.lastOrNull()?.entity?.id.orEmpty()
                     onLoadMore()
                 }
             }

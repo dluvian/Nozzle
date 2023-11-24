@@ -11,6 +11,9 @@ import com.dluvian.nozzle.data.paginator.Paginator
 import com.dluvian.nozzle.data.postCardInteractor.IPostCardInteractor
 import com.dluvian.nozzle.data.provider.IRelayProvider
 import com.dluvian.nozzle.data.provider.feed.IInboxFeedProvider
+import com.dluvian.nozzle.data.utils.getCurrentTimeInSeconds
+import com.dluvian.nozzle.model.CreatedAt
+import com.dluvian.nozzle.model.PostWithMeta
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.stateIn
@@ -29,19 +32,21 @@ class InboxViewModel(
         _uiState.value
     )
 
-    private val paginator: IPaginator = Paginator(
+    private val paginator: IPaginator<PostWithMeta, CreatedAt> = Paginator(
         scope = viewModelScope,
-        onSetRefreshing = { bool -> _uiState.update { it.copy(isRefreshing = bool) } }
-    ) { lastCreatedAt, waitForSubscription ->
-        inboxFeedProvider.getInboxFeedFlow(
-            relays = _uiState.value.relays,
-            limit = DB_BATCH_SIZE,
-            until = lastCreatedAt,
-            waitForSubscription = waitForSubscription
-        )
-    }
+        onSetRefreshing = { bool -> _uiState.update { it.copy(isRefreshing = bool) } },
+        onGetPage = { lastCreatedAt, waitForSubscription ->
+            inboxFeedProvider.getInboxFeedFlow(
+                relays = _uiState.value.relays,
+                limit = DB_BATCH_SIZE,
+                until = lastCreatedAt,
+                waitForSubscription = waitForSubscription
+            )
+        },
+        onIdentifyLastParam = { post -> post?.entity?.createdAt ?: getCurrentTimeInSeconds() }
+    )
 
-    val feed = paginator.getFeed()
+    val feed = paginator.getList()
 
     val onOpenInbox: () -> Unit = {
         updateScreen(isRefresh = false)

@@ -1,26 +1,29 @@
 package com.dluvian.nozzle.ui.app.views.profileList
 
 import android.util.Log
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import com.dluvian.nozzle.data.MAX_LIST_LENGTH
+import com.dluvian.nozzle.data.paginator.IPaginator
+import com.dluvian.nozzle.data.paginator.Paginator
 import com.dluvian.nozzle.data.profileFollower.IProfileFollower
 import com.dluvian.nozzle.data.provider.ISimpleProfileProvider
 import com.dluvian.nozzle.data.room.dao.ContactDao
 import com.dluvian.nozzle.data.subscriber.INozzleSubscriber
 import com.dluvian.nozzle.model.Pubkey
+import com.dluvian.nozzle.model.SimpleProfile
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.util.concurrent.CancellationException
-import java.util.concurrent.atomic.AtomicBoolean
 
 
 const val TAG = "ProfileListViewModel"
@@ -39,56 +42,52 @@ class ProfileListViewModel(
         mapOf()
     )
 
-    var profileList: StateFlow<ProfileList> = MutableStateFlow(ProfileList())
+    private val _isRefreshing = MutableStateFlow(false)
+    val isRefreshing = _isRefreshing
+        .stateIn(
+            viewModelScope,
+            SharingStarted.WhileSubscribed(),
+            false
+        )
 
-    private val isSettingList = AtomicBoolean(false)
-
-    val onSetFollowerList: (Pubkey) -> Unit = local@{ pubkey ->
-        viewModelScope.launch(Dispatchers.IO) {
-            setProfileList(pubkey = pubkey, type = ProfileListType.FOLLOWER_LIST)
-        }.invokeOnCompletion {
-            isSettingList.set(false)
-            if (it != null) Log.w(TAG, "Failed to set follower list of $pubkey")
-        }
-    }
-
-    val onSetFollowedByList: (Pubkey) -> Unit = local@{ pubkey ->
-        viewModelScope.launch(Dispatchers.IO) {
-            setProfileList(pubkey = pubkey, type = ProfileListType.FOLLOWED_BY_LIST)
-        }.invokeOnCompletion {
-            isSettingList.set(false)
-            if (it != null) Log.w(TAG, "Failed to set followed by list of $pubkey")
-        }
-    }
-
-
-    // The IO coroutine needs to be started in the lambda itself?
-    // It's not working when doing it in the function below.
-    private suspend fun setProfileList(pubkey: Pubkey, type: ProfileListType) {
-        if (!isSettingList.compareAndSet(false, true)) return
-        val currentValue = profileList.value
-        if (currentValue.pubkey == pubkey && currentValue.type == type) return
-
-        profileList = MutableStateFlow(ProfileList(type = type))
-        val pubkeys = when (type) {
-            ProfileListType.FOLLOWER_LIST -> contactDao.listContactPubkeys(pubkey = pubkey)
-            ProfileListType.FOLLOWED_BY_LIST -> contactDao.listFollowedByPubkeys(pubkey = pubkey)
-        }
-
-        profileList = simpleProfileProvider
-            .getSimpleProfilesFlow(pubkeys = pubkeys)
-            .distinctUntilChanged()
-            .map { ProfileList(pubkey = pubkey, profiles = it, type = type) }
-            .stateIn(
-                viewModelScope,
-                SharingStarted.Eagerly,
-                ProfileList(pubkey = pubkey, type = type)
+    private val paginator: IPaginator<SimpleProfile, Pubkey> = Paginator(
+        scope = viewModelScope,
+        onSetRefreshing = { bool -> _isRefreshing.update { bool } },
+        onGetPage = { lastPubkey, waitForSubscription ->
+            simpleProfileProvider.getSimpleProfilesFlow(
+                type = type.value,
+                pubkey = pubkey.value,
+                underPubkey = lastPubkey,
+                limit = MAX_LIST_LENGTH,
+                waitForSubscription = waitForSubscription
             )
+        },
+        onIdentifyLastParam = { profile -> profile?.pubkey.orEmpty() }
+    )
+
+    val profiles: StateFlow<StateFlow<List<SimpleProfile>>> = paginator.getList()
+    val type: MutableState<ProfileListType> = mutableStateOf(ProfileListType.FOLLOWER_LIST)
+    val pubkey: MutableState<Pubkey> = mutableStateOf("")
+
+    val onSetFollowerList: (Pubkey) -> Unit = {
+        pubkey.value = it
+        type.value = ProfileListType.FOLLOWER_LIST
+        paginator.reset()
+    }
+
+    val onSetFollowedByList: (Pubkey) -> Unit = {
+        pubkey.value = it
+        type.value = ProfileListType.FOLLOWED_BY_LIST
+        paginator.reset()
+    }
+
+    val onLoadMore: () -> Unit = {
+        paginator.loadMore()
     }
 
     private var followProcesses: MutableMap<Pubkey, Job?> = mutableMapOf()
     val onFollow: (Int) -> Unit = local@{ indexToFollow ->
-        val pubkey = profileList.value.profiles[indexToFollow].pubkey
+        val pubkey = profiles.value.value[indexToFollow].pubkey
         if (_forcedFollowState.value[pubkey] == true) return@local
 
         followProcesses[pubkey]?.cancel(CancellationException("Cancelled to start follow process"))
@@ -102,7 +101,7 @@ class ProfileListViewModel(
     }
 
     val onUnfollow: (Int) -> Unit = local@{ indexToUnfollow ->
-        val pubkey = profileList.value.profiles[indexToUnfollow].pubkey
+        val pubkey = profiles.value.value[indexToUnfollow].pubkey
         if (_forcedFollowState.value[pubkey] == false) return@local
 
         followProcesses[pubkey]?.cancel(
@@ -123,8 +122,7 @@ class ProfileListViewModel(
             if (it == lastOwnerPubkey) return@local
             lastOwnerPubkey = it
         }
-        val unknownPubkeys = profileList.value
-            .profiles
+        val unknownPubkeys = profiles.value.value
             .filter { it.name.isEmpty() }
             .map { it.pubkey }
         viewModelScope.launch(Dispatchers.IO) {

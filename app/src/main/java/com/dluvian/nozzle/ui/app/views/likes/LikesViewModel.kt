@@ -9,6 +9,9 @@ import com.dluvian.nozzle.data.cache.IClickedMediaUrlCache
 import com.dluvian.nozzle.data.paginator.IPaginator
 import com.dluvian.nozzle.data.paginator.Paginator
 import com.dluvian.nozzle.data.provider.feed.ILikeFeedProvider
+import com.dluvian.nozzle.data.utils.getCurrentTimeInSeconds
+import com.dluvian.nozzle.model.CreatedAt
+import com.dluvian.nozzle.model.PostWithMeta
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.stateIn
@@ -25,18 +28,20 @@ class LikesViewModel(
         _isRefreshing.value
     )
 
-    private val paginator: IPaginator = Paginator(
+    private val paginator: IPaginator<PostWithMeta, CreatedAt> = Paginator(
         scope = viewModelScope,
-        onSetRefreshing = { bool -> _isRefreshing.update { bool } }
-    ) { lastCreatedAt, waitForSubscription ->
-        likeFeedProvider.getLikeFeedFlow(
-            limit = DB_BATCH_SIZE,
-            until = lastCreatedAt,
-            waitForSubscription = waitForSubscription
-        )
-    }
+        onSetRefreshing = { bool -> _isRefreshing.update { bool } },
+        onGetPage = { lastCreatedAt, waitForSubscription ->
+            likeFeedProvider.getLikeFeedFlow(
+                limit = DB_BATCH_SIZE,
+                until = lastCreatedAt,
+                waitForSubscription = waitForSubscription
+            )
+        },
+        onIdentifyLastParam = { post -> post?.entity?.createdAt ?: getCurrentTimeInSeconds() }
+    )
 
-    val feed = paginator.getFeed()
+    val feed = paginator.getList()
 
     val onOpenLikes: () -> Unit = { paginator.reset() }
 

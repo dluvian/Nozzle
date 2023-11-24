@@ -18,6 +18,7 @@ import com.dluvian.nozzle.data.provider.IProfileWithMetaProvider
 import com.dluvian.nozzle.data.provider.IPubkeyProvider
 import com.dluvian.nozzle.data.provider.IRelayProvider
 import com.dluvian.nozzle.data.provider.feed.IFeedProvider
+import com.dluvian.nozzle.data.utils.getCurrentTimeInSeconds
 import com.dluvian.nozzle.model.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -61,20 +62,22 @@ class ProfileViewModel(
             false
         )
 
-    private val paginator: IPaginator = Paginator(
+    private val paginator: IPaginator<PostWithMeta, CreatedAt> = Paginator(
         scope = viewModelScope,
-        onSetRefreshing = { bool -> _isRefreshing.update { bool } }
-    ) { lastCreatedAt, waitForSubscription ->
-        val pubkey = profileState.value.pubkey
-        feedProvider.getFeedFlow(
-            feedSettings = getCurrentFeedSettings(pubkey = pubkey, relays = getRelays(pubkey)),
-            limit = DB_BATCH_SIZE,
-            until = lastCreatedAt,
-            waitForSubscription = waitForSubscription
-        )
-    }
+        onSetRefreshing = { bool -> _isRefreshing.update { bool } },
+        onGetPage = { lastCreatedAt, waitForSubscription ->
+            val pubkey = profileState.value.pubkey
+            feedProvider.getFeedFlow(
+                feedSettings = getCurrentFeedSettings(pubkey = pubkey, relays = getRelays(pubkey)),
+                limit = DB_BATCH_SIZE,
+                until = lastCreatedAt,
+                waitForSubscription = waitForSubscription
+            )
+        },
+        onIdentifyLastParam = { post -> post?.entity?.createdAt ?: getCurrentTimeInSeconds() }
+    )
 
-    val feed = paginator.getFeed()
+    val feed = paginator.getList()
 
     private val recommendedRelays = mutableListOf<String>()
 

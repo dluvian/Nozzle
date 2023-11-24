@@ -13,7 +13,9 @@ import com.dluvian.nozzle.data.provider.IRelayProvider
 import com.dluvian.nozzle.data.provider.feed.IFeedProvider
 import com.dluvian.nozzle.data.utils.*
 import com.dluvian.nozzle.data.utils.HashtagUtils.removeHashtagPrefix
+import com.dluvian.nozzle.model.CreatedAt
 import com.dluvian.nozzle.model.MultipleRelays
+import com.dluvian.nozzle.model.PostWithMeta
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
@@ -32,19 +34,21 @@ class HashtagViewModel(
         _uiState.value
     )
 
-    private val paginator: IPaginator = Paginator(
+    private val paginator: IPaginator<PostWithMeta, CreatedAt> = Paginator(
         scope = viewModelScope,
-        onSetRefreshing = { bool -> _uiState.update { it.copy(isRefreshing = bool) } }
-    ) { lastCreatedAt, waitForSubscription ->
-        feedProvider.getFeedFlow(
-            feedSettings = _uiState.value.feedSettings,
-            limit = DB_BATCH_SIZE,
-            until = lastCreatedAt,
-            waitForSubscription = waitForSubscription
-        )
-    }
+        onSetRefreshing = { bool -> _uiState.update { it.copy(isRefreshing = bool) } },
+        onGetPage = { lastCreatedAt, waitForSubscription ->
+            feedProvider.getFeedFlow(
+                feedSettings = _uiState.value.feedSettings,
+                limit = DB_BATCH_SIZE,
+                until = lastCreatedAt,
+                waitForSubscription = waitForSubscription
+            )
+        },
+        onIdentifyLastParam = { post -> post?.entity?.createdAt ?: getCurrentTimeInSeconds() }
+    )
 
-    val feed = paginator.getFeed()
+    val feed = paginator.getList()
 
     val onOpenHashtag: (String) -> Unit = local@{ hashtag ->
         val lowerCaseHashtag = hashtag.lowercase().removeHashtagPrefix()

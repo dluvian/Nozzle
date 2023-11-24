@@ -2,8 +2,8 @@ package com.dluvian.nozzle.data.paginator
 
 import com.dluvian.nozzle.data.SCOPE_TIMEOUT
 import com.dluvian.nozzle.data.WAIT_TIME
-import com.dluvian.nozzle.data.utils.getCurrentTimeInSeconds
-import com.dluvian.nozzle.model.PostWithMeta
+import com.dluvian.nozzle.model.Identifiable
+import com.dluvian.nozzle.model.WaitTime
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -18,18 +18,19 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.util.concurrent.atomic.AtomicBoolean
 
-class Paginator(
+class Paginator<T : Identifiable, S>(
     private val scope: CoroutineScope,
     private val onSetRefreshing: (Boolean) -> Unit,
-    private val onGetPage: suspend (Long, Long) -> Flow<List<PostWithMeta>>
-) : IPaginator {
-    private val maxPageSize = 4
-    private var pages: MutableList<StateFlow<List<PostWithMeta>>> = mutableListOf()
-    private val feed: MutableStateFlow<StateFlow<List<PostWithMeta>>> =
+    private val onGetPage: suspend (S, WaitTime) -> Flow<List<T>>,
+    private val onIdentifyLastParam: (T?) -> S,
+) : IPaginator<T, S> {
+    private val maxPageSize = 5
+    private var pages: MutableList<StateFlow<List<T>>> = mutableListOf()
+    private val list: MutableStateFlow<StateFlow<List<T>>> =
         MutableStateFlow(MutableStateFlow(emptyList()))
 
 
-    override fun getFeed() = feed
+    override fun getList() = list
 
     private val isLoadingMore = AtomicBoolean(false)
 
@@ -38,8 +39,8 @@ class Paginator(
 
         onSetRefreshing(true)
         scope.launch(context = Dispatchers.IO) {
-            val lastItem = feed.value.value.lastOrNull() ?: return@launch
-            val newPage = onGetPage(lastItem.entity.createdAt, 0L).stateIn(
+            val lastItem = list.value.value.lastOrNull() ?: return@launch
+            val newPage = onGetPage(onIdentifyLastParam(lastItem), 0L).stateIn(
                 scope = scope,
                 started = SharingStarted.WhileSubscribed(
                     stopTimeoutMillis = SCOPE_TIMEOUT,
@@ -49,7 +50,7 @@ class Paginator(
             )
             if (pages.size >= maxPageSize) pages.removeFirst()
             pages.add(newPage)
-            feed.update { createNewFeed(pages = pages, initialValue = feed.value.value) }
+            list.update { createNewList(pages = pages, initialValue = list.value.value) }
             delay(WAIT_TIME)
         }.invokeOnCompletion {
             isLoadingMore.set(false)
@@ -68,7 +69,7 @@ class Paginator(
         pages.clear()
         scope.launch(context = Dispatchers.IO) {
             val waitForSubscription = if (isRefresh) WAIT_TIME else 0L
-            val newPage = onGetPage(getCurrentTimeInSeconds(), waitForSubscription).stateIn(
+            val newPage = onGetPage(onIdentifyLastParam(null), waitForSubscription).stateIn(
                 scope = scope,
                 started = SharingStarted.WhileSubscribed(
                     stopTimeoutMillis = SCOPE_TIMEOUT,
@@ -77,23 +78,27 @@ class Paginator(
                 initialValue = initialValue,
             )
             pages.add(newPage)
-            feed.update { createNewFeed(pages = pages, initialValue = initialValue) }
+            list.update { createNewList(pages = pages, initialValue = initialValue) }
             delay(WAIT_TIME)
         }.invokeOnCompletion {
             onSetRefreshing(false)
         }
     }
 
-    private fun createNewFeed(
-        pages: MutableList<StateFlow<List<PostWithMeta>>>,
-        initialValue: List<PostWithMeta>,
-    ): StateFlow<List<PostWithMeta>> {
+    private fun createNewList(
+        pages: MutableList<StateFlow<List<T>>>,
+        initialValue: List<T>,
+    ): StateFlow<List<T>> {
         return combine(
+            pages.getOrElse(pages.size - 5) { flowOf(emptyList()) },
             pages.getOrElse(pages.size - 4) { flowOf(emptyList()) },
             pages.getOrElse(pages.size - 3) { flowOf(emptyList()) },
             pages.getOrElse(pages.size - 2) { flowOf(emptyList()) },
             pages.getOrElse(pages.size - 1) { flowOf(emptyList()) }
-        ) { p1, p2, p3, p4 -> p1 + p2 + p3 + p4 }
+        ) { p1, p2, p3, p4, p5 ->
+            val list = initialValue + p1 + p2 + p3 + p4 + p5
+            list.distinctBy { it.getId() }
+        }
             .stateIn(
                 scope = scope,
                 started = SharingStarted.WhileSubscribed(
