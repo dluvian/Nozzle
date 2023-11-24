@@ -144,7 +144,7 @@ class ProfileViewModel(
         val pubkey = nostrProfileId?.hex ?: profileId
         setProfile(profileId = profileId, pubkey = pubkey)
         setRecommendedRelays(recommended = nostrProfileId?.recommendedRelays.orEmpty())
-        paginator.reset()
+        paginator.refresh()
     }
 
     private fun setRecommendedRelays(recommended: List<String>) {

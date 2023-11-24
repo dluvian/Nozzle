@@ -49,20 +49,20 @@ class InboxViewModel(
     val feed = paginator.getList()
 
     val onOpenInbox: () -> Unit = {
-        updateScreen(isRefresh = false)
+        updateScreen()
     }
 
     val onRefresh: () -> Unit = {
-        updateScreen(isRefresh = true)
+        updateScreen()
     }
 
     val onLoadMore: () -> Unit = local@{
         paginator.loadMore()
     }
 
-    private fun updateScreen(isRefresh: Boolean) {
+    private fun updateScreen() {
         _uiState.update { it.copy(relays = relayProvider.getReadRelays()) }
-        if (isRefresh) paginator.refresh() else paginator.reset()
+        paginator.refresh()
     }
 
     companion object {

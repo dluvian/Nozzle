@@ -77,8 +77,7 @@ class HashtagViewModel(
                 )
             )
         }
-        val isRefresh = hashtag == _uiState.value.feedSettings.hashtag
-        if (isRefresh) paginator.refresh() else paginator.reset()
+        paginator.refresh()
     }
 
     companion object {

@@ -61,7 +61,8 @@ class FeedViewModel(
         .onEach local@{
             if (it.isEmpty()) return@local
             useCachedFeedSettings()
-            handleRefresh()
+            updateRelaySelection()
+            paginator.reset()
         }
         .stateIn(viewModelScope, SharingStarted.Eagerly, "")
 
@@ -71,7 +72,8 @@ class FeedViewModel(
 
     val onRefresh: () -> Unit = {
         viewModelScope.launch(Dispatchers.IO) {
-            handleRefresh()
+            updateRelaySelection()
+            paginator.refresh()
         }
     }
 
@@ -181,11 +183,6 @@ class FeedViewModel(
                 it.copy(relayStatuses = toggled)
             }
         }
-    }
-
-    private suspend fun handleRefresh() {
-        updateRelaySelection()
-        paginator.refresh()
     }
 
     private suspend fun updateRelaySelection(newRelayStatuses: List<RelayActive>? = null) {
