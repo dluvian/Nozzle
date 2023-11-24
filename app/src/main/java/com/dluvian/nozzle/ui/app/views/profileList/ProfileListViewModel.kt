@@ -24,6 +24,7 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.util.concurrent.CancellationException
+import java.util.concurrent.atomic.AtomicInteger
 
 
 const val TAG = "ProfileListViewModel"
@@ -116,15 +117,16 @@ class ProfileListViewModel(
         }
     }
 
-    private var lastOwnerPubkey: Pubkey = ""
+    private val lastSize = AtomicInteger(0)
     val onSubscribeToUnknowns: (Pubkey) -> Unit = local@{
-        synchronized(lastOwnerPubkey) {
-            if (it == lastOwnerPubkey) return@local
-            lastOwnerPubkey = it
-        }
+        if (lastSize.get() == profiles.value.value.size) return@local
+
+        lastSize.set(profiles.value.value.size)
         val unknownPubkeys = profiles.value.value
             .filter { it.name.isEmpty() }
             .map { it.pubkey }
+        if (unknownPubkeys.isEmpty()) return@local
+
         viewModelScope.launch(Dispatchers.IO) {
             nozzleSubscriber.subscribeSimpleProfiles(pubkeys = unknownPubkeys)
         }
