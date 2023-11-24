@@ -21,11 +21,12 @@ class DatabaseSweeper(
         }
         Log.i(TAG, "Sweep database")
 
-        when (Random.nextInt(until = 4)) {
+        when (Random.nextInt(until = 5)) {
             0 -> deletePosts()
             1 -> deleteProfiles()
             2 -> deleteContactLists()
             3 -> deleteNip65()
+            4 -> deleteReactions()
             else -> Log.w(TAG, "Delete case not covered")
         }
         isSweeping.set(false)
@@ -62,5 +63,12 @@ class DatabaseSweeper(
             .deleteOrphaned(dbSweepExcludingCache.getNip65Authors())
         dbSweepExcludingCache.clearNip65Authors()
         Log.i(TAG, "Deleted $deleteNip65Count nip65 entries")
+    }
+
+    private suspend fun deleteReactions() {
+        val deleteReactionCount = database
+            .reactionDao()
+            .deleteOrphaned()
+        Log.i(TAG, "Deleted $deleteReactionCount reactions")
     }
 }
