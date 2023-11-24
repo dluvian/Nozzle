@@ -54,8 +54,6 @@ class NostrSubscriber(private val nostrService: INostrService) : INostrSubscribe
         return allSubIds
     }
 
-
-    // TODO: Review the code later
     override fun subscribeSimpleProfiles(
         relaysByPubkey: Map<Pubkey, List<Relay>>,
         defaultRelays: Collection<Relay>
@@ -63,15 +61,15 @@ class NostrSubscriber(private val nostrService: INostrService) : INostrSubscribe
         if (relaysByPubkey.isEmpty()) return emptyList()
 
         val allSubIds = mutableListOf<String>()
+        val pubkeysByRelay = mutableMapOf<Relay, MutableList<Pubkey>>()
 
-        val pubkeysByRelays = mutableMapOf<Relay, MutableList<Pubkey>>()
         for ((pubkey, relays) in relaysByPubkey) {
             relays.ifEmpty { defaultRelays }.forEach { relay ->
-                val present = pubkeysByRelays.putIfAbsent(relay, mutableListOf(pubkey))
+                val present = pubkeysByRelay.putIfAbsent(relay, mutableListOf(pubkey))
                 present?.add(pubkey)
             }
         }
-        pubkeysByRelays.forEach { (relay, pubkeys) ->
+        pubkeysByRelay.forEach { (relay, pubkeys) ->
             val profileFilter = Filter.createProfileFilter(pubkeys = pubkeys)
             val subIds = nostrService.subscribe(
                 filters = listOf(profileFilter),

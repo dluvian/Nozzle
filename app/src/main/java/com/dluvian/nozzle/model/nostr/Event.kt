@@ -153,10 +153,8 @@ class Event(
                 tags = listOf(
                     listOf("e", eventId),
                     listOf("p", eventPubkey),
-                    listOf(
-                        "k",
-                        "${Kind.TEXT_NOTE}"
-                    ) // Always k="1" because Nozzle only shows kind 1 notes
+                    // Always k="1" because Nozzle only shows kind 1 notes
+                    listOf("k", "${Kind.TEXT_NOTE}")
                 ),
                 content = "+",
                 keys = keys

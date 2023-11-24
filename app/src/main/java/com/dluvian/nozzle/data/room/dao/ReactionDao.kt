@@ -11,7 +11,6 @@ interface ReactionDao {
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insertOrIgnore(vararg reactionEntities: ReactionEntity)
 
-
     @Query(
         "SELECT eventId " +
                 "FROM reaction " +

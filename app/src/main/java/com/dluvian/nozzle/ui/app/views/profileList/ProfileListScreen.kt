@@ -52,7 +52,8 @@ fun ProfileListScreen(
         ReturnableTopBar(
             text = title,
             onGoBack = onGoBack,
-            trailingIcon = { if (isRefreshing) TopBarCircleProgressIndicator() })
+            trailingIcon = { if (isRefreshing) TopBarCircleProgressIndicator() }
+        )
         val lastPubkey = remember { mutableStateOf("") }
         LazyColumn(modifier = Modifier.fillMaxSize()) {
             itemsIndexed(profiles) { i, profile ->

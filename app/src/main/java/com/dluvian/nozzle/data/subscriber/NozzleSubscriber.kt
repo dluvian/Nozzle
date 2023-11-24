@@ -104,7 +104,6 @@ class NozzleSubscriber(
             defaultRelays = relayProvider.getReadRelays()
         )
         allSubIds.addAll(subIds)
-
         simpleProfileSubs.unsubThenAddAll(subIds)
     }
 

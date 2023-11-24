@@ -29,7 +29,6 @@ class Paginator<T : Identifiable, S>(
     private val list: MutableStateFlow<StateFlow<List<T>>> =
         MutableStateFlow(MutableStateFlow(emptyList()))
 
-
     override fun getList() = list
 
     private val isLoadingMore = AtomicBoolean(false)
