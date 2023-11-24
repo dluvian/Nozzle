@@ -54,6 +54,34 @@ class NostrSubscriber(private val nostrService: INostrService) : INostrSubscribe
         return allSubIds
     }
 
+    override fun subscribeSimpleProfiles(
+        relaysByPubkey: Map<Pubkey, List<Relay>>,
+        defaultRelays: Collection<Relay>
+    ): Collection<String> {
+        if (relaysByPubkey.isEmpty()) return emptyList()
+
+        val allSubIds = mutableListOf<String>()
+        val pubkeysByRelay = mutableMapOf<Relay, MutableList<Pubkey>>()
+
+        for ((pubkey, relays) in relaysByPubkey) {
+            relays.ifEmpty { defaultRelays }.forEach { relay ->
+                val present = pubkeysByRelay.putIfAbsent(relay, mutableListOf(pubkey))
+                present?.add(pubkey)
+            }
+        }
+        pubkeysByRelay.forEach { (relay, pubkeys) ->
+            val profileFilter = Filter.createProfileFilter(pubkeys = pubkeys)
+            val subIds = nostrService.subscribe(
+                filters = listOf(profileFilter),
+                unsubOnEOSE = true,
+                relays = listOf(relay),
+            )
+            allSubIds.addAll(subIds)
+        }
+
+        return allSubIds
+    }
+
     override fun subscribeToFeedPosts(
         authorPubkeys: List<String>?,
         hashtag: String?,
@@ -222,6 +250,25 @@ class NostrSubscriber(private val nostrService: INostrService) : INostrSubscribe
 
         return nostrService.subscribe(
             filters = listOf(mentionFilter),
+            unsubOnEOSE = true,
+            relays = relays,
+        )
+    }
+
+    override fun subscribeLikes(
+        pubkey: Pubkey,
+        limit: Int,
+        until: Long,
+        relays: Collection<String>?
+    ): List<String> {
+        val likeFilter = Filter.createReactionFilter(
+            pubkeys = listOf(pubkey),
+            limit = limit,
+            until = until,
+        )
+
+        return nostrService.subscribe(
+            filters = listOf(likeFilter),
             unsubOnEOSE = true,
             relays = relays,
         )

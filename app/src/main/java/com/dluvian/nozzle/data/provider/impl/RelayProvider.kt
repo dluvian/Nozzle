@@ -52,7 +52,7 @@ class RelayProvider(
     }
 
     override suspend fun getWriteRelaysOfPubkeys(pubkeys: Collection<String>): Map<Pubkey, List<Relay>> {
-        val dbResult = nip65Dao.getWriteRelaysOfPubkeys(pubkeys = pubkeys).toMutableMap()
+        val dbResult = nip65Dao.getWriteRelaysOfPubkeys(pubkeys = pubkeys.distinct()).toMutableMap()
         pubkeys.forEach { pubkey -> dbResult.putIfAbsent(pubkey, emptyList()) }
 
         return dbResult

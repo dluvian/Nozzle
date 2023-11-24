@@ -19,13 +19,15 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalClipboardManager
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.style.TextOverflow
 import com.dluvian.nozzle.R
 import com.dluvian.nozzle.data.nostr.utils.ShortenedNameUtils.getShortenedNpubFromPubkey
+import com.dluvian.nozzle.data.utils.copyAndToast
 import com.dluvian.nozzle.model.PostWithMeta
 import com.dluvian.nozzle.model.ProfileWithMeta
 import com.dluvian.nozzle.model.TrustType
@@ -34,12 +36,11 @@ import com.dluvian.nozzle.ui.components.CopyIcon
 import com.dluvian.nozzle.ui.components.EditProfileButton
 import com.dluvian.nozzle.ui.components.FollowButton
 import com.dluvian.nozzle.ui.components.dialog.RelaysDialog
+import com.dluvian.nozzle.ui.components.hint.NoPostsHint
 import com.dluvian.nozzle.ui.components.media.ProfilePicture
-import com.dluvian.nozzle.ui.components.postCard.NoPostsHint
 import com.dluvian.nozzle.ui.components.postCard.PostCardList
 import com.dluvian.nozzle.ui.components.text.AnnotatedText
 import com.dluvian.nozzle.ui.components.text.NumberedCategory
-import com.dluvian.nozzle.ui.theme.Shapes
 import com.dluvian.nozzle.ui.theme.sizing
 import com.dluvian.nozzle.ui.theme.spacing
 
@@ -55,10 +56,11 @@ fun ProfileScreen(
     onLike: (PostWithMeta) -> Unit,
     onFollow: (String) -> Unit,
     onUnfollow: (String) -> Unit,
+    onOpenFollowerList: (String) -> Unit,
+    onOpenFollowedByList: (String) -> Unit,
     onShowMedia: (String) -> Unit,
     onShouldShowMedia: (String) -> Boolean,
-    onRefreshProfileView: () -> Unit,
-    onCopyNprofile: () -> Unit,
+    onRefresh: () -> Unit,
     onLoadMore: () -> Unit,
     onNavigateToEditProfile: () -> Unit,
 ) {
@@ -68,7 +70,6 @@ fun ProfileScreen(
             isFollowedByMe = isFollowedByMe,
             onFollow = onFollow,
             onUnfollow = onUnfollow,
-            onCopyNprofile = onCopyNprofile,
             onNavToEditProfile = onNavigateToEditProfile,
             onNavigateToId = postCardNavLambdas.onNavigateToId,
         )
@@ -77,6 +78,8 @@ fun ProfileScreen(
             numOfFollowing = profile.numOfFollowing,
             numOfFollowers = profile.numOfFollowers,
             relays = profile.relays,
+            onOpenFollowerList = { onOpenFollowerList(profile.pubkey) },
+            onOpenFollowedByList = { onOpenFollowedByList(profile.pubkey) }
         )
         Spacer(Modifier.height(spacing.xl))
         Divider()
@@ -84,7 +87,7 @@ fun ProfileScreen(
             posts = feed,
             isRefreshing = isRefreshing,
             postCardNavLambdas = postCardNavLambdas,
-            onRefresh = onRefreshProfileView,
+            onRefresh = onRefresh,
             onLike = onLike,
             onShowMedia = onShowMedia,
             onShouldShowMedia = onShouldShowMedia,
@@ -101,7 +104,6 @@ private fun ProfileData(
     isFollowedByMe: Boolean,
     onFollow: (String) -> Unit,
     onUnfollow: (String) -> Unit,
-    onCopyNprofile: () -> Unit,
     onNavToEditProfile: () -> Unit,
     onNavigateToId: (String) -> Unit
 ) {
@@ -123,7 +125,6 @@ private fun ProfileData(
             name = profile.metadata.name.orEmpty()
                 .ifEmpty { getShortenedNpubFromPubkey(profile.pubkey) ?: profile.pubkey },
             nprofile = profile.nprofile,
-            onCopyNprofile = onCopyNprofile,
         )
         Spacer(Modifier.height(spacing.medium))
         profile.metadata.about?.let { about ->
@@ -149,6 +150,13 @@ private fun ProfilePictureAndActions(
     onUnfollow: (String) -> Unit,
     onNavToEditProfile: () -> Unit,
 ) {
+    val trustType = remember(isOneself, isFollowed, trustScore) {
+        TrustType.determineTrustType(
+            isOneself = isOneself,
+            isFollowed = isFollowed,
+            trustScore = trustScore,
+        )
+    }
     Row(
         modifier = Modifier
             .padding(spacing.screenEdge)
@@ -162,12 +170,7 @@ private fun ProfilePictureAndActions(
                 .aspectRatio(1f),
             pictureUrl = pictureUrl,
             pubkey = pubkey,
-            trustType = TrustType.determineTrustType(
-                pubkey = pubkey,
-                isOneself = isOneself,
-                isFollowed = isFollowed,
-                trustScore = trustScore,
-            )
+            trustType = trustType
         )
         FollowOrEditButton(
             isOneself = isOneself,
@@ -203,6 +206,8 @@ private fun NumberedCategories(
     numOfFollowing: Int,
     numOfFollowers: Int,
     relays: List<String>,
+    onOpenFollowerList: () -> Unit,
+    onOpenFollowedByList: () -> Unit,
 ) {
     Row(
         Modifier
@@ -212,12 +217,14 @@ private fun NumberedCategories(
         Row {
             NumberedCategory(
                 number = numOfFollowing,
-                category = stringResource(id = R.string.following)
+                category = stringResource(id = R.string.following),
+                onClick = onOpenFollowerList
             )
             Spacer(Modifier.width(spacing.large))
             NumberedCategory(
                 number = numOfFollowers,
-                category = stringResource(id = R.string.followers)
+                category = stringResource(id = R.string.followers),
+                onClick = onOpenFollowedByList
             )
             Spacer(Modifier.width(spacing.large))
             val openRelayDialog = remember { mutableStateOf(false) }
@@ -225,11 +232,9 @@ private fun NumberedCategories(
                 RelaysDialog(relays = relays, onCloseDialog = { openRelayDialog.value = false })
             }
             NumberedCategory(
-                modifier = Modifier
-                    .clip(Shapes.small)
-                    .clickable { openRelayDialog.value = true },
                 number = relays.size,
-                category = stringResource(id = R.string.relays)
+                category = stringResource(id = R.string.relays),
+                onClick = { openRelayDialog.value = true }
             )
         }
     }
@@ -239,7 +244,6 @@ private fun NumberedCategories(
 private fun NameAndNprofile(
     name: String,
     nprofile: String,
-    onCopyNprofile: () -> Unit,
 ) {
     Row(
         modifier = Modifier.fillMaxWidth(),
@@ -252,9 +256,18 @@ private fun NameAndNprofile(
                 overflow = TextOverflow.Ellipsis,
                 style = MaterialTheme.typography.h6,
             )
+            val clip = LocalClipboardManager.current
+            val context = LocalContext.current
             CopyableNprofile(
                 nprofile = nprofile,
-                onCopyNprofile = onCopyNprofile
+                onCopyNprofile = {
+                    copyAndToast(
+                        text = nprofile,
+                        toast = context.getString(R.string.profile_id_copied),
+                        context = context,
+                        clip = clip
+                    )
+                }
             )
         }
     }

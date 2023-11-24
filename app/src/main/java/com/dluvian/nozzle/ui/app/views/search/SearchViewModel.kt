@@ -1,13 +1,14 @@
 package com.dluvian.nozzle.ui.app.views.search
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import com.dluvian.nozzle.data.SCOPE_TIMEOUT
 import com.dluvian.nozzle.data.nostr.nip05.INip05Resolver
 import com.dluvian.nozzle.data.nostr.utils.EncodingUtils.URI
 import com.dluvian.nozzle.data.nostr.utils.EncodingUtils.createNprofileStr
 import com.dluvian.nozzle.data.nostr.utils.EncodingUtils.nostrStrToNostrId
+import com.dluvian.nozzle.data.provider.ISimpleProfileProvider
 import com.dluvian.nozzle.data.utils.HashtagUtils
 import com.dluvian.nozzle.model.nostr.NeventNostrId
 import com.dluvian.nozzle.model.nostr.NoteNostrId
@@ -16,56 +17,58 @@ import com.dluvian.nozzle.model.nostr.NpubNostrId
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-private const val TAG = "SearchViewModel"
-
-class SearchViewModel(private val nip05Resolver: INip05Resolver) : ViewModel() {
-
-    private val viewModelState = MutableStateFlow(SearchViewModelState())
-
-    val uiState = viewModelState
+class SearchViewModel(
+    private val nip05Resolver: INip05Resolver,
+    private val simpleProfileProvider: ISimpleProfileProvider,
+) : ViewModel() {
+    private val _uiState = MutableStateFlow(SearchViewModelState())
+    val uiState = _uiState
         .stateIn(
             viewModelScope,
             SharingStarted.WhileSubscribed(),
-            viewModelState.value
+            _uiState.value
         )
 
-    val onSearch: (String) -> Unit = { input ->
-        if (input.isNotBlank()) {
-            val trimmed = input.trim().removePrefix(URI)
-            if (HashtagUtils.isHashtag(trimmed)) setFinalId(trimmed)
-            else if (nip05Resolver.isNip05(trimmed)) resolveNip05(trimmed)
-            else when (val nostrId = nostrStrToNostrId(nostrStr = trimmed)) {
-                is NpubNostrId,
-                is NprofileNostrId,
-                is NoteNostrId,
-                is NeventNostrId -> setFinalId(nostrId.nostrStr)
+    var profileSearchResult: StateFlow<List<ProfileSearchResult>> = MutableStateFlow(emptyList())
 
-                null -> {
-                    Log.i(TAG, "Failed to resolve $trimmed")
-                    setNostrIdInvalid()
-                }
+    val onSearch: (String) -> Unit = local@{ input ->
+        if (input.isBlank()) return@local
+
+        val trimmed = input.trim()
+        if (HashtagUtils.isHashtag(trimmed)) setFinalId(trimmed)
+        else if (nip05Resolver.isNip05(trimmed)) resolveNip05(trimmed)
+        else when (val nostrId = nostrStrToNostrId(nostrStr = trimmed.removePrefix(URI))) {
+            is NpubNostrId,
+            is NprofileNostrId,
+            is NoteNostrId,
+            is NeventNostrId -> setFinalId(nostrId.nostrStr)
+
+            null -> {
+                handleNameSearch(trimmed)
             }
-
         }
+
     }
 
     val onResetUI: () -> Unit = {
-        viewModelState.update {
+        _uiState.update {
             it.copy(
-                finalId = "",
                 isLoading = false,
-                isInvalidNostrId = false,
                 isInvalidNip05 = false,
+                finalId = ""
             )
         }
     }
 
     private fun resolveNip05(nip05: String) {
-        if (viewModelState.value.isLoading) return
+        if (_uiState.value.isLoading) return
         setLoading(true)
         viewModelScope.launch(context = Dispatchers.IO) {
             val result = nip05Resolver.resolve(nip05)
@@ -76,32 +79,53 @@ class SearchViewModel(private val nip05Resolver: INip05Resolver) : ViewModel() {
             } else {
                 setNip05Invalid()
             }
+        }.invokeOnCompletion {
             setLoading(false)
         }
     }
 
-    private fun setNostrIdInvalid() {
-        viewModelState.update { it.copy(isInvalidNostrId = true) }
+    private fun handleNameSearch(name: String) {
+        if (name.isBlank()) return
+        if (_uiState.value.isLoading) return
+        setLoading(true)
+
+        viewModelScope.launch(context = Dispatchers.IO) {
+            profileSearchResult = simpleProfileProvider
+                .getSimpleProfilesFlow(nameLike = name)
+                .distinctUntilChanged()
+                .map { list -> list.map { ProfileSearchResult(it) } }
+                .stateIn(
+                    viewModelScope, SharingStarted.WhileSubscribed(SCOPE_TIMEOUT), emptyList()
+                )
+        }.invokeOnCompletion {
+            setLoading(false)
+        }
     }
 
     private fun setNip05Invalid() {
-        viewModelState.update { it.copy(isInvalidNip05 = true) }
-    }
-
-    private fun setFinalId(finalId: String) {
-        viewModelState.update { it.copy(finalId = finalId) }
+        _uiState.update { it.copy(isInvalidNip05 = true) }
     }
 
     private fun setLoading(isLoading: Boolean) {
-        viewModelState.update { it.copy(isLoading = isLoading) }
+        _uiState.update { it.copy(isLoading = isLoading) }
+    }
+
+    private fun setFinalId(finalId: String) {
+        _uiState.update { it.copy(finalId = finalId) }
     }
 
     companion object {
-        fun provideFactory(nip05Resolver: INip05Resolver): ViewModelProvider.Factory =
+        fun provideFactory(
+            nip05Resolver: INip05Resolver,
+            simpleProfileProvider: ISimpleProfileProvider,
+        ): ViewModelProvider.Factory =
             object : ViewModelProvider.Factory {
                 @Suppress("UNCHECKED_CAST")
                 override fun <T : ViewModel> create(modelClass: Class<T>): T {
-                    return SearchViewModel(nip05Resolver = nip05Resolver) as T
+                    return SearchViewModel(
+                        nip05Resolver = nip05Resolver,
+                        simpleProfileProvider = simpleProfileProvider
+                    ) as T
                 }
             }
     }

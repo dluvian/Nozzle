@@ -12,6 +12,9 @@ interface ProfileDao {
     @Query("SELECT * FROM profile WHERE pubkey = :pubkey")
     suspend fun getProfile(pubkey: String): ProfileEntity?
 
+    @Query("SELECT * FROM profile WHERE pubkey IN (:pubkeys)")
+    fun listProfiles(pubkeys: Collection<Pubkey>): Flow<List<ProfileEntity>>
+
     @Query(
         // SELECT metadata
         "SELECT mainProfile.*, " +
@@ -73,4 +76,34 @@ interface ProfileDao {
                 "WHERE pubkey IN (:pubkeys)"
     )
     suspend fun filterExistingPubkeys(pubkeys: Collection<String>): List<String>
+
+    // UNION ALL retains order
+    @Query(
+        "SELECT pubkey FROM profile WHERE name = :name " +
+                "UNION ALL " +
+                "SELECT pubkey FROM profile WHERE name LIKE :start " +
+                "UNION ALL " +
+                "SELECT pubkey FROM profile WHERE name LIKE :somewhere " +
+                "UNION ALL " +
+                "SELECT pubkey FROM profile WHERE about LIKE :start " +
+                "UNION ALL " +
+                "SELECT pubkey FROM profile WHERE about LIKE :somewhere " +
+                "LIMIT :limit"
+    )
+    suspend fun internalGetPubkeysWithNameLike(
+        name: String,
+        start: String,
+        somewhere: String,
+        limit: Int
+    ): List<Pubkey>
+
+    suspend fun getPubkeysWithNameLike(name: String, limit: Int): List<Pubkey> {
+        val fixedName = name.filter { it != '%' }
+        return internalGetPubkeysWithNameLike(
+            name = fixedName,
+            start = "$fixedName%",
+            somewhere = "%$fixedName%",
+            limit = limit
+        )
+    }
 }

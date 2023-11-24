@@ -18,4 +18,15 @@ interface ReactionDao {
                 "AND eventId IN (:postIds)"
     )
     suspend fun filterLikedPostIds(postIds: Collection<String>, pubkey: String): List<String>
+
+    @Query(
+        "SELECT eventId " +
+                "FROM reaction " +
+                "WHERE pubkey = (SELECT pubkey FROM account WHERE isActive = 1) " +
+                "AND eventId NOT IN (SELECT id FROM post)"
+    )
+    suspend fun getMissingEventIds(): List<String>
+
+    @Query("DELETE FROM reaction WHERE pubkey NOT IN (SELECT pubkey FROM account)")
+    suspend fun deleteOrphaned(): Int
 }

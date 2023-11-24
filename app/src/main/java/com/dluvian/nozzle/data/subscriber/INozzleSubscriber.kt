@@ -2,9 +2,9 @@ package com.dluvian.nozzle.data.subscriber
 
 import com.dluvian.nozzle.data.room.entity.PostEntity
 import com.dluvian.nozzle.data.utils.getCurrentTimeInSeconds
+import com.dluvian.nozzle.model.FeedInfo
 import com.dluvian.nozzle.model.PostWithMeta
 import com.dluvian.nozzle.model.RelaySelection
-import com.dluvian.nozzle.model.helper.FeedInfo
 
 interface INozzleSubscriber {
 
@@ -25,8 +25,15 @@ interface INozzleSubscriber {
         until: Long = getCurrentTimeInSeconds()
     )
 
+    fun subscribeToLikes(
+        limit: Int,
+        until: Long = getCurrentTimeInSeconds()
+    )
+
     // TODO: NostrId instead of String. Prevents parsing nostrStr multiple times
     suspend fun subscribeFullProfile(profileId: String)
+
+    suspend fun subscribeSimpleProfiles(pubkeys: Collection<String>)
 
     suspend fun subscribeFeedInfo(posts: List<PostEntity>): FeedInfo
 
@@ -38,4 +45,6 @@ interface INozzleSubscriber {
     suspend fun subscribeParentPost(postId: String, relayHint: String?)
 
     suspend fun subscribeNip65(pubkeys: List<String>)
+
+    fun subscribeToPosts(postIds: Collection<String>)
 }

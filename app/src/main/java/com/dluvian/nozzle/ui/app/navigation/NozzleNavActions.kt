@@ -22,6 +22,14 @@ class NozzleNavActions(
         }
     }
 
+    val navigateToFollowerList: (String) -> Unit = { pubkey ->
+        navController.navigateToNozzleRoute("${NozzleRoute.FOLLOWER_LIST}/${pubkey}")
+    }
+
+    val navigateToFollowedByList: (String) -> Unit = { pubkey ->
+        navController.navigateToNozzleRoute("${NozzleRoute.FOLLOWED_BY_LIST}/${pubkey}")
+    }
+
     val navigateToFeed: () -> Unit = {
         navController.navigateToNozzleRoute(NozzleRoute.FEED)
     }
@@ -29,6 +37,11 @@ class NozzleNavActions(
     val navigateToInbox: () -> Unit = {
         vmContainer.inboxViewModel.onOpenInbox()
         navController.navigateToNozzleRoute(NozzleRoute.INBOX)
+    }
+
+    val navigateToLikes: () -> Unit = {
+        vmContainer.likesViewModel.onOpenLikes()
+        navController.navigateToNozzleRoute(NozzleRoute.LIKES)
     }
 
     val navigateToSearch: () -> Unit = {

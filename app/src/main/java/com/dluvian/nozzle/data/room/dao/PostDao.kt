@@ -6,6 +6,7 @@ import com.dluvian.nozzle.data.room.entity.MentionEntity
 import com.dluvian.nozzle.data.room.entity.PostEntity
 import com.dluvian.nozzle.data.room.helper.extended.PostEntityExtended
 import com.dluvian.nozzle.model.MentionedPost
+import com.dluvian.nozzle.model.nostr.Event
 import kotlinx.coroutines.flow.Flow
 
 @Dao
@@ -67,7 +68,7 @@ interface PostDao {
                 "AND id IN (SELECT DISTINCT eventId FROM eventRelay WHERE relayUrl IN (:relays)) " +
                 "AND createdAt < :until " +
                 "AND (:hashtag IS NULL OR id IN (SELECT eventId FROM hashtag WHERE hashtag = :hashtag)) " +
-                "AND (:isMention = 0 OR (id IN (SELECT eventId FROM mention WHERE pubkey = (SELECT pubkey FROM account WHERE isActive = 1)) " +
+                "AND (:isOnlyMention = 0 OR (id IN (SELECT eventId FROM mention WHERE pubkey = (SELECT pubkey FROM account WHERE isActive = 1)) " +
                 "  AND pubkey != (SELECT pubkey FROM account WHERE isActive = 1)" +
                 ")) " +
                 "ORDER BY createdAt DESC " +
@@ -80,7 +81,7 @@ interface PostDao {
         relays: Collection<String>,
         until: Long,
         limit: Int,
-        isMention: Boolean = false,
+        isOnlyMention: Boolean = false,
     ): List<PostEntity>
 
     /**
@@ -92,6 +93,7 @@ interface PostDao {
                 "WHERE ((:isReplies AND replyToId IS NOT NULL) OR (:isPosts AND replyToId IS NULL)) " +
                 "AND createdAt < :until " +
                 "AND (:hashtag IS NULL OR id IN (SELECT eventId FROM hashtag WHERE hashtag = :hashtag)) " +
+                "AND (:isOnlyLikedByMe = 0 OR (id IN (SELECT eventId FROM reaction WHERE pubkey = (SELECT pubkey FROM account WHERE isActive = 1)))) " +
                 "ORDER BY createdAt DESC " +
                 "LIMIT :limit"
     )
@@ -101,6 +103,7 @@ interface PostDao {
         hashtag: String?,
         until: Long,
         limit: Int,
+        isOnlyLikedByMe: Boolean = false,
     ): List<PostEntity>
 
 
@@ -117,7 +120,18 @@ interface PostDao {
             relays = relays,
             until = until,
             limit = limit,
-            isMention = true,
+            isOnlyMention = true,
+        )
+    }
+
+    suspend fun getLikedPosts(until: Long, limit: Int): List<PostEntity> {
+        return getGlobalFeedBasePosts(
+            isPosts = true,
+            isReplies = true,
+            hashtag = null,
+            until = until,
+            limit = limit,
+            isOnlyLikedByMe = true
         )
     }
 
@@ -164,20 +178,22 @@ interface PostDao {
 
     @Transaction
     suspend fun insertWithHashtagsAndMentions(
-        posts: List<PostEntity>,
-        hashtags: List<HashtagEntity>,
-        mentions: List<MentionEntity>,
+        events: Collection<Event>,
         hashtagDao: HashtagDao,
         mentionDao: MentionDao,
     ) {
-        if (posts.isEmpty()) return
+        val postEvents = events.filter { it.isPost() }
+        if (postEvents.isEmpty()) return
 
+        val posts = postEvents.map { PostEntity.fromEvent(it) }
         insertOrIgnore(*posts.toTypedArray())
 
+        val hashtags = postEvents.flatMap { HashtagEntity.fromEvent(it) }
         if (hashtags.isNotEmpty()) {
             hashtagDao.insertOrIgnore(*hashtags.toTypedArray())
         }
 
+        val mentions = postEvents.flatMap { MentionEntity.fromEvent(it) }
         if (mentions.isNotEmpty()) {
             mentionDao.insertOrIgnore(*mentions.toTypedArray())
         }

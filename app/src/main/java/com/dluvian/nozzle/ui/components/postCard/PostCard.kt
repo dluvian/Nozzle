@@ -1,10 +1,8 @@
 package com.dluvian.nozzle.ui.components.postCard
 
-import android.widget.Toast
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.MaterialTheme
 import androidx.compose.material.MaterialTheme.shapes
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
@@ -21,10 +19,10 @@ import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.style.TextAlign
 import com.dluvian.nozzle.R
 import com.dluvian.nozzle.data.nostr.utils.EncodingUtils.createNeventStr
+import com.dluvian.nozzle.data.utils.copyAndToast
 import com.dluvian.nozzle.model.PostWithMeta
 import com.dluvian.nozzle.model.ThreadPosition
 import com.dluvian.nozzle.model.TrustType
@@ -55,27 +53,22 @@ fun PostCard(
     val yTop = spacing.screenEdge
     val yBottom = sizing.profilePicture + spacing.screenEdge
     val small = spacing.small
-    val clipboard = LocalClipboardManager.current
+    val clip = LocalClipboardManager.current
     val context = LocalContext.current
     Row(modifier
         .combinedClickable(
             enabled = !isCurrent,
             onClick = { postCardNavLambdas.onNavigateToThread(post.entity.id) },
             onLongClick = {
-                // TODO: Move this out of UI layer
-                val nevent = createNeventStr(
-                    postId = post.entity.id,
-                    relays = post.relays
-                ).orEmpty()
-                clipboard.setText(AnnotatedString(nevent))
-                Toast
-                    .makeText(
-                        context,
-                        context.getString(R.string.note_id_copied),
-                        Toast.LENGTH_SHORT
-                    )
-                    .show()
-
+                copyAndToast(
+                    text = createNeventStr(
+                        postId = post.entity.id,
+                        relays = post.relays
+                    ).orEmpty(),
+                    toast = context.getString(R.string.note_id_copied),
+                    context = context,
+                    clip = clip
+                )
             })
         .fillMaxWidth()
         .drawBehind {
@@ -129,7 +122,6 @@ fun PostCard(
             pictureUrl = post.pictureUrl,
             pubkey = post.pubkey,
             trustType = TrustType.determineTrustType(
-                pubkey = post.pubkey,
                 isOneself = post.isOneself,
                 isFollowed = post.isFollowedByMe,
                 trustScore = post.trustScore,
@@ -258,7 +250,6 @@ private fun PostCardActions(
         QuoteAction(
             modifier = Modifier.weight(1f),
             onNavigateToQuote = {
-                // TODO: Move this out of UI layer
                 onNavigateToQuote(
                     createNeventStr(
                         postId = post.entity.id,
@@ -339,25 +330,6 @@ private fun LikeAction(
                 isClicked.value = true
             },
             isLiked = isLikedByMe || isClicked.value,
-        )
-    }
-}
-
-@Composable
-fun NoPostsHint() {
-    Column(
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = Modifier.fillMaxSize()
-    ) {
-        SearchIcon(
-            modifier = Modifier.fillMaxSize(0.1f),
-            tint = MaterialTheme.colors.hintGray
-        )
-        Text(
-            text = stringResource(id = R.string.no_posts_found),
-            textAlign = TextAlign.Center,
-            color = MaterialTheme.colors.hintGray
         )
     }
 }

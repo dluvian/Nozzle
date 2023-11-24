@@ -1,13 +1,12 @@
-package com.dluvian.nozzle.data.provider
+package com.dluvian.nozzle.data.provider.feed
 
 import com.dluvian.nozzle.data.utils.getCurrentTimeInSeconds
-import com.dluvian.nozzle.model.FeedSettings
 import com.dluvian.nozzle.model.PostWithMeta
 import kotlinx.coroutines.flow.Flow
 
-interface IFeedProvider {
-    suspend fun getFeedFlow(
-        feedSettings: FeedSettings,
+interface IInboxFeedProvider {
+    suspend fun getInboxFeedFlow(
+        relays: Collection<String>,
         limit: Int,
         until: Long = getCurrentTimeInSeconds(),
         waitForSubscription: Long = 0L

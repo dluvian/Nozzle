@@ -13,8 +13,8 @@ data class ProfileWithMeta(
     val trustScore: Float?,
 ) {
     companion object {
-        fun createEmpty() = ProfileWithMeta(
-            pubkey = "",
+        fun createEmpty(pubkey: Pubkey = "") = ProfileWithMeta(
+            pubkey = pubkey,
             nprofile = "",
             metadata = Metadata(),
             numOfFollowing = 0,

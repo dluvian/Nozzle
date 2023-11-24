@@ -21,6 +21,13 @@ interface ContactDao {
     suspend fun listContactPubkeys(pubkey: String): List<String>
 
     @Query(
+        "SELECT pubkey " +
+                "FROM contact " +
+                "WHERE contactPubkey = :pubkey"
+    )
+    suspend fun listFollowedByPubkeys(pubkey: String): List<String>
+
+    @Query(
         "SELECT contactPubkey " +
                 "FROM contact " +
                 "WHERE pubkey = (SELECT pubkey FROM account WHERE isActive = 1)"
@@ -204,10 +211,7 @@ interface ContactDao {
         "SELECT contactPubkey " +
                 "FROM contact " +
                 "WHERE contactPubkey IN (:contactPubkeys) " +
-                "AND pubkey = :myPubkey"
+                "AND pubkey = (SELECT pubkey FROM account WHERE isActive = 1)"
     )
-    suspend fun filterFriendsWithList(
-        contactPubkeys: Collection<String>,
-        myPubkey: String
-    ): List<String>
+    suspend fun filterFriendsWithList(contactPubkeys: Collection<String>): List<String>
 }

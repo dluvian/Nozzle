@@ -11,13 +11,16 @@ import com.dluvian.nozzle.ui.app.navigation.PostCardNavLambdas
 fun ProfileRoute(
     profileViewModel: ProfileViewModel,
     postCardNavLambdas: PostCardNavLambdas,
+    onOpenFollowerList: (String) -> Unit,
+    onOpenFollowedByList: (String) -> Unit,
     onPrepareReply: (PostWithMeta) -> Unit,
     onNavigateToEditProfile: () -> Unit,
 ) {
-    val isRefreshing by profileViewModel.isRefreshingState.collectAsState()
+    val isRefreshing by profileViewModel.isRefreshing.collectAsState()
     val profile by profileViewModel.profileState.collectAsState()
-    val feed by profileViewModel.feedState.collectAsState()
     val isFollowedByMe by profileViewModel.isFollowedByMeState.collectAsState()
+    val feedFlow by profileViewModel.feed.collectAsState()
+    val feed by feedFlow.collectAsState()
 
     ProfileScreen(
         isRefreshing = isRefreshing,
@@ -35,14 +38,15 @@ fun ProfileRoute(
         },
         onFollow = profileViewModel.onFollow,
         onUnfollow = profileViewModel.onUnfollow,
+        onOpenFollowerList = onOpenFollowerList,
+        onOpenFollowedByList = onOpenFollowedByList,
         onShowMedia = { mediaUrl ->
             profileViewModel.clickedMediaUrlCache.insert(mediaUrl)
         },
         onShouldShowMedia = { mediaUrl ->
             profileViewModel.clickedMediaUrlCache.contains(mediaUrl)
         },
-        onRefreshProfileView = profileViewModel.onRefreshProfileView,
-        onCopyNprofile = profileViewModel.onCopyNprofile,
+        onRefresh = profileViewModel.onRefresh,
         onLoadMore = profileViewModel.onLoadMore,
         onNavigateToEditProfile = onNavigateToEditProfile,
     )

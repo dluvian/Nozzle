@@ -6,10 +6,7 @@ import com.dluvian.nozzle.data.cache.IIdCache
 import com.dluvian.nozzle.data.room.AppDatabase
 import com.dluvian.nozzle.data.room.entity.ContactEntity
 import com.dluvian.nozzle.data.room.entity.EventRelayEntity
-import com.dluvian.nozzle.data.room.entity.HashtagEntity
-import com.dluvian.nozzle.data.room.entity.MentionEntity
 import com.dluvian.nozzle.data.room.entity.Nip65Entity
-import com.dluvian.nozzle.data.room.entity.PostEntity
 import com.dluvian.nozzle.data.room.entity.ProfileEntity
 import com.dluvian.nozzle.data.room.entity.ReactionEntity
 import com.dluvian.nozzle.data.utils.JsonUtils.gson
@@ -124,15 +121,10 @@ class EventProcessor(
         if (alreadyPresent.size == relayedEvents.size) return
 
         val newPosts = relayedEvents - alreadyPresent.toSet()
-        val postEntities = newPosts.map { PostEntity.fromEvent(it.event) }
-        val hashtags = newPosts.flatMap { HashtagEntity.fromEvent(it.event) }
-        val mentions = newPosts.flatMap { MentionEntity.fromEvent(it.event) }
 
         scope.launch {
             database.postDao().insertWithHashtagsAndMentions(
-                posts = postEntities,
-                hashtags = hashtags,
-                mentions = mentions,
+                events = newPosts.map { it.event },
                 hashtagDao = database.hashtagDao(),
                 mentionDao = database.mentionDao(),
             )

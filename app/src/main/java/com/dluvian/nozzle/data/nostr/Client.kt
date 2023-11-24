@@ -141,12 +141,16 @@ class Client(private val httpClient: OkHttpClient) {
 
     fun close() {
         Log.i(TAG, "Close connections")
-        sockets.keys.forEach { removeRelay(it) }
+        synchronized(sockets) {
+            sockets.keys.forEach { removeRelay(it) }
+        }
         httpClient.dispatcher.executorService.shutdown()
     }
 
     private fun getRelayUrl(webSocket: WebSocket): String? {
-        return sockets.entries.find { it.value == webSocket }?.key
+        synchronized(sockets) {
+            return sockets.entries.find { it.value == webSocket }?.key
+        }
     }
 
     private fun removeSocket(socket: WebSocket) {
@@ -165,13 +169,12 @@ class Client(private val httpClient: OkHttpClient) {
             }
         }
         Log.i(TAG, "Removed socket of $removedUrls")
-        Log.i(
-            TAG,
-            "Removed socket of $removedSubCount subscriptions"
-        )
+        Log.i(TAG, "Removed socket of $removedSubCount subscriptions")
     }
 
     private fun filterSocketsByRelays(relays: Collection<String>?): List<Map.Entry<String, WebSocket>> {
-        return sockets.entries.filter { relays?.contains(it.key) ?: true }
+        synchronized(sockets) {
+            return sockets.entries.filter { relays?.contains(it.key) ?: true }
+        }
     }
 }

@@ -9,9 +9,9 @@ import com.dluvian.nozzle.data.room.entity.PostEntity
 import com.dluvian.nozzle.data.subscriber.INozzleSubscriber
 import com.dluvian.nozzle.data.utils.NORMAL_DEBOUNCE
 import com.dluvian.nozzle.data.utils.firstThenDistinctDebounce
+import com.dluvian.nozzle.model.FeedInfo
 import com.dluvian.nozzle.model.PostThread
 import com.dluvian.nozzle.model.PostWithMeta
-import com.dluvian.nozzle.model.helper.FeedInfo
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map

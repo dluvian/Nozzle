@@ -13,16 +13,13 @@ import androidx.compose.material.Icon
 import androidx.compose.material.MaterialTheme.colors
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Help
-import androidx.compose.material.icons.filled.Stars
 import androidx.compose.material.icons.filled.Verified
 import androidx.compose.material.icons.filled.VerifiedUser
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
@@ -31,7 +28,7 @@ import androidx.compose.ui.res.stringResource
 import coil.compose.SubcomposeAsyncImage
 import coil.request.ImageRequest
 import com.dluvian.nozzle.R
-import com.dluvian.nozzle.data.utils.getRobohashUrl
+import com.dluvian.nozzle.data.utils.getDefaultPictureBrush
 import com.dluvian.nozzle.model.FollowedByFriend
 import com.dluvian.nozzle.model.Friend
 import com.dluvian.nozzle.model.Oneself
@@ -47,12 +44,10 @@ fun ProfilePicture(
     trustType: TrustType,
     onOpenProfile: (() -> Unit)? = null,
 ) {
-    val realPictureUrl = remember(pictureUrl, pubkey) {
-        pictureUrl.ifEmpty { getRobohashUrl(pubkey = pubkey) }
-    }
     BaseProfilePicture(
         modifier = modifier,
-        pictureUrl = realPictureUrl,
+        pictureUrl = pictureUrl,
+        pubkey = pubkey,
         trustType = trustType,
         onOpenProfile = onOpenProfile,
     )
@@ -62,6 +57,7 @@ fun ProfilePicture(
 fun BaseProfilePicture(
     modifier: Modifier = Modifier,
     pictureUrl: String,
+    pubkey: String,
     trustType: TrustType,
     onOpenProfile: (() -> Unit)? = null,
 ) {
@@ -80,8 +76,8 @@ fun BaseProfilePicture(
                 .size(300)
                 .build(),
             contentScale = ContentScale.Crop,
-            loading = { DefaultPicture() },
-            error = { DefaultPicture() },
+            loading = { DefaultPicture(pubkey = pubkey) },
+            error = { DefaultPicture(pubkey = pubkey) },
             contentDescription = stringResource(id = R.string.profile_picture)
         )
         PictureIndicator(modifier = Modifier.fillMaxWidth(), trustType = trustType)
@@ -89,11 +85,8 @@ fun BaseProfilePicture(
 }
 
 @Composable
-private fun DefaultPicture() {
-    val primary = colors.primary
-    val secondary = colors.secondary
-    val gradient = remember(primary, secondary) { listOf(primary, secondary) }
-    Box(modifier = Modifier.background(brush = Brush.linearGradient(colors = gradient)))
+private fun DefaultPicture(pubkey: String) {
+    Box(modifier = Modifier.background(brush = getDefaultPictureBrush(pubkey = pubkey)))
 }
 
 @Composable
@@ -107,29 +100,24 @@ private fun PictureIndicator(
         is Friend -> PictureIndicatorBase(
             modifier = modifier,
             color = Color.Green,
-            imageVector = if (trustType.isVerified) Icons.Filled.Stars
-            else Icons.Filled.Verified,
+            imageVector = Icons.Filled.Verified,
             trustScore = null
         )
 
         is FollowedByFriend -> PictureIndicatorBase(
             modifier = modifier,
             color = Orange500,
-            imageVector = if (trustType.isVerified) Icons.Filled.Stars
-            else Icons.Filled.VerifiedUser,
+            imageVector = Icons.Filled.VerifiedUser,
             trustScore = trustType.trustScore
         )
 
         is Unknown -> PictureIndicatorBase(
             modifier = modifier,
-            color = if (trustType.isVerified) Orange500 else Color.Gray,
-            imageVector = if (trustType.isVerified) Icons.Filled.Stars
-            else Icons.Filled.Help,
+            color = Color.Gray,
+            imageVector = Icons.Filled.Help,
             trustScore = null
         )
-
     }
-
 }
 
 @Composable

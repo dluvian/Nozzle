@@ -27,6 +27,7 @@ import androidx.compose.material.TextButton
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DarkMode
 import androidx.compose.material.icons.rounded.CellTower
+import androidx.compose.material.icons.rounded.Favorite
 import androidx.compose.material.icons.rounded.Inbox
 import androidx.compose.material.icons.rounded.Key
 import androidx.compose.material.icons.rounded.Newspaper
@@ -103,9 +104,10 @@ fun NozzleDrawerScreen(
                 isDarkMode = isDarkMode,
                 onToggleDarkMode = onToggleDarkMode,
                 navigateToFeed = navActions.navigateToFeed,
+                navigateToInbox = navActions.navigateToInbox,
+                navigateToLikes = navActions.navigateToLikes,
                 navigateToSearch = navActions.navigateToSearch,
                 navigateToRelayEditor = navActions.navigateToRelayEditor,
-                navigateToInbox = navActions.navigateToInbox,
                 navigateToKeys = navActions.navigateToKeys,
                 closeDrawer = closeDrawer
             )
@@ -272,6 +274,7 @@ private fun MainRows(
     onToggleDarkMode: () -> Unit,
     navigateToFeed: () -> Unit,
     navigateToInbox: () -> Unit,
+    navigateToLikes: () -> Unit,
     navigateToSearch: () -> Unit,
     navigateToRelayEditor: () -> Unit,
     navigateToKeys: () -> Unit,
@@ -300,6 +303,14 @@ private fun MainRows(
             label = stringResource(id = R.string.search),
             action = {
                 navigateToSearch()
+                closeDrawer()
+            }
+        )
+        DrawerRow(
+            imageVector = Icons.Rounded.Favorite,
+            label = stringResource(id = R.string.likes),
+            action = {
+                navigateToLikes()
                 closeDrawer()
             }
         )

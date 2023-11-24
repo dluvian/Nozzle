@@ -9,6 +9,11 @@ interface INostrSubscriber {
 
     fun subscribeFullProfiles(pubkeysByRelay: Map<Relay, List<Pubkey>>): List<String>
 
+    fun subscribeSimpleProfiles(
+        relaysByPubkey: Map<Pubkey, List<Relay>>,
+        defaultRelays: Collection<Relay>,
+    ): Collection<String>
+
     fun subscribeToFeedPosts(
         authorPubkeys: List<String>?,
         hashtag: String?,
@@ -39,6 +44,13 @@ interface INostrSubscriber {
 
     fun subscribePostsWithMention(
         mentionedPubkey: String,
+        limit: Int,
+        until: Long = getCurrentTimeInSeconds(),
+        relays: Collection<String>? = null,
+    ): List<String>
+
+    fun subscribeLikes(
+        pubkey: Pubkey,
         limit: Int,
         until: Long = getCurrentTimeInSeconds(),
         relays: Collection<String>? = null,

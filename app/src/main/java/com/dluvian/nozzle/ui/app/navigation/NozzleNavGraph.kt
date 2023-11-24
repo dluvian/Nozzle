@@ -26,8 +26,10 @@ import com.dluvian.nozzle.ui.app.views.feed.FeedRoute
 import com.dluvian.nozzle.ui.app.views.hashtag.HashtagRoute
 import com.dluvian.nozzle.ui.app.views.inbox.InboxRoute
 import com.dluvian.nozzle.ui.app.views.keys.KeysRoute
+import com.dluvian.nozzle.ui.app.views.likes.LikesRoute
 import com.dluvian.nozzle.ui.app.views.post.PostRoute
 import com.dluvian.nozzle.ui.app.views.profile.ProfileRoute
+import com.dluvian.nozzle.ui.app.views.profileList.ProfileListRoute
 import com.dluvian.nozzle.ui.app.views.relayEditor.RelayEditorRoute
 import com.dluvian.nozzle.ui.app.views.reply.ReplyRoute
 import com.dluvian.nozzle.ui.app.views.search.SearchRoute
@@ -72,8 +74,36 @@ fun NozzleNavGraph(
             ProfileRoute(
                 profileViewModel = vmContainer.profileViewModel,
                 postCardNavLambdas = postCardNavLambdas,
+                onOpenFollowerList = navActions.navigateToFollowerList,
+                onOpenFollowedByList = navActions.navigateToFollowedByList,
                 onPrepareReply = vmContainer.replyViewModel.onPrepareReply,
                 onNavigateToEditProfile = navActions.navigateToEditProfile,
+            )
+        }
+        composable(
+            route = NozzleRoute.FOLLOWER_LIST + "/{pubkey}",
+            arguments = listOf(navArgument("pubkey") { type = NavType.StringType })
+        ) { backStackEntry ->
+            vmContainer.profileListViewModel.onSetFollowerList(
+                backStackEntry.arguments?.getString("pubkey").orEmpty()
+            )
+            ProfileListRoute(
+                profileListViewModel = vmContainer.profileListViewModel,
+                onNavigateToProfile = navActions.navigateToProfile,
+                onGoBack = navActions.popStack,
+            )
+        }
+        composable(
+            route = NozzleRoute.FOLLOWED_BY_LIST + "/{pubkey}",
+            arguments = listOf(navArgument("pubkey") { type = NavType.StringType })
+        ) { backStackEntry ->
+            vmContainer.profileListViewModel.onSetFollowedByList(
+                backStackEntry.arguments?.getString("pubkey").orEmpty()
+            )
+            ProfileListRoute(
+                profileListViewModel = vmContainer.profileListViewModel,
+                onNavigateToProfile = navActions.navigateToProfile,
+                onGoBack = navActions.popStack,
             )
         }
         composable(route = NozzleRoute.INBOX) {
@@ -84,10 +114,19 @@ fun NozzleNavGraph(
                 onGoBack = navActions.popStack,
             )
         }
+        composable(route = NozzleRoute.LIKES) {
+            LikesRoute(
+                likesViewModel = vmContainer.likesViewModel,
+                postCardNavLambdas = postCardNavLambdas,
+                onPrepareReply = vmContainer.replyViewModel.onPrepareReply,
+                onGoBack = navActions.popStack,
+            )
+        }
         composable(route = NozzleRoute.SEARCH) {
             SearchRoute(
                 searchViewModel = vmContainer.searchViewModel,
                 onNavigateToId = navActions.navigateToId,
+                onNavigateToProfile = navActions.navigateToProfile,
                 onGoBack = navActions.popStack,
             )
         }
@@ -150,7 +189,6 @@ fun NozzleNavGraph(
             route = "${NozzleRoute.HASHTAG}/{hashtag}",
             arguments = listOf(navArgument("hashtag") { type = NavType.StringType })
         ) { backStackEntry ->
-            // TODO: Handle this in navActions
             val hashtag = backStackEntry.arguments?.getString("hashtag")
             if (hashtag != null) {
                 vmContainer.hashtagViewModel.onOpenHashtag(hashtag)

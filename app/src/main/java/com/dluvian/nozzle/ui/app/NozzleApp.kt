@@ -15,8 +15,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalClipboardManager
-import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
@@ -32,8 +30,10 @@ import com.dluvian.nozzle.ui.app.views.feed.FeedViewModel
 import com.dluvian.nozzle.ui.app.views.hashtag.HashtagViewModel
 import com.dluvian.nozzle.ui.app.views.inbox.InboxViewModel
 import com.dluvian.nozzle.ui.app.views.keys.KeysViewModel
+import com.dluvian.nozzle.ui.app.views.likes.LikesViewModel
 import com.dluvian.nozzle.ui.app.views.post.PostViewModel
 import com.dluvian.nozzle.ui.app.views.profile.ProfileViewModel
+import com.dluvian.nozzle.ui.app.views.profileList.ProfileListViewModel
 import com.dluvian.nozzle.ui.app.views.relayEditor.RelayEditorViewModel
 import com.dluvian.nozzle.ui.app.views.reply.ReplyViewModel
 import com.dluvian.nozzle.ui.app.views.search.SearchViewModel
@@ -73,8 +73,14 @@ fun NozzleApp(appContainer: AppContainer) {
                         pubkeyProvider = appContainer.keyManager,
                         clickedMediaUrlCache = appContainer.clickedMediaUrlCache,
                         contactListProvider = appContainer.contactListProvider,
-                        context = LocalContext.current,
-                        clip = LocalClipboardManager.current,
+                    )
+                ),
+                profileListViewModel = viewModel(
+                    factory = ProfileListViewModel.provideFactory(
+                        profileFollower = appContainer.profileFollower,
+                        simpleProfileProvider = appContainer.simpleProfileProvider,
+                        nozzleSubscriber = appContainer.nozzleSubscriber,
+                        contactDao = appContainer.roomDb.contactDao()
                     )
                 ),
                 keysViewModel = viewModel(
@@ -100,6 +106,12 @@ fun NozzleApp(appContainer: AppContainer) {
                         postCardInteractor = appContainer.postCardInteractor,
                         inboxFeedProvider = appContainer.inboxFeedProvider,
                         relayProvider = appContainer.relayProvider,
+                    )
+                ),
+                likesViewModel = viewModel(
+                    factory = LikesViewModel.provideFactory(
+                        clickedMediaUrlCache = appContainer.clickedMediaUrlCache,
+                        likeFeedProvider = appContainer.likeFeedProvider
                     )
                 ),
                 threadViewModel = viewModel(
@@ -130,11 +142,13 @@ fun NozzleApp(appContainer: AppContainer) {
                         annotatedContentHandler = appContainer.annotatedContentHandler,
                         postDao = appContainer.roomDb.postDao(),
                         hashtagDao = appContainer.roomDb.hashtagDao(),
+                        mentionDao = appContainer.roomDb.mentionDao()
                     )
                 ),
                 searchViewModel = viewModel(
                     factory = SearchViewModel.provideFactory(
-                        nip05Resolver = appContainer.nip05Resolver
+                        nip05Resolver = appContainer.nip05Resolver,
+                        simpleProfileProvider = appContainer.simpleProfileProvider
                     )
                 ),
                 hashtagViewModel = viewModel(

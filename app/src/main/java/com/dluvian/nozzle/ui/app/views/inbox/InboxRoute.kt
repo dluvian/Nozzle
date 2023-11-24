@@ -15,7 +15,8 @@ fun InboxRoute(
     onGoBack: () -> Unit,
 ) {
     val uiState by inboxViewModel.uiState.collectAsState()
-    val feed by inboxViewModel.feedState.collectAsState()
+    val feedFlow by inboxViewModel.feed.collectAsState()
+    val feed by feedFlow.collectAsState()
 
     InboxScreen(
         uiState = uiState,

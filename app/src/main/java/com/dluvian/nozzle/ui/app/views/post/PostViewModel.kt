@@ -13,9 +13,8 @@ import com.dluvian.nozzle.data.provider.IPersonalProfileProvider
 import com.dluvian.nozzle.data.provider.IPubkeyProvider
 import com.dluvian.nozzle.data.provider.IRelayProvider
 import com.dluvian.nozzle.data.room.dao.HashtagDao
+import com.dluvian.nozzle.data.room.dao.MentionDao
 import com.dluvian.nozzle.data.room.dao.PostDao
-import com.dluvian.nozzle.data.room.entity.HashtagEntity
-import com.dluvian.nozzle.data.room.entity.PostEntity
 import com.dluvian.nozzle.data.utils.listRelayStatuses
 import com.dluvian.nozzle.data.utils.toggleRelay
 import com.dluvian.nozzle.model.AllRelays
@@ -38,6 +37,7 @@ class PostViewModel(
     private val annotatedContentHandler: IAnnotatedContentHandler,
     private val postDao: PostDao,
     private val hashtagDao: HashtagDao,
+    private val mentionDao: MentionDao,
 ) : ViewModel() {
 
     val metadataState = personalProfileProvider.getMetadataStateFlow()
@@ -80,15 +80,13 @@ class PostViewModel(
     val onSend: (String) -> Unit = { content ->
         val event = sendPost(state = uiState.value, content = content)
         viewModelScope.launch(context = Dispatchers.IO) {
-            postDao.insertOrIgnore(PostEntity.fromEvent(event))
-            // TODO: Insert hashtags in tx
+            postDao.insertWithHashtagsAndMentions(
+                events = listOf(event),
+                hashtagDao = hashtagDao,
+                mentionDao = mentionDao,
+            )
+
             // TODO: dbSweepExcludingCache.addPostId(event.id)
-            val hashtags = event.getHashtags().map {
-                HashtagEntity(eventId = event.id, hashtag = it.lowercase())
-            }
-            if (hashtags.isNotEmpty()) {
-                hashtagDao.insertOrIgnore(*hashtags.toTypedArray())
-            }
         }
         resetUI()
     }
@@ -177,6 +175,7 @@ class PostViewModel(
             annotatedContentHandler: IAnnotatedContentHandler,
             postDao: PostDao,
             hashtagDao: HashtagDao,
+            mentionDao: MentionDao,
         ): ViewModelProvider.Factory = object : ViewModelProvider.Factory {
             @Suppress("UNCHECKED_CAST")
             override fun <T : ViewModel> create(modelClass: Class<T>): T {
@@ -189,6 +188,7 @@ class PostViewModel(
                     annotatedContentHandler = annotatedContentHandler,
                     postDao = postDao,
                     hashtagDao = hashtagDao,
+                    mentionDao = mentionDao
                 ) as T
             }
         }

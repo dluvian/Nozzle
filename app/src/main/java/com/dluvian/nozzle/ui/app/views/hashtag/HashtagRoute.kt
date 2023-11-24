@@ -15,11 +15,12 @@ fun HashtagRoute(
     onGoBack: () -> Unit,
 ) {
     val uiState by hashtagViewModel.uiState.collectAsState()
-    val feedState by hashtagViewModel.feedState.collectAsState()
+    val feedFlow by hashtagViewModel.feed.collectAsState()
+    val feed by feedFlow.collectAsState()
 
     HashtagScreen(
         uiState = uiState,
-        feed = feedState,
+        feed = feed,
         postCardNavLambdas = postCardNavLambdas,
         onLike = { post ->
             hashtagViewModel.postCardInteractor.like(

@@ -19,4 +19,6 @@ data class PostWithMeta(
     val trustScore: Float?,
     val numOfReplies: Int,
     val relays: List<String>,
-)
+) : Identifiable {
+    override fun getId() = entity.id
+}

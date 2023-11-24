@@ -39,8 +39,8 @@ import com.dluvian.nozzle.ui.app.navigation.PostCardNavLambdas
 import com.dluvian.nozzle.ui.components.AddIcon
 import com.dluvian.nozzle.ui.components.ChooseRelayButton
 import com.dluvian.nozzle.ui.components.FeedSettingsButton
+import com.dluvian.nozzle.ui.components.hint.NoPostsHint
 import com.dluvian.nozzle.ui.components.media.ProfilePicture
-import com.dluvian.nozzle.ui.components.postCard.NoPostsHint
 import com.dluvian.nozzle.ui.components.postCard.PostCardList
 import com.dluvian.nozzle.ui.theme.sizing
 import com.dluvian.nozzle.ui.theme.spacing
@@ -50,13 +50,13 @@ import kotlinx.coroutines.launch
 fun FeedScreen(
     uiState: FeedViewModelState,
     pubkeyState: String,
-    feedState: List<PostWithMeta>,
+    feed: List<PostWithMeta>,
     metadataState: Metadata?,
     postCardNavLambdas: PostCardNavLambdas,
     onLike: (PostWithMeta) -> Unit,
     onShowMedia: (String) -> Unit,
     onShouldShowMedia: (String) -> Boolean,
-    onRefreshFeedView: () -> Unit,
+    onRefresh: () -> Unit,
     onRefreshOnMenuDismiss: () -> Unit,
     onPrepareReply: (PostWithMeta) -> Unit,
     onToggleContactsOnly: () -> Unit,
@@ -96,10 +96,10 @@ fun FeedScreen(
                 .padding(it)
         ) {
             PostCardList(
-                posts = feedState,
+                posts = feed,
                 isRefreshing = uiState.isRefreshing,
                 postCardNavLambdas = postCardNavLambdas,
-                onRefresh = onRefreshFeedView,
+                onRefresh = onRefresh,
                 onLike = onLike,
                 onShowMedia = onShowMedia,
                 onShouldShowMedia = onShouldShowMedia,
@@ -108,7 +108,7 @@ fun FeedScreen(
                 lazyListState = lazyListState,
             )
         }
-        if (feedState.isEmpty()) NoPostsHint()
+        if (feed.isEmpty()) NoPostsHint()
     }
 }
 

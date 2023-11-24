@@ -44,6 +44,7 @@
     <string name="post_not_found">Post not found</string>
     <string name="reply">Reply</string>
     <string name="like">Like</string>
+    <string name="likes">Likes</string>
     <string name="follow">Follow</string>
     <string name="close">Close</string>
     <string name="send">Send</string>
@@ -54,7 +55,6 @@
     <string name="enter_nip05">e.g. user@domain.com</string>
     <string name="post_your_thoughts">Post your thoughts</string>
     <string name="add">Add</string>
-    <string name="invalid_nostr_id">Invalid nostr ID</string>
     <string name="invalid_nsec">Invalid nsec</string>
     <string name="open_nostr_id">Open nostr ID, hashtag or nip05</string>
     <string name="post_published">Post published</string>
@@ -104,6 +104,7 @@
     <string name="delete_account">Delete account</string>
     <string name="dark_mode">Dark Mode</string>
     <string name="failed">Failed</string>
+    <string name="list_is_empty">List is empty</string>
     <plurals name="other_relays">
         <item quantity="one">other</item>
         <item quantity="other">others</item>
