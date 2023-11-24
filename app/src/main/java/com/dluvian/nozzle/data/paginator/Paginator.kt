@@ -21,7 +21,7 @@ import java.util.concurrent.atomic.AtomicBoolean
 class Paginator(
     private val scope: CoroutineScope,
     private val onSetRefreshing: (Boolean) -> Unit,
-    private val onGetPage: suspend (Long) -> Flow<List<PostWithMeta>>
+    private val onGetPage: suspend (Long, Long) -> Flow<List<PostWithMeta>>
 ) : IPaginator {
     private val maxPageSize = 4
     private var pages: MutableList<StateFlow<List<PostWithMeta>>> = mutableListOf()
@@ -39,7 +39,7 @@ class Paginator(
         onSetRefreshing(true)
         scope.launch(context = Dispatchers.IO) {
             val lastItem = feed.value.value.lastOrNull() ?: return@launch
-            val newPage = onGetPage(lastItem.entity.createdAt).stateIn(
+            val newPage = onGetPage(lastItem.entity.createdAt, 0L).stateIn(
                 scope = scope,
                 started = SharingStarted.WhileSubscribed(
                     stopTimeoutMillis = SCOPE_TIMEOUT,
@@ -67,7 +67,8 @@ class Paginator(
         val initialValue = if (isRefresh) firstPage else emptyList()
         pages.clear()
         scope.launch(context = Dispatchers.IO) {
-            val newPage = onGetPage(getCurrentTimeInSeconds()).stateIn(
+            val waitForSubscription = if (isRefresh) WAIT_TIME else 0L
+            val newPage = onGetPage(getCurrentTimeInSeconds(), waitForSubscription).stateIn(
                 scope = scope,
                 started = SharingStarted.WhileSubscribed(
                     stopTimeoutMillis = SCOPE_TIMEOUT,

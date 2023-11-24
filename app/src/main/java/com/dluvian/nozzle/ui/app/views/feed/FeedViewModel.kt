@@ -40,15 +40,15 @@ class FeedViewModel(
 
     private val paginator: IPaginator = Paginator(
         scope = viewModelScope,
-        onSetRefreshing = { bool -> _uiState.update { it.copy(isRefreshing = bool) } },
-        onGetPage = { lastCreatedAt ->
-            feedProvider.getFeedFlow(
-                feedSettings = _uiState.value.feedSettings,
-                limit = DB_BATCH_SIZE,
-                until = lastCreatedAt,
-            )
-        }
-    )
+        onSetRefreshing = { bool -> _uiState.update { it.copy(isRefreshing = bool) } }
+    ) { lastCreatedAt, waitForSubscription ->
+        feedProvider.getFeedFlow(
+            feedSettings = _uiState.value.feedSettings,
+            limit = DB_BATCH_SIZE,
+            until = lastCreatedAt,
+            waitForSubscription = waitForSubscription
+        )
+    }
 
     val feed = paginator.getFeed()
 

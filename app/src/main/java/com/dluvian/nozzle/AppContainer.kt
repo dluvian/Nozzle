@@ -199,7 +199,8 @@ class AppContainer(context: Context) {
     val likeFeedProvider: ILikeFeedProvider = LikeFeedProvider(
         nozzleSubscriber = nozzleSubscriber,
         postWithMetaProvider = postWithMetaProvider,
-        postDao = roomDb.postDao()
+        postDao = roomDb.postDao(),
+        reactionDao = roomDb.reactionDao()
     )
 
     val simpleProfileProvider: ISimpleProfileProvider = SimpleProfileProvider(

@@ -45,6 +45,7 @@ class NozzleSubscriber(
     private val feedPostSubs = Collections.synchronizedList(mutableListOf<String>())
     private val feedInfoSubs = Collections.synchronizedList(mutableListOf<String>())
     private val nip65Subs = Collections.synchronizedList(mutableListOf<String>())
+    private val postSubs = Collections.synchronizedList(mutableListOf<String>())
     private val threadPostSubs = Collections.synchronizedList(mutableListOf<String>())
     private val parentPostSubs = Collections.synchronizedList(mutableListOf<String>())
     private val unknownPubkeySubs = Collections.synchronizedList(mutableListOf<String>())
@@ -317,6 +318,19 @@ class NozzleSubscriber(
 
         val subIds = nostrSubscriber.subscribeNip65(pubkeys = toSub)
         nip65Subs.unsubThenAddAll(subIds)
+    }
+
+    override fun subscribeToPosts(postIds: Collection<String>) {
+        if (postIds.isEmpty()) return
+
+        val distinctIds = postIds.distinct()
+        Log.i(TAG, "Subscribe ${distinctIds.size} posts")
+
+        val subIds = nostrSubscriber.subscribePosts(
+            postIds = distinctIds,
+            relays = relayProvider.getReadRelays()
+        )
+        postSubs.unsubThenAddAll(subIds)
     }
 
     private suspend fun getNip65PubkeysToSub(

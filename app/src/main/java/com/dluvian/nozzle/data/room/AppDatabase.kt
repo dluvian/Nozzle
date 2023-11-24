@@ -1,5 +1,6 @@
 package com.dluvian.nozzle.data.room
 
+import androidx.room.AutoMigration
 import androidx.room.Database
 import androidx.room.RoomDatabase
 import com.dluvian.nozzle.data.room.dao.AccountDao
@@ -22,10 +23,11 @@ import com.dluvian.nozzle.data.room.entity.ProfileEntity
 import com.dluvian.nozzle.data.room.entity.ReactionEntity
 
 @Database(
-    version = 19,
-//    autoMigrations = [
-//        AutoMigration (from = 19, to = 20)
-//    ],
+    version = 20,
+    exportSchema = true,
+    autoMigrations = [
+        AutoMigration(from = 19, to = 20)
+    ],
     entities = [
         ContactEntity::class,
         EventRelayEntity::class,

@@ -31,15 +31,15 @@ class InboxViewModel(
 
     private val paginator: IPaginator = Paginator(
         scope = viewModelScope,
-        onSetRefreshing = { bool -> _uiState.update { it.copy(isRefreshing = bool) } },
-        onGetPage = { lastCreatedAt ->
-            inboxFeedProvider.getInboxFeedFlow(
-                relays = _uiState.value.relays,
-                limit = DB_BATCH_SIZE,
-                until = lastCreatedAt
-            )
-        }
-    )
+        onSetRefreshing = { bool -> _uiState.update { it.copy(isRefreshing = bool) } }
+    ) { lastCreatedAt, waitForSubscription ->
+        inboxFeedProvider.getInboxFeedFlow(
+            relays = _uiState.value.relays,
+            limit = DB_BATCH_SIZE,
+            until = lastCreatedAt,
+            waitForSubscription = waitForSubscription
+        )
+    }
 
     val feed = paginator.getFeed()
 

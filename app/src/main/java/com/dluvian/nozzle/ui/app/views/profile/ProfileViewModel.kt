@@ -63,16 +63,16 @@ class ProfileViewModel(
 
     private val paginator: IPaginator = Paginator(
         scope = viewModelScope,
-        onSetRefreshing = { bool -> _isRefreshing.update { bool } },
-        onGetPage = { lastCreatedAt ->
-            val pubkey = profileState.value.pubkey
-            feedProvider.getFeedFlow(
-                feedSettings = getCurrentFeedSettings(pubkey = pubkey, relays = getRelays(pubkey)),
-                limit = DB_BATCH_SIZE,
-                until = lastCreatedAt
-            )
-        }
-    )
+        onSetRefreshing = { bool -> _isRefreshing.update { bool } }
+    ) { lastCreatedAt, waitForSubscription ->
+        val pubkey = profileState.value.pubkey
+        feedProvider.getFeedFlow(
+            feedSettings = getCurrentFeedSettings(pubkey = pubkey, relays = getRelays(pubkey)),
+            limit = DB_BATCH_SIZE,
+            until = lastCreatedAt,
+            waitForSubscription = waitForSubscription
+        )
+    }
 
     val feed = paginator.getFeed()
 
