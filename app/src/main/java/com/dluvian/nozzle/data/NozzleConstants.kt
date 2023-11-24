@@ -20,3 +20,5 @@ const val RESUB_AFTER = 5000L
 const val RECOMMENDED_RELAY_NUM = 5
 
 const val EVENT_PROCESSING_DELAY = 1111L
+
+const val MAX_LIST_LENGTH = 50

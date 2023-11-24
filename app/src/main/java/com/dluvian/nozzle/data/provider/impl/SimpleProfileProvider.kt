@@ -1,5 +1,6 @@
 package com.dluvian.nozzle.data.provider.impl
 
+import com.dluvian.nozzle.data.MAX_LIST_LENGTH
 import com.dluvian.nozzle.data.provider.IPubkeyProvider
 import com.dluvian.nozzle.data.provider.ISimpleProfileProvider
 import com.dluvian.nozzle.data.room.dao.ContactDao
@@ -49,7 +50,7 @@ class SimpleProfileProvider(
     override suspend fun getSimpleProfilesFlow(nameLike: String): Flow<List<SimpleProfile>> {
         if (nameLike.isBlank()) return flowOf(emptyList())
 
-        val pubkeys = profileDao.getPubkeysWithNameLike(name = nameLike)
+        val pubkeys = profileDao.getPubkeysWithNameLike(name = nameLike, limit = MAX_LIST_LENGTH)
         if (pubkeys.isEmpty()) return flowOf(emptyList())
 
         return getSimpleProfilesFlow(pubkeys = pubkeys)

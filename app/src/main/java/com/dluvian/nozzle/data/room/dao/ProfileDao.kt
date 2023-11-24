@@ -87,20 +87,23 @@ interface ProfileDao {
                 "UNION ALL " +
                 "SELECT pubkey FROM profile WHERE about LIKE :start " +
                 "UNION ALL " +
-                "SELECT pubkey FROM profile WHERE about LIKE :somewhere "
+                "SELECT pubkey FROM profile WHERE about LIKE :somewhere " +
+                "LIMIT :limit"
     )
     suspend fun internalGetPubkeysWithNameLike(
         name: String,
         start: String,
         somewhere: String,
+        limit: Int
     ): List<Pubkey>
 
-    suspend fun getPubkeysWithNameLike(name: String): List<Pubkey> {
+    suspend fun getPubkeysWithNameLike(name: String, limit: Int): List<Pubkey> {
         val fixedName = name.filter { it != '%' }
         return internalGetPubkeysWithNameLike(
             name = fixedName,
             start = "$fixedName%",
             somewhere = "%$fixedName%",
+            limit = limit
         )
     }
 }
