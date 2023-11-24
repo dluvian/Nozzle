@@ -43,16 +43,17 @@
     <string name="post_not_found">帖子未找到</string>
     <string name="reply">回复</string>
     <string name="like">赞一个</string>
+    <string name="likes">Likes</string>
     <string name="follow">关注</string>
     <string name="close">关闭</string>
     <string name="send">发送</string>
     <string name="post_your_reply">发送回复</string>
     <string name="edit_profile">编辑个人信息</string>
     <string name="update">更新</string>
+    <string name="nip05_identifier">nip05</string>
     <string name="enter_nip05">例如：user@domain.com</string>
     <string name="post_your_thoughts">想法要大声说出来</string>
     <string name="add">添加</string>
-    <string name="invalid_nostr_id">无效的Nostr ID</string>
     <string name="invalid_nsec">无效nsec</string>
     <string name="open_nostr_id">打开NostrID, hash值或者nip05</string>
     <string name="post_published">帖子已发送</string>
@@ -102,4 +103,5 @@
     <string name="delete_account">删除账户</string>
     <string name="dark_mode">暗黑模式</string>
     <string name="failed">失败</string>
+    <string name="list_is_empty">列表为空</string>
 </resources>
