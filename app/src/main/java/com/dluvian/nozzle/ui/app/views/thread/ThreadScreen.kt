@@ -37,6 +37,7 @@ fun ThreadScreen(
     onPrepareReply: (PostWithMeta) -> Unit,
     onLike: (PostWithMeta) -> Unit,
     onRefreshThreadView: () -> Unit,
+    onFindPrevious: () -> Unit,
     onShowMedia: (String) -> Unit,
     onShouldShowMedia: (String) -> Boolean,
     onGoBack: () -> Unit,
@@ -51,6 +52,7 @@ fun ThreadScreen(
                 onPrepareReply = onPrepareReply,
                 onRefresh = onRefreshThreadView,
                 onLike = onLike,
+                onFindPrevious = onFindPrevious,
                 onShowMedia = onShowMedia,
                 onShouldShowMedia = onShouldShowMedia,
             )
@@ -67,6 +69,7 @@ private fun ThreadedPosts(
     onPrepareReply: (PostWithMeta) -> Unit,
     onRefresh: () -> Unit,
     onLike: (PostWithMeta) -> Unit,
+    onFindPrevious: () -> Unit,
     onShowMedia: (String) -> Unit,
     onShouldShowMedia: (String) -> Boolean,
 ) {
@@ -80,10 +83,13 @@ private fun ThreadedPosts(
             state = lazyListState
         ) {
             thread.current?.let {
-                itemsIndexed(thread.previous) { index, post ->
+                itemsIndexed(
+                    items = thread.previous,
+                    key = { _, item -> item.entity.id }) { index, post ->
                     var threadPosition = ThreadPosition.MIDDLE
                     if (index == 0) {
                         if (post.entity.replyToId != null) {
+                            onFindPrevious()
                             PostNotFound()
                         } else {
                             threadPosition = ThreadPosition.START
@@ -101,6 +107,7 @@ private fun ThreadedPosts(
                 }
                 item {
                     if (it.entity.replyToId != null && thread.previous.isEmpty()) {
+                        onFindPrevious()
                         PostNotFound()
                     }
                     val focusColor = colors.primaryVariant
@@ -126,7 +133,7 @@ private fun ThreadedPosts(
                     Spacer(modifier = Modifier.height(spacing.tiny))
                     Divider()
                 }
-                items(thread.replies) { post ->
+                items(items = thread.replies, key = { it.entity.id }) { post ->
                     PostCard(
                         post = post,
                         postCardNavLambdas = postCardNavLambdas,

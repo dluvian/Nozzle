@@ -1,6 +1,7 @@
 package com.dluvian.nozzle.data.provider.impl
 
 import android.util.Log
+import com.dluvian.nozzle.data.WAIT_TIME
 import com.dluvian.nozzle.data.nostr.utils.EncodingUtils.postIdToNostrId
 import com.dluvian.nozzle.data.provider.IPostWithMetaProvider
 import com.dluvian.nozzle.data.provider.IThreadProvider
@@ -12,6 +13,7 @@ import com.dluvian.nozzle.data.utils.firstThenDistinctDebounce
 import com.dluvian.nozzle.model.FeedInfo
 import com.dluvian.nozzle.model.PostThread
 import com.dluvian.nozzle.model.PostWithMeta
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
@@ -44,6 +46,33 @@ class ThreadProvider(
             replyIds = replies.map { it.id },
             feedInfo = feedInfo
         )
+    }
+
+    override suspend fun findParents(earliestPost: PostWithMeta) {
+        val parents = mutableListOf<PostEntity>()
+
+        var delay = WAIT_TIME
+        while (true) {
+            val oldestPost = parents.lastOrNull() ?: earliestPost.entity
+            val replyToId = oldestPost.replyToId
+            if (replyToId == null) {
+                Log.i(TAG, "Found oldest parent after finding ${parents.size} parents")
+                return
+            }
+            nozzleSubscriber.subscribeParentPost(
+                postId = replyToId,
+                relayHint = oldestPost.replyRelayHint
+            )
+            delay(delay)
+            val parent = postDao.getPost(id = replyToId)
+            if (parent == null) {
+                delay += WAIT_TIME
+            } else {
+                delay = WAIT_TIME
+                parents.add(parent)
+            }
+            if (delay >= 5 * WAIT_TIME) return
+        }
     }
 
     private suspend fun listAndSubPrevious(current: PostEntity): List<PostEntity> {

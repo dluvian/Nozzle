@@ -14,9 +14,11 @@ import com.dluvian.nozzle.data.provider.IThreadProvider
 import com.dluvian.nozzle.data.utils.*
 import com.dluvian.nozzle.model.PostThread
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
+import java.util.concurrent.CancellationException
 import java.util.concurrent.atomic.AtomicBoolean
 
 private const val TAG = "ThreadViewModel"
@@ -41,21 +43,22 @@ class ThreadViewModel(
     // TODO: Why is this called multiple times?
     // TODO: Make this more readable
     private val isSettingThread = AtomicBoolean(false)
-    val onOpenThread: (String) -> Unit = { postId ->
+    val onOpenThread: (String) -> Unit = local@{ postId ->
         val hexId = postIdToNostrId(postId)?.hex ?: postId
-        if (!isSettingThread.get() && hexId != threadState.value.current?.entity?.id) {
-            isSettingThread.set(true)
-            isRefreshingFlow.update { true }
-            Log.i(TAG, "Open thread of post $postId")
-            threadState = MutableStateFlow(PostThread.createEmpty())
-            currentPostId = postId
-            viewModelScope.launch(context = Dispatchers.IO) {
-                updateScreen(postId = postId)
-                isRefreshingFlow.update { false }
-                delay(APPEND_RETRY_TIME)
-            }.invokeOnCompletion {
-                isSettingThread.set(false)
-            }
+        if (isSettingThread.get() || hexId == threadState.value.current?.entity?.id) return@local
+
+        isSettingThread.set(true)
+        isRefreshingFlow.update { true }
+        Log.i(TAG, "Open thread of post $postId")
+        threadState = MutableStateFlow(PostThread.createEmpty())
+        findingParentsProcess?.cancel(CancellationException("Opened another thread"))
+        currentPostId = postId
+        viewModelScope.launch(context = Dispatchers.IO) {
+            updateScreen(postId = postId)
+            isRefreshingFlow.update { false }
+            delay(APPEND_RETRY_TIME)
+        }.invokeOnCompletion {
+            isSettingThread.set(false)
         }
     }
 
@@ -72,6 +75,28 @@ class ThreadViewModel(
                 delay(WAIT_TIME)
                 isRefreshingFlow.update { false }
             }
+        }
+    }
+
+    private var findingParentsProcess: Job? = null
+    private val isFindingPrevious = AtomicBoolean(false)
+    val onFindPrevious: () -> Unit = local@{
+        if (!isFindingPrevious.compareAndSet(false, true)) return@local
+
+        val earliestPost = threadState.value.previous.firstOrNull() ?: threadState.value.current
+        if (earliestPost == null || earliestPost.entity.replyToId == null) {
+            isFindingPrevious.set(false)
+            return@local
+        }
+
+        viewModelScope.launch(context = Dispatchers.IO) {
+            threadProvider.findParents(earliestPost = earliestPost)
+        }.let { job ->
+            job.invokeOnCompletion {
+                Log.i(TAG, "Finding parent process completed: error=${it?.localizedMessage}")
+                isFindingPrevious.set(false)
+            }
+            findingParentsProcess = job
         }
     }
 
