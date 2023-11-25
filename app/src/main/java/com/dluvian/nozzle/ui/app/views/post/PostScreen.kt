@@ -3,8 +3,6 @@ package com.dluvian.nozzle.ui.app.views.post
 import android.widget.Toast
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -16,8 +14,6 @@ import com.dluvian.nozzle.R
 import com.dluvian.nozzle.model.nostr.Metadata
 import com.dluvian.nozzle.ui.components.ContentCreationTopBar
 import com.dluvian.nozzle.ui.components.InputBox
-import com.dluvian.nozzle.ui.components.postCard.AnnotatedMentionedPostCard
-import com.dluvian.nozzle.ui.theme.spacing
 
 
 @Composable
@@ -49,23 +45,12 @@ fun PostScreen(
             },
             onClose = onGoBack
         )
-        Column(modifier = Modifier.fillMaxSize()) {
-            InputBox(
-                modifier = Modifier.weight(weight = 1f, fill = false),
-                input = input,
-                picture = metadataState?.picture.orEmpty(),
-                pubkey = pubkeyState,
-                placeholder = stringResource(id = R.string.post_your_thoughts),
-            )
-            uiState.postToQuote?.let { quote ->
-                AnnotatedMentionedPostCard(
-                    modifier = Modifier
-                        .wrapContentHeight()
-                        .padding(spacing.screenEdge),
-                    post = quote,
-                    onNavigateToId = { /* Do nothing. Stay in PostScreen */ },
-                )
-            }
-        }
+        InputBox(
+            input = input,
+            picture = metadataState?.picture.orEmpty(),
+            pubkey = pubkeyState,
+            placeholder = stringResource(id = R.string.post_your_thoughts),
+            postToQuote = uiState.postToQuote
+        )
     }
 }

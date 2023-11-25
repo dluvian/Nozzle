@@ -2,9 +2,11 @@ package com.dluvian.nozzle.ui.components
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.MaterialTheme
@@ -19,13 +21,44 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.TextFieldValue
+import com.dluvian.nozzle.model.AnnotatedMentionedPost
 import com.dluvian.nozzle.model.Oneself
 import com.dluvian.nozzle.ui.components.media.ProfilePicture
+import com.dluvian.nozzle.ui.components.postCard.AnnotatedMentionedPostCard
 import com.dluvian.nozzle.ui.theme.sizing
 import com.dluvian.nozzle.ui.theme.spacing
 
+
 @Composable
 fun InputBox(
+    input: MutableState<TextFieldValue>,
+    picture: String,
+    pubkey: String,
+    placeholder: String,
+    postToQuote: AnnotatedMentionedPost? = null
+) {
+    Column(modifier = Modifier.fillMaxSize()) {
+        BaseInputBox(
+            modifier = Modifier.weight(weight = 1f, fill = false),
+            input = input,
+            picture = picture,
+            pubkey = pubkey,
+            placeholder = placeholder,
+        )
+        postToQuote?.let { quote ->
+            AnnotatedMentionedPostCard(
+                modifier = Modifier
+                    .wrapContentHeight()
+                    .padding(spacing.screenEdge),
+                post = quote,
+                onNavigateToId = { /* Do nothing. Stay in PostScreen */ },
+            )
+        }
+    }
+}
+
+@Composable
+private fun BaseInputBox(
     input: MutableState<TextFieldValue>,
     picture: String,
     pubkey: String,
