@@ -96,7 +96,9 @@ class Paginator<T : Identifiable, S>(
             pages.getOrElse(pages.size - 1) { flowOf(emptyList()) }
         ) { p1, p2, p3, p4, p5 ->
             val list = initialValue + p1 + p2 + p3 + p4 + p5
-            list.distinctBy { it.getId() }
+            list.reversed()
+                .distinctBy { it.getId() }
+                .reversed()
         }
             .stateIn(
                 scope = scope,
