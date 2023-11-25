@@ -6,8 +6,6 @@ import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import com.dluvian.nozzle.data.DB_BATCH_SIZE
 import com.dluvian.nozzle.model.PostWithMeta
@@ -28,7 +26,6 @@ fun PostCardList(
     lazyListState: LazyListState = rememberLazyListState(),
 ) {
     PullRefreshBox(isRefreshing = isRefreshing, onRefresh = onRefresh) {
-        val lastIdForLoadingMore = remember { mutableStateOf("") }
         LazyColumn(
             modifier = Modifier.fillMaxSize(), state = lazyListState
         ) {
@@ -41,13 +38,7 @@ fun PostCardList(
                     onShowMedia = onShowMedia,
                     onShouldShowMedia = onShouldShowMedia
                 )
-                if (index == posts.size - 3
-                    && posts.size >= DB_BATCH_SIZE
-                    && lastIdForLoadingMore.value != posts.lastOrNull()?.entity?.id.orEmpty()
-                ) {
-                    lastIdForLoadingMore.value = posts.lastOrNull()?.entity?.id.orEmpty()
-                    onLoadMore()
-                }
+                if (index == posts.size - 3 && posts.size >= DB_BATCH_SIZE) onLoadMore()
             }
         }
     }

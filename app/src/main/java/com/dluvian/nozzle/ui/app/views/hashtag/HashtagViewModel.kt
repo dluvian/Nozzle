@@ -62,9 +62,7 @@ class HashtagViewModel(
         }
     }
 
-    val onLoadMore: () -> Unit = {
-        paginator.loadMore()
-    }
+    val onLoadMore: () -> Unit = { paginator.loadMore() }
 
     private fun updateScreen(hashtag: String) {
         _uiState.update { ui ->

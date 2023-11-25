@@ -74,24 +74,15 @@ class ProfileListViewModel(
         pubkey.value = it
         type.value = ProfileListType.FOLLOWER_LIST
         paginator.reset()
-        lastPubkeyToLoadMore.value = ""
     }
 
     val onSetFollowedByList: (Pubkey) -> Unit = {
         pubkey.value = it
         type.value = ProfileListType.FOLLOWED_BY_LIST
         paginator.reset()
-        lastPubkeyToLoadMore.value = ""
     }
 
-    private val lastPubkeyToLoadMore = mutableStateOf("")
-    val onLoadMore: () -> Unit = {
-        val lastPubkey = profiles.value.value.lastOrNull()?.pubkey.orEmpty()
-        if (lastPubkeyToLoadMore.value != lastPubkey) {
-            paginator.loadMore()
-            lastPubkeyToLoadMore.value = lastPubkey
-        }
-    }
+    val onLoadMore: () -> Unit = { paginator.loadMore() }
 
     private var followProcesses: MutableMap<Pubkey, Job?> = mutableMapOf()
     val onFollow: (Int) -> Unit = local@{ indexToFollow ->

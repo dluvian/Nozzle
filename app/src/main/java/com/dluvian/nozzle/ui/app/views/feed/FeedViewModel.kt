@@ -77,9 +77,7 @@ class FeedViewModel(
         }
     }
 
-    val onLoadMore: () -> Unit = {
-        paginator.loadMore()
-    }
+    val onLoadMore: () -> Unit = { paginator.loadMore() }
 
     private var toggledContacts = false
     private var toggledPosts = false

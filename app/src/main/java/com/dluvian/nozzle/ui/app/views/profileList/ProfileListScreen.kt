@@ -63,9 +63,7 @@ fun ProfileListScreen(
                     onUnfollow = { onUnfollow(i) },
                     onNavigateToProfile,
                 )
-                if (i == profiles.size - 3 && profiles.size >= MAX_LIST_LENGTH) {
-                    onLoadMore()
-                }
+                if (i == profiles.size - 3 && profiles.size >= MAX_LIST_LENGTH) onLoadMore()
             }
         }
     }

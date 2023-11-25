@@ -104,13 +104,9 @@ class ProfileViewModel(
         }
     }
 
-    val onRefresh: () -> Unit = {
-        paginator.refresh()
-    }
+    val onRefresh: () -> Unit = { paginator.refresh() }
 
-    val onLoadMore: () -> Unit = {
-        paginator.loadMore()
-    }
+    val onLoadMore: () -> Unit = { paginator.loadMore() }
 
     private var followProcess: Job? = null
     val onFollow: (String) -> Unit = { pubkeyToFollow ->
