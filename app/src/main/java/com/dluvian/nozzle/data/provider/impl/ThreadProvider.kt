@@ -59,11 +59,19 @@ class ThreadProvider(
                 Log.i(TAG, "Found oldest parent after finding ${parents.size} parents")
                 return
             }
+            val inDb = postDao.getPost(id = replyToId)
+            if (inDb != null) {
+                delay = WAIT_TIME
+                parents.add(inDb)
+                continue
+            }
+
             nozzleSubscriber.subscribeParentPost(
                 postId = replyToId,
                 relayHint = oldestPost.replyRelayHint
             )
             delay(delay)
+
             val parent = postDao.getPost(id = replyToId)
             if (parent == null) {
                 delay += WAIT_TIME
@@ -71,7 +79,10 @@ class ThreadProvider(
                 delay = WAIT_TIME
                 parents.add(parent)
             }
-            if (delay >= 5 * WAIT_TIME) return
+            if (delay >= 5 * WAIT_TIME) {
+                Log.i(TAG, "Failed to find parent after 5 attempts")
+                return
+            }
         }
     }
 
