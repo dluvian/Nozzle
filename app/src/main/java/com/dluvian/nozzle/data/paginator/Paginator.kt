@@ -67,9 +67,9 @@ class Paginator<T : Identifiable, S>(
     override fun refresh() = resetOrRefresh(isRefresh = true)
 
     private fun resetOrRefresh(isRefresh: Boolean) {
+        onSetRefreshing(true)
         val firstPage = pages.firstOrNull()?.value ?: emptyList()
         lastIdToLoadMore.value = ""
-        onSetRefreshing(true)
         val initialValue = if (isRefresh) firstPage else emptyList()
         pages.clear()
         scope.launch(context = Dispatchers.IO) {
