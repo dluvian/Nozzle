@@ -68,6 +68,8 @@ class FeedViewModel(
     }
 
     val onRefresh: () -> Unit = {
+        // Paginator can't set isRefreshing in time
+        _uiState.update { it.copy(isRefreshing = true) }
         viewModelScope.launch(Dispatchers.IO) {
             updateRelaySelection()
             paginator.refresh()
