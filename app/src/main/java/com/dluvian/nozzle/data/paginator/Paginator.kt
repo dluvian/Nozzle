@@ -1,5 +1,6 @@
 package com.dluvian.nozzle.data.paginator
 
+import androidx.compose.runtime.mutableStateOf
 import com.dluvian.nozzle.data.SCOPE_TIMEOUT
 import com.dluvian.nozzle.data.WAIT_TIME
 import com.dluvian.nozzle.model.Identifiable
@@ -32,9 +33,12 @@ class Paginator<T : Identifiable, S>(
     override fun getList() = list
 
     private val isLoadingMore = AtomicBoolean(false)
-
+    private val lastIdToLoadMore = mutableStateOf("")
     override fun loadMore() {
         if (!isLoadingMore.compareAndSet(false, true)) return
+
+        val lastId = list.value.value.lastOrNull()?.getId().orEmpty()
+        if (lastIdToLoadMore.value == lastId) return
 
         onSetRefreshing(true)
         scope.launch(context = Dispatchers.IO) {
@@ -52,6 +56,7 @@ class Paginator<T : Identifiable, S>(
             list.update { createNewList(pages = pages, initialValue = list.value.value) }
             delay(WAIT_TIME)
         }.invokeOnCompletion {
+            lastIdToLoadMore.value = lastId
             isLoadingMore.set(false)
             onSetRefreshing(false)
         }
@@ -62,8 +67,9 @@ class Paginator<T : Identifiable, S>(
     override fun refresh() = resetOrRefresh(isRefresh = true)
 
     private fun resetOrRefresh(isRefresh: Boolean) {
-        val firstPage = pages.firstOrNull()?.value ?: emptyList()
         onSetRefreshing(true)
+        val firstPage = pages.firstOrNull()?.value ?: emptyList()
+        lastIdToLoadMore.value = ""
         val initialValue = if (isRefresh) firstPage else emptyList()
         pages.clear()
         scope.launch(context = Dispatchers.IO) {
@@ -96,7 +102,9 @@ class Paginator<T : Identifiable, S>(
             pages.getOrElse(pages.size - 1) { flowOf(emptyList()) }
         ) { p1, p2, p3, p4, p5 ->
             val list = initialValue + p1 + p2 + p3 + p4 + p5
-            list.distinctBy { it.getId() }
+            list.reversed()
+                .distinctBy { it.getId() }
+                .reversed()
         }
             .stateIn(
                 scope = scope,

@@ -5,6 +5,5 @@ data class MentionedPost(
     val pubkey: String,
     val content: String,
     val name: String?,
-    val picture: String?,
     val createdAt: Long,
 )

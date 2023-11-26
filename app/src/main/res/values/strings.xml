@@ -4,7 +4,6 @@
     <string name="profile">Profile</string>
     <string name="feed">Feed</string>
     <string name="search">Search</string>
-    <string name="profile_picture">Profile picture</string>
     <string name="name">Name</string>
     <string name="private_key">Private key</string>
     <string name="profile_picture_url">Profile picture URL</string>
@@ -51,7 +50,7 @@
     <string name="post_your_reply">Post your reply</string>
     <string name="edit_profile">Edit profile</string>
     <string name="update">Update</string>
-    <string name="nip05_identifier">nip-05 identifier</string>
+    <string name="nip05">Nip-05</string>
     <string name="enter_nip05">e.g. user@domain.com</string>
     <string name="post_your_thoughts">Post your thoughts</string>
     <string name="add">Add</string>
@@ -105,6 +104,7 @@
     <string name="dark_mode">Dark Mode</string>
     <string name="failed">Failed</string>
     <string name="list_is_empty">List is empty</string>
+    <string name="advanced">Advanced</string>
     <plurals name="other_relays">
         <item quantity="one">other</item>
         <item quantity="other">others</item>

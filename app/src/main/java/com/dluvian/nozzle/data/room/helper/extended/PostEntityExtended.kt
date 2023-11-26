@@ -9,7 +9,6 @@ data class PostEntityExtended(
     val replyToPubkey: String?,
     val replyToName: String?,
     val name: String?,
-    val pictureUrl: String?,
     val numOfReplies: Int,
     val isLikedByMe: Boolean,
 )

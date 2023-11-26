@@ -16,9 +16,7 @@ import com.dluvian.nozzle.data.utils.HashtagUtils.removeHashtagPrefix
 import com.dluvian.nozzle.model.CreatedAt
 import com.dluvian.nozzle.model.MultipleRelays
 import com.dluvian.nozzle.model.PostWithMeta
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.*
-import kotlinx.coroutines.launch
 
 
 class HashtagViewModel(
@@ -57,14 +55,10 @@ class HashtagViewModel(
     }
 
     val onRefresh: () -> Unit = {
-        viewModelScope.launch(context = Dispatchers.IO) {
-            updateScreen(hashtag = _uiState.value.feedSettings.hashtag.orEmpty())
-        }
+        updateScreen(hashtag = _uiState.value.feedSettings.hashtag.orEmpty())
     }
 
-    val onLoadMore: () -> Unit = {
-        paginator.loadMore()
-    }
+    val onLoadMore: () -> Unit = { paginator.loadMore() }
 
     private fun updateScreen(hashtag: String) {
         _uiState.update { ui ->

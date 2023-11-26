@@ -30,6 +30,7 @@ fun ThreadRoute(
             )
         },
         onRefreshThreadView = threadViewModel.onRefreshThreadView,
+        onFindPrevious = threadViewModel.onFindPrevious,
         onShowMedia = { mediaUrl ->
             threadViewModel.clickedMediaUrlCache.insert(mediaUrl)
         },

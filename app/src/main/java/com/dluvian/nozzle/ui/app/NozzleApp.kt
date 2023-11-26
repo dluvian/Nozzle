@@ -92,7 +92,6 @@ fun NozzleApp(appContainer: AppContainer) {
                     factory = FeedViewModel.provideFactory(
                         clickedMediaUrlCache = appContainer.clickedMediaUrlCache,
                         postCardInteractor = appContainer.postCardInteractor,
-                        personalProfileProvider = appContainer.personalProfileManager,
                         pubkeyProvider = appContainer.keyManager,
                         feedProvider = appContainer.feedProvider,
                         relayProvider = appContainer.relayProvider,
@@ -124,7 +123,6 @@ fun NozzleApp(appContainer: AppContainer) {
                 replyViewModel = viewModel(
                     factory = ReplyViewModel.provideFactory(
                         nostrService = appContainer.nostrService,
-                        personalProfileProvider = appContainer.personalProfileManager,
                         pubkeyProvider = appContainer.keyManager,
                         relayProvider = appContainer.relayProvider,
                         postPreparer = appContainer.postPreparer,
@@ -135,7 +133,6 @@ fun NozzleApp(appContainer: AppContainer) {
                 postViewModel = viewModel(
                     factory = PostViewModel.provideFactory(
                         nostrService = appContainer.nostrService,
-                        personalProfileProvider = appContainer.personalProfileManager,
                         pubkeyProvider = appContainer.keyManager,
                         relayProvider = appContainer.relayProvider,
                         postPreparer = appContainer.postPreparer,

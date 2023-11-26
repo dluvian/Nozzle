@@ -237,7 +237,6 @@ private fun PictureAndName(account: Account, isTop: Boolean, modifier: Modifier 
                 .width(if (isTop) sizing.largeProfilePicture else sizing.smallProfilePicture)
                 .aspectRatio(1f)
                 .clip(CircleShape),
-            pictureUrl = account.picture,
             pubkey = account.pubkey,
             trustType = Oneself
         )

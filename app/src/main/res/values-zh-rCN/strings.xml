@@ -3,7 +3,6 @@
     <string name="profile">个人信息</string>
     <string name="feed">订阅</string>
     <string name="search">搜索</string>
-    <string name="profile_picture">头像</string>
     <string name="name">姓名</string>
     <string name="private_key">私钥</string>
     <string name="profile_picture_url">头像URL</string>
@@ -50,7 +49,7 @@
     <string name="post_your_reply">发送回复</string>
     <string name="edit_profile">编辑个人信息</string>
     <string name="update">更新</string>
-    <string name="nip05_identifier">nip05</string>
+    <string name="nip05">nip05</string>
     <string name="enter_nip05">例如：user@domain.com</string>
     <string name="post_your_thoughts">想法要大声说出来</string>
     <string name="add">添加</string>

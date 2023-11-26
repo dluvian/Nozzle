@@ -112,7 +112,6 @@ private fun ProfileData(
         verticalArrangement = Arrangement.Center
     ) {
         ProfilePictureAndActions(
-            pictureUrl = profile.metadata.picture.orEmpty(),
             pubkey = profile.pubkey,
             isOneself = profile.isOneself,
             isFollowed = isFollowedByMe,
@@ -141,7 +140,6 @@ private fun ProfileData(
 
 @Composable
 private fun ProfilePictureAndActions(
-    pictureUrl: String,
     pubkey: String,
     isOneself: Boolean,
     isFollowed: Boolean,
@@ -168,7 +166,6 @@ private fun ProfilePictureAndActions(
             modifier = Modifier
                 .size(sizing.largeProfilePicture)
                 .aspectRatio(1f),
-            pictureUrl = pictureUrl,
             pubkey = pubkey,
             trustType = trustType
         )

@@ -12,7 +12,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.TextFieldValue
 import com.dluvian.nozzle.R
-import com.dluvian.nozzle.model.nostr.Metadata
 import com.dluvian.nozzle.ui.components.ContentCreationTopBar
 import com.dluvian.nozzle.ui.components.InputBox
 import com.dluvian.nozzle.ui.components.text.ReplyingTo
@@ -22,7 +21,6 @@ import com.dluvian.nozzle.ui.theme.spacing
 @Composable
 fun ReplyScreen(
     uiState: ReplyViewModelState,
-    metadataState: Metadata?,
     pubkeyState: String,
     onToggleRelaySelection: (Int) -> Unit,
     onSend: (String) -> Unit,
@@ -53,7 +51,6 @@ fun ReplyScreen(
         )
         InputBox(
             input = input,
-            picture = metadataState?.picture.orEmpty(),
             pubkey = pubkeyState,
             placeholder = stringResource(id = R.string.post_your_reply),
         )

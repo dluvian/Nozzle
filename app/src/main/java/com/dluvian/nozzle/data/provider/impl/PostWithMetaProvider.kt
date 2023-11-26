@@ -44,9 +44,7 @@ class PostWithMetaProvider(
         if (feedInfo.postIds.isEmpty()) return flowOf(emptyList())
 
         val extendedPostsFlow = postDao
-            .listExtendedPostsFlow(
-                postIds = feedInfo.postIds,
-            )
+            .listExtendedPostsFlow(postIds = feedInfo.postIds)
             .firstThenDistinctDebounce(NORMAL_DEBOUNCE)
 
         // TODO: JOIN isFollowedByMe
@@ -132,7 +130,6 @@ class PostWithMetaProvider(
                     pubkey = pubkey,
                     name = it.name.orEmpty()
                         .ifEmpty { getShortenedNpubFromPubkey(pubkey).orEmpty() },
-                    pictureUrl = it.pictureUrl.orEmpty(),
                     replyToPubkey = it.replyToPubkey,
                     replyToName = getReplyToName(it),
                     isLikedByMe = it.isLikedByMe,
@@ -172,7 +169,6 @@ class PostWithMetaProvider(
                         pubkey = "",
                         content = "",
                         name = "",
-                        picture = "",
                         createdAt = 0L
                     )
                 val annotated = annotatedContentHandler.annotateContent(

@@ -44,7 +44,6 @@ fun AnnotatedMentionedPostCard(
                         modifier = Modifier
                             .size(sizing.smallProfilePicture)
                             .clip(CircleShape),
-                        pictureUrl = post.mentionedPost.picture.orEmpty(),
                         pubkey = post.mentionedPost.pubkey,
                         trustType = Oneself, // TODO: Find correct trust type
                         onNavigateToProfile = onNavigateToProfile,

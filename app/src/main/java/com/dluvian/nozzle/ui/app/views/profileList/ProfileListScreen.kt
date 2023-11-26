@@ -54,7 +54,6 @@ fun ProfileListScreen(
             onGoBack = onGoBack,
             trailingIcon = { if (isRefreshing) TopBarCircleProgressIndicator() }
         )
-        val lastPubkey = remember { mutableStateOf("") }
         LazyColumn(modifier = Modifier.fillMaxSize()) {
             itemsIndexed(profiles) { i, profile ->
                 if (profile.name.isEmpty()) subscribeToUnknowns.value = true
@@ -64,12 +63,7 @@ fun ProfileListScreen(
                     onUnfollow = { onUnfollow(i) },
                     onNavigateToProfile,
                 )
-                if (i == profiles.size - 3
-                    && profiles.size >= MAX_LIST_LENGTH
-                ) {
-                    lastPubkey.value = profiles.lastOrNull()?.pubkey.orEmpty()
-                    onLoadMore()
-                }
+                if (i == profiles.size - 3 && profiles.size >= MAX_LIST_LENGTH) onLoadMore()
             }
         }
     }

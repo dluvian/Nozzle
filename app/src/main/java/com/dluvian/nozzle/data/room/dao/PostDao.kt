@@ -143,9 +143,8 @@ interface PostDao {
                 "FROM reaction " +
                 "WHERE eventId = mainPost.id AND pubkey = (SELECT pubkey FROM account WHERE isActive = 1)) " +
                 "AS isLikedByMe, " +
-                // SELECT name and picture
+                // SELECT name
                 "mainProfile.name, " +
-                "mainProfile.picture AS pictureUrl, " +
                 // SELECT numOfReplies
                 "(SELECT COUNT(*) FROM post WHERE post.replyToId = mainPost.id) " +
                 "AS numOfReplies, " +
@@ -169,9 +168,7 @@ interface PostDao {
                 "WHERE mainPost.id IN (:postIds) " +
                 "ORDER BY createdAt DESC "
     )
-    fun listExtendedPostsFlow(
-        postIds: Collection<String>
-    ): Flow<List<PostEntityExtended>>
+    fun listExtendedPostsFlow(postIds: Collection<String>): Flow<List<PostEntityExtended>>
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insertOrIgnore(vararg posts: PostEntity)

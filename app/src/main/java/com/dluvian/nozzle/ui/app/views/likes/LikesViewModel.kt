@@ -49,7 +49,6 @@ class LikesViewModel(
 
     val onLoadMore: () -> Unit = { paginator.loadMore() }
 
-
     companion object {
         fun provideFactory(
             clickedMediaUrlCache: IClickedMediaUrlCache,

@@ -82,9 +82,7 @@ class ProfileListViewModel(
         paginator.reset()
     }
 
-    val onLoadMore: () -> Unit = {
-        paginator.loadMore()
-    }
+    val onLoadMore: () -> Unit = { paginator.loadMore() }
 
     private var followProcesses: MutableMap<Pubkey, Job?> = mutableMapOf()
     val onFollow: (Int) -> Unit = local@{ indexToFollow ->

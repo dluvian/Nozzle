@@ -6,7 +6,6 @@ import androidx.lifecycle.viewModelScope
 import com.dluvian.nozzle.data.nostr.INostrService
 import com.dluvian.nozzle.data.nostr.utils.ShortenedNameUtils.getShortenedNpubFromPubkey
 import com.dluvian.nozzle.data.postPreparer.IPostPreparer
-import com.dluvian.nozzle.data.provider.IPersonalProfileProvider
 import com.dluvian.nozzle.data.provider.IPubkeyProvider
 import com.dluvian.nozzle.data.provider.IRelayProvider
 import com.dluvian.nozzle.data.room.dao.HashtagDao
@@ -28,7 +27,6 @@ import kotlinx.coroutines.launch
 
 class ReplyViewModel(
     private val nostrService: INostrService,
-    private val personalProfileProvider: IPersonalProfileProvider,
     private val pubkeyProvider: IPubkeyProvider,
     private val relayProvider: IRelayProvider,
     private val postPreparer: IPostPreparer,
@@ -38,7 +36,6 @@ class ReplyViewModel(
     private var recipientPubkey: String = ""
     private var postToReplyTo: PostWithMeta? = null
 
-    val metadataState = personalProfileProvider.getMetadataStateFlow()
     val pubkeyState = pubkeyProvider.getActivePubkeyStateFlow()
 
     private val _uiState = MutableStateFlow(ReplyViewModelState())
@@ -135,7 +132,6 @@ class ReplyViewModel(
     companion object {
         fun provideFactory(
             nostrService: INostrService,
-            personalProfileProvider: IPersonalProfileProvider,
             pubkeyProvider: IPubkeyProvider,
             relayProvider: IRelayProvider,
             postPreparer: IPostPreparer,
@@ -146,7 +142,6 @@ class ReplyViewModel(
             override fun <T : ViewModel> create(modelClass: Class<T>): T {
                 return ReplyViewModel(
                     nostrService = nostrService,
-                    personalProfileProvider = personalProfileProvider,
                     pubkeyProvider = pubkeyProvider,
                     relayProvider = relayProvider,
                     postPreparer = postPreparer,

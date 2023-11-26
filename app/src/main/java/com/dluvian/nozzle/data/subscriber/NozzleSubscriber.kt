@@ -104,7 +104,7 @@ class NozzleSubscriber(
             defaultRelays = relayProvider.getReadRelays()
         )
         allSubIds.addAll(subIds)
-        simpleProfileSubs.unsubThenAddAll(subIds)
+        simpleProfileSubs.unsubThenAddAll(allSubIds)
     }
 
     override fun subscribeToFeedPosts(
