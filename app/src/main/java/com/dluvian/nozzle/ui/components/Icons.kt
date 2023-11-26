@@ -202,11 +202,13 @@ fun RelayIcon(onClick: () -> Unit) {
 }
 
 @Composable
-fun ExpandIcon(isExpanded: Boolean, onToggle: () -> Unit, modifier: Modifier = Modifier) {
+fun ExpandIcon(isExpanded: Boolean, modifier: Modifier = Modifier, onToggle: (() -> Unit)? = null) {
     Icon(
         modifier = modifier
             .clip(CircleShape)
-            .clickable(onClick = onToggle),
+            .let {
+                if (onToggle != null) it.clickable(onClick = onToggle) else it
+            },
         imageVector = if (isExpanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
         contentDescription = stringResource(
             id = if (isExpanded) R.string.collapse else R.string.expand

@@ -1,6 +1,9 @@
 package com.dluvian.nozzle.ui.app.views.editProfile
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -11,6 +14,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Text
+import androidx.compose.material.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
@@ -23,6 +27,7 @@ import androidx.compose.ui.text.input.TextFieldValue
 import com.dluvian.nozzle.R
 import com.dluvian.nozzle.model.nostr.Metadata
 import com.dluvian.nozzle.ui.components.ChangeableTextField
+import com.dluvian.nozzle.ui.components.ExpandIcon
 import com.dluvian.nozzle.ui.components.ReturnableTopBar
 import com.dluvian.nozzle.ui.components.SaveIcon
 import com.dluvian.nozzle.ui.theme.spacing
@@ -96,17 +101,43 @@ fun EditProfileScreen(
         ) {
             Username(username = nameInput)
             Spacer(modifier = Modifier.height(spacing.xxl))
-
             About(about = aboutInput)
-            Spacer(modifier = Modifier.height(spacing.xxl))
 
-            ProfilePictureUrl(pictureUrl = pictureInput)
-            Spacer(modifier = Modifier.height(spacing.xxl))
+            Advanced(pictureInput = pictureInput, nip05Input = nip05Input, lud16Input = lud16Input)
+        }
+    }
+}
 
-            Nip05(nip05 = nip05Input)
-            Spacer(modifier = Modifier.height(spacing.xxl))
+@Composable
+private fun Advanced(
+    pictureInput: MutableState<TextFieldValue>,
+    nip05Input: MutableState<TextFieldValue>,
+    lud16Input: MutableState<TextFieldValue>
+) {
+    val isExpanded = remember { mutableStateOf(false) }
+    Column {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.Center
+        ) {
+            TextButton(
+                modifier = Modifier.padding(vertical = spacing.medium),
+                onClick = { isExpanded.value = !isExpanded.value }
+            ) {
+                Text(text = stringResource(id = R.string.advanced))
+                ExpandIcon(isExpanded = isExpanded.value)
+            }
+        }
+        AnimatedVisibility(visible = isExpanded.value) {
+            Column {
+                ProfilePictureUrl(pictureUrl = pictureInput)
+                Spacer(modifier = Modifier.height(spacing.xxl))
 
-            Lud16(lud16 = lud16Input)
+                Nip05(nip05 = nip05Input)
+                Spacer(modifier = Modifier.height(spacing.xxl))
+
+                Lud16(lud16 = lud16Input)
+            }
         }
     }
 }
@@ -147,7 +178,7 @@ private fun ProfilePictureUrl(pictureUrl: MutableState<TextFieldValue>) {
 
 @Composable
 private fun Nip05(nip05: MutableState<TextFieldValue>) {
-    Text(text = stringResource(id = R.string.nip05_identifier), fontWeight = FontWeight.Bold)
+    Text(text = stringResource(id = R.string.nip05), fontWeight = FontWeight.Bold)
     ChangeableTextField(
         modifier = Modifier.fillMaxWidth(),
         input = nip05,
