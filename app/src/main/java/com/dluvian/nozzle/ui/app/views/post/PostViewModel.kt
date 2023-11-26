@@ -9,7 +9,6 @@ import com.dluvian.nozzle.data.nostr.utils.EncodingUtils.createNeventUri
 import com.dluvian.nozzle.data.nostr.utils.EncodingUtils.nostrStrToNostrId
 import com.dluvian.nozzle.data.nostr.utils.ShortenedNameUtils.getShortenedNpubFromPubkey
 import com.dluvian.nozzle.data.postPreparer.IPostPreparer
-import com.dluvian.nozzle.data.provider.IPersonalProfileProvider
 import com.dluvian.nozzle.data.provider.IPubkeyProvider
 import com.dluvian.nozzle.data.provider.IRelayProvider
 import com.dluvian.nozzle.data.room.dao.HashtagDao
@@ -29,7 +28,6 @@ import kotlinx.coroutines.launch
 import java.util.concurrent.atomic.AtomicBoolean
 
 class PostViewModel(
-    private val personalProfileProvider: IPersonalProfileProvider,
     private val pubkeyProvider: IPubkeyProvider,
     private val nostrService: INostrService,
     private val relayProvider: IRelayProvider,
@@ -39,8 +37,6 @@ class PostViewModel(
     private val hashtagDao: HashtagDao,
     private val mentionDao: MentionDao,
 ) : ViewModel() {
-
-    val metadataState = personalProfileProvider.getMetadataStateFlow()
     val pubkeyState = pubkeyProvider.getActivePubkeyStateFlow()
 
     private val _uiState = MutableStateFlow(PostViewModelState())
@@ -167,7 +163,6 @@ class PostViewModel(
 
     companion object {
         fun provideFactory(
-            personalProfileProvider: IPersonalProfileProvider,
             pubkeyProvider: IPubkeyProvider,
             nostrService: INostrService,
             relayProvider: IRelayProvider,
@@ -180,7 +175,6 @@ class PostViewModel(
             @Suppress("UNCHECKED_CAST")
             override fun <T : ViewModel> create(modelClass: Class<T>): T {
                 return PostViewModel(
-                    personalProfileProvider = personalProfileProvider,
                     pubkeyProvider = pubkeyProvider,
                     nostrService = nostrService,
                     relayProvider = relayProvider,

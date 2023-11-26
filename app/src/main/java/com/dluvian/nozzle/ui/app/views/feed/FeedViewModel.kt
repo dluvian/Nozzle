@@ -24,7 +24,6 @@ private const val TAG = "FeedViewModel"
 class FeedViewModel(
     val clickedMediaUrlCache: IClickedMediaUrlCache,
     val postCardInteractor: IPostCardInteractor,
-    private val personalProfileProvider: IPersonalProfileProvider,
     private val pubkeyProvider: IPubkeyProvider,
     private val feedProvider: IFeedProvider,
     private val relayProvider: IRelayProvider,
@@ -35,8 +34,6 @@ class FeedViewModel(
     val uiState = _uiState.stateIn(
         viewModelScope, SharingStarted.Eagerly, _uiState.value
     )
-
-    val metadataState = personalProfileProvider.getMetadataStateFlow()
 
     private val paginator: IPaginator<PostWithMeta, CreatedAt> = Paginator(
         scope = viewModelScope,
@@ -228,7 +225,6 @@ class FeedViewModel(
         fun provideFactory(
             clickedMediaUrlCache: IClickedMediaUrlCache,
             postCardInteractor: IPostCardInteractor,
-            personalProfileProvider: IPersonalProfileProvider,
             pubkeyProvider: IPubkeyProvider,
             feedProvider: IFeedProvider,
             relayProvider: IRelayProvider,
@@ -240,7 +236,6 @@ class FeedViewModel(
                 return FeedViewModel(
                     clickedMediaUrlCache = clickedMediaUrlCache,
                     postCardInteractor = postCardInteractor,
-                    personalProfileProvider = personalProfileProvider,
                     pubkeyProvider = pubkeyProvider,
                     feedProvider = feedProvider,
                     relayProvider = relayProvider,

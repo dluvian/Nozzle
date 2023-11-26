@@ -17,16 +17,14 @@ fun FeedRoute(
     onNavigateToPost: () -> Unit,
 ) {
     val uiState by feedViewModel.uiState.collectAsState()
-    val metadataState by feedViewModel.metadataState.collectAsState()
-    val pubkeyState by feedViewModel.pubkeyState.collectAsState()
+    val pubkey by feedViewModel.pubkeyState.collectAsState()
     val feedFlow by feedViewModel.feed.collectAsState()
     val feed by feedFlow.collectAsState()
 
     FeedScreen(
         uiState = uiState,
-        pubkeyState = pubkeyState,
+        pubkey = pubkey,
         feed = feed,
-        metadataState = metadataState,
         postCardNavLambdas = postCardNavLambdas,
         onLike = { post ->
             feedViewModel.postCardInteractor.like(

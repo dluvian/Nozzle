@@ -32,7 +32,6 @@ import com.dluvian.nozzle.ui.theme.spacing
 @Composable
 fun InputBox(
     input: MutableState<TextFieldValue>,
-    picture: String,
     pubkey: String,
     placeholder: String,
     postToQuote: AnnotatedMentionedPost? = null
@@ -41,7 +40,6 @@ fun InputBox(
         BaseInputBox(
             modifier = Modifier.weight(weight = 1f, fill = false),
             input = input,
-            picture = picture,
             pubkey = pubkey,
             placeholder = placeholder,
         )
@@ -60,7 +58,6 @@ fun InputBox(
 @Composable
 private fun BaseInputBox(
     input: MutableState<TextFieldValue>,
-    picture: String,
     pubkey: String,
     placeholder: String,
     modifier: Modifier = Modifier,
@@ -72,7 +69,6 @@ private fun BaseInputBox(
                 modifier = Modifier
                     .padding(start = spacing.screenEdge, top = spacing.large)
                     .size(sizing.profilePicture),
-                pictureUrl = picture,
                 pubkey = pubkey,
                 trustType = Oneself
             )

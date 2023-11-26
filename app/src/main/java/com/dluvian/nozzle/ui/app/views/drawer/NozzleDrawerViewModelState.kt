@@ -4,7 +4,7 @@ import com.dluvian.nozzle.data.room.helper.extended.AccountEntityExtended
 import com.dluvian.nozzle.model.Account
 
 data class NozzleDrawerViewModelState(
-    val activeAccount: Account = Account(name = "", picture = "", pubkey = "", isActive = true),
+    val activeAccount: Account = Account(name = "", pubkey = "", isActive = true),
     val allAccounts: List<Account> = emptyList(),
 ) {
     companion object {

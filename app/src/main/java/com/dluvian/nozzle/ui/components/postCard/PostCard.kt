@@ -119,7 +119,6 @@ fun PostCard(
     ) {
         PostCardProfilePicture(
             modifier = Modifier.size(sizing.profilePicture),
-            pictureUrl = post.pictureUrl,
             pubkey = post.pubkey,
             trustType = TrustType.determineTrustType(
                 isOneself = post.isOneself,

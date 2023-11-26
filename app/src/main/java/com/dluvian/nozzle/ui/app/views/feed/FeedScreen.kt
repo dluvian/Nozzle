@@ -34,7 +34,6 @@ import com.dluvian.nozzle.model.Oneself
 import com.dluvian.nozzle.model.PostWithMeta
 import com.dluvian.nozzle.model.RelayActive
 import com.dluvian.nozzle.model.UserSpecific
-import com.dluvian.nozzle.model.nostr.Metadata
 import com.dluvian.nozzle.ui.app.navigation.PostCardNavLambdas
 import com.dluvian.nozzle.ui.components.AddIcon
 import com.dluvian.nozzle.ui.components.ChooseRelayButton
@@ -49,9 +48,8 @@ import kotlinx.coroutines.launch
 @Composable
 fun FeedScreen(
     uiState: FeedViewModelState,
-    pubkeyState: String,
+    pubkey: String,
     feed: List<PostWithMeta>,
-    metadataState: Metadata?,
     postCardNavLambdas: PostCardNavLambdas,
     onLike: (PostWithMeta) -> Unit,
     onShowMedia: (String) -> Unit,
@@ -73,8 +71,7 @@ fun FeedScreen(
     Scaffold(
         topBar = {
             FeedTopBar(
-                picture = metadataState?.picture.orEmpty(),
-                pubkey = pubkeyState,
+                pubkey = pubkey,
                 feedSettings = uiState.feedSettings,
                 relayStatuses = uiState.relayStatuses,
                 isRefreshing = uiState.isRefreshing,
@@ -114,7 +111,6 @@ fun FeedScreen(
 
 @Composable
 private fun FeedTopBar(
-    picture: String,
     pubkey: String,
     feedSettings: FeedSettings,
     relayStatuses: List<RelayActive>,
@@ -141,7 +137,6 @@ private fun FeedTopBar(
                         .size(sizing.smallProfilePicture)
                         .clip(CircleShape)
                         .clickable(onClick = onPictureClick),
-                    pictureUrl = picture,
                     pubkey = pubkey,
                     trustType = Oneself
                 )

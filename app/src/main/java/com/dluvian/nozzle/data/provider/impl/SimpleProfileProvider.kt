@@ -65,7 +65,6 @@ class SimpleProfileProvider(
                 val profile = profiles.find { it.pubkey == pubkey }
                 SimpleProfile(
                     name = profile?.metadata?.name.orEmpty(),
-                    picture = profile?.metadata?.picture.orEmpty(),
                     pubkey = pubkey,
                     trustScore = score[pubkey] ?: 0f,
                     isOneself = pubkey == pubkeyProvider.getActivePubkey(),

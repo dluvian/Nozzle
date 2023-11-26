@@ -22,12 +22,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.stringResource
-import coil.compose.SubcomposeAsyncImage
-import coil.request.ImageRequest
-import com.dluvian.nozzle.R
 import com.dluvian.nozzle.data.utils.getDefaultPictureBrush
 import com.dluvian.nozzle.model.FollowedByFriend
 import com.dluvian.nozzle.model.Friend
@@ -39,14 +33,12 @@ import com.dluvian.nozzle.ui.theme.Orange500
 @Composable
 fun ProfilePicture(
     modifier: Modifier = Modifier,
-    pictureUrl: String,
     pubkey: String,
     trustType: TrustType,
     onOpenProfile: (() -> Unit)? = null,
 ) {
     BaseProfilePicture(
         modifier = modifier,
-        pictureUrl = pictureUrl,
         pubkey = pubkey,
         trustType = trustType,
         onOpenProfile = onOpenProfile,
@@ -54,39 +46,30 @@ fun ProfilePicture(
 }
 
 @Composable
-fun BaseProfilePicture(
+private fun BaseProfilePicture(
     modifier: Modifier = Modifier,
-    pictureUrl: String,
     pubkey: String,
     trustType: TrustType,
     onOpenProfile: (() -> Unit)? = null,
 ) {
     Box(modifier = modifier) {
-        val imgModifier = Modifier
-            .clip(CircleShape)
-            .fillMaxSize()
-        SubcomposeAsyncImage(
-            modifier = imgModifier.let {
-                if (onOpenProfile != null) it.clickable(onClick = onOpenProfile)
-                else it
-            },
-            model = ImageRequest.Builder(LocalContext.current)
-                .data(pictureUrl)
-                .crossfade(true)
-                .size(300)
-                .build(),
-            contentScale = ContentScale.Crop,
-            loading = { DefaultPicture(pubkey = pubkey) },
-            error = { DefaultPicture(pubkey = pubkey) },
-            contentDescription = stringResource(id = R.string.profile_picture)
+        DefaultPicture(
+            modifier = Modifier
+                .clip(CircleShape)
+                .fillMaxSize()
+                .let {
+                    if (onOpenProfile != null) it.clickable(onClick = onOpenProfile)
+                    else it
+                },
+            pubkey = pubkey
         )
         PictureIndicator(modifier = Modifier.fillMaxWidth(), trustType = trustType)
     }
 }
 
 @Composable
-private fun DefaultPicture(pubkey: String) {
-    Box(modifier = Modifier.background(brush = getDefaultPictureBrush(pubkey = pubkey)))
+private fun DefaultPicture(pubkey: String, modifier: Modifier = Modifier) {
+    Box(modifier = modifier.background(brush = getDefaultPictureBrush(pubkey = pubkey)))
 }
 
 @Composable

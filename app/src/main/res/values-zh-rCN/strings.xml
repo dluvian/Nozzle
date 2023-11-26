@@ -3,7 +3,6 @@
     <string name="profile">个人信息</string>
     <string name="feed">订阅</string>
     <string name="search">搜索</string>
-    <string name="profile_picture">头像</string>
     <string name="name">姓名</string>
     <string name="private_key">私钥</string>
     <string name="profile_picture_url">头像URL</string>

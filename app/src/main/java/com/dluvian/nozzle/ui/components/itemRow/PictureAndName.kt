@@ -19,7 +19,6 @@ import com.dluvian.nozzle.ui.theme.spacing
 fun PictureAndName(profile: SimpleProfile, onNavigateToProfile: (Pubkey) -> Unit) {
     PostCardProfilePicture(
         modifier = Modifier.size(sizing.profilePicture),
-        pictureUrl = profile.picture,
         pubkey = profile.pubkey,
         trustType = TrustType.determineTrustType(
             isOneself = profile.isOneself,
