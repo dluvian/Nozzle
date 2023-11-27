@@ -35,10 +35,9 @@ class Paginator<T : Identifiable, S>(
     private val isLoadingMore = AtomicBoolean(false)
     private val lastIdToLoadMore = mutableStateOf("")
     override fun loadMore() {
-        if (!isLoadingMore.compareAndSet(false, true)) return
-
         val lastId = list.value.value.lastOrNull()?.getId().orEmpty()
-        if (lastIdToLoadMore.value == lastId) return
+        if (lastIdToLoadMore.value == lastId) return // Exit before changing isLoadingMore
+        if (!isLoadingMore.compareAndSet(false, true)) return
 
         onSetRefreshing(true)
         scope.launch(context = Dispatchers.IO) {
