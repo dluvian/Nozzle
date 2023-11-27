@@ -60,7 +60,7 @@ fun getDefaultPictureBrush(pubkey: String): Brush {
 }
 
 private fun getColor(number: Int): Color {
-    return when (number % 20) {
+    return when (number % 19) {
         0 -> ProfilePictureRed
         1 -> ProfilePictureGreen
         2 -> ProfilePictureYellow
