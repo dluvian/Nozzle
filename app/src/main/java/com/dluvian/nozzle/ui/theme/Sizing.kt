@@ -27,7 +27,7 @@ data class Sizing(
     /**
      * 40 dp
      */
-    val profilePicture: Dp = 40.dp,
+    val profilePicture: Dp = 34.dp,
     /**
      * 60 dp
      */
