@@ -6,9 +6,13 @@ object UrlUtils {
     private val wssPattern =
         Regex("^(wss)://[a-zA-Z0-9-]+(\\.[a-zA-Z0-9-]+)*(:(\\d{1,5}))?(/.*)?\$")
     const val WEBSOCKET_PREFIX = "wss://"
-    const val MAX_URL_LENGTH = 35
+    private const val MAX_URL_LENGTH = 35
 
-    val mediaSuffixes = listOf(".jpg", ".jpeg", ".png", ".gif", ".webp")
+    // Video suffixes from https://developer.android.com/guide/topics/media/platform/supported-formats#video-formats
+    val mediaSuffixes = listOf(
+        ".jpg", ".jpeg", ".png", ".gif", ".webp", ".svg",
+        ".mp4", ".webm", ".mkv", ".3gp"
+    )
 
     fun extractUrls(extractFrom: String) = urlPattern.findAll(extractFrom).toList()
 
