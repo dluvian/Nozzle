@@ -33,14 +33,14 @@ class AutopilotProvider(
 
         val result = mutableListOf<Pair<String, Set<String>>>()
         val processedPubkeys = mutableSetOf<String>()
-        val myReadRelays = relayProvider.getReadRelays().toSet()
 
         processNip65(
-            myReadRelays = myReadRelays,
             result = result,
             processedPubkeys = processedPubkeys,
             pubkeys = pubkeys
         )
+
+        val myReadRelays = relayProvider.getReadRelays().toSet()
 
         if (pubkeys.size > processedPubkeys.size) {
             processEventRelays(
@@ -68,21 +68,21 @@ class AutopilotProvider(
     }
 
     private suspend fun processNip65(
-        myReadRelays: Set<String>,
         result: MutableList<Pair<String, Set<String>>>,
         processedPubkeys: MutableSet<String>,
         pubkeys: Collection<String>
     ) {
+        val mostUsefulRelays = eventRelayDao.getAllSortedByUsefulness(limit = 5)
         nip65Dao.getPubkeysByWriteRelays(pubkeys = pubkeys)
             .toList()
             .shuffled()
-            .sortedByDescending { it.second.size }
-            .sortedByDescending { myReadRelays.contains(it.first) } // Prefer my relays
-            .forEach {
-                val pubkeysToAdd = it.second.minus(processedPubkeys)
+            .sortedByDescending { (_, pubkeys) -> pubkeys.size }
+            .sortedByDescending { (relay, _) -> mostUsefulRelays.contains(relay) } // Prefer most useful
+            .forEach { (relay, pubkeys) ->
+                val pubkeysToAdd = pubkeys.minus(processedPubkeys)
                 if (pubkeysToAdd.isNotEmpty()) {
                     processedPubkeys.addAll(pubkeysToAdd)
-                    result.add(Pair(it.first, pubkeysToAdd))
+                    result.add(Pair(relay, pubkeysToAdd))
                 }
             }
         Log.d(TAG, "Processed ${result.size} nip65 relays for ${processedPubkeys.size} pubkeys")

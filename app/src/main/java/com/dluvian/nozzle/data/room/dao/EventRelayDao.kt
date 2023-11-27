@@ -7,6 +7,7 @@ import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import com.dluvian.nozzle.data.room.entity.EventRelayEntity
 import com.dluvian.nozzle.model.CountedRelayUsage
+import com.dluvian.nozzle.model.Relay
 import kotlinx.coroutines.flow.Flow
 
 
@@ -43,4 +44,13 @@ interface EventRelayDao {
                 "(SELECT id FROM post WHERE pubkey = :pubkey) "
     )
     fun listUsedRelaysFlow(pubkey: String): Flow<List<String>>
+
+    @Query(
+        "SELECT DISTINCT(relayUrl) " +
+                "FROM eventRelay " +
+                "GROUP BY relayUrl " +
+                "ORDER BY COUNT(relayUrl) DESC " +
+                "LIMIT :limit"
+    )
+    suspend fun getAllSortedByUsefulness(limit: Int): List<Relay>
 }
