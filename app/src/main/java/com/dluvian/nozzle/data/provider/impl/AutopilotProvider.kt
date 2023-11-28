@@ -33,13 +33,11 @@ class AutopilotProvider(
 
         val result = mutableListOf<Pair<String, Set<String>>>()
         val processedPubkeys = mutableSetOf<String>()
-        val mostUsedRelays = eventRelayDao.getAllSortedByNumOfEvents(limit = 5).toSet()
 
         processNip65(
             result = result,
             processedPubkeys = processedPubkeys,
             pubkeys = pubkeys,
-            mostUsedRelays = mostUsedRelays
         )
 
         if (pubkeys.size > processedPubkeys.size) {
@@ -47,7 +45,6 @@ class AutopilotProvider(
                 result = result,
                 processedPubkeys = processedPubkeys,
                 pubkeys = pubkeys.minus(processedPubkeys),
-                mostUsedRelays = mostUsedRelays,
             )
         }
 
@@ -70,8 +67,8 @@ class AutopilotProvider(
         result: MutableList<Pair<String, Set<String>>>,
         processedPubkeys: MutableSet<String>,
         pubkeys: Collection<String>,
-        mostUsedRelays: Set<Relay>,
     ) {
+        val mostUsedRelays = eventRelayDao.getAllSortedByNumOfEvents(limit = 5).toSet()
         nip65Dao.getPubkeysByWriteRelays(pubkeys = pubkeys)
             .toList()
             .shuffled()
@@ -91,14 +88,12 @@ class AutopilotProvider(
         result: MutableList<Pair<String, Set<String>>>,
         processedPubkeys: MutableSet<String>,
         pubkeys: Collection<String>,
-        mostUsedRelays: Set<Relay>,
     ) {
         val newlyProcessedPubkeys = mutableSetOf<String>()
         val newlyProcessedEventRelays = mutableMapOf<String, MutableSet<String>>()
 
         eventRelayDao.getCountedRelaysPerPubkey(pubkeys = pubkeys)
             .sortedByDescending { it.numOfPosts }
-            .sortedByDescending { mostUsedRelays.contains(it.relayUrl) } // Prefer most used
             .forEach {
                 if (!newlyProcessedPubkeys.contains(it.pubkey)) {
                     newlyProcessedPubkeys.add(it.pubkey)
