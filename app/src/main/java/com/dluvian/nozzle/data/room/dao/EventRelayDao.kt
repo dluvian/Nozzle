@@ -52,5 +52,5 @@ interface EventRelayDao {
                 "ORDER BY COUNT(relayUrl) DESC " +
                 "LIMIT :limit"
     )
-    suspend fun getAllSortedByUsefulness(limit: Int): List<Relay>
+    suspend fun getAllSortedByNumOfEvents(limit: Int): List<Relay>
 }
