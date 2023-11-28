@@ -116,7 +116,7 @@ private fun PictureIndicatorBase(
             modifier = Modifier
                 .clip(CircleShape)
                 .background(color = bgColor)
-                .fillMaxWidth(0.35f)
+                .fillMaxWidth(0.42f)
                 .aspectRatio(1.0f),
             contentAlignment = Alignment.Center
         ) {

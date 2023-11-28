@@ -28,6 +28,7 @@ import com.dluvian.nozzle.ui.theme.spacing
 fun AnnotatedMentionedPostCard(
     post: AnnotatedMentionedPost,
     modifier: Modifier = Modifier,
+    maxLines: Int? = null,
     onNavigateToId: (String) -> Unit,
     onNavigateToProfile: ((String) -> Unit)? = null,
     onNavigateToThread: ((String) -> Unit)? = null,
@@ -62,6 +63,7 @@ fun AnnotatedMentionedPostCard(
                     relays = null,
                     annotatedContent = post.annotatedContent,
                     isCurrent = false,
+                    maxLines = maxLines,
                     onNavigateToThread = { onNavigateToThread?.let { it(post.mentionedPost.id) } },
                     onNavigateToId = onNavigateToId,
                 )

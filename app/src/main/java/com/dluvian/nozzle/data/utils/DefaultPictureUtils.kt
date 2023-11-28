@@ -1,10 +1,12 @@
 package com.dluvian.nozzle.data.utils
 
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import com.dluvian.nozzle.ui.theme.ProfilePictureApricot
+import com.dluvian.nozzle.ui.theme.ProfilePictureBeige
 import com.dluvian.nozzle.ui.theme.ProfilePictureBlue
 import com.dluvian.nozzle.ui.theme.ProfilePictureBrown
 import com.dluvian.nozzle.ui.theme.ProfilePictureCyan
@@ -12,7 +14,9 @@ import com.dluvian.nozzle.ui.theme.ProfilePictureGreen
 import com.dluvian.nozzle.ui.theme.ProfilePictureLavender
 import com.dluvian.nozzle.ui.theme.ProfilePictureLime
 import com.dluvian.nozzle.ui.theme.ProfilePictureMagenta
+import com.dluvian.nozzle.ui.theme.ProfilePictureMaroon
 import com.dluvian.nozzle.ui.theme.ProfilePictureMint
+import com.dluvian.nozzle.ui.theme.ProfilePictureNavy
 import com.dluvian.nozzle.ui.theme.ProfilePictureOlive
 import com.dluvian.nozzle.ui.theme.ProfilePictureOrange
 import com.dluvian.nozzle.ui.theme.ProfilePicturePink
@@ -21,39 +25,42 @@ import com.dluvian.nozzle.ui.theme.ProfilePictureRed
 import com.dluvian.nozzle.ui.theme.ProfilePictureTeal
 import com.dluvian.nozzle.ui.theme.ProfilePictureYellow
 
+private val bottomLeft = Offset(0f, Float.POSITIVE_INFINITY)
+private val topRight = Offset(Float.POSITIVE_INFINITY, 0f)
+private const val MAX_HEX_LEN = 7
+
 @Composable
 fun getDefaultPictureBrush(pubkey: String): Brush {
     if (pubkey.isBlank()) return SolidColor(Color.Transparent)
-    val maxHexLength = 7
 
     val firstNumber = pubkey
         .dropWhile { it == '0' }
-        .take(maxHexLength)
+        .take(MAX_HEX_LEN)
         .ifEmpty { "0" }
         .toInt(radix = 16)
-    val firstColor = getColor(firstNumber)
-
     val secondNumber = pubkey
         .dropLastWhile { it == '0' }
-        .takeLast(maxHexLength)
+        .takeLast(MAX_HEX_LEN)
         .ifEmpty { "0" }
         .toInt(radix = 16)
-    val secondColor = getColor(secondNumber)
 
-    val gradient = listOf(
-        if (firstColor == secondColor) Color.Transparent else firstColor,
-        secondColor
-    )
+    val gradient = listOf(getColor(firstNumber), getColor(secondNumber))
 
-    return when (firstNumber % 3) {
+    return when (firstNumber % 4) {
         0 -> Brush.linearGradient(gradient)
-        1 -> Brush.horizontalGradient(gradient)
+        1 -> Brush.linearGradient(
+            colors = gradient,
+            start = bottomLeft,
+            end = topRight,
+        )
+
+        2 -> Brush.horizontalGradient(gradient)
         else -> Brush.verticalGradient(gradient)
     }
 }
 
 private fun getColor(number: Int): Color {
-    return when (number % 16) {
+    return when (number % 19) {
         0 -> ProfilePictureRed
         1 -> ProfilePictureGreen
         2 -> ProfilePictureYellow
@@ -69,6 +76,9 @@ private fun getColor(number: Int): Color {
         12 -> ProfilePictureBrown
         13 -> ProfilePictureMint
         14 -> ProfilePictureOlive
-        else -> ProfilePictureApricot
+        15 -> ProfilePictureApricot
+        16 -> ProfilePictureMaroon
+        17 -> ProfilePictureNavy
+        else -> ProfilePictureBeige
     }
 }

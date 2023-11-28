@@ -59,6 +59,7 @@ class RelayProvider(
     }
 
     override suspend fun getRelaysOfContacts(): List<Relay> {
+        // TODO: Remove contactListProvider. Use account query
         return nip65Dao.getRelaysOfPubkeys(pubkeys = contactListProvider.listPersonalContactPubkeys())
     }
 

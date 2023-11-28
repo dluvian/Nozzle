@@ -38,7 +38,7 @@ fun PostCardList(
                     onShowMedia = onShowMedia,
                     onShouldShowMedia = onShouldShowMedia
                 )
-                if (index == posts.size - 3 && posts.size >= DB_BATCH_SIZE) onLoadMore()
+                if (index == posts.size - 3 && posts.size >= DB_BATCH_SIZE / 2) onLoadMore()
             }
         }
     }

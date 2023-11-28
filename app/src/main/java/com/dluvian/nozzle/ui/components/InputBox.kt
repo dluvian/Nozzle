@@ -49,6 +49,7 @@ fun InputBox(
                     .wrapContentHeight()
                     .padding(spacing.screenEdge),
                 post = quote,
+                maxLines = 4,
                 onNavigateToId = { /* Do nothing. Stay in PostScreen */ },
             )
         }

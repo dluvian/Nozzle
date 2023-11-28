@@ -17,6 +17,7 @@ fun PostCardContentBase(
     relays: List<String>?,
     annotatedContent: AnnotatedString,
     isCurrent: Boolean,
+    maxLines: Int? = null,
     onNavigateToThread: () -> Unit,
     onNavigateToId: (String) -> Unit,
 ) {
@@ -26,7 +27,7 @@ fun PostCardContentBase(
     if (annotatedContent.text.isNotBlank()) {
         AnnotatedText(
             text = annotatedContent,
-            maxLines = if (isCurrent) null else 24,
+            maxLines = maxLines ?: if (isCurrent) null else 24,
             onClickNonLink = onNavigateToThread,
             onNavigateToId = onNavigateToId,
         )

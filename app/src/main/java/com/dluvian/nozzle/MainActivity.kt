@@ -10,6 +10,7 @@ import coil.Coil
 import coil.ImageLoader
 import coil.decode.GifDecoder
 import coil.decode.ImageDecoderDecoder
+import coil.decode.SvgDecoder
 import com.dluvian.nozzle.ui.app.NozzleApp
 import kotlinx.coroutines.launch
 
@@ -27,10 +28,12 @@ class MainActivity : AppCompatActivity() {
                 } else {
                     add(GifDecoder.Factory())
                 }
+                add(SvgDecoder.Factory())
             }.build()
         Coil.setImageLoader(imageLoader)
 
         // Shrink composable when keyboard opens
+        // TODO: Replace deprecated
         window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE)
 
         setContent {

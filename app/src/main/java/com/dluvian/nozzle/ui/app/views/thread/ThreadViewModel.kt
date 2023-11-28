@@ -66,6 +66,7 @@ class ThreadViewModel(
         if (!isSettingThread.get()) {
             viewModelScope.launch(context = Dispatchers.IO) {
                 Log.i(TAG, "Refresh thread view")
+                findingParentsProcess?.cancel(CancellationException("Refreshing thread"))
                 isRefreshingFlow.update { true }
                 updateScreen(
                     postId = currentPostId,

@@ -3,7 +3,7 @@ package com.dluvian.nozzle.ui.components.postCard
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.MaterialTheme.shapes
+import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
@@ -28,6 +28,7 @@ import com.dluvian.nozzle.model.ThreadPosition
 import com.dluvian.nozzle.model.TrustType
 import com.dluvian.nozzle.ui.app.navigation.PostCardNavLambdas
 import com.dluvian.nozzle.ui.components.*
+import com.dluvian.nozzle.ui.components.postCard.atoms.BorderedCard
 import com.dluvian.nozzle.ui.components.postCard.atoms.PostCardContentBase
 import com.dluvian.nozzle.ui.components.postCard.atoms.PostCardHeader
 import com.dluvian.nozzle.ui.components.postCard.atoms.PostCardProfilePicture
@@ -204,14 +205,12 @@ private fun PostCardHeaderAndContent(
 
 @Composable
 fun PostNotFound() {
-    Box(
+    BorderedCard(
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = spacing.screenEdge)
-            .padding(top = spacing.screenEdge)
-            .clip(shapes.medium)
-            .border(width = spacing.tiny, color = Color.DarkGray, shape = shapes.medium)
-            .background(Color.LightGray)
+            .padding(top = spacing.screenEdge),
+        backgroundColor = MaterialTheme.colors.hintGray
     ) {
         Text(
             modifier = Modifier
@@ -219,7 +218,6 @@ fun PostNotFound() {
                 .padding(spacing.screenEdge),
             text = stringResource(id = R.string.post_not_found),
             textAlign = TextAlign.Center,
-            color = Color.DarkGray
         )
     }
 }
