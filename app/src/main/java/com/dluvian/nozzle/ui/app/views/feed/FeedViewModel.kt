@@ -209,7 +209,7 @@ class FeedViewModel(
         )
         _uiState.update {
             it.copy(
-                relayStatuses = newStatuses,
+                relayStatuses = newStatuses.sortedByDescending { relay -> relay.count },
                 feedSettings = it.feedSettings.copy(relaySelection = relaySelection)
             )
         }
