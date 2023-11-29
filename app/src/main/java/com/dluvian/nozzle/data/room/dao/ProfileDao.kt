@@ -62,7 +62,8 @@ interface ProfileDao {
                 "WHERE pubkey NOT IN (SELECT pubkey FROM post) " +
                 "AND pubkey NOT IN (:exclude)" +
                 "AND pubkey NOT IN (SELECT pubkey FROM account) " +
-                "AND pubkey NOT IN (SELECT contactPubkey FROM contact WHERE pubkey IN (SELECT pubkey FROM account))"
+                "AND pubkey NOT IN (SELECT contactPubkey FROM contact WHERE pubkey IN (SELECT pubkey FROM account)) " +
+                "AND pubkey NOT IN (SELECT pubkey FROM mention)"
     )
     suspend fun deleteOrphaned(exclude: Collection<String>): Int
 
