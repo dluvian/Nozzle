@@ -7,6 +7,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.MaterialTheme
@@ -21,10 +23,15 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.TextFieldValue
+import com.dluvian.nozzle.data.nostr.utils.EncodingUtils
 import com.dluvian.nozzle.model.AnnotatedMentionedPost
 import com.dluvian.nozzle.model.Oneself
+import com.dluvian.nozzle.model.SimpleProfile
+import com.dluvian.nozzle.ui.components.itemRow.ItemRow
+import com.dluvian.nozzle.ui.components.itemRow.PictureAndName
 import com.dluvian.nozzle.ui.components.media.ProfilePicture
 import com.dluvian.nozzle.ui.components.postCard.AnnotatedMentionedPostCard
+import com.dluvian.nozzle.ui.components.postCard.atoms.BorderedCard
 import com.dluvian.nozzle.ui.theme.sizing
 import com.dluvian.nozzle.ui.theme.spacing
 
@@ -34,7 +41,8 @@ fun InputBox(
     input: MutableState<TextFieldValue>,
     pubkey: String,
     placeholder: String,
-    postToQuote: AnnotatedMentionedPost? = null
+    postToQuote: AnnotatedMentionedPost? = null,
+    searchSuggestions: List<SimpleProfile> = emptyList(),
 ) {
     Column(modifier = Modifier.fillMaxSize()) {
         BaseInputBox(
@@ -52,6 +60,34 @@ fun InputBox(
                 maxLines = 4,
                 onNavigateToId = { /* Do nothing. Stay in PostScreen */ },
             )
+        }
+        if (searchSuggestions.isNotEmpty()) {
+            SearchSuggestions(
+                suggestions = searchSuggestions,
+                onAddNpub = { npub ->
+                    input.value = input.value.copy(text = input.value.text + npub)
+                }
+            )
+        }
+    }
+}
+
+@Composable
+private fun SearchSuggestions(
+    suggestions: List<SimpleProfile>,
+    onAddNpub: (String) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    BorderedCard(modifier = modifier) {
+        LazyColumn(modifier = Modifier.fillMaxSize()) {
+            items(items = suggestions) {
+                Row(modifier = Modifier.fillMaxWidth()) {
+                    ItemRow(
+                        content = { PictureAndName(profile = it, onNavigateToProfile = { }) },
+                        onClick = { onAddNpub(EncodingUtils.hexToNpub(it.pubkey)) },
+                    )
+                }
+            }
         }
     }
 }
