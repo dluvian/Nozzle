@@ -1,5 +1,6 @@
 package com.dluvian.nozzle.ui.components
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -16,6 +17,7 @@ import androidx.compose.material.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
@@ -24,6 +26,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.TextFieldValue
 import com.dluvian.nozzle.data.nostr.utils.EncodingUtils
+import com.dluvian.nozzle.data.utils.replaceWithNpub
 import com.dluvian.nozzle.model.AnnotatedMentionedPost
 import com.dluvian.nozzle.model.Oneself
 import com.dluvian.nozzle.model.SimpleProfile
@@ -42,30 +45,62 @@ fun InputBox(
     pubkey: String,
     placeholder: String,
     postToQuote: AnnotatedMentionedPost? = null,
-    searchSuggestions: List<SimpleProfile> = emptyList(),
+    searchSuggestions: List<SimpleProfile> = listOf(
+        SimpleProfile(
+            name = "name",
+            pubkey = "e4336cd525df79fa4d3af364fd9600d4b10dce4215aa4c33ed77ea0842344b10",
+            trustScore = 0.5f,
+            isOneself = false,
+            isFollowedByMe = false
+        ),
+        SimpleProfile(
+            name = "name",
+            pubkey = "e4336cd525df79fa4d3af364fd9600d4b10dce4215aa4c33ed77ea0842344b10",
+            trustScore = 0.5f,
+            isOneself = false,
+            isFollowedByMe = false
+        ),
+    ),
+    onSearch: (String) -> Unit = {},
 ) {
-    Column(modifier = Modifier.fillMaxSize()) {
-        BaseInputBox(
-            modifier = Modifier.weight(weight = 1f, fill = false),
-            input = input,
-            pubkey = pubkey,
-            placeholder = placeholder,
-        )
-        postToQuote?.let { quote ->
-            AnnotatedMentionedPostCard(
-                modifier = Modifier
-                    .wrapContentHeight()
-                    .padding(spacing.screenEdge),
-                post = quote,
-                maxLines = 4,
-                onNavigateToId = { /* Do nothing. Stay in PostScreen */ },
-            )
+    val showSuggestions = remember { mutableStateOf(false) }
+    remember(input.value) {
+        val current = input.value
+        val stringUntilCursor = current.text.take(current.selection.end)
+        val mentionedName = stringUntilCursor.takeLastWhile { it != '@' }
+        if (mentionedName.any { it.isWhitespace() }) {
+            showSuggestions.value = false
+            return@remember false
         }
-        if (searchSuggestions.isNotEmpty()) {
+        showSuggestions.value = stringUntilCursor.contains("@")
+        if (showSuggestions.value) onSearch(mentionedName)
+        true
+    }
+    Column(modifier = Modifier.fillMaxSize(), verticalArrangement = Arrangement.SpaceBetween) {
+        Column(modifier = Modifier.weight(weight = 1f, fill = false)) {
+            BaseInputBox(
+                modifier = Modifier.weight(weight = 1f, fill = false),
+                input = input,
+                pubkey = pubkey,
+                placeholder = placeholder,
+            )
+            postToQuote?.let { quote ->
+                AnnotatedMentionedPostCard(
+                    modifier = Modifier
+                        .wrapContentHeight()
+                        .padding(spacing.screenEdge),
+                    post = quote,
+                    maxLines = 4,
+                    onNavigateToId = { /* Do nothing. Stay in PostScreen */ },
+                )
+            }
+        }
+        if (searchSuggestions.isNotEmpty() && showSuggestions.value) {
             SearchSuggestions(
+                modifier = Modifier.weight(weight = 1f, fill = false),
                 suggestions = searchSuggestions,
                 onAddNpub = { npub ->
-                    input.value = input.value.copy(text = input.value.text + npub)
+                    input.value = input.value.replaceWithNpub(npub = npub)
                 }
             )
         }
@@ -79,7 +114,7 @@ private fun SearchSuggestions(
     modifier: Modifier = Modifier
 ) {
     BorderedCard(modifier = modifier) {
-        LazyColumn(modifier = Modifier.fillMaxSize()) {
+        LazyColumn(modifier = Modifier.wrapContentHeight()) {
             items(items = suggestions) {
                 Row(modifier = Modifier.fillMaxWidth()) {
                     ItemRow(
