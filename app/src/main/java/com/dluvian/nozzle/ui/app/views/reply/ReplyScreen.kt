@@ -10,6 +10,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.input.TextFieldValue
 import com.dluvian.nozzle.R
 import com.dluvian.nozzle.ui.components.ContentCreationTopBar
@@ -23,7 +24,7 @@ fun ReplyScreen(
     uiState: ReplyViewModelState,
     pubkeyState: String,
     onToggleRelaySelection: (Int) -> Unit,
-    onSend: (String) -> Unit,
+    onSend: (AnnotatedString) -> Unit,
     onGoBack: () -> Unit,
 ) {
     val context = LocalContext.current
@@ -35,7 +36,7 @@ fun ReplyScreen(
             isSendable = isSendable,
             onToggleRelaySelection = onToggleRelaySelection,
             onSend = {
-                onSend(input.value.text)
+                onSend(input.value.annotatedString)
                 Toast.makeText(
                     context,
                     context.getString(R.string.reply_published),

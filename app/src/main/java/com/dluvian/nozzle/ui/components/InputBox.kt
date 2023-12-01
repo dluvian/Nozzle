@@ -25,8 +25,7 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.TextFieldValue
-import com.dluvian.nozzle.data.nostr.utils.EncodingUtils
-import com.dluvian.nozzle.data.utils.replaceWithNpub
+import com.dluvian.nozzle.data.utils.replaceWithSuggestion
 import com.dluvian.nozzle.model.AnnotatedMentionedPost
 import com.dluvian.nozzle.model.Oneself
 import com.dluvian.nozzle.model.SimpleProfile
@@ -99,8 +98,11 @@ fun InputBox(
             SearchSuggestions(
                 modifier = Modifier.weight(weight = 1f, fill = false),
                 suggestions = searchSuggestions,
-                onAddNpub = { npub ->
-                    input.value = input.value.replaceWithNpub(npub = npub)
+                onReplaceSuggestion = { profile ->
+                    input.value = input.value.replaceWithSuggestion(
+                        name = profile.name,
+                        pubkey = profile.pubkey
+                    )
                 }
             )
         }
@@ -110,7 +112,7 @@ fun InputBox(
 @Composable
 private fun SearchSuggestions(
     suggestions: List<SimpleProfile>,
-    onAddNpub: (String) -> Unit,
+    onReplaceSuggestion: (SimpleProfile) -> Unit,
     modifier: Modifier = Modifier
 ) {
     BorderedCard(modifier = modifier) {
@@ -119,7 +121,7 @@ private fun SearchSuggestions(
                 Row(modifier = Modifier.fillMaxWidth()) {
                     ItemRow(
                         content = { PictureAndName(profile = it, onNavigateToProfile = { }) },
-                        onClick = { onAddNpub(EncodingUtils.hexToNpub(it.pubkey)) },
+                        onClick = { onReplaceSuggestion(it) },
                     )
                 }
             }

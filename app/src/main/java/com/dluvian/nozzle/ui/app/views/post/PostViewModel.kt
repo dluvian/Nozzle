@@ -1,5 +1,6 @@
 package com.dluvian.nozzle.ui.app.views.post
 
+import androidx.compose.ui.text.AnnotatedString
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
@@ -73,7 +74,7 @@ class PostViewModel(
         }
     }
 
-    val onSend: (String) -> Unit = { content ->
+    val onSend: (AnnotatedString) -> Unit = { content ->
         val event = sendPost(state = uiState.value, content = content)
         viewModelScope.launch(context = Dispatchers.IO) {
             postDao.insertWithHashtagsAndMentions(
@@ -122,12 +123,13 @@ class PostViewModel(
         return annotatedMentionedPost
     }
 
-    private fun sendPost(state: PostViewModelState, content: String): Event {
+    private fun sendPost(state: PostViewModelState, content: AnnotatedString): Event {
         val quote = getNewLineQuoteUri(
             postIdToQuote = state.postToQuote?.mentionedPost?.id,
             relays = state.quoteRelays
         )
-        val post = postPreparer.getCleanPostWithTagsAndMentions(content = content + quote)
+        val post =
+            postPreparer.getCleanPostWithTagsAndMentions(content = content) // TODO: add this back: + quote)
         val selectedRelays = state.relayStatuses
             .filter { it.isActive }
             .map { it.relayUrl }

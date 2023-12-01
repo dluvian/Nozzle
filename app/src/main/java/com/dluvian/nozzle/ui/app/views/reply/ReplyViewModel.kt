@@ -1,5 +1,6 @@
 package com.dluvian.nozzle.ui.app.views.reply
 
+import androidx.compose.ui.text.AnnotatedString
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
@@ -75,7 +76,7 @@ class ReplyViewModel(
         }
     }
 
-    val onSend: (String) -> Unit = local@{ input ->
+    val onSend: (AnnotatedString) -> Unit = local@{ input ->
         val parentPost = postToReplyTo ?: return@local
         val event = sendReply(parentPost = parentPost, state = uiState.value, input = input)
         viewModelScope.launch(context = Dispatchers.IO) {
@@ -94,7 +95,7 @@ class ReplyViewModel(
     private fun sendReply(
         parentPost: PostWithMeta,
         state: ReplyViewModelState,
-        input: String
+        input: AnnotatedString
     ): Event {
         val replyTo = ReplyTo(
             replyTo = parentPost.entity.id,
