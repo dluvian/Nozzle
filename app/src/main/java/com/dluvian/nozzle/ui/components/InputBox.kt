@@ -99,10 +99,7 @@ fun InputBox(
                 modifier = Modifier.weight(weight = 1f, fill = false),
                 suggestions = searchSuggestions,
                 onReplaceSuggestion = { profile ->
-                    input.value = input.value.replaceWithSuggestion(
-                        name = profile.name,
-                        pubkey = profile.pubkey
-                    )
+                    input.value = input.value.replaceWithSuggestion(pubkey = profile.pubkey)
                 }
             )
         }
