@@ -14,6 +14,7 @@ import com.dluvian.nozzle.data.provider.IRelayProvider
 import com.dluvian.nozzle.data.room.dao.HashtagDao
 import com.dluvian.nozzle.data.room.dao.MentionDao
 import com.dluvian.nozzle.data.room.dao.PostDao
+import com.dluvian.nozzle.data.utils.addLimitedRelayStatuses
 import com.dluvian.nozzle.data.utils.listRelayStatuses
 import com.dluvian.nozzle.data.utils.toggleRelay
 import com.dluvian.nozzle.model.AllRelays
@@ -87,9 +88,14 @@ class PostViewModel(
     }
 
     val onClickMention: (Pubkey) -> Unit = { pubkey ->
-        // TODO: Do it
         _uiState.update { it.copy(searchSuggestions = emptyList()) }
-
+        viewModelScope.launch(Dispatchers.IO) {
+            val relaySelection = addLimitedRelayStatuses(
+                list = uiState.value.relayStatuses,
+                relaysUrlsToAdd = relayProvider.getReadRelaysOfPubkey(pubkey = pubkey)
+            )
+            _uiState.update { it.copy(relayStatuses = relaySelection) }
+        }
     }
 
     val onSend: (String) -> Unit = { content ->

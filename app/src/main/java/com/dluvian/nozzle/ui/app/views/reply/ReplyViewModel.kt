@@ -12,6 +12,7 @@ import com.dluvian.nozzle.data.room.dao.HashtagDao
 import com.dluvian.nozzle.data.room.dao.PostDao
 import com.dluvian.nozzle.data.room.entity.HashtagEntity
 import com.dluvian.nozzle.data.room.entity.PostEntity
+import com.dluvian.nozzle.data.utils.addLimitedRelayStatuses
 import com.dluvian.nozzle.data.utils.listRelayStatuses
 import com.dluvian.nozzle.data.utils.toggleRelay
 import com.dluvian.nozzle.model.AllRelays
@@ -54,17 +55,20 @@ class ReplyViewModel(
         viewModelScope.launch(context = Dispatchers.IO) {
             _uiState.update {
                 recipientPubkey = post.pubkey
+                val relays = listRelayStatuses(
+                    allRelayUrls = relayProvider.getWriteRelays(),
+                    relaySelection = AllRelays
+                )
                 it.copy(
                     recipientName = post.name.ifEmpty {
                         getShortenedNpubFromPubkey(post.pubkey) ?: post.pubkey
                     },
-                    relaySelection = listRelayStatuses(
-                        allRelayUrls = (relayProvider.getWriteRelays()
-                                + relayProvider.getReadRelaysOfPubkey(recipientPubkey)
-                                + post.relays)
-                            .distinct(),
-                        relaySelection = AllRelays,
-                    ),
+                    relaySelection = addLimitedRelayStatuses(
+                        list = relays,
+                        relaysUrlsToAdd = relayProvider
+                            .getReadRelaysOfPubkey(recipientPubkey)
+                            .ifEmpty { post.relays }
+                    )
                 )
             }
         }
@@ -88,8 +92,14 @@ class ReplyViewModel(
     }
 
     val onClickMention: (Pubkey) -> Unit = { pubkey ->
-        // TODO: Do it
         _uiState.update { it.copy(searchSuggestions = emptyList()) }
+        viewModelScope.launch(Dispatchers.IO) {
+            val relaySelection = addLimitedRelayStatuses(
+                list = uiState.value.relaySelection,
+                relaysUrlsToAdd = relayProvider.getReadRelaysOfPubkey(pubkey = pubkey)
+            )
+            _uiState.update { it.copy(relaySelection = relaySelection) }
+        }
     }
 
     val onSend: (String) -> Unit = local@{ input ->

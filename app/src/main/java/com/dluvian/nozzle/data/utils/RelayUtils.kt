@@ -1,5 +1,6 @@
 package com.dluvian.nozzle.data.utils
 
+import com.dluvian.nozzle.data.MAX_RELAYS
 import com.dluvian.nozzle.model.AllRelays
 import com.dluvian.nozzle.model.MultipleRelays
 import com.dluvian.nozzle.model.RelayActive
@@ -12,11 +13,30 @@ fun toggleRelay(relays: List<RelayActive>, index: Int): List<RelayActive> {
     }
 }
 
+fun addLimitedRelayStatuses(
+    list: List<RelayActive>,
+    relaysUrlsToAdd: List<String>
+): List<RelayActive> {
+    val result = list.toMutableList()
+    val present = list.map { it.relayUrl }.toSet()
+    relaysUrlsToAdd
+        .shuffled()
+        .sortedByDescending { present.contains(it) }
+        .take(MAX_RELAYS)
+        .forEach {
+            if (!present.contains(it)) {
+                result.add(RelayActive(relayUrl = it, isActive = true))
+            }
+        }
+
+    return result
+}
+
 fun listRelayStatuses(
     allRelayUrls: List<String>,
     relaySelection: RelaySelection
 ): List<RelayActive> {
-    return allRelayUrls.map {
+    return allRelayUrls.distinct().map {
         var count = 0
         val isActive = when (relaySelection) {
             is AllRelays -> true

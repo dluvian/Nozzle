@@ -11,7 +11,7 @@ const val WAIT_TIME = 1300L
 
 const val APPEND_RETRY_TIME = 3333L
 
-const val MAX_RELAYS = 7
+const val MAX_RELAYS = 5
 
 const val SWEEP_THRESHOLD = 3000
 
@@ -23,4 +23,4 @@ const val EVENT_PROCESSING_DELAY = 1111L
 
 const val MAX_LIST_LENGTH = 100
 
-const val MAX_SUGGESTION_LENGTH = 10
+const val MAX_SUGGESTION_LENGTH = 30
