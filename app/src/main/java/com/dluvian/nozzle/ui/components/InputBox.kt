@@ -27,6 +27,7 @@ import androidx.compose.ui.text.input.TextFieldValue
 import com.dluvian.nozzle.data.utils.replaceWithSuggestion
 import com.dluvian.nozzle.model.AnnotatedMentionedPost
 import com.dluvian.nozzle.model.Oneself
+import com.dluvian.nozzle.model.Pubkey
 import com.dluvian.nozzle.model.SimpleProfile
 import com.dluvian.nozzle.ui.components.itemRow.ItemRow
 import com.dluvian.nozzle.ui.components.itemRow.PictureAndName
@@ -41,45 +42,10 @@ fun InputBox(
     input: MutableState<TextFieldValue>,
     pubkey: String,
     placeholder: String,
+    searchSuggestions: List<SimpleProfile>,
+    onSearch: (String) -> Unit,
+    onClickMention: (Pubkey) -> Unit,
     postToQuote: AnnotatedMentionedPost? = null,
-    searchSuggestions: List<SimpleProfile> = listOf(
-        SimpleProfile(
-            name = "name",
-            pubkey = "e4336cd525df79fa4d3af364fd9600d4b10dce4215aa4c33ed77ea0842344b10",
-            trustScore = 0.5f,
-            isOneself = false,
-            isFollowedByMe = false
-        ),
-        SimpleProfile(
-            name = "name",
-            pubkey = "e4336cd525df79fa4d3af364fd9600d4b10dce4215aa4c33ed77ea0842344b10",
-            trustScore = 0.5f,
-            isOneself = false,
-            isFollowedByMe = false
-        ),
-        SimpleProfile(
-            name = "name",
-            pubkey = "e4336cd525df79fa4d3af364fd9600d4b10dce4215aa4c33ed77ea0842344b10",
-            trustScore = 0.5f,
-            isOneself = false,
-            isFollowedByMe = false
-        ),
-        SimpleProfile(
-            name = "name",
-            pubkey = "e4336cd525df79fa4d3af364fd9600d4b10dce4215aa4c33ed77ea0842344b10",
-            trustScore = 0.5f,
-            isOneself = false,
-            isFollowedByMe = false
-        ),
-        SimpleProfile(
-            name = "name",
-            pubkey = "e4336cd525df79fa4d3af364fd9600d4b10dce4215aa4c33ed77ea0842344b10",
-            trustScore = 0.5f,
-            isOneself = false,
-            isFollowedByMe = false
-        ),
-    ),
-    onSearch: (String) -> Unit = {},
 ) {
     val showSuggestions = remember { mutableStateOf(false) }
     remember(input.value) {
@@ -117,6 +83,7 @@ fun InputBox(
                 suggestions = searchSuggestions,
                 onReplaceSuggestion = { profile ->
                     input.value = input.value.replaceWithSuggestion(pubkey = profile.pubkey)
+                    onClickMention(profile.pubkey)
                 }
             )
         }

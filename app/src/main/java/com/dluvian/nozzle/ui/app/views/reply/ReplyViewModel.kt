@@ -1,25 +1,31 @@
 package com.dluvian.nozzle.ui.app.views.reply
 
-import androidx.compose.ui.text.AnnotatedString
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import com.dluvian.nozzle.data.MAX_SUGGESTION_LENGTH
 import com.dluvian.nozzle.data.nostr.INostrService
 import com.dluvian.nozzle.data.nostr.utils.ShortenedNameUtils.getShortenedNpubFromPubkey
 import com.dluvian.nozzle.data.postPreparer.IPostPreparer
 import com.dluvian.nozzle.data.provider.IPubkeyProvider
 import com.dluvian.nozzle.data.provider.IRelayProvider
+import com.dluvian.nozzle.data.provider.ISimpleProfileProvider
 import com.dluvian.nozzle.data.room.dao.HashtagDao
 import com.dluvian.nozzle.data.room.dao.PostDao
 import com.dluvian.nozzle.data.room.entity.HashtagEntity
 import com.dluvian.nozzle.data.room.entity.PostEntity
+import com.dluvian.nozzle.data.utils.LONG_DEBOUNCE
 import com.dluvian.nozzle.data.utils.listRelayStatuses
 import com.dluvian.nozzle.data.utils.toggleRelay
 import com.dluvian.nozzle.model.AllRelays
 import com.dluvian.nozzle.model.PostWithMeta
+import com.dluvian.nozzle.model.Pubkey
 import com.dluvian.nozzle.model.nostr.Event
 import com.dluvian.nozzle.model.nostr.ReplyTo
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.stateIn
@@ -31,6 +37,7 @@ class ReplyViewModel(
     private val pubkeyProvider: IPubkeyProvider,
     private val relayProvider: IRelayProvider,
     private val postPreparer: IPostPreparer,
+    private val simpleProfileProvider: ISimpleProfileProvider,
     private val postDao: PostDao,
     private val hashtagDao: HashtagDao,
 ) : ViewModel() {
@@ -76,7 +83,25 @@ class ReplyViewModel(
         }
     }
 
-    val onSend: (AnnotatedString) -> Unit = local@{ input ->
+    var debounceJob: Job? = null
+    val onSearch: (String) -> Unit = { name ->
+        debounceJob?.cancel(CancellationException("Start a new search"))
+        debounceJob = viewModelScope.launch(Dispatchers.IO) {
+            delay(LONG_DEBOUNCE)
+            val suggestions = simpleProfileProvider.getSimpleProfiles(
+                nameLike = name,
+                limit = MAX_SUGGESTION_LENGTH
+            )
+            _uiState.update { it.copy(searchSuggestions = suggestions) }
+        }
+    }
+
+    val onClickMention: (Pubkey) -> Unit = { pubkey ->
+        // TODO: Do it
+        _uiState.update { it.copy(searchSuggestions = emptyList()) }
+    }
+
+    val onSend: (String) -> Unit = local@{ input ->
         val parentPost = postToReplyTo ?: return@local
         val event = sendReply(parentPost = parentPost, state = uiState.value, input = input)
         viewModelScope.launch(context = Dispatchers.IO) {
@@ -95,7 +120,7 @@ class ReplyViewModel(
     private fun sendReply(
         parentPost: PostWithMeta,
         state: ReplyViewModelState,
-        input: AnnotatedString
+        input: String
     ): Event {
         val replyTo = ReplyTo(
             replyTo = parentPost.entity.id,
@@ -136,6 +161,7 @@ class ReplyViewModel(
             pubkeyProvider: IPubkeyProvider,
             relayProvider: IRelayProvider,
             postPreparer: IPostPreparer,
+            simpleProfileProvider: ISimpleProfileProvider,
             postDao: PostDao,
             hashtagDao: HashtagDao,
         ): ViewModelProvider.Factory = object : ViewModelProvider.Factory {
@@ -146,6 +172,7 @@ class ReplyViewModel(
                     pubkeyProvider = pubkeyProvider,
                     relayProvider = relayProvider,
                     postPreparer = postPreparer,
+                    simpleProfileProvider,
                     postDao = postDao,
                     hashtagDao = hashtagDao,
                 ) as T

@@ -48,9 +48,36 @@ class SimpleProfileProvider(
         return getFlow(pubkeys = pubkeys)
     }
 
+    override suspend fun getSimpleProfiles(
+        nameLike: String,
+        limit: Int
+    ): List<SimpleProfile> {
+        val pubkeys = profileDao
+            .getPubkeysWithNameLike(name = nameLike.ifBlank { "a" }, limit = limit)
+            .distinct()
+
+        if (pubkeys.isEmpty()) return emptyList()
+
+        val profiles = profileDao.getProfiles(pubkeys = pubkeys)
+        val trustScores = contactDao.getTrustScoreByPubkey(contactPubkeys = pubkeys)
+        val myFollowerList =
+            contactDao.listContactPubkeys(pubkey = pubkeyProvider.getActivePubkey())
+
+        return pubkeys.map { pubkey ->
+            val profile = profiles.find { it.pubkey == pubkey }
+            SimpleProfile(
+                name = profile?.metadata?.name.orEmpty(),
+                pubkey = pubkey,
+                trustScore = trustScores[pubkey] ?: 0f,
+                isOneself = pubkey == pubkeyProvider.getActivePubkey(),
+                isFollowedByMe = myFollowerList.contains(pubkey)
+            )
+        }
+    }
+
     private fun getFlow(pubkeys: Collection<Pubkey>): Flow<List<SimpleProfile>> {
         val baseFlow = flowOf(pubkeys.toSet())
-        val profileFlow = profileDao.listProfiles(pubkeys = pubkeys)
+        val profileFlow = profileDao.getProfilesFlow(pubkeys = pubkeys)
             .firstThenDistinctDebounce(NORMAL_DEBOUNCE)
         val trustScoreFlow = contactDao.getTrustScoreByPubkeyFlow(contactPubkeys = pubkeys)
         val myFollowerListFlow = contactDao.listPersonalContactPubkeysFlow()

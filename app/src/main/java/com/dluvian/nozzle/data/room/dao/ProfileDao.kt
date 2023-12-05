@@ -13,7 +13,11 @@ interface ProfileDao {
     suspend fun getProfile(pubkey: String): ProfileEntity?
 
     @Query("SELECT * FROM profile WHERE pubkey IN (:pubkeys)")
-    fun listProfiles(pubkeys: Collection<Pubkey>): Flow<List<ProfileEntity>>
+    fun getProfilesFlow(pubkeys: Collection<Pubkey>): Flow<List<ProfileEntity>>
+
+
+    @Query("SELECT * FROM profile WHERE pubkey IN (:pubkeys)")
+    suspend fun getProfiles(pubkeys: Collection<Pubkey>): List<ProfileEntity>
 
     @Query(
         // SELECT metadata

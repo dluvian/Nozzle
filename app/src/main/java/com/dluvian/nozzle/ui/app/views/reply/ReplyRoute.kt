@@ -17,6 +17,8 @@ fun ReplyRoute(
         pubkeyState = pubkeyState,
         onToggleRelaySelection = replyViewModel.onToggleRelaySelection,
         onSend = replyViewModel.onSend,
+        onSearch = replyViewModel.onSearch,
+        onClickMention = replyViewModel.onClickMention,
         onGoBack = onGoBack,
     )
 }

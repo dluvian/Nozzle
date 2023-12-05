@@ -17,6 +17,8 @@ fun PostRoute(
         pubkeyState = pubkeyState,
         onToggleRelaySelection = postViewModel.onToggleRelaySelection,
         onSend = postViewModel.onSend,
+        onSearch = postViewModel.onSearch,
+        onClickMention = postViewModel.onClickMention,
         onGoBack = onGoBack,
     )
 }
