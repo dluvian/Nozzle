@@ -12,6 +12,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.TextFieldValue
 import com.dluvian.nozzle.R
+import com.dluvian.nozzle.model.Pubkey
 import com.dluvian.nozzle.ui.components.ContentCreationTopBar
 import com.dluvian.nozzle.ui.components.InputBox
 import com.dluvian.nozzle.ui.components.text.ReplyingTo
@@ -23,6 +24,8 @@ fun ReplyScreen(
     uiState: ReplyViewModelState,
     pubkeyState: String,
     onToggleRelaySelection: (Int) -> Unit,
+    onSearch: (String) -> Unit,
+    onClickMention: (Pubkey) -> Unit,
     onSend: (String) -> Unit,
     onGoBack: () -> Unit,
 ) {
@@ -53,6 +56,9 @@ fun ReplyScreen(
             input = input,
             pubkey = pubkeyState,
             placeholder = stringResource(id = R.string.post_your_reply),
+            searchSuggestions = uiState.searchSuggestions,
+            onSearch = onSearch,
+            onClickMention = onClickMention
         )
     }
 }

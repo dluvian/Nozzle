@@ -143,6 +143,18 @@ interface ContactDao {
         contactPubkeys: Collection<String>
     ): Flow<Map<String, Int>>
 
+    @MapInfo(keyColumn = "contactPubkey", valueColumn = "rawTrustScore")
+    @Query(
+        "SELECT contactPubkey, COUNT(*) AS rawTrustScore " +
+                "FROM contact " +
+                "WHERE contactPubkey IN (:contactPubkeys) " +
+                "AND pubkey IN (SELECT contactPubkey " +
+                "FROM contact " +
+                "WHERE pubkey = (SELECT pubkey FROM account WHERE isActive = 1)) " +
+                "GROUP BY contactPubkey"
+    )
+    fun getRawTrustScoreByPubkey(contactPubkeys: Collection<String>): Map<String, Int>
+
     @Query(
         "SELECT COUNT(*) " +
                 "FROM contact " +
@@ -150,6 +162,14 @@ interface ContactDao {
                 "AND contactPubkey IN (SELECT pubkey FROM contact)"
     )
     fun getTrustScoreDividerFlow(): Flow<Int>
+
+    @Query(
+        "SELECT COUNT(*) " +
+                "FROM contact " +
+                "WHERE pubkey = (SELECT pubkey FROM account WHERE isActive = 1) " +
+                "AND contactPubkey IN (SELECT pubkey FROM contact)"
+    )
+    fun getTrustScoreDivider(): Int
 
     fun getTrustScoreFlow(
         contactPubkey: String
@@ -185,6 +205,20 @@ interface ContactDao {
                     )
                 }
             }.distinctUntilChanged()
+    }
+
+    fun getTrustScoreByPubkey(contactPubkeys: Collection<String>): Map<Pubkey, Float> {
+        if (contactPubkeys.isEmpty()) return emptyMap()
+
+        val trustScoreDivider = getTrustScoreDivider()
+        val rawTrustScorePerPubkey = getRawTrustScoreByPubkey(contactPubkeys = contactPubkeys)
+
+        return rawTrustScorePerPubkey.mapValues { (_, score) ->
+            getTrustScorePercentage(
+                numOfFollowing = trustScoreDivider,
+                rawTrustScore = score
+            )
+        }
     }
 
     private fun getTrustScorePercentage(numOfFollowing: Int, rawTrustScore: Int): Float {

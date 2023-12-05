@@ -23,10 +23,11 @@ import com.dluvian.nozzle.data.room.entity.ProfileEntity
 import com.dluvian.nozzle.data.room.entity.ReactionEntity
 
 @Database(
-    version = 20,
+    version = 21,
     exportSchema = true,
     autoMigrations = [
-        AutoMigration(from = 19, to = 20)
+        AutoMigration(from = 19, to = 20),
+        AutoMigration(from = 20, to = 21)
     ],
     entities = [
         ContactEntity::class,

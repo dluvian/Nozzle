@@ -1,12 +1,14 @@
 package com.dluvian.nozzle.ui.components
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.MaterialTheme
@@ -14,6 +16,7 @@ import androidx.compose.material.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
@@ -21,8 +24,13 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.TextFieldValue
+import com.dluvian.nozzle.data.utils.replaceWithSuggestion
 import com.dluvian.nozzle.model.AnnotatedMentionedPost
 import com.dluvian.nozzle.model.Oneself
+import com.dluvian.nozzle.model.Pubkey
+import com.dluvian.nozzle.model.SimpleProfile
+import com.dluvian.nozzle.ui.components.itemRow.ItemRow
+import com.dluvian.nozzle.ui.components.itemRow.PictureAndName
 import com.dluvian.nozzle.ui.components.media.ProfilePicture
 import com.dluvian.nozzle.ui.components.postCard.AnnotatedMentionedPostCard
 import com.dluvian.nozzle.ui.theme.sizing
@@ -34,24 +42,71 @@ fun InputBox(
     input: MutableState<TextFieldValue>,
     pubkey: String,
     placeholder: String,
-    postToQuote: AnnotatedMentionedPost? = null
+    searchSuggestions: List<SimpleProfile>,
+    onSearch: (String) -> Unit,
+    onClickMention: (Pubkey) -> Unit,
+    postToQuote: AnnotatedMentionedPost? = null,
 ) {
-    Column(modifier = Modifier.fillMaxSize()) {
-        BaseInputBox(
-            modifier = Modifier.weight(weight = 1f, fill = false),
-            input = input,
-            pubkey = pubkey,
-            placeholder = placeholder,
-        )
-        postToQuote?.let { quote ->
-            AnnotatedMentionedPostCard(
-                modifier = Modifier
-                    .wrapContentHeight()
-                    .padding(spacing.screenEdge),
-                post = quote,
-                maxLines = 4,
-                onNavigateToId = { /* Do nothing. Stay in PostScreen */ },
+    val showSuggestions = remember { mutableStateOf(false) }
+    remember(input.value) {
+        val current = input.value
+        val stringUntilCursor = current.text.take(current.selection.end)
+        val mentionedName = stringUntilCursor.takeLastWhile { it != '@' }
+        if (mentionedName.any { it.isWhitespace() }) {
+            showSuggestions.value = false
+            return@remember false
+        }
+        showSuggestions.value = stringUntilCursor.contains("@")
+        if (showSuggestions.value) onSearch(mentionedName)
+        true
+    }
+    Column(modifier = Modifier.fillMaxSize(), Arrangement.SpaceBetween) {
+        Column(modifier = Modifier.weight(0.6f, fill = false)) {
+            BaseInputBox(
+                modifier = Modifier,
+                input = input,
+                pubkey = pubkey,
+                placeholder = placeholder,
             )
+            postToQuote?.let { quote ->
+                AnnotatedMentionedPostCard(
+                    modifier = Modifier.padding(spacing.screenEdge),
+                    post = quote,
+                    maxLines = 4,
+                    onNavigateToId = { /* Do nothing. Stay in PostScreen */ },
+                )
+            }
+        }
+        if (showSuggestions.value && searchSuggestions.isNotEmpty()) {
+            SearchSuggestions(
+                modifier = Modifier.weight(0.4f),
+                suggestions = searchSuggestions,
+                onReplaceSuggestion = { profile ->
+                    input.value = input.value.replaceWithSuggestion(pubkey = profile.pubkey)
+                    onClickMention(profile.pubkey)
+                }
+            )
+        }
+    }
+}
+
+@Composable
+private fun SearchSuggestions(
+    suggestions: List<SimpleProfile>,
+    onReplaceSuggestion: (SimpleProfile) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    LazyColumn(
+        modifier = modifier,
+        verticalArrangement = Arrangement.Bottom
+    ) {
+        items(items = suggestions) {
+            Row(modifier = Modifier.fillMaxWidth()) {
+                ItemRow(
+                    content = { PictureAndName(profile = it, onNavigateToProfile = { }) },
+                    onClick = { onReplaceSuggestion(it) },
+                )
+            }
         }
     }
 }

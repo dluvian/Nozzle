@@ -126,8 +126,8 @@ fun NozzleApp(appContainer: AppContainer) {
                         pubkeyProvider = appContainer.keyManager,
                         relayProvider = appContainer.relayProvider,
                         postPreparer = appContainer.postPreparer,
-                        postDao = appContainer.roomDb.postDao(),
-                        hashtagDao = appContainer.roomDb.hashtagDao(),
+                        fullPostInserter = appContainer.fullPostInserter,
+                        dbExcludingCache = appContainer.dbSweepExcludingCache
                     )
                 ),
                 postViewModel = viewModel(
@@ -137,9 +137,9 @@ fun NozzleApp(appContainer: AppContainer) {
                         relayProvider = appContainer.relayProvider,
                         postPreparer = appContainer.postPreparer,
                         annotatedContentHandler = appContainer.annotatedContentHandler,
+                        fullPostInserter = appContainer.fullPostInserter,
+                        dbExcludingCache = appContainer.dbSweepExcludingCache,
                         postDao = appContainer.roomDb.postDao(),
-                        hashtagDao = appContainer.roomDb.hashtagDao(),
-                        mentionDao = appContainer.roomDb.mentionDao()
                     )
                 ),
                 searchViewModel = viewModel(

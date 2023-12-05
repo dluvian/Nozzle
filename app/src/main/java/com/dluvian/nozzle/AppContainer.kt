@@ -54,6 +54,7 @@ import com.dluvian.nozzle.data.provider.impl.RelayProvider
 import com.dluvian.nozzle.data.provider.impl.SimpleProfileProvider
 import com.dluvian.nozzle.data.provider.impl.ThreadProvider
 import com.dluvian.nozzle.data.room.AppDatabase
+import com.dluvian.nozzle.data.room.FullPostInserter
 import com.dluvian.nozzle.data.subscriber.INozzleSubscriber
 import com.dluvian.nozzle.data.subscriber.NozzleSubscriber
 import okhttp3.OkHttpClient
@@ -77,10 +78,17 @@ class AppContainer(context: Context) {
 
     val darkModePreferences: IDarkModePreferences = nozzlePreferences
 
-    private val dbSweepExcludingCache: IIdCache = IdCache()
+    val dbSweepExcludingCache: IIdCache = IdCache()
+
+    val fullPostInserter = FullPostInserter(
+        postDao = roomDb.postDao(),
+        hashtagDao = roomDb.hashtagDao(),
+        mentionDao = roomDb.mentionDao()
+    )
 
     private val eventProcessor: IEventProcessor = EventProcessor(
         dbSweepExcludingCache = dbSweepExcludingCache,
+        fullPostInserter = fullPostInserter,
         database = roomDb,
     )
 
@@ -188,7 +196,16 @@ class AppContainer(context: Context) {
         database = roomDb,
     )
 
-    val postPreparer: IPostPreparer = PostPreparer()
+    val simpleProfileProvider: ISimpleProfileProvider = SimpleProfileProvider(
+        pubkeyProvider = keyManager,
+        profileDao = roomDb.profileDao(),
+        contactDao = roomDb.contactDao(),
+    )
+
+    val postPreparer: IPostPreparer = PostPreparer(
+        simpleProfileProvider = simpleProfileProvider,
+        relayProvider = relayProvider
+    )
 
     val inboxFeedProvider: IInboxFeedProvider = InboxFeedProvider(
         nozzleSubscriber = nozzleSubscriber,
@@ -201,11 +218,5 @@ class AppContainer(context: Context) {
         postWithMetaProvider = postWithMetaProvider,
         postDao = roomDb.postDao(),
         reactionDao = roomDb.reactionDao()
-    )
-
-    val simpleProfileProvider: ISimpleProfileProvider = SimpleProfileProvider(
-        pubkeyProvider = keyManager,
-        profileDao = roomDb.profileDao(),
-        contactDao = roomDb.contactDao(),
     )
 }

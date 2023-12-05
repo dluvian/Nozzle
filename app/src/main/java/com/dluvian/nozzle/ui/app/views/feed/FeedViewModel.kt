@@ -203,13 +203,12 @@ class FeedViewModel(
             is AllRelays -> AllRelays
         }
         val newStatuses = newRelayStatuses ?: listRelayStatuses(
-            allRelayUrls = (lastAutopilotResult.map { it.key } + relayProvider.getReadRelays())
-                .distinct(),
+            allRelayUrls = lastAutopilotResult.map { it.key } + relayProvider.getReadRelays(),
             relaySelection = relaySelection
         )
         _uiState.update {
             it.copy(
-                relayStatuses = newStatuses,
+                relayStatuses = newStatuses.sortedByDescending { relay -> relay.count },
                 feedSettings = it.feedSettings.copy(relaySelection = relaySelection)
             )
         }

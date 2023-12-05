@@ -16,4 +16,6 @@ interface ISimpleProfileProvider {
     ): Flow<List<SimpleProfile>>
 
     suspend fun getSimpleProfilesFlow(nameLike: String): Flow<List<SimpleProfile>>
+
+    suspend fun getSimpleProfiles(nameLike: String, limit: Int): List<SimpleProfile>
 }

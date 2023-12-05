@@ -3,9 +3,7 @@ package com.dluvian.nozzle.data.annotatedContent
 import android.util.Log
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.ExperimentalTextApi
-import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
-import androidx.compose.ui.text.style.TextDecoration
 import com.dluvian.nozzle.data.nostr.utils.EncodingUtils.nostrUriToNostrId
 import com.dluvian.nozzle.data.nostr.utils.EncodingUtils.note1ToHex
 import com.dluvian.nozzle.data.nostr.utils.EncodingUtils.readNevent
@@ -24,7 +22,8 @@ import com.dluvian.nozzle.model.nostr.NeventNostrId
 import com.dluvian.nozzle.model.nostr.NoteNostrId
 import com.dluvian.nozzle.model.nostr.NprofileNostrId
 import com.dluvian.nozzle.model.nostr.NpubNostrId
-import com.dluvian.nozzle.ui.theme.HyperlinkBlue
+import com.dluvian.nozzle.ui.theme.HyperlinkStyle
+import com.dluvian.nozzle.ui.theme.MentionAndHashtagStyle
 import java.util.Collections
 
 private const val TAG = "AnnotatedContentHandler"
@@ -35,11 +34,6 @@ class AnnotatedContentHandler : IAnnotatedContentHandler {
     private val NPROFILE_TAG = "NPROFILE"
     private val NPUB_TAG = "NPUB"
     private val HASHTAG = "HASHTAG"
-
-    private val mentionAndHashtagStyle = SpanStyle(color = HyperlinkBlue)
-    private val hyperlinkStyle = mentionAndHashtagStyle.copy(
-        textDecoration = TextDecoration.Underline
-    )
 
     private val cache: MutableMap<String, AnnotatedString> =
         Collections.synchronizedMap(mutableMapOf())
@@ -75,13 +69,13 @@ class AnnotatedContentHandler : IAnnotatedContentHandler {
                 if (urls.contains(token)) {
                     pushStyledUrlAnnotation(
                         url = token.value,
-                        style = hyperlinkStyle
+                        style = HyperlinkStyle
                     )
                 } else if (hashtags.contains(token)) {
                     pushAnnotatedString(
                         tag = HASHTAG,
                         annotation = token.value,
-                        style = mentionAndHashtagStyle,
+                        style = MentionAndHashtagStyle,
                         text = token.value
                     )
                 } else {
@@ -96,7 +90,7 @@ class AnnotatedContentHandler : IAnnotatedContentHandler {
                             pushAnnotatedString(
                                 tag = NPUB_TAG,
                                 annotation = nostrId.npub,
-                                style = mentionAndHashtagStyle,
+                                style = MentionAndHashtagStyle,
                                 text = name
                             )
                         }
@@ -111,7 +105,7 @@ class AnnotatedContentHandler : IAnnotatedContentHandler {
                             pushAnnotatedString(
                                 tag = NPROFILE_TAG,
                                 annotation = nostrId.nprofile,
-                                style = mentionAndHashtagStyle,
+                                style = MentionAndHashtagStyle,
                                 text = name
                             )
                         }
@@ -120,7 +114,7 @@ class AnnotatedContentHandler : IAnnotatedContentHandler {
                             pushAnnotatedString(
                                 tag = NOTE1_TAG,
                                 annotation = nostrId.note1,
-                                style = mentionAndHashtagStyle,
+                                style = MentionAndHashtagStyle,
                                 text = getShortenedNote1(nostrId.note1) ?: nostrId.note1
                             )
                         }
@@ -129,7 +123,7 @@ class AnnotatedContentHandler : IAnnotatedContentHandler {
                             pushAnnotatedString(
                                 tag = NEVENT_TAG,
                                 annotation = nostrId.nevent,
-                                style = mentionAndHashtagStyle,
+                                style = MentionAndHashtagStyle,
                                 text = getShortenedNevent(nostrId.nevent) ?: nostrId.nevent
                             )
                         }
