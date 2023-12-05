@@ -80,10 +80,10 @@ class ReplyViewModel(
         }
     }
 
-    private var debounceJob: Job? = null
+    private var searchJob: Job? = null
     val onSearch: (String) -> Unit = { name ->
-        debounceJob?.cancel()
-        debounceJob = viewModelScope.launch(Dispatchers.IO) {
+        searchJob?.cancel()
+        searchJob = viewModelScope.launch(Dispatchers.IO) {
             _uiState.update {
                 it.copy(searchSuggestions = postPreparer.searchProfiles(nameLike = name))
             }
