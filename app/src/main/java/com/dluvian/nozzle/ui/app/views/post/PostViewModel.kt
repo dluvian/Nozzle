@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.dluvian.nozzle.data.annotatedContent.IAnnotatedContentHandler
+import com.dluvian.nozzle.data.cache.IIdCache
 import com.dluvian.nozzle.data.nostr.INostrService
 import com.dluvian.nozzle.data.nostr.utils.EncodingUtils.createNeventUri
 import com.dluvian.nozzle.data.nostr.utils.EncodingUtils.nostrStrToNostrId
@@ -11,8 +12,7 @@ import com.dluvian.nozzle.data.nostr.utils.ShortenedNameUtils.getShortenedNpubFr
 import com.dluvian.nozzle.data.postPreparer.IPostPreparer
 import com.dluvian.nozzle.data.provider.IPubkeyProvider
 import com.dluvian.nozzle.data.provider.IRelayProvider
-import com.dluvian.nozzle.data.room.dao.HashtagDao
-import com.dluvian.nozzle.data.room.dao.MentionDao
+import com.dluvian.nozzle.data.room.FullPostInserter
 import com.dluvian.nozzle.data.room.dao.PostDao
 import com.dluvian.nozzle.data.utils.addLimitedRelayStatuses
 import com.dluvian.nozzle.data.utils.listRelayStatuses
@@ -37,9 +37,9 @@ class PostViewModel(
     private val relayProvider: IRelayProvider,
     private val postPreparer: IPostPreparer,
     private val annotatedContentHandler: IAnnotatedContentHandler,
+    private val fullPostInserter: FullPostInserter,
+    private val dbExcludingCache: IIdCache,
     private val postDao: PostDao,
-    private val hashtagDao: HashtagDao,
-    private val mentionDao: MentionDao,
 ) : ViewModel() {
     val pubkeyState = pubkeyProvider.getActivePubkeyStateFlow()
 
@@ -101,13 +101,8 @@ class PostViewModel(
     val onSend: (String) -> Unit = { content ->
         val event = sendPost(state = uiState.value, content = content)
         viewModelScope.launch(context = Dispatchers.IO) {
-            postDao.insertWithHashtagsAndMentions(
-                events = listOf(event),
-                hashtagDao = hashtagDao,
-                mentionDao = mentionDao,
-            )
-
-            // TODO: dbSweepExcludingCache.addPostId(event.id)
+            fullPostInserter.insertFullPost(events = listOf(event))
+            dbExcludingCache.addPostIds(listOf(event.id))
         }
         resetUI()
     }
@@ -194,9 +189,9 @@ class PostViewModel(
             relayProvider: IRelayProvider,
             postPreparer: IPostPreparer,
             annotatedContentHandler: IAnnotatedContentHandler,
+            fullPostInserter: FullPostInserter,
+            dbExcludingCache: IIdCache,
             postDao: PostDao,
-            hashtagDao: HashtagDao,
-            mentionDao: MentionDao,
         ): ViewModelProvider.Factory = object : ViewModelProvider.Factory {
             @Suppress("UNCHECKED_CAST")
             override fun <T : ViewModel> create(modelClass: Class<T>): T {
@@ -206,9 +201,9 @@ class PostViewModel(
                     relayProvider = relayProvider,
                     postPreparer = postPreparer,
                     annotatedContentHandler = annotatedContentHandler,
+                    fullPostInserter = fullPostInserter,
+                    dbExcludingCache = dbExcludingCache,
                     postDao = postDao,
-                    hashtagDao = hashtagDao,
-                    mentionDao = mentionDao
                 ) as T
             }
         }

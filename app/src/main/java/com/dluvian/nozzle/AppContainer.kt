@@ -54,6 +54,7 @@ import com.dluvian.nozzle.data.provider.impl.RelayProvider
 import com.dluvian.nozzle.data.provider.impl.SimpleProfileProvider
 import com.dluvian.nozzle.data.provider.impl.ThreadProvider
 import com.dluvian.nozzle.data.room.AppDatabase
+import com.dluvian.nozzle.data.room.FullPostInserter
 import com.dluvian.nozzle.data.subscriber.INozzleSubscriber
 import com.dluvian.nozzle.data.subscriber.NozzleSubscriber
 import okhttp3.OkHttpClient
@@ -77,10 +78,17 @@ class AppContainer(context: Context) {
 
     val darkModePreferences: IDarkModePreferences = nozzlePreferences
 
-    private val dbSweepExcludingCache: IIdCache = IdCache()
+    val dbSweepExcludingCache: IIdCache = IdCache()
+
+    val fullPostInserter = FullPostInserter(
+        postDao = roomDb.postDao(),
+        hashtagDao = roomDb.hashtagDao(),
+        mentionDao = roomDb.mentionDao()
+    )
 
     private val eventProcessor: IEventProcessor = EventProcessor(
         dbSweepExcludingCache = dbSweepExcludingCache,
+        fullPostInserter = fullPostInserter,
         database = roomDb,
     )
 

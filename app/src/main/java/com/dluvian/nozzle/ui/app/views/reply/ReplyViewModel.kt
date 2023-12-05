@@ -3,15 +3,13 @@ package com.dluvian.nozzle.ui.app.views.reply
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import com.dluvian.nozzle.data.cache.IIdCache
 import com.dluvian.nozzle.data.nostr.INostrService
 import com.dluvian.nozzle.data.nostr.utils.ShortenedNameUtils.getShortenedNpubFromPubkey
 import com.dluvian.nozzle.data.postPreparer.IPostPreparer
 import com.dluvian.nozzle.data.provider.IPubkeyProvider
 import com.dluvian.nozzle.data.provider.IRelayProvider
-import com.dluvian.nozzle.data.room.dao.HashtagDao
-import com.dluvian.nozzle.data.room.dao.PostDao
-import com.dluvian.nozzle.data.room.entity.HashtagEntity
-import com.dluvian.nozzle.data.room.entity.PostEntity
+import com.dluvian.nozzle.data.room.FullPostInserter
 import com.dluvian.nozzle.data.utils.addLimitedRelayStatuses
 import com.dluvian.nozzle.data.utils.listRelayStatuses
 import com.dluvian.nozzle.data.utils.toggleRelay
@@ -33,8 +31,8 @@ class ReplyViewModel(
     private val pubkeyProvider: IPubkeyProvider,
     private val relayProvider: IRelayProvider,
     private val postPreparer: IPostPreparer,
-    private val postDao: PostDao,
-    private val hashtagDao: HashtagDao,
+    private val fullPostInserter: FullPostInserter,
+    private val dbExcludingCache: IIdCache,
 ) : ViewModel() {
     private var recipientPubkey: String = ""
     private var postToReplyTo: PostWithMeta? = null
@@ -60,6 +58,7 @@ class ReplyViewModel(
                     relaySelection = AllRelays
                 )
                 it.copy(
+                    searchSuggestions = emptyList(),
                     recipientName = post.name.ifEmpty {
                         getShortenedNpubFromPubkey(post.pubkey) ?: post.pubkey
                     },
@@ -106,14 +105,8 @@ class ReplyViewModel(
         val parentPost = postToReplyTo ?: return@local
         val event = sendReply(parentPost = parentPost, state = uiState.value, input = input)
         viewModelScope.launch(context = Dispatchers.IO) {
-            postDao.insertOrIgnore(PostEntity.fromEvent(event))
-            // TODO: Insert hashtags in tx
-            // TODO: dbSweepExcludingCache.addPostId(event.id)
-            val hashtags = event.getHashtags()
-                .map { HashtagEntity(eventId = event.id, hashtag = it.lowercase()) }
-            if (hashtags.isNotEmpty()) {
-                hashtagDao.insertOrIgnore(*hashtags.toTypedArray())
-            }
+            fullPostInserter.insertFullPost(events = listOf(event))
+            dbExcludingCache.addPostIds(ids = listOf(event.id))
         }
         resetUI()
     }
@@ -147,6 +140,7 @@ class ReplyViewModel(
         _uiState.update {
             recipientPubkey = ""
             it.copy(
+                searchSuggestions = emptyList(),
                 recipientName = "",
                 relaySelection = listRelayStatuses(
                     allRelayUrls = relayProvider.getWriteRelays(),
@@ -162,8 +156,8 @@ class ReplyViewModel(
             pubkeyProvider: IPubkeyProvider,
             relayProvider: IRelayProvider,
             postPreparer: IPostPreparer,
-            postDao: PostDao,
-            hashtagDao: HashtagDao,
+            fullPostInserter: FullPostInserter,
+            dbExcludingCache: IIdCache,
         ): ViewModelProvider.Factory = object : ViewModelProvider.Factory {
             @Suppress("UNCHECKED_CAST")
             override fun <T : ViewModel> create(modelClass: Class<T>): T {
@@ -172,8 +166,8 @@ class ReplyViewModel(
                     pubkeyProvider = pubkeyProvider,
                     relayProvider = relayProvider,
                     postPreparer = postPreparer,
-                    postDao = postDao,
-                    hashtagDao = hashtagDao,
+                    fullPostInserter = fullPostInserter,
+                    dbExcludingCache = dbExcludingCache
                 ) as T
             }
         }

@@ -4,6 +4,7 @@ import android.util.Log
 import com.dluvian.nozzle.data.EVENT_PROCESSING_DELAY
 import com.dluvian.nozzle.data.cache.IIdCache
 import com.dluvian.nozzle.data.room.AppDatabase
+import com.dluvian.nozzle.data.room.FullPostInserter
 import com.dluvian.nozzle.data.room.entity.ContactEntity
 import com.dluvian.nozzle.data.room.entity.EventRelayEntity
 import com.dluvian.nozzle.data.room.entity.Nip65Entity
@@ -27,6 +28,7 @@ private const val TAG = "EventProcessor"
 
 class EventProcessor(
     private val dbSweepExcludingCache: IIdCache,
+    private val fullPostInserter: FullPostInserter,
     private val database: AppDatabase,
 ) : IEventProcessor {
     private val scope = CoroutineScope(Dispatchers.IO)
@@ -123,11 +125,7 @@ class EventProcessor(
         val newPosts = relayedEvents - alreadyPresent.toSet()
 
         scope.launch {
-            database.postDao().insertWithHashtagsAndMentions(
-                events = newPosts.map { it.event },
-                hashtagDao = database.hashtagDao(),
-                mentionDao = database.mentionDao(),
-            )
+            fullPostInserter.insertFullPost(events = newPosts.map { it.event })
         }.invokeOnCompletion { exception ->
             if (exception != null) {
                 Log.w(TAG, "Failed to process posts", exception)
