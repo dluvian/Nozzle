@@ -30,7 +30,6 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.util.concurrent.atomic.AtomicBoolean
 
-const val TAG = "PostViewModel"
 class PostViewModel(
     private val pubkeyProvider: IPubkeyProvider,
     private val nostrService: INostrService,
@@ -99,8 +98,8 @@ class PostViewModel(
     }
 
     val onSend: (String) -> Unit = { content ->
-        val event = sendPost(state = uiState.value, content = content)
         viewModelScope.launch(context = Dispatchers.IO) {
+            val event = sendPost(state = uiState.value, content = content)
             fullPostInserter.insertFullPost(events = listOf(event))
             dbExcludingCache.addPostIds(listOf(event.id))
         }
@@ -142,13 +141,12 @@ class PostViewModel(
         return annotatedMentionedPost
     }
 
-    private fun sendPost(state: PostViewModelState, content: String): Event {
+    private suspend fun sendPost(state: PostViewModelState, content: String): Event {
         val quote = getNewLineQuoteUri(
             postIdToQuote = state.postToQuote?.mentionedPost?.id,
             relays = state.quoteRelays
         )
-        val post =
-            postPreparer.getCleanPostWithTagsAndMentions(content = content + quote)
+        val post = postPreparer.getCleanPostWithTagsAndMentions(content = content + quote)
         val selectedRelays = state.relayStatuses
             .filter { it.isActive }
             .map { it.relayUrl }
@@ -156,7 +154,7 @@ class PostViewModel(
             content = post.content,
             mentions = post.mentions,
             hashtags = post.hashtags,
-            relays = selectedRelays // TODO: Add read relays of mentioned pubkeys
+            relays = selectedRelays
         )
     }
 

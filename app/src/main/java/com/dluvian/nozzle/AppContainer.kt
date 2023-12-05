@@ -202,7 +202,10 @@ class AppContainer(context: Context) {
         contactDao = roomDb.contactDao(),
     )
 
-    val postPreparer: IPostPreparer = PostPreparer(simpleProfileProvider = simpleProfileProvider)
+    val postPreparer: IPostPreparer = PostPreparer(
+        simpleProfileProvider = simpleProfileProvider,
+        relayProvider = relayProvider
+    )
 
     val inboxFeedProvider: IInboxFeedProvider = InboxFeedProvider(
         nozzleSubscriber = nozzleSubscriber,

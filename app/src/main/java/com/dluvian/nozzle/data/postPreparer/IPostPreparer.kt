@@ -5,7 +5,7 @@ import com.dluvian.nozzle.model.PostWithTagsAndMentions
 import com.dluvian.nozzle.model.SimpleProfile
 
 interface IPostPreparer {
-    fun getCleanPostWithTagsAndMentions(content: String): PostWithTagsAndMentions
+    suspend fun getCleanPostWithTagsAndMentions(content: String): PostWithTagsAndMentions
 
     suspend fun searchProfiles(
         nameLike: String,

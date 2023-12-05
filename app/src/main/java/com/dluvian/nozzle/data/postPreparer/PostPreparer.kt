@@ -3,25 +3,28 @@ package com.dluvian.nozzle.data.postPreparer
 import com.dluvian.nozzle.data.nostr.utils.EncodingUtils
 import com.dluvian.nozzle.data.nostr.utils.MentionUtils
 import com.dluvian.nozzle.data.nostr.utils.MentionUtils.removeMentionCharAndNostrUri
+import com.dluvian.nozzle.data.provider.IRelayProvider
 import com.dluvian.nozzle.data.provider.ISimpleProfileProvider
 import com.dluvian.nozzle.data.utils.HashtagUtils
 import com.dluvian.nozzle.model.PostWithTagsAndMentions
 import com.dluvian.nozzle.model.SimpleProfile
+import com.dluvian.nozzle.model.nostr.NprofileNostrId
+import com.dluvian.nozzle.model.nostr.NpubNostrId
 
-class PostPreparer(private val simpleProfileProvider: ISimpleProfileProvider) : IPostPreparer {
-    override fun getCleanPostWithTagsAndMentions(content: String): PostWithTagsAndMentions {
-        // TODO: Build correctly. Translate names to npubs and then convert them to nprofiles
+class PostPreparer(
+    private val simpleProfileProvider: ISimpleProfileProvider,
+    private val relayProvider: IRelayProvider
+) : IPostPreparer {
+    override suspend fun getCleanPostWithTagsAndMentions(content: String): PostWithTagsAndMentions {
         val strBuilder = StringBuilder(content.trim())
         val allMentions = MentionUtils.extractMentionedProfiles(content)
         allMentions
-            .filter { it.value.startsWith(MentionUtils.MENTION_CHAR) }
-            .filter { EncodingUtils.profileIdToNostrId(it.value.removePrefix(MentionUtils.MENTION_CHAR)) != null }
             .sortedByDescending { it.range.first }
             .forEach {
                 strBuilder.replace(
                     it.range.first,
                     it.range.last + 1,
-                    EncodingUtils.URI + it.value.removePrefix(MentionUtils.MENTION_CHAR)
+                    getImprovedMention(it.value)
                 )
             }
         val finalContent = strBuilder.toString()
@@ -38,5 +41,22 @@ class PostPreparer(private val simpleProfileProvider: ISimpleProfileProvider) : 
 
     override suspend fun searchProfiles(nameLike: String, limit: Int): List<SimpleProfile> {
         return simpleProfileProvider.getSimpleProfiles(nameLike, limit)
+    }
+
+    private suspend fun getImprovedMention(mention: String): String {
+        val withoutPrefix = mention.removeMentionCharAndNostrUri()
+        val nostrId = EncodingUtils.profileIdToNostrId(profileId = withoutPrefix) ?: return mention
+
+        val improvedMention = when (nostrId) {
+            is NpubNostrId -> {
+                val writeRelays = relayProvider.getWriteRelaysOfPubkey(nostrId.pubkeyHex)
+                EncodingUtils.createNprofileStr(pubkey = nostrId.pubkeyHex, relays = writeRelays)
+            }
+
+            is NprofileNostrId -> withoutPrefix
+            else -> withoutPrefix
+        } ?: withoutPrefix
+
+        return EncodingUtils.URI + improvedMention
     }
 }

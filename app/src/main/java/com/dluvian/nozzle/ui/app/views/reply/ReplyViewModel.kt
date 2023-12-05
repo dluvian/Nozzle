@@ -103,15 +103,15 @@ class ReplyViewModel(
 
     val onSend: (String) -> Unit = local@{ input ->
         val parentPost = postToReplyTo ?: return@local
-        val event = sendReply(parentPost = parentPost, state = uiState.value, input = input)
         viewModelScope.launch(context = Dispatchers.IO) {
+            val event = sendReply(parentPost = parentPost, state = uiState.value, input = input)
             fullPostInserter.insertFullPost(events = listOf(event))
             dbExcludingCache.addPostIds(ids = listOf(event.id))
         }
         resetUI()
     }
 
-    private fun sendReply(
+    private suspend fun sendReply(
         parentPost: PostWithMeta,
         state: ReplyViewModelState,
         input: String
@@ -132,7 +132,7 @@ class ReplyViewModel(
             content = post.content,
             mentions = (post.mentions + parentPost.pubkey).distinct(),
             hashtags = post.hashtags,
-            relays = selectedRelays // TODO: Add read relays of mentioned pubkeys
+            relays = selectedRelays
         )
     }
 
