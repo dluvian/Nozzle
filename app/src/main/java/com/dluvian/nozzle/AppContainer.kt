@@ -188,7 +188,13 @@ class AppContainer(context: Context) {
         database = roomDb,
     )
 
-    val postPreparer: IPostPreparer = PostPreparer()
+    val simpleProfileProvider: ISimpleProfileProvider = SimpleProfileProvider(
+        pubkeyProvider = keyManager,
+        profileDao = roomDb.profileDao(),
+        contactDao = roomDb.contactDao(),
+    )
+
+    val postPreparer: IPostPreparer = PostPreparer(simpleProfileProvider = simpleProfileProvider)
 
     val inboxFeedProvider: IInboxFeedProvider = InboxFeedProvider(
         nozzleSubscriber = nozzleSubscriber,
@@ -201,11 +207,5 @@ class AppContainer(context: Context) {
         postWithMetaProvider = postWithMetaProvider,
         postDao = roomDb.postDao(),
         reactionDao = roomDb.reactionDao()
-    )
-
-    val simpleProfileProvider: ISimpleProfileProvider = SimpleProfileProvider(
-        pubkeyProvider = keyManager,
-        profileDao = roomDb.profileDao(),
-        contactDao = roomDb.contactDao(),
     )
 }

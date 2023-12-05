@@ -1,10 +1,8 @@
 package com.dluvian.nozzle.ui.app.views.post
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
-import com.dluvian.nozzle.data.MAX_SUGGESTION_LENGTH
 import com.dluvian.nozzle.data.annotatedContent.IAnnotatedContentHandler
 import com.dluvian.nozzle.data.nostr.INostrService
 import com.dluvian.nozzle.data.nostr.utils.EncodingUtils.createNeventUri
@@ -13,7 +11,6 @@ import com.dluvian.nozzle.data.nostr.utils.ShortenedNameUtils.getShortenedNpubFr
 import com.dluvian.nozzle.data.postPreparer.IPostPreparer
 import com.dluvian.nozzle.data.provider.IPubkeyProvider
 import com.dluvian.nozzle.data.provider.IRelayProvider
-import com.dluvian.nozzle.data.provider.ISimpleProfileProvider
 import com.dluvian.nozzle.data.room.dao.HashtagDao
 import com.dluvian.nozzle.data.room.dao.MentionDao
 import com.dluvian.nozzle.data.room.dao.PostDao
@@ -23,7 +20,6 @@ import com.dluvian.nozzle.model.AllRelays
 import com.dluvian.nozzle.model.AnnotatedMentionedPost
 import com.dluvian.nozzle.model.Pubkey
 import com.dluvian.nozzle.model.nostr.Event
-import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -40,7 +36,6 @@ class PostViewModel(
     private val relayProvider: IRelayProvider,
     private val postPreparer: IPostPreparer,
     private val annotatedContentHandler: IAnnotatedContentHandler,
-    private val simpleProfileProvider: ISimpleProfileProvider, // TODO: Move this to postPreparer
     private val postDao: PostDao,
     private val hashtagDao: HashtagDao,
     private val mentionDao: MentionDao,
@@ -81,18 +76,13 @@ class PostViewModel(
         }
     }
 
-    var debounceJob: Job? = null
+    private var debounceJob: Job? = null
     val onSearch: (String) -> Unit = { name ->
-        debounceJob?.cancel(CancellationException("Start a new search"))
+        debounceJob?.cancel()
         debounceJob = viewModelScope.launch(Dispatchers.IO) {
-            val suggestions = simpleProfileProvider.getSimpleProfiles(
-                nameLike = name,
-                limit = MAX_SUGGESTION_LENGTH
-            )
-            _uiState.update { it.copy(searchSuggestions = suggestions) }
-        }
-        debounceJob?.invokeOnCompletion {
-            Log.i(TAG, "Completed search. Error = ${it?.localizedMessage}")
+            _uiState.update {
+                it.copy(searchSuggestions = postPreparer.searchProfiles(nameLike = name))
+            }
         }
     }
 
@@ -198,7 +188,6 @@ class PostViewModel(
             relayProvider: IRelayProvider,
             postPreparer: IPostPreparer,
             annotatedContentHandler: IAnnotatedContentHandler,
-            simpleProfileProvider: ISimpleProfileProvider,
             postDao: PostDao,
             hashtagDao: HashtagDao,
             mentionDao: MentionDao,
@@ -211,7 +200,6 @@ class PostViewModel(
                     relayProvider = relayProvider,
                     postPreparer = postPreparer,
                     annotatedContentHandler = annotatedContentHandler,
-                    simpleProfileProvider = simpleProfileProvider,
                     postDao = postDao,
                     hashtagDao = hashtagDao,
                     mentionDao = mentionDao

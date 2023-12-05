@@ -126,7 +126,6 @@ fun NozzleApp(appContainer: AppContainer) {
                         pubkeyProvider = appContainer.keyManager,
                         relayProvider = appContainer.relayProvider,
                         postPreparer = appContainer.postPreparer,
-                        simpleProfileProvider = appContainer.simpleProfileProvider,
                         postDao = appContainer.roomDb.postDao(),
                         hashtagDao = appContainer.roomDb.hashtagDao(),
                     )
@@ -138,7 +137,6 @@ fun NozzleApp(appContainer: AppContainer) {
                         relayProvider = appContainer.relayProvider,
                         postPreparer = appContainer.postPreparer,
                         annotatedContentHandler = appContainer.annotatedContentHandler,
-                        simpleProfileProvider = appContainer.simpleProfileProvider,
                         postDao = appContainer.roomDb.postDao(),
                         hashtagDao = appContainer.roomDb.hashtagDao(),
                         mentionDao = appContainer.roomDb.mentionDao()
