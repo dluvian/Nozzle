@@ -3,10 +3,8 @@ package com.dluvian.nozzle.ui.app.views.likes
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.lifecycle.viewModelScope
 import com.dluvian.nozzle.data.profileFollower.IProfileFollower
 import com.dluvian.nozzle.model.PostWithMeta
-import com.dluvian.nozzle.model.Pubkey
 import com.dluvian.nozzle.ui.app.navigation.PostCardNavLambdas
 
 @Composable
@@ -34,17 +32,11 @@ fun LikesRoute(
         onRefresh = likesViewModel.onRefresh,
         onLoadMore = likesViewModel.onLoadMore,
         onPrepareReply = onPrepareReply,
-        onFollow = { pubkeyToFollow: Pubkey ->
-            profileFollower.follow(
-                scope = likesViewModel.viewModelScope,
-                pubkeyToFollow = pubkeyToFollow
-            )
+        onFollow = { pubkeyToFollow ->
+            profileFollower.follow(pubkeyToFollow = pubkeyToFollow)
         },
-        onUnfollow = { pubkeyToUnfollow: Pubkey ->
-            profileFollower.unfollow(
-                scope = likesViewModel.viewModelScope,
-                pubkeyToUnfollow = pubkeyToUnfollow
-            )
+        onUnfollow = { pubkeyToUnfollow ->
+            profileFollower.unfollow(pubkeyToUnfollow = pubkeyToUnfollow)
         },
         onGoBack = onGoBack
     )

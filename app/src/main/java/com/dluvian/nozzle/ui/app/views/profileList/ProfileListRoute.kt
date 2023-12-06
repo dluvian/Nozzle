@@ -3,7 +3,6 @@ package com.dluvian.nozzle.ui.app.views.profileList
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.lifecycle.viewModelScope
 import com.dluvian.nozzle.data.profileFollower.IProfileFollower
 import com.dluvian.nozzle.model.Pubkey
 
@@ -25,17 +24,11 @@ fun ProfileListRoute(
         pubkey = pubkey,
         isRefreshing = isRefreshing,
         type = type,
-        onFollow = { pubkeyToFollow: Pubkey ->
-            profileFollower.follow(
-                scope = profileListViewModel.viewModelScope,
-                pubkeyToFollow = pubkeyToFollow
-            )
+        onFollow = { pubkeyToFollow ->
+            profileFollower.follow(pubkeyToFollow = pubkeyToFollow)
         },
-        onUnfollow = { pubkeyToUnfollow: Pubkey ->
-            profileFollower.unfollow(
-                scope = profileListViewModel.viewModelScope,
-                pubkeyToUnfollow = pubkeyToUnfollow
-            )
+        onUnfollow = { pubkeyToUnfollow ->
+            profileFollower.unfollow(pubkeyToUnfollow = pubkeyToUnfollow)
         },
         onLoadMore = profileListViewModel.onLoadMore,
         onSubscribeToUnknowns = profileListViewModel.onSubscribeToUnknowns,

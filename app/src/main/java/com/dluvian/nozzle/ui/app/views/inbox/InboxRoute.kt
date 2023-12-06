@@ -6,7 +6,6 @@ import androidx.compose.runtime.getValue
 import androidx.lifecycle.viewModelScope
 import com.dluvian.nozzle.data.profileFollower.IProfileFollower
 import com.dluvian.nozzle.model.PostWithMeta
-import com.dluvian.nozzle.model.Pubkey
 import com.dluvian.nozzle.ui.app.navigation.PostCardNavLambdas
 
 @Composable
@@ -41,17 +40,11 @@ fun InboxRoute(
         onRefresh = inboxViewModel.onRefresh,
         onLoadMore = inboxViewModel.onLoadMore,
         onPrepareReply = onPrepareReply,
-        onFollow = { pubkeyToFollow: Pubkey ->
-            profileFollower.follow(
-                scope = inboxViewModel.viewModelScope,
-                pubkeyToFollow = pubkeyToFollow
-            )
+        onFollow = { pubkeyToFollow ->
+            profileFollower.follow(pubkeyToFollow = pubkeyToFollow)
         },
-        onUnfollow = { pubkeyToUnfollow: Pubkey ->
-            profileFollower.unfollow(
-                scope = inboxViewModel.viewModelScope,
-                pubkeyToUnfollow = pubkeyToUnfollow
-            )
+        onUnfollow = { pubkeyToUnfollow ->
+            profileFollower.unfollow(pubkeyToUnfollow = pubkeyToUnfollow)
         },
         onGoBack = onGoBack
     )

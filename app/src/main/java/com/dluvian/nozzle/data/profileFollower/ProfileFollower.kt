@@ -1,7 +1,6 @@
 package com.dluvian.nozzle.data.profileFollower
 
 import android.util.Log
-import androidx.compose.runtime.State
 import com.dluvian.nozzle.data.nostr.INostrService
 import com.dluvian.nozzle.data.provider.IPubkeyProvider
 import com.dluvian.nozzle.data.provider.IRelayProvider
@@ -23,10 +22,11 @@ class ProfileFollower(
     private val relayProvider: IRelayProvider,
     private val contactDao: ContactDao,
 ) : IProfileFollower {
+    private val scope = CoroutineScope(Dispatchers.IO)
     private val followProcesses: MutableMap<Pubkey, Job> =
         Collections.synchronizedMap(mutableMapOf())
 
-    override fun follow(scope: CoroutineScope, pubkeyToFollow: Pubkey) {
+    override fun follow(pubkeyToFollow: Pubkey) {
         followProcesses[pubkeyToFollow]?.cancel(CancellationException("Cancel to start follow process"))
         followProcesses[pubkeyToFollow] = scope.launch(Dispatchers.IO) {
             Log.i(TAG, "Follow $pubkeyToFollow")
@@ -44,7 +44,7 @@ class ProfileFollower(
         }
     }
 
-    override fun unfollow(scope: CoroutineScope, pubkeyToUnfollow: Pubkey) {
+    override fun unfollow(pubkeyToUnfollow: Pubkey) {
         followProcesses[pubkeyToUnfollow]?.cancel(CancellationException("Cancel to start unfollow process"))
         followProcesses[pubkeyToUnfollow] = scope.launch(Dispatchers.IO) {
             Log.i(TAG, "Unfollow $pubkeyToUnfollow")
@@ -57,10 +57,6 @@ class ProfileFollower(
         followProcesses[pubkeyToUnfollow]?.invokeOnCompletion {
             Log.i(TAG, "Completed unfollow process. Error = ${it?.localizedMessage}")
         }
-    }
-
-    override fun getIsFollowedByMeState(pubkey: Pubkey): State<Boolean> {
-        TODO("Not yet implemented")
     }
 
     private suspend fun updateContactList(personalPubkey: String) {
