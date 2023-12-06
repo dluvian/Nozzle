@@ -8,7 +8,10 @@ import com.dluvian.nozzle.model.nostr.Metadata
 
 @Entity(
     tableName = "profile",
-    indices = [Index(value = ["pubkey"], unique = true), Index(value = ["name", "about"])]
+    indices = [
+        Index(value = ["pubkey"], unique = true),
+        Index(value = ["name"]),
+        Index(value = ["about"])]
 )
 data class ProfileEntity(
     @PrimaryKey(autoGenerate = false) val pubkey: String,
