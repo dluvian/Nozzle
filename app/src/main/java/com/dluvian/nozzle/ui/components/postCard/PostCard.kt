@@ -30,9 +30,9 @@ import com.dluvian.nozzle.ui.app.navigation.PostCardNavLambdas
 import com.dluvian.nozzle.ui.components.*
 import com.dluvian.nozzle.ui.components.postCard.atoms.BorderedCard
 import com.dluvian.nozzle.ui.components.postCard.atoms.PostCardContentBase
-import com.dluvian.nozzle.ui.components.postCard.atoms.PostCardHeader
 import com.dluvian.nozzle.ui.components.postCard.atoms.PostCardProfilePicture
 import com.dluvian.nozzle.ui.components.postCard.molecules.MediaDecisionCard
+import com.dluvian.nozzle.ui.components.postCard.molecules.PostCardHeader
 import com.dluvian.nozzle.ui.components.text.*
 import com.dluvian.nozzle.ui.theme.*
 
@@ -54,23 +54,10 @@ fun PostCard(
     val yTop = spacing.screenEdge
     val yBottom = sizing.profilePicture + spacing.screenEdge
     val small = spacing.small
-    val clip = LocalClipboardManager.current
-    val context = LocalContext.current
     Row(modifier
         .combinedClickable(
             enabled = !isCurrent,
-            onClick = { postCardNavLambdas.onNavigateToThread(post.entity.id) },
-            onLongClick = {
-                copyAndToast(
-                    text = createNeventStr(
-                        postId = post.entity.id,
-                        relays = post.relays
-                    ).orEmpty(),
-                    toast = context.getString(R.string.note_id_copied),
-                    context = context,
-                    clip = clip
-                )
-            })
+            onClick = { postCardNavLambdas.onNavigateToThread(post.entity.id) })
         .fillMaxWidth()
         .drawBehind {
             when (threadPosition) {
@@ -184,12 +171,31 @@ private fun PostCardHeaderAndContent(
     onNavigateToThread: () -> Unit,
     onNavigateToId: (String) -> Unit,
 ) {
+    val context = LocalContext.current
+    val clip = LocalClipboardManager.current
     Column {
         PostCardHeader(
             name = post.name,
             pubkey = post.pubkey,
             createdAt = post.entity.createdAt,
-            onOpenProfile = onNavigateToProfile
+            onOpenProfile = onNavigateToProfile,
+            showOptions = true,
+            onCopyId = {
+                copyAndToast(
+                    text = createNeventStr(postId = post.entity.id, relays = post.relays).orEmpty(),
+                    toast = context.getString(R.string.note_id_copied),
+                    context = context,
+                    clip = clip
+                )
+            },
+            onCopyContent = {
+                copyAndToast(
+                    text = post.entity.content,
+                    toast = context.getString(R.string.content_copied),
+                    context = context,
+                    clip = clip
+                )
+            }
         )
         PostCardContentBase(
             replyToName = post.replyToName,
