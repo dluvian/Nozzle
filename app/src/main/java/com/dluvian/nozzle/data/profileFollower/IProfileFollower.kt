@@ -1,6 +1,11 @@
 package com.dluvian.nozzle.data.profileFollower
 
+import androidx.compose.runtime.State
+import com.dluvian.nozzle.model.Pubkey
+import kotlinx.coroutines.CoroutineScope
+
 interface IProfileFollower {
-    suspend fun follow(pubkeyToFollow: String)
-    suspend fun unfollow(pubkeyToUnfollow: String)
+    fun follow(scope: CoroutineScope, pubkeyToFollow: Pubkey)
+    fun unfollow(scope: CoroutineScope, pubkeyToUnfollow: Pubkey)
+    fun getIsFollowedByMeState(pubkey: Pubkey): State<Boolean>
 }

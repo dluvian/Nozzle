@@ -46,6 +46,7 @@
     <string name="like">Like</string>
     <string name="likes">Likes</string>
     <string name="follow">Follow</string>
+    <string name="unfollow">Unfollow</string>
     <string name="close">Close</string>
     <string name="send">Send</string>
     <string name="post_your_reply">Post your reply</string>

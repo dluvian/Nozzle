@@ -4,13 +4,16 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.lifecycle.viewModelScope
+import com.dluvian.nozzle.data.profileFollower.IProfileFollower
 import com.dluvian.nozzle.model.PostWithMeta
+import com.dluvian.nozzle.model.Pubkey
 import com.dluvian.nozzle.ui.app.navigation.PostCardNavLambdas
 
 // TODO: Nav with args, no need for onPrepare
 @Composable
 fun FeedRoute(
     feedViewModel: FeedViewModel,
+    profileFollower: IProfileFollower,
     postCardNavLambdas: PostCardNavLambdas,
     onPrepareReply: (PostWithMeta) -> Unit,
     onOpenDrawer: () -> Unit,
@@ -49,6 +52,18 @@ fun FeedRoute(
         onToggleAutopilot = feedViewModel.onToggleAutopilot,
         onLoadMore = feedViewModel.onLoadMore,
         onOpenDrawer = onOpenDrawer,
+        onFollow = { pubkeyToFollow: Pubkey ->
+            profileFollower.follow(
+                scope = feedViewModel.viewModelScope,
+                pubkeyToFollow = pubkeyToFollow
+            )
+        },
+        onUnfollow = { pubkeyToUnfollow: Pubkey ->
+            profileFollower.unfollow(
+                scope = feedViewModel.viewModelScope,
+                pubkeyToUnfollow = pubkeyToUnfollow
+            )
+        },
         onNavigateToPost = onNavigateToPost,
     )
 }

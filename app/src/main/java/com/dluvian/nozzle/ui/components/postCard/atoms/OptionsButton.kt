@@ -13,6 +13,8 @@ fun OptionsButton(
     onCopyId: () -> Unit,
     onCopyContent: () -> Unit,
     modifier: Modifier = Modifier,
+    onFollow: (() -> Unit)? = null,
+    onUnfollow: (() -> Unit)? = null,
 ) {
     val showMenu = remember { mutableStateOf(false) }
     Box(modifier = modifier, contentAlignment = Alignment.CenterEnd) {
@@ -20,7 +22,9 @@ fun OptionsButton(
             isOpen = showMenu.value,
             onDismiss = { showMenu.value = false },
             onCopyId = onCopyId,
-            onCopyContent = onCopyContent
+            onCopyContent = onCopyContent,
+            onFollow = onFollow,
+            onUnfollow = onUnfollow
         )
         MoreIcon(onClick = { showMenu.value = !showMenu.value })
     }

@@ -4,12 +4,15 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.lifecycle.viewModelScope
+import com.dluvian.nozzle.data.profileFollower.IProfileFollower
 import com.dluvian.nozzle.model.PostWithMeta
+import com.dluvian.nozzle.model.Pubkey
 import com.dluvian.nozzle.ui.app.navigation.PostCardNavLambdas
 
 @Composable
 fun ProfileRoute(
     profileViewModel: ProfileViewModel,
+    profileFollower: IProfileFollower,
     postCardNavLambdas: PostCardNavLambdas,
     onOpenFollowerList: (String) -> Unit,
     onOpenFollowedByList: (String) -> Unit,
@@ -18,15 +21,15 @@ fun ProfileRoute(
 ) {
     val isRefreshing by profileViewModel.isRefreshing.collectAsState()
     val profile by profileViewModel.profileState.collectAsState()
-    val isFollowedByMe by profileViewModel.isFollowedByMeState.collectAsState()
     val feedFlow by profileViewModel.feed.collectAsState()
     val feed by feedFlow.collectAsState()
+    val isFollowedByMe by profileFollower.getIsFollowedByMeState(profile.pubkey)
 
     ProfileScreen(
         isRefreshing = isRefreshing,
         profile = profile,
         isFollowedByMe = isFollowedByMe,
-        feed = feed.map { it.copy(isFollowedByMe = isFollowedByMe) },
+        feed = feed,
         postCardNavLambdas = postCardNavLambdas,
         onPrepareReply = onPrepareReply,
         onLike = { post ->
@@ -36,8 +39,18 @@ fun ProfileRoute(
                 postPubkey = post.pubkey
             )
         },
-        onFollow = profileViewModel.onFollow,
-        onUnfollow = profileViewModel.onUnfollow,
+        onFollow = { pubkeyToFollow: Pubkey ->
+            profileFollower.follow(
+                scope = profileViewModel.viewModelScope,
+                pubkeyToFollow = pubkeyToFollow
+            )
+        },
+        onUnfollow = { pubkeyToUnfollow: Pubkey ->
+            profileFollower.unfollow(
+                scope = profileViewModel.viewModelScope,
+                pubkeyToUnfollow = pubkeyToUnfollow
+            )
+        },
         onOpenFollowerList = onOpenFollowerList,
         onOpenFollowedByList = onOpenFollowedByList,
         onShowMedia = { mediaUrl ->

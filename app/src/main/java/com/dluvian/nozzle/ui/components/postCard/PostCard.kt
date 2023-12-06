@@ -24,6 +24,7 @@ import com.dluvian.nozzle.R
 import com.dluvian.nozzle.data.nostr.utils.EncodingUtils.createNeventStr
 import com.dluvian.nozzle.data.utils.copyAndToast
 import com.dluvian.nozzle.model.PostWithMeta
+import com.dluvian.nozzle.model.Pubkey
 import com.dluvian.nozzle.model.ThreadPosition
 import com.dluvian.nozzle.model.TrustType
 import com.dluvian.nozzle.ui.app.navigation.PostCardNavLambdas
@@ -44,6 +45,8 @@ fun PostCard(
     postCardNavLambdas: PostCardNavLambdas,
     onLike: () -> Unit,
     onPrepareReply: (PostWithMeta) -> Unit,
+    onFollow: (Pubkey) -> Unit,
+    onUnfollow: (Pubkey) -> Unit,
     modifier: Modifier = Modifier,
     onShowMedia: (String) -> Unit,
     onShouldShowMedia: (String) -> Boolean,
@@ -127,6 +130,8 @@ fun PostCard(
                     }
                 },
                 onNavigateToId = postCardNavLambdas.onNavigateToId,
+                onFollow = onFollow,
+                onUnfollow = onUnfollow,
             )
 
             post.mediaUrls.forEach { mediaUrl ->
@@ -170,6 +175,8 @@ private fun PostCardHeaderAndContent(
     onNavigateToProfile: ((String) -> Unit)?,
     onNavigateToThread: () -> Unit,
     onNavigateToId: (String) -> Unit,
+    onFollow: (Pubkey) -> Unit,
+    onUnfollow: (Pubkey) -> Unit,
 ) {
     val context = LocalContext.current
     val clip = LocalClipboardManager.current
@@ -195,6 +202,12 @@ private fun PostCardHeaderAndContent(
                     context = context,
                     clip = clip
                 )
+            },
+            onFollow = if (post.isFollowedByMe) null else {
+                { onFollow(post.pubkey) }
+            },
+            onUnfollow = if (!post.isFollowedByMe) null else {
+                { onUnfollow(post.pubkey) }
             }
         )
         PostCardContentBase(

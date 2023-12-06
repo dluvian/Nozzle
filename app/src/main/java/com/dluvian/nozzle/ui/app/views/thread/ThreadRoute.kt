@@ -4,12 +4,15 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.lifecycle.viewModelScope
+import com.dluvian.nozzle.data.profileFollower.IProfileFollower
 import com.dluvian.nozzle.model.PostWithMeta
+import com.dluvian.nozzle.model.Pubkey
 import com.dluvian.nozzle.ui.app.navigation.PostCardNavLambdas
 
 @Composable
 fun ThreadRoute(
     threadViewModel: ThreadViewModel,
+    profileFollower: IProfileFollower,
     postCardNavLambdas: PostCardNavLambdas,
     onPrepareReply: (PostWithMeta) -> Unit,
     onGoBack: () -> Unit,
@@ -36,6 +39,18 @@ fun ThreadRoute(
         },
         onShouldShowMedia = { mediaUrl ->
             threadViewModel.clickedMediaUrlCache.contains(mediaUrl)
+        },
+        onFollow = { pubkeyToFollow: Pubkey ->
+            profileFollower.follow(
+                scope = threadViewModel.viewModelScope,
+                pubkeyToFollow = pubkeyToFollow
+            )
+        },
+        onUnfollow = { pubkeyToUnfollow: Pubkey ->
+            profileFollower.unfollow(
+                scope = threadViewModel.viewModelScope,
+                pubkeyToUnfollow = pubkeyToUnfollow
+            )
         },
         onGoBack = onGoBack,
     )

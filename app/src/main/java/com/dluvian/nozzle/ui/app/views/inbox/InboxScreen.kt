@@ -8,6 +8,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import com.dluvian.nozzle.R
 import com.dluvian.nozzle.model.PostWithMeta
+import com.dluvian.nozzle.model.Pubkey
 import com.dluvian.nozzle.ui.app.navigation.PostCardNavLambdas
 import com.dluvian.nozzle.ui.components.ReturnableTopBar
 import com.dluvian.nozzle.ui.components.ShowRelaysButton
@@ -25,6 +26,8 @@ fun InboxScreen(
     onRefresh: () -> Unit,
     onLoadMore: () -> Unit,
     onPrepareReply: (PostWithMeta) -> Unit,
+    onFollow: (Pubkey) -> Unit,
+    onUnfollow: (Pubkey) -> Unit,
     onGoBack: () -> Unit,
 ) {
     Column {
@@ -49,6 +52,8 @@ fun InboxScreen(
                 onShouldShowMedia = onShouldShowMedia, // TODO: Delete dis
                 onPrepareReply = onPrepareReply,
                 onLoadMore = onLoadMore,
+                onFollow = onFollow,
+                onUnfollow = onUnfollow
             )
         }
     }

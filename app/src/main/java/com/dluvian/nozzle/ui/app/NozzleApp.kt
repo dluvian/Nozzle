@@ -19,6 +19,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import com.dluvian.nozzle.AppContainer
+import com.dluvian.nozzle.data.profileFollower.IProfileFollower
 import com.dluvian.nozzle.ui.app.navigation.NozzleNavActions
 import com.dluvian.nozzle.ui.app.navigation.NozzleNavGraph
 import com.dluvian.nozzle.ui.app.navigation.NozzleRoute
@@ -66,18 +67,15 @@ fun NozzleApp(appContainer: AppContainer) {
                 profileViewModel = viewModel(
                     factory = ProfileViewModel.provideFactory(
                         postCardInteractor = appContainer.postCardInteractor,
-                        profileFollower = appContainer.profileFollower,
                         feedProvider = appContainer.feedProvider,
                         relayProvider = appContainer.relayProvider,
                         profileProvider = appContainer.profileWithMetaProvider,
                         pubkeyProvider = appContainer.keyManager,
                         clickedMediaUrlCache = appContainer.clickedMediaUrlCache,
-                        contactListProvider = appContainer.contactListProvider,
                     )
                 ),
                 profileListViewModel = viewModel(
                     factory = ProfileListViewModel.provideFactory(
-                        profileFollower = appContainer.profileFollower,
                         simpleProfileProvider = appContainer.simpleProfileProvider,
                         nozzleSubscriber = appContainer.nozzleSubscriber,
                         contactDao = appContainer.roomDb.contactDao()
@@ -185,6 +183,7 @@ fun NozzleApp(appContainer: AppContainer) {
                 drawerState = drawerState,
                 vmContainer = vmContainer,
                 navActions = navActions,
+                profileFollower = appContainer.profileFollower,
                 navController = navController,
                 hasPrivkey = hasPrivkey
             )
@@ -197,6 +196,7 @@ private fun Screen(
     drawerState: DrawerState,
     vmContainer: VMContainer,
     navActions: NozzleNavActions,
+    profileFollower: IProfileFollower,
     navController: NavHostController,
     hasPrivkey: Boolean,
 ) {
@@ -205,6 +205,7 @@ private fun Screen(
             drawerState = drawerState,
             vmContainer = vmContainer,
             navActions = navActions,
+            profileFollower = profileFollower,
             navController = navController,
             scope = rememberCoroutineScope()
         )
@@ -213,6 +214,7 @@ private fun Screen(
             drawerState = drawerState,
             vmContainer = vmContainer,
             navActions = navActions,
+            profileFollower = profileFollower,
             navController = navController,
             hasPrivkey = false
         )
@@ -224,6 +226,7 @@ private fun Drawer(
     drawerState: DrawerState,
     vmContainer: VMContainer,
     navActions: NozzleNavActions,
+    profileFollower: IProfileFollower,
     navController: NavHostController,
     scope: CoroutineScope,
 ) {
@@ -243,6 +246,7 @@ private fun Drawer(
         NozzleContent(
             vmContainer = vmContainer,
             navActions = navActions,
+            profileFollower = profileFollower,
             drawerState = drawerState,
             navController = navController,
             hasPrivkey = true
@@ -254,6 +258,7 @@ private fun Drawer(
 private fun NozzleContent(
     drawerState: DrawerState,
     vmContainer: VMContainer,
+    profileFollower: IProfileFollower,
     navActions: NozzleNavActions,
     navController: NavHostController,
     hasPrivkey: Boolean,
@@ -266,6 +271,7 @@ private fun NozzleContent(
         NozzleNavGraph(
             vmContainer = vmContainer,
             navActions = navActions,
+            profileFollower = profileFollower,
             drawerState = drawerState,
             navController = navController,
             startDestination = if (hasPrivkey) NozzleRoute.FEED else NozzleRoute.ADD_ACCOUNT

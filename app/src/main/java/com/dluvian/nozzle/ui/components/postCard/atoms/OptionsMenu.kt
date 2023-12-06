@@ -13,31 +13,55 @@ fun OptionsMenu(
     isOpen: Boolean,
     onDismiss: () -> Unit,
     onCopyId: () -> Unit,
-    onCopyContent: () -> Unit
+    onCopyContent: () -> Unit,
+    onFollow: (() -> Unit)? = null,
+    onUnfollow: (() -> Unit)? = null,
 ) {
     DropdownMenu(
         expanded = isOpen,
         onDismissRequest = onDismiss
     ) {
-        DropdownMenuItem(onClick = {
-            onCopyId()
-            onDismiss()
-        }) {
-            Text(
-                text = stringResource(id = R.string.copy_id),
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
+        if (onFollow != null) {
+            SimpleDropdownLine(
+                text = stringResource(id = R.string.follow),
+                onClick = {
+                    onFollow()
+                    onDismiss()
+                }
+            )
+        } else if (onUnfollow != null) {
+            SimpleDropdownLine(
+                text = stringResource(id = R.string.unfollow),
+                onClick = {
+                    onUnfollow()
+                    onDismiss()
+                }
             )
         }
-        DropdownMenuItem(onClick = {
-            onCopyContent()
-            onDismiss()
-        }) {
-            Text(
-                text = stringResource(id = R.string.copy_content),
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-            )
-        }
+        SimpleDropdownLine(
+            text = stringResource(id = R.string.copy_id),
+            onClick = {
+                onCopyId()
+                onDismiss()
+            }
+        )
+        SimpleDropdownLine(
+            text = stringResource(id = R.string.copy_content),
+            onClick = {
+                onCopyContent()
+                onDismiss()
+            }
+        )
+    }
+}
+
+@Composable
+private fun SimpleDropdownLine(text: String, onClick: () -> Unit) {
+    DropdownMenuItem(onClick = onClick) {
+        Text(
+            text = text,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+        )
     }
 }

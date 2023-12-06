@@ -22,7 +22,9 @@ fun PostCardHeader(
     onOpenProfile: ((String) -> Unit)?,
     showOptions: Boolean,
     onCopyId: () -> Unit = {},
-    onCopyContent: () -> Unit = {}
+    onCopyContent: () -> Unit = {},
+    onFollow: (() -> Unit)? = null,
+    onUnfollow: (() -> Unit)? = null,
 ) {
     Row(
         modifier = Modifier.fillMaxWidth(),
@@ -43,7 +45,9 @@ fun PostCardHeader(
             OptionsButton(
                 modifier = Modifier.weight(1f),
                 onCopyId = onCopyId,
-                onCopyContent = onCopyContent
+                onCopyContent = onCopyContent,
+                onFollow = onFollow,
+                onUnfollow = onUnfollow
             )
         }
     }
