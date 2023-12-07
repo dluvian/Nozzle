@@ -67,11 +67,12 @@ fun NozzleApp(appContainer: AppContainer) {
                 profileViewModel = viewModel(
                     factory = ProfileViewModel.provideFactory(
                         postCardInteractor = appContainer.postCardInteractor,
+                        clickedMediaUrlCache = appContainer.clickedMediaUrlCache,
                         feedProvider = appContainer.feedProvider,
                         relayProvider = appContainer.relayProvider,
                         profileProvider = appContainer.profileWithMetaProvider,
                         pubkeyProvider = appContainer.keyManager,
-                        clickedMediaUrlCache = appContainer.clickedMediaUrlCache,
+                        contactListProvider = appContainer.contactListProvider,
                     )
                 ),
                 profileListViewModel = viewModel(

@@ -3,6 +3,7 @@ package com.dluvian.nozzle.ui.app.views.profile
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.lifecycle.viewModelScope
 import com.dluvian.nozzle.data.profileFollower.IProfileFollower
 import com.dluvian.nozzle.model.PostWithMeta
@@ -22,12 +23,17 @@ fun ProfileRoute(
     val profile by profileViewModel.profileState.collectAsState()
     val feedFlow by profileViewModel.feed.collectAsState()
     val feed by feedFlow.collectAsState()
+    val contactList by profileViewModel.contactList.collectAsState()
+    val forceFollowed by profileFollower.getForceFollowedState()
+    val adjustedFeed = remember(forceFollowed, feed) {
+        feed.map { it.copy(isFollowedByMe = forceFollowed[it.pubkey] ?: it.isFollowedByMe) }
+    }
 
     ProfileScreen(
         isRefreshing = isRefreshing,
         profile = profile,
-        isFollowedByMe = TODO(),
-        feed = feed,
+        isFollowedByMe = forceFollowed[profile.pubkey] ?: contactList.contains(profile.pubkey),
+        feed = adjustedFeed,
         postCardNavLambdas = postCardNavLambdas,
         onPrepareReply = onPrepareReply,
         onLike = { post ->
