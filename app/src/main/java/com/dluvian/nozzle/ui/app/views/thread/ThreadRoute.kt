@@ -23,19 +23,13 @@ fun ThreadRoute(
     val forceFollowed by profileFollower.getForceFollowedState()
     val adjustedThread = remember(thread, forceFollowed) {
         val current = thread.current?.let {
-            it.copy(
-                isFollowedByMe = forceFollowed[it.pubkey] ?: it.isFollowedByMe
-            )
+            it.copy(isFollowedByMe = forceFollowed[it.pubkey] ?: it.isFollowedByMe)
         }
         val previous = thread.previous.map {
-            it.copy(
-                isFollowedByMe = forceFollowed[it.pubkey] ?: it.isFollowedByMe
-            )
+            it.copy(isFollowedByMe = forceFollowed[it.pubkey] ?: it.isFollowedByMe)
         }
         val replies = thread.replies.map {
-            it.copy(
-                isFollowedByMe = forceFollowed[it.pubkey] ?: it.isFollowedByMe
-            )
+            it.copy(isFollowedByMe = forceFollowed[it.pubkey] ?: it.isFollowedByMe)
         }
         PostThread(current = current, previous = previous, replies = replies)
     }
