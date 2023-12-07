@@ -27,8 +27,8 @@ fun ProfileListScreen(
     pubkey: Pubkey,
     isRefreshing: Boolean,
     type: ProfileListType,
-    onFollow: (Int) -> Unit,
-    onUnfollow: (Int) -> Unit,
+    onFollow: (Pubkey) -> Unit,
+    onUnfollow: (Pubkey) -> Unit,
     onLoadMore: () -> Unit,
     onSubscribeToUnknowns: (Pubkey) -> Unit,
     onNavigateToProfile: (Pubkey) -> Unit,
@@ -59,8 +59,8 @@ fun ProfileListScreen(
                 if (profile.name.isEmpty()) subscribeToUnknowns.value = true
                 ProfileRow(
                     profile = profile,
-                    onFollow = { onFollow(i) },
-                    onUnfollow = { onUnfollow(i) },
+                    onFollow = { onFollow(profile.pubkey) },
+                    onUnfollow = { onUnfollow(profile.pubkey) },
                     onNavigateToProfile,
                 )
                 if (i == profiles.size - 3 && profiles.size >= MAX_LIST_LENGTH) onLoadMore()

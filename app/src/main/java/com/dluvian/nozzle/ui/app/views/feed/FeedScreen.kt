@@ -32,6 +32,7 @@ import com.dluvian.nozzle.model.Everyone
 import com.dluvian.nozzle.model.FeedSettings
 import com.dluvian.nozzle.model.Oneself
 import com.dluvian.nozzle.model.PostWithMeta
+import com.dluvian.nozzle.model.Pubkey
 import com.dluvian.nozzle.model.RelayActive
 import com.dluvian.nozzle.model.UserSpecific
 import com.dluvian.nozzle.ui.app.navigation.PostCardNavLambdas
@@ -64,6 +65,8 @@ fun FeedScreen(
     onToggleAutopilot: () -> Unit,
     onLoadMore: () -> Unit,
     onOpenDrawer: () -> Unit,
+    onFollow: (Pubkey) -> Unit,
+    onUnfollow: (Pubkey) -> Unit,
     onNavigateToPost: () -> Unit,
 ) {
     val lazyListState = rememberLazyListState()
@@ -103,6 +106,8 @@ fun FeedScreen(
                 onPrepareReply = onPrepareReply,
                 onLoadMore = onLoadMore,
                 lazyListState = lazyListState,
+                onFollow = onFollow,
+                onUnfollow = onUnfollow,
             )
         }
         if (feed.isEmpty()) NoPostsHint()

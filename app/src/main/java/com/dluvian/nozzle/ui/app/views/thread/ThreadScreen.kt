@@ -19,6 +19,7 @@ import androidx.compose.ui.res.stringResource
 import com.dluvian.nozzle.R
 import com.dluvian.nozzle.model.PostThread
 import com.dluvian.nozzle.model.PostWithMeta
+import com.dluvian.nozzle.model.Pubkey
 import com.dluvian.nozzle.model.ThreadPosition
 import com.dluvian.nozzle.ui.app.navigation.PostCardNavLambdas
 import com.dluvian.nozzle.ui.components.PullRefreshBox
@@ -40,6 +41,8 @@ fun ThreadScreen(
     onFindPrevious: () -> Unit,
     onShowMedia: (String) -> Unit,
     onShouldShowMedia: (String) -> Boolean,
+    onFollow: (Pubkey) -> Unit,
+    onUnfollow: (Pubkey) -> Unit,
     onGoBack: () -> Unit,
 ) {
     Column {
@@ -55,6 +58,8 @@ fun ThreadScreen(
                 onFindPrevious = onFindPrevious,
                 onShowMedia = onShowMedia,
                 onShouldShowMedia = onShouldShowMedia,
+                onFollow = onFollow,
+                onUnfollow = onUnfollow,
             )
         }
     }
@@ -72,6 +77,8 @@ private fun ThreadedPosts(
     onFindPrevious: () -> Unit,
     onShowMedia: (String) -> Unit,
     onShouldShowMedia: (String) -> Boolean,
+    onFollow: (Pubkey) -> Unit,
+    onUnfollow: (Pubkey) -> Unit,
 ) {
     val lazyListState = rememberLazyListState(initialFirstVisibleItemIndex = thread.previous.size)
     LaunchedEffect(key1 = thread.previous.size) {
@@ -103,6 +110,8 @@ private fun ThreadedPosts(
                         onShowMedia = onShowMedia,
                         onShouldShowMedia = onShouldShowMedia,
                         threadPosition = threadPosition,
+                        onFollow = onFollow,
+                        onUnfollow = onUnfollow
                     )
                 }
                 item {
@@ -128,6 +137,8 @@ private fun ThreadedPosts(
                         onShouldShowMedia = onShouldShowMedia,
                         isCurrent = true,
                         threadPosition = thread.getCurrentThreadPosition(),
+                        onFollow = onFollow,
+                        onUnfollow = onUnfollow
                     )
                     Divider()
                     Spacer(modifier = Modifier.height(spacing.tiny))
@@ -141,6 +152,8 @@ private fun ThreadedPosts(
                         onPrepareReply = onPrepareReply,
                         onShowMedia = onShowMedia,
                         onShouldShowMedia = onShouldShowMedia,
+                        onFollow = onFollow,
+                        onUnfollow = onUnfollow
                     )
                 }
             }

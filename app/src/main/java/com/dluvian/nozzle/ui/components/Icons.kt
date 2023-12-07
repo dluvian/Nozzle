@@ -19,6 +19,7 @@ import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.FormatQuote
+import androidx.compose.material.icons.filled.MoreHoriz
 import androidx.compose.material.icons.filled.Save
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
@@ -223,5 +224,17 @@ fun FailedIcon(modifier: Modifier = Modifier) {
         imageVector = Icons.Default.Dangerous,
         contentDescription = stringResource(R.string.failed),
         tint = Color.Red
+    )
+}
+
+@Composable
+fun MoreIcon(onClick: () -> Unit) {
+    Icon(
+        modifier = Modifier
+            .clip(CircleShape)
+            .size(sizing.smallItem)
+            .clickable(onClick = onClick),
+        imageVector = Icons.Default.MoreHoriz,
+        contentDescription = stringResource(R.string.more)
     )
 }

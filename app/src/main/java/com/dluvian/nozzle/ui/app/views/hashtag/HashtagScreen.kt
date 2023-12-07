@@ -6,6 +6,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import com.dluvian.nozzle.model.PostWithMeta
+import com.dluvian.nozzle.model.Pubkey
 import com.dluvian.nozzle.ui.app.navigation.PostCardNavLambdas
 import com.dluvian.nozzle.ui.components.ReturnableTopBar
 import com.dluvian.nozzle.ui.components.hint.NoPostsHint
@@ -23,6 +24,8 @@ fun HashtagScreen(
     onRefresh: () -> Unit,
     onLoadMore: () -> Unit,
     onPrepareReply: (PostWithMeta) -> Unit,
+    onFollow: (Pubkey) -> Unit,
+    onUnfollow: (Pubkey) -> Unit,
     onGoBack: () -> Unit,
 ) {
     Column {
@@ -41,6 +44,8 @@ fun HashtagScreen(
                 onShouldShowMedia = onShouldShowMedia,
                 onPrepareReply = onPrepareReply, // TODO: Delete dis
                 onLoadMore = onLoadMore,
+                onFollow = onFollow,
+                onUnfollow = onUnfollow
             )
         }
     }

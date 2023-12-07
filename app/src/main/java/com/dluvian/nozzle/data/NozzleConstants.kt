@@ -13,7 +13,7 @@ const val APPEND_RETRY_TIME = 3333L
 
 const val MAX_RELAYS = 7
 
-const val SWEEP_THRESHOLD = 3000
+const val SWEEP_THRESHOLD = 1500
 
 const val RESUB_AFTER = 5000L
 

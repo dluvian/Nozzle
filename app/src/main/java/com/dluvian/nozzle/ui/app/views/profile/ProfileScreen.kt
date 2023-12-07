@@ -30,6 +30,7 @@ import com.dluvian.nozzle.data.nostr.utils.ShortenedNameUtils.getShortenedNpubFr
 import com.dluvian.nozzle.data.utils.copyAndToast
 import com.dluvian.nozzle.model.PostWithMeta
 import com.dluvian.nozzle.model.ProfileWithMeta
+import com.dluvian.nozzle.model.Pubkey
 import com.dluvian.nozzle.model.TrustType
 import com.dluvian.nozzle.ui.app.navigation.PostCardNavLambdas
 import com.dluvian.nozzle.ui.components.CopyIcon
@@ -54,8 +55,8 @@ fun ProfileScreen(
     postCardNavLambdas: PostCardNavLambdas,
     onPrepareReply: (PostWithMeta) -> Unit,
     onLike: (PostWithMeta) -> Unit,
-    onFollow: (String) -> Unit,
-    onUnfollow: (String) -> Unit,
+    onFollow: (Pubkey) -> Unit,
+    onUnfollow: (Pubkey) -> Unit,
     onOpenFollowerList: (String) -> Unit,
     onOpenFollowedByList: (String) -> Unit,
     onShowMedia: (String) -> Unit,
@@ -93,6 +94,8 @@ fun ProfileScreen(
             onShouldShowMedia = onShouldShowMedia,
             onPrepareReply = onPrepareReply,
             onLoadMore = onLoadMore,
+            onFollow = onFollow,
+            onUnfollow = onUnfollow
         )
     }
     if (feed.isEmpty()) NoPostsHint()
@@ -102,8 +105,8 @@ fun ProfileScreen(
 private fun ProfileData(
     profile: ProfileWithMeta,
     isFollowedByMe: Boolean,
-    onFollow: (String) -> Unit,
-    onUnfollow: (String) -> Unit,
+    onFollow: (Pubkey) -> Unit,
+    onUnfollow: (Pubkey) -> Unit,
     onNavToEditProfile: () -> Unit,
     onNavigateToId: (String) -> Unit
 ) {

@@ -18,8 +18,8 @@ import com.dluvian.nozzle.model.AnnotatedMentionedPost
 import com.dluvian.nozzle.model.Oneself
 import com.dluvian.nozzle.ui.components.postCard.atoms.BorderedCard
 import com.dluvian.nozzle.ui.components.postCard.atoms.PostCardContentBase
-import com.dluvian.nozzle.ui.components.postCard.atoms.PostCardHeader
 import com.dluvian.nozzle.ui.components.postCard.atoms.PostCardProfilePicture
+import com.dluvian.nozzle.ui.components.postCard.molecules.PostCardHeader
 import com.dluvian.nozzle.ui.theme.sizing
 import com.dluvian.nozzle.ui.theme.spacing
 
@@ -54,7 +54,8 @@ fun AnnotatedMentionedPostCard(
                         name = post.mentionedPost.name.orEmpty(),
                         pubkey = post.mentionedPost.pubkey,
                         createdAt = post.mentionedPost.createdAt,
-                        onOpenProfile = onNavigateToProfile
+                        onOpenProfile = onNavigateToProfile,
+                        showOptions = false,
                     )
                 }
                 PostCardContentBase(

@@ -154,7 +154,7 @@ interface ContactDao {
                 "GROUP BY contactPubkey"
     )
     fun getRawTrustScoreByPubkey(contactPubkeys: Collection<String>): Map<String, Int>
-
+    
     @Query(
         "SELECT COUNT(*) " +
                 "FROM contact " +

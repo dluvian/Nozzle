@@ -16,9 +16,10 @@
     <string name="followers">Followers</string>
     <string name="no_posts_found">No posts found</string>
     <string name="copy_pubkey">Copy public key</string>
+    <string name="copy_content">Copy content</string>
+    <string name="copy_id">Copy ID</string>
     <string name="public_key">Public key</string>
     <string name="return_back">Return back</string>
-    <string name="copy_content">Copy content</string>
     <string name="toggle_visibility">Toggle visibility</string>
     <string name="paste_private_key">Paste private key</string>
     <string name="update_key_pair">Update key pair</string>
@@ -45,6 +46,7 @@
     <string name="like">Like</string>
     <string name="likes">Likes</string>
     <string name="follow">Follow</string>
+    <string name="unfollow">Unfollow</string>
     <string name="close">Close</string>
     <string name="send">Send</string>
     <string name="post_your_reply">Post your reply</string>
@@ -66,6 +68,7 @@
     <string name="time_abbr_month">M</string>
     <string name="time_abbr_year">y</string>
     <string name="note_id_copied">Note ID copied</string>
+    <string name="content_copied">Content copied</string>
     <string name="in_relay">in</string>
     <string name="and">and</string>
     <string name="relays">Relays</string>
@@ -105,6 +108,7 @@
     <string name="failed">Failed</string>
     <string name="list_is_empty">List is empty</string>
     <string name="advanced">Advanced</string>
+    <string name="more">More</string>
     <plurals name="other_relays">
         <item quantity="one">other</item>
         <item quantity="other">others</item>

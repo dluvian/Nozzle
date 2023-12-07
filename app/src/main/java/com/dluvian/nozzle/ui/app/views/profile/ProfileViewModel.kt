@@ -12,19 +12,26 @@ import com.dluvian.nozzle.data.nostr.utils.EncodingUtils.profileIdToNostrId
 import com.dluvian.nozzle.data.paginator.IPaginator
 import com.dluvian.nozzle.data.paginator.Paginator
 import com.dluvian.nozzle.data.postCardInteractor.IPostCardInteractor
-import com.dluvian.nozzle.data.profileFollower.IProfileFollower
 import com.dluvian.nozzle.data.provider.IContactListProvider
 import com.dluvian.nozzle.data.provider.IProfileWithMetaProvider
 import com.dluvian.nozzle.data.provider.IPubkeyProvider
 import com.dluvian.nozzle.data.provider.IRelayProvider
 import com.dluvian.nozzle.data.provider.feed.IFeedProvider
 import com.dluvian.nozzle.data.utils.getCurrentTimeInSeconds
-import com.dluvian.nozzle.model.*
+import com.dluvian.nozzle.model.CreatedAt
+import com.dluvian.nozzle.model.FeedSettings
+import com.dluvian.nozzle.model.MultipleRelays
+import com.dluvian.nozzle.model.PostWithMeta
+import com.dluvian.nozzle.model.ProfileWithMeta
+import com.dluvian.nozzle.model.Pubkey
+import com.dluvian.nozzle.model.SingleAuthor
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import java.util.concurrent.CancellationException
 import java.util.concurrent.atomic.AtomicBoolean
 
 private const val TAG = "ProfileViewModel"
@@ -37,9 +44,8 @@ class ProfileViewModel(
     private val feedProvider: IFeedProvider,
     private val profileProvider: IProfileWithMetaProvider,
     private val relayProvider: IRelayProvider,
-    private val profileFollower: IProfileFollower,
     private val pubkeyProvider: IPubkeyProvider,
-    private val contactListProvider: IContactListProvider,
+    contactListProvider: IContactListProvider,
 ) : ViewModel() {
     private val _isRefreshing = MutableStateFlow(false)
     val isRefreshing = _isRefreshing
@@ -49,26 +55,25 @@ class ProfileViewModel(
             false
         )
 
-    var profileState: StateFlow<ProfileWithMeta> = MutableStateFlow(
-        ProfileWithMeta.createEmpty()
-    )
+    var profileState: StateFlow<ProfileWithMeta> = MutableStateFlow(ProfileWithMeta.createEmpty())
+    private var profilePubkey = pubkeyProvider.getActivePubkey()
 
-    // TODO: Check if this can replaced with SQL query and calling follow with Dispatchers.Main
-    private val _isFollowedByMeState = MutableStateFlow(false)
-    val isFollowedByMeState = _isFollowedByMeState
+    val contactList: StateFlow<List<Pubkey>> = contactListProvider.getPersonalContactPubkeysFlow()
         .stateIn(
             viewModelScope,
             SharingStarted.WhileSubscribed(),
-            false
+            contactListProvider.listPersonalContactPubkeys()
         )
 
     private val paginator: IPaginator<PostWithMeta, CreatedAt> = Paginator(
         scope = viewModelScope,
         onSetRefreshing = { bool -> _isRefreshing.update { bool } },
         onGetPage = { lastCreatedAt, waitForSubscription ->
-            val pubkey = profileState.value.pubkey
             feedProvider.getFeedFlow(
-                feedSettings = getCurrentFeedSettings(pubkey = pubkey, relays = getRelays(pubkey)),
+                feedSettings = getCurrentFeedSettings(
+                    pubkey = profilePubkey,
+                    relays = getRelays(profilePubkey)
+                ),
                 limit = DB_BATCH_SIZE,
                 until = lastCreatedAt,
                 waitForSubscription = waitForSubscription
@@ -94,7 +99,6 @@ class ProfileViewModel(
                 isSettingPubkey.set(false)
             } else {
                 Log.i(TAG, "Set UI for $nonNullPubkey")
-                followProcess = null
                 viewModelScope.launch(context = Dispatchers.IO) {
                     setProfileAndFeed(profileId = nonNullProfileId)
                 }.invokeOnCompletion {
@@ -108,39 +112,13 @@ class ProfileViewModel(
 
     val onLoadMore: () -> Unit = { paginator.loadMore() }
 
-    private var followProcess: Job? = null
-    val onFollow: (String) -> Unit = { pubkeyToFollow ->
-        if (!isFollowedByMeState.value) {
-            followProcess?.cancel(CancellationException("Cancelled to start follow process"))
-            _isFollowedByMeState.update { true }
-            followProcess = viewModelScope.launch(context = Dispatchers.IO) {
-                profileFollower.follow(pubkeyToFollow = pubkeyToFollow)
-            }
-            followProcess?.invokeOnCompletion { ex ->
-                Log.i(TAG, "Follow process completed: error=${ex?.localizedMessage}")
-            }
-        }
-    }
-
-    val onUnfollow: (String) -> Unit = { pubkeyToUnfollow ->
-        if (isFollowedByMeState.value) {
-            followProcess?.cancel(CancellationException("Cancelled to start unfollow process"))
-            _isFollowedByMeState.update { false }
-            followProcess = viewModelScope.launch(context = Dispatchers.IO) {
-                profileFollower.unfollow(pubkeyToUnfollow = pubkeyToUnfollow)
-            }
-            followProcess?.invokeOnCompletion { ex ->
-                Log.i(TAG, "Unfollow process completed: error=${ex?.localizedMessage}")
-            }
-        }
-    }
-
     private suspend fun setProfileAndFeed(profileId: String) {
         val nostrProfileId = profileIdToNostrId(profileId)
         val pubkey = nostrProfileId?.hex ?: profileId
+        profilePubkey = pubkey
         setProfile(profileId = profileId, pubkey = pubkey)
         setRecommendedRelays(recommended = nostrProfileId?.recommendedRelays.orEmpty())
-        paginator.refresh()
+        paginator.reset()
     }
 
     private fun setRecommendedRelays(recommended: List<String>) {
@@ -150,9 +128,6 @@ class ProfileViewModel(
 
     private suspend fun setProfile(profileId: String, pubkey: String) {
         Log.i(TAG, "Set profile of $profileId")
-        _isFollowedByMeState.update {
-            contactListProvider.listPersonalContactPubkeys().contains(pubkey)
-        }
         profileState = profileProvider.getProfileFlow(profileId = profileId)
             .stateIn(
                 viewModelScope,
@@ -187,12 +162,11 @@ class ProfileViewModel(
     companion object {
         fun provideFactory(
             postCardInteractor: IPostCardInteractor,
-            profileFollower: IProfileFollower,
+            clickedMediaUrlCache: IClickedMediaUrlCache,
             feedProvider: IFeedProvider,
             relayProvider: IRelayProvider,
             profileProvider: IProfileWithMetaProvider,
             pubkeyProvider: IPubkeyProvider,
-            clickedMediaUrlCache: IClickedMediaUrlCache,
             contactListProvider: IContactListProvider,
         ): ViewModelProvider.Factory =
             object : ViewModelProvider.Factory {
@@ -204,9 +178,8 @@ class ProfileViewModel(
                         feedProvider = feedProvider,
                         profileProvider = profileProvider,
                         relayProvider = relayProvider,
-                        profileFollower = profileFollower,
                         pubkeyProvider = pubkeyProvider,
-                        contactListProvider = contactListProvider,
+                        contactListProvider = contactListProvider
                     ) as T
                 }
             }

@@ -24,15 +24,16 @@ import com.dluvian.nozzle.R
 import com.dluvian.nozzle.data.nostr.utils.EncodingUtils.createNeventStr
 import com.dluvian.nozzle.data.utils.copyAndToast
 import com.dluvian.nozzle.model.PostWithMeta
+import com.dluvian.nozzle.model.Pubkey
 import com.dluvian.nozzle.model.ThreadPosition
 import com.dluvian.nozzle.model.TrustType
 import com.dluvian.nozzle.ui.app.navigation.PostCardNavLambdas
 import com.dluvian.nozzle.ui.components.*
 import com.dluvian.nozzle.ui.components.postCard.atoms.BorderedCard
 import com.dluvian.nozzle.ui.components.postCard.atoms.PostCardContentBase
-import com.dluvian.nozzle.ui.components.postCard.atoms.PostCardHeader
 import com.dluvian.nozzle.ui.components.postCard.atoms.PostCardProfilePicture
 import com.dluvian.nozzle.ui.components.postCard.molecules.MediaDecisionCard
+import com.dluvian.nozzle.ui.components.postCard.molecules.PostCardHeader
 import com.dluvian.nozzle.ui.components.text.*
 import com.dluvian.nozzle.ui.theme.*
 
@@ -44,6 +45,8 @@ fun PostCard(
     postCardNavLambdas: PostCardNavLambdas,
     onLike: () -> Unit,
     onPrepareReply: (PostWithMeta) -> Unit,
+    onFollow: (Pubkey) -> Unit,
+    onUnfollow: (Pubkey) -> Unit,
     modifier: Modifier = Modifier,
     onShowMedia: (String) -> Unit,
     onShouldShowMedia: (String) -> Boolean,
@@ -54,23 +57,10 @@ fun PostCard(
     val yTop = spacing.screenEdge
     val yBottom = sizing.profilePicture + spacing.screenEdge
     val small = spacing.small
-    val clip = LocalClipboardManager.current
-    val context = LocalContext.current
     Row(modifier
         .combinedClickable(
             enabled = !isCurrent,
-            onClick = { postCardNavLambdas.onNavigateToThread(post.entity.id) },
-            onLongClick = {
-                copyAndToast(
-                    text = createNeventStr(
-                        postId = post.entity.id,
-                        relays = post.relays
-                    ).orEmpty(),
-                    toast = context.getString(R.string.note_id_copied),
-                    context = context,
-                    clip = clip
-                )
-            })
+            onClick = { postCardNavLambdas.onNavigateToThread(post.entity.id) })
         .fillMaxWidth()
         .drawBehind {
             when (threadPosition) {
@@ -140,6 +130,8 @@ fun PostCard(
                     }
                 },
                 onNavigateToId = postCardNavLambdas.onNavigateToId,
+                onFollow = onFollow,
+                onUnfollow = onUnfollow,
             )
 
             post.mediaUrls.forEach { mediaUrl ->
@@ -183,13 +175,40 @@ private fun PostCardHeaderAndContent(
     onNavigateToProfile: ((String) -> Unit)?,
     onNavigateToThread: () -> Unit,
     onNavigateToId: (String) -> Unit,
+    onFollow: (Pubkey) -> Unit,
+    onUnfollow: (Pubkey) -> Unit,
 ) {
+    val context = LocalContext.current
+    val clip = LocalClipboardManager.current
     Column {
         PostCardHeader(
             name = post.name,
             pubkey = post.pubkey,
             createdAt = post.entity.createdAt,
-            onOpenProfile = onNavigateToProfile
+            onOpenProfile = onNavigateToProfile,
+            showOptions = true,
+            onCopyId = {
+                copyAndToast(
+                    text = createNeventStr(postId = post.entity.id, relays = post.relays).orEmpty(),
+                    toast = context.getString(R.string.note_id_copied),
+                    context = context,
+                    clip = clip
+                )
+            },
+            onCopyContent = {
+                copyAndToast(
+                    text = post.entity.content,
+                    toast = context.getString(R.string.content_copied),
+                    context = context,
+                    clip = clip
+                )
+            },
+            onFollow = if (post.isFollowedByMe) null else {
+                { onFollow(post.pubkey) }
+            },
+            onUnfollow = if (!post.isFollowedByMe) null else {
+                { onUnfollow(post.pubkey) }
+            }
         )
         PostCardContentBase(
             replyToName = post.replyToName,
