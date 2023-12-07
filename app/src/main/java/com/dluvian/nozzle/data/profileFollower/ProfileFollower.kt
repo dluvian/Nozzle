@@ -16,7 +16,6 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-import java.util.Collections
 import java.util.concurrent.CancellationException
 
 private const val TAG = "ProfileFollower"
@@ -28,8 +27,7 @@ class ProfileFollower(
     private val contactDao: ContactDao,
 ) : IProfileFollower {
     private val scope = CoroutineScope(Dispatchers.IO)
-    private val followProcesses: MutableMap<Pubkey, Job> =
-        Collections.synchronizedMap(mutableMapOf())
+    private val followProcesses: MutableMap<Pubkey, Job> = mutableMapOf()
 
     val pubkeyState = pubkeyProvider.getActivePubkeyStateFlow()
         .onEach local@{ forcedFollowState.value = emptyMap() }
@@ -40,36 +38,40 @@ class ProfileFollower(
     override fun follow(pubkeyToFollow: Pubkey) {
         putForcedFollowState(pubkey = pubkeyToFollow, isFollowed = true)
 
-        followProcesses[pubkeyToFollow]?.cancel(CancellationException("Cancel to start follow process"))
-        followProcesses[pubkeyToFollow] = scope.launch(Dispatchers.IO) {
-            contactDao.insertOrIgnore(
-                ContactEntity(
-                    pubkey = pubkeyProvider.getActivePubkey(),
-                    contactPubkey = pubkeyToFollow,
-                    createdAt = 0
+        synchronized(followProcesses) {
+            followProcesses[pubkeyToFollow]?.cancel(CancellationException("Cancel to start follow process"))
+            followProcesses[pubkeyToFollow] = scope.launch(Dispatchers.IO) {
+                contactDao.insertOrIgnore(
+                    ContactEntity(
+                        pubkey = pubkeyProvider.getActivePubkey(),
+                        contactPubkey = pubkeyToFollow,
+                        createdAt = 0
+                    )
                 )
-            )
-            updateContactList(personalPubkey = pubkeyProvider.getActivePubkey())
-        }
-        followProcesses[pubkeyToFollow]?.invokeOnCompletion {
-            Log.i(TAG, "Completed follow process. Error = ${it?.localizedMessage}")
-            if (it != null) putForcedFollowState(pubkey = pubkeyToFollow, isFollowed = false)
+                updateContactList(personalPubkey = pubkeyProvider.getActivePubkey())
+            }
+            followProcesses[pubkeyToFollow]?.invokeOnCompletion {
+                Log.i(TAG, "Completed follow process. Error = ${it?.localizedMessage}")
+                if (it != null) putForcedFollowState(pubkey = pubkeyToFollow, isFollowed = false)
+            }
         }
     }
 
     override fun unfollow(pubkeyToUnfollow: Pubkey) {
         putForcedFollowState(pubkey = pubkeyToUnfollow, isFollowed = false)
 
-        followProcesses[pubkeyToUnfollow]?.cancel(CancellationException("Cancel to start unfollow process"))
-        followProcesses[pubkeyToUnfollow] = scope.launch(Dispatchers.IO) {
-            contactDao.deleteContact(
-                pubkey = pubkeyProvider.getActivePubkey(), contactPubkey = pubkeyToUnfollow
-            )
-            updateContactList(personalPubkey = pubkeyProvider.getActivePubkey())
-        }
-        followProcesses[pubkeyToUnfollow]?.invokeOnCompletion {
-            Log.i(TAG, "Completed unfollow process. Error = ${it?.localizedMessage}")
-            if (it != null) putForcedFollowState(pubkey = pubkeyToUnfollow, isFollowed = true)
+        synchronized(followProcesses) {
+            followProcesses[pubkeyToUnfollow]?.cancel(CancellationException("Cancel to start unfollow process"))
+            followProcesses[pubkeyToUnfollow] = scope.launch(Dispatchers.IO) {
+                contactDao.deleteContact(
+                    pubkey = pubkeyProvider.getActivePubkey(), contactPubkey = pubkeyToUnfollow
+                )
+                updateContactList(personalPubkey = pubkeyProvider.getActivePubkey())
+            }
+            followProcesses[pubkeyToUnfollow]?.invokeOnCompletion {
+                Log.i(TAG, "Completed unfollow process. Error = ${it?.localizedMessage}")
+                if (it != null) putForcedFollowState(pubkey = pubkeyToUnfollow, isFollowed = true)
+            }
         }
     }
 
