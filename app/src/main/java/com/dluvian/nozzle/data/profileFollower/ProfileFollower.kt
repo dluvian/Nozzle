@@ -12,7 +12,6 @@ import com.dluvian.nozzle.model.Pubkey
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
@@ -43,8 +42,6 @@ class ProfileFollower(
 
         followProcesses[pubkeyToFollow]?.cancel(CancellationException("Cancel to start follow process"))
         followProcesses[pubkeyToFollow] = scope.launch(Dispatchers.IO) {
-            delay(2000L)
-            Log.i(TAG, "Follow $pubkeyToFollow")
             contactDao.insertOrIgnore(
                 ContactEntity(
                     pubkey = pubkeyProvider.getActivePubkey(),
@@ -65,9 +62,6 @@ class ProfileFollower(
 
         followProcesses[pubkeyToUnfollow]?.cancel(CancellationException("Cancel to start unfollow process"))
         followProcesses[pubkeyToUnfollow] = scope.launch(Dispatchers.IO) {
-            delay(2000L)
-
-            Log.i(TAG, "Unfollow $pubkeyToUnfollow")
             contactDao.deleteContact(
                 pubkey = pubkeyProvider.getActivePubkey(), contactPubkey = pubkeyToUnfollow
             )
