@@ -1,6 +1,12 @@
 package com.dluvian.nozzle.data.room.dao
 
-import androidx.room.*
+import androidx.room.Dao
+import androidx.room.Insert
+import androidx.room.MapColumn
+import androidx.room.MapInfo
+import androidx.room.OnConflictStrategy
+import androidx.room.Query
+import androidx.room.Transaction
 import com.dluvian.nozzle.data.room.entity.Nip65Entity
 import com.dluvian.nozzle.data.room.helper.Nip65Relay
 import com.dluvian.nozzle.model.Pubkey
@@ -57,10 +63,19 @@ interface Nip65Dao {
     @Query(
         "SELECT pubkey, url " +
                 "FROM nip65 " +
+                "WHERE isRead = '1' " +
+                "AND pubkey IN (:pubkeys)"
+    )
+    suspend fun getReadRelaysByPubkeys(pubkeys: Collection<String>): Map<Pubkey, List<Relay>>
+
+    @MapInfo(keyColumn = "pubkey", valueColumn = "url")
+    @Query(
+        "SELECT pubkey, url " +
+                "FROM nip65 " +
                 "WHERE isWrite = '1' " +
                 "AND pubkey IN (:pubkeys)"
     )
-    suspend fun getWriteRelaysOfPubkeys(pubkeys: Collection<String>): Map<Pubkey, List<Relay>>
+    suspend fun getWriteRelaysByPubkeys(pubkeys: Collection<String>): Map<Pubkey, List<Relay>>
 
     @Query(
         "SELECT url " +
