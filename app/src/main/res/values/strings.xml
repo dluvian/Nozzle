@@ -57,7 +57,7 @@
     <string name="post_your_thoughts">Post your thoughts</string>
     <string name="add">Add</string>
     <string name="invalid_nsec">Invalid nsec</string>
-    <string name="open_nostr_id">Open nostr ID, hashtag or nip05</string>
+    <string name="search_profiles">Search profiles or open nostr ID</string>
     <string name="post_published">Post published</string>
     <string name="time_abbr_now">Now</string>
     <string name="time_abbr_second">s</string>
@@ -80,7 +80,7 @@
     <string name="contacts_only">Contacts only</string>
     <string name="posts">Posts</string>
     <string name="replies">Replies</string>
-    <string name="home">Home</string>
+    <string name="Feed">Feed</string>
     <string name="autopilot">Autopilot</string>
     <string name="quote">Quote post</string>
     <string name="click_to_show_media">Click to show media</string>

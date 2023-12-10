@@ -93,7 +93,7 @@ private fun SearchBar(
         isError = isInvalidNip05,
         input = input,
         maxLines = Int.MAX_VALUE,
-        placeholder = stringResource(id = R.string.open_nostr_id),
+        placeholder = stringResource(id = R.string.search_profiles),
         errorLabel = if (isInvalidNip05) stringResource(id = R.string.failed_to_resolve_nip05)
         else null,
         keyboardImeAction = ImeAction.Search,

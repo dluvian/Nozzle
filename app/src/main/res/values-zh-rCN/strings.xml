@@ -54,7 +54,7 @@
     <string name="post_your_thoughts">想法要大声说出来</string>
     <string name="add">添加</string>
     <string name="invalid_nsec">无效nsec</string>
-    <string name="open_nostr_id">打开NostrID, hash值或者nip05</string>
+    <string name="search_profiles">打开NostrID, hash值或者nip05</string>
     <string name="post_published">帖子已发送</string>
     <string name="time_abbr_now">现在</string>
     <string name="time_abbr_second">秒</string>
@@ -76,7 +76,7 @@
     <string name="contacts_only">仅限好友</string>
     <string name="posts">帖子</string>
     <string name="replies">回复</string>
-    <string name="home">主页</string>
+    <string name="Feed">主页</string>
     <string name="autopilot">自动</string>
     <string name="quote">引用帖子</string>
     <string name="click_to_show_media">显示媒体内容</string>

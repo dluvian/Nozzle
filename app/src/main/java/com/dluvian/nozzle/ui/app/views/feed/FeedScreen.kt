@@ -148,7 +148,7 @@ private fun FeedTopBar(
             }
             Headline(
                 modifier = Modifier.weight(0.7f),
-                headline = stringResource(id = com.dluvian.nozzle.R.string.home),
+                headline = stringResource(id = com.dluvian.nozzle.R.string.Feed),
                 onScrollToTop = onScrollToTop,
             )
             Row(horizontalArrangement = Arrangement.End, modifier = Modifier.weight(0.15f)) {
