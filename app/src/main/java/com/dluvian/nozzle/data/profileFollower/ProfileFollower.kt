@@ -29,11 +29,11 @@ class ProfileFollower(
     private val scope = CoroutineScope(Dispatchers.IO)
     private val followProcesses: MutableMap<Pubkey, Job> = mutableMapOf()
 
+    private val forcedFollowState = mutableStateOf(emptyMap<Pubkey, Boolean>())
+
     val pubkeyState = pubkeyProvider.getActivePubkeyStateFlow()
         .onEach local@{ forcedFollowState.value = emptyMap() }
         .stateIn(scope, SharingStarted.Eagerly, "")
-
-    private val forcedFollowState = mutableStateOf(emptyMap<Pubkey, Boolean>())
 
     override fun follow(pubkeyToFollow: Pubkey) {
         putForcedFollowState(pubkey = pubkeyToFollow, isFollowed = true)

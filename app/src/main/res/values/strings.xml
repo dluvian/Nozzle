@@ -109,6 +109,7 @@
     <string name="list_is_empty">List is empty</string>
     <string name="advanced">Advanced</string>
     <string name="more">More</string>
+    <string name="click_to_load_more">Click to load more</string>
     <plurals name="other_relays">
         <item quantity="one">other</item>
         <item quantity="other">others</item>

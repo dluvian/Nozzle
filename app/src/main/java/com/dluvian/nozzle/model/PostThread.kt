@@ -6,7 +6,7 @@ data class PostThread(
     val replies: List<PostWithMeta>
 ) {
     fun getCurrentThreadPosition(): ThreadPosition {
-        return if (previous.isNotEmpty() || current?.entity?.replyToId != null) ThreadPosition.END
+        return if (previous.isNotEmpty()) ThreadPosition.END
         else ThreadPosition.SINGLE
     }
 

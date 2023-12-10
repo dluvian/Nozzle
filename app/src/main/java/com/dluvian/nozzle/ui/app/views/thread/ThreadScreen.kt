@@ -12,6 +12,8 @@ import androidx.compose.material.Divider
 import androidx.compose.material.MaterialTheme.colors
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
@@ -26,7 +28,8 @@ import com.dluvian.nozzle.ui.components.PullRefreshBox
 import com.dluvian.nozzle.ui.components.ReturnableTopBar
 import com.dluvian.nozzle.ui.components.hint.NoPostsHint
 import com.dluvian.nozzle.ui.components.postCard.PostCard
-import com.dluvian.nozzle.ui.components.postCard.PostNotFound
+import com.dluvian.nozzle.ui.components.postCard.atoms.ClickToLoadMore
+import com.dluvian.nozzle.ui.components.postCard.atoms.PostNotFound
 import com.dluvian.nozzle.ui.theme.spacing
 
 
@@ -81,8 +84,12 @@ private fun ThreadedPosts(
     onUnfollow: (Pubkey) -> Unit,
 ) {
     val lazyListState = rememberLazyListState(initialFirstVisibleItemIndex = thread.previous.size)
-    LaunchedEffect(key1 = thread.previous.size) {
+    val alreadyScrolled = remember(thread.current?.entity?.id) { mutableStateOf(false) }
+    LaunchedEffect(key1 = thread.current?.entity?.id) {
+        if (alreadyScrolled.value) return@LaunchedEffect
+
         lazyListState.scrollToItem(thread.previous.size)
+        alreadyScrolled.value = true
     }
     PullRefreshBox(isRefreshing = isRefreshing, onRefresh = onRefresh) {
         LazyColumn(
@@ -93,13 +100,12 @@ private fun ThreadedPosts(
                 itemsIndexed(
                     items = thread.previous,
                     key = { _, item -> item.entity.id }) { index, post ->
-                    var threadPosition = ThreadPosition.MIDDLE
                     if (index == 0) {
-                        if (post.entity.replyToId != null) {
+                        if (post.replyToPubkey != null) {
+                            ClickToLoadMore(onClick = onRefresh)
+                        } else if (post.entity.replyToId != null) {
                             onFindPrevious()
                             PostNotFound()
-                        } else {
-                            threadPosition = ThreadPosition.START
                         }
                     }
                     PostCard(
@@ -109,13 +115,15 @@ private fun ThreadedPosts(
                         onPrepareReply = onPrepareReply,
                         onShowMedia = onShowMedia,
                         onShouldShowMedia = onShouldShowMedia,
-                        threadPosition = threadPosition,
+                        threadPosition = if (index == 0) ThreadPosition.START else ThreadPosition.MIDDLE,
                         onFollow = onFollow,
                         onUnfollow = onUnfollow
                     )
                 }
                 item {
-                    if (it.entity.replyToId != null && thread.previous.isEmpty()) {
+                    if (thread.previous.isEmpty() && it.replyToPubkey != null) {
+                        ClickToLoadMore(onClick = onRefresh)
+                    } else if (thread.previous.isEmpty() && it.entity.replyToId != null) {
                         onFindPrevious()
                         PostNotFound()
                     }

@@ -1,9 +1,18 @@
 package com.dluvian.nozzle.ui.components.postCard
 
-import androidx.compose.foundation.*
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
@@ -18,8 +27,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.style.TextAlign
 import com.dluvian.nozzle.R
 import com.dluvian.nozzle.data.nostr.utils.EncodingUtils.createNeventStr
 import com.dluvian.nozzle.data.utils.copyAndToast
@@ -28,14 +35,15 @@ import com.dluvian.nozzle.model.Pubkey
 import com.dluvian.nozzle.model.ThreadPosition
 import com.dluvian.nozzle.model.TrustType
 import com.dluvian.nozzle.ui.app.navigation.PostCardNavLambdas
-import com.dluvian.nozzle.ui.components.*
-import com.dluvian.nozzle.ui.components.postCard.atoms.BorderedCard
+import com.dluvian.nozzle.ui.components.LikeIcon
+import com.dluvian.nozzle.ui.components.QuoteIcon
+import com.dluvian.nozzle.ui.components.ReplyIcon
 import com.dluvian.nozzle.ui.components.postCard.atoms.PostCardContentBase
 import com.dluvian.nozzle.ui.components.postCard.atoms.PostCardProfilePicture
 import com.dluvian.nozzle.ui.components.postCard.molecules.MediaDecisionCard
 import com.dluvian.nozzle.ui.components.postCard.molecules.PostCardHeader
-import com.dluvian.nozzle.ui.components.text.*
-import com.dluvian.nozzle.ui.theme.*
+import com.dluvian.nozzle.ui.theme.sizing
+import com.dluvian.nozzle.ui.theme.spacing
 
 
 @OptIn(ExperimentalFoundationApi::class)
@@ -218,25 +226,6 @@ private fun PostCardHeaderAndContent(
             isCurrent = isCurrent,
             onNavigateToThread = onNavigateToThread,
             onNavigateToId = onNavigateToId,
-        )
-    }
-}
-
-@Composable
-fun PostNotFound() {
-    BorderedCard(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = spacing.screenEdge)
-            .padding(top = spacing.screenEdge),
-        backgroundColor = MaterialTheme.colors.hintGray
-    ) {
-        Text(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(spacing.screenEdge),
-            text = stringResource(id = R.string.post_not_found),
-            textAlign = TextAlign.Center,
         )
     }
 }
