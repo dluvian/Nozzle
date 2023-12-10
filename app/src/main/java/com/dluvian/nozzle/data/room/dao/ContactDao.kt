@@ -1,6 +1,12 @@
 package com.dluvian.nozzle.data.room.dao
 
-import androidx.room.*
+import androidx.room.Dao
+import androidx.room.Insert
+import androidx.room.MapColumn
+import androidx.room.MapInfo
+import androidx.room.OnConflictStrategy
+import androidx.room.Query
+import androidx.room.Transaction
 import com.dluvian.nozzle.data.TRUST_SCORE_BOOST
 import com.dluvian.nozzle.data.room.entity.ContactEntity
 import com.dluvian.nozzle.model.Pubkey
@@ -248,4 +254,12 @@ interface ContactDao {
                 "AND pubkey = (SELECT pubkey FROM account WHERE isActive = 1)"
     )
     suspend fun filterFriendsWithList(contactPubkeys: Collection<String>): List<String>
+
+    @Query(
+        "SELECT contactPubkey " +
+                "FROM contact " +
+                "WHERE pubkey = (SELECT pubkey FROM account WHERE isActive = 1) " +
+                "AND contactPubkey NOT IN (SELECT pubkey FROM profile)"
+    )
+    suspend fun listContactPubkeysWithMissingProfile(): List<Pubkey>
 }

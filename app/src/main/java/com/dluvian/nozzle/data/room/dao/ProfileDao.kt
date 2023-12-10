@@ -1,6 +1,13 @@
 package com.dluvian.nozzle.data.room.dao
 
-import androidx.room.*
+import androidx.room.Dao
+import androidx.room.Insert
+import androidx.room.MapColumn
+import androidx.room.MapInfo
+import androidx.room.OnConflictStrategy
+import androidx.room.Query
+import androidx.room.RewriteQueriesToDropUnusedColumns
+import androidx.room.Transaction
 import com.dluvian.nozzle.data.room.entity.ProfileEntity
 import com.dluvian.nozzle.data.room.helper.extended.ProfileEntityExtended
 import com.dluvian.nozzle.model.Pubkey
@@ -14,7 +21,6 @@ interface ProfileDao {
 
     @Query("SELECT * FROM profile WHERE pubkey IN (:pubkeys)")
     fun getProfilesFlow(pubkeys: Collection<Pubkey>): Flow<List<ProfileEntity>>
-
 
     @Query("SELECT * FROM profile WHERE pubkey IN (:pubkeys)")
     suspend fun getProfiles(pubkeys: Collection<Pubkey>): List<ProfileEntity>

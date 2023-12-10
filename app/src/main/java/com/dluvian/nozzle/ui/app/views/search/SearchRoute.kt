@@ -19,6 +19,7 @@ fun SearchRoute(
         profileSearchResult = profileSearchResult,
         onSearch = searchViewModel.onSearch,
         onResetUI = searchViewModel.onResetUI,
+        onSubscribeUnknownContacts = searchViewModel.onSubscribeUnknownContacts,
         onNavigateToId = onNavigateToId,
         onNavigateToProfile = onNavigateToProfile,
         onGoBack = onGoBack,

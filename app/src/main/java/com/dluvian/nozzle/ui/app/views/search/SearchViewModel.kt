@@ -9,12 +9,14 @@ import com.dluvian.nozzle.data.nostr.utils.EncodingUtils.URI
 import com.dluvian.nozzle.data.nostr.utils.EncodingUtils.createNprofileStr
 import com.dluvian.nozzle.data.nostr.utils.EncodingUtils.nostrStrToNostrId
 import com.dluvian.nozzle.data.provider.ISimpleProfileProvider
+import com.dluvian.nozzle.data.subscriber.INozzleSubscriber
 import com.dluvian.nozzle.data.utils.HashtagUtils
 import com.dluvian.nozzle.model.nostr.NeventNostrId
 import com.dluvian.nozzle.model.nostr.NoteNostrId
 import com.dluvian.nozzle.model.nostr.NprofileNostrId
 import com.dluvian.nozzle.model.nostr.NpubNostrId
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -27,6 +29,7 @@ import kotlinx.coroutines.launch
 class SearchViewModel(
     private val nip05Resolver: INip05Resolver,
     private val simpleProfileProvider: ISimpleProfileProvider,
+    private val nozzleSubscriber: INozzleSubscriber,
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(SearchViewModelState())
     val uiState = _uiState
@@ -54,7 +57,14 @@ class SearchViewModel(
                 handleNameSearch(trimmed)
             }
         }
+    }
 
+    private var subJob: Job? = null
+    val onSubscribeUnknownContacts: () -> Unit = {
+        subJob?.cancel()
+        subJob = viewModelScope.launch(Dispatchers.IO) {
+            nozzleSubscriber.subscribeUnknownsContacts()
+        }
     }
 
     val onResetUI: () -> Unit = {
@@ -118,13 +128,15 @@ class SearchViewModel(
         fun provideFactory(
             nip05Resolver: INip05Resolver,
             simpleProfileProvider: ISimpleProfileProvider,
+            nozzleSubscriber: INozzleSubscriber,
         ): ViewModelProvider.Factory =
             object : ViewModelProvider.Factory {
                 @Suppress("UNCHECKED_CAST")
                 override fun <T : ViewModel> create(modelClass: Class<T>): T {
                     return SearchViewModel(
                         nip05Resolver = nip05Resolver,
-                        simpleProfileProvider = simpleProfileProvider
+                        simpleProfileProvider = simpleProfileProvider,
+                        nozzleSubscriber = nozzleSubscriber
                     ) as T
                 }
             }

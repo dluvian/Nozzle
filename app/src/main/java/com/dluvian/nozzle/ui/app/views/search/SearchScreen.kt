@@ -33,6 +33,7 @@ fun SearchScreen(
     profileSearchResult: List<ProfileSearchResult>,
     onSearch: (String) -> Unit,
     onResetUI: () -> Unit,
+    onSubscribeUnknownContacts: () -> Unit,
     onNavigateToId: (String) -> Unit,
     onNavigateToProfile: (Pubkey) -> Unit,
     onGoBack: () -> Unit,
@@ -76,6 +77,7 @@ fun SearchScreen(
     }
     LaunchedEffect(Unit) {
         focusRequester.requestFocus()
+        onSubscribeUnknownContacts()
     }
 }
 

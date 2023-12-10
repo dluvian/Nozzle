@@ -144,7 +144,8 @@ fun NozzleApp(appContainer: AppContainer) {
                 searchViewModel = viewModel(
                     factory = SearchViewModel.provideFactory(
                         nip05Resolver = appContainer.nip05Resolver,
-                        simpleProfileProvider = appContainer.simpleProfileProvider
+                        simpleProfileProvider = appContainer.simpleProfileProvider,
+                        nozzleSubscriber = appContainer.nozzleSubscriber,
                     )
                 ),
                 hashtagViewModel = viewModel(

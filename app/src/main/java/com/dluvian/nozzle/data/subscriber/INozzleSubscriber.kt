@@ -10,6 +10,8 @@ interface INozzleSubscriber {
 
     suspend fun subscribePersonalProfiles()
 
+    suspend fun subscribeUnknownsContacts()
+
     fun subscribeToFeedPosts(
         isReplies: Boolean,
         hashtag: String?,

@@ -22,6 +22,7 @@ import com.dluvian.nozzle.model.PostWithMeta
 import com.dluvian.nozzle.model.Pubkey
 import com.dluvian.nozzle.model.Relay
 import com.dluvian.nozzle.model.RelaySelection
+import com.dluvian.nozzle.model.SubId
 import com.dluvian.nozzle.model.UserSpecific
 import com.dluvian.nozzle.model.nostr.Nevent
 import com.dluvian.nozzle.model.nostr.Nprofile
@@ -40,6 +41,7 @@ class NozzleSubscriber(
     private val database: AppDatabase,
 ) : INozzleSubscriber {
     private val personalProfileSubs = Collections.synchronizedList(mutableListOf<String>())
+    private val unknownContactsSubs = Collections.synchronizedList(mutableListOf<String>())
     private val fullProfileSubs = Collections.synchronizedList(mutableListOf<String>())
     private val simpleProfileSubs = Collections.synchronizedList(mutableListOf<String>())
     private val feedPostSubs = Collections.synchronizedList(mutableListOf<String>())
@@ -55,17 +57,31 @@ class NozzleSubscriber(
     override suspend fun subscribePersonalProfiles() {
         Log.i(TAG, "Subscribe personal profiles")
         val accountPubkeys = accountProvider.listAccounts().map { it.pubkey }
+        val subIds = subscribeFullProfiles(pubkeys = accountPubkeys)
+        personalProfileSubs.unsubThenAddAll(subIds)
+    }
+
+    override suspend fun subscribeUnknownsContacts() {
+        Log.i(TAG, "Subscribe unknown contacts")
+
+        val pubkeys = database.contactDao().listContactPubkeysWithMissingProfile()
+        if (pubkeys.isEmpty()) return
+
+        val subIds = subscribeFullProfiles(pubkeys = pubkeys)
+        unknownContactsSubs.unsubThenAddAll(subIds)
+    }
+
+    private suspend fun subscribeFullProfiles(pubkeys: Collection<Pubkey>): List<SubId> {
         val pubkeysByRelay = mutableMapOf<Relay, MutableList<Pubkey>>()
         relayProvider
-            .getWriteRelaysOfPubkeys(pubkeys = accountPubkeys)
+            .getWriteRelaysOfPubkeys(pubkeys = pubkeys)
             .forEach { (pubkey, relays) ->
                 relays.ifEmpty { relayProvider.getReadRelays() }.forEach { relay ->
                     pubkeysByRelay.putIfAbsent(relay, mutableListOf(pubkey))?.add(pubkey)
                 }
             }
 
-        val subIds = nostrSubscriber.subscribeFullProfiles(pubkeysByRelay = pubkeysByRelay)
-        personalProfileSubs.unsubThenAddAll(subIds)
+        return nostrSubscriber.subscribeFullProfiles(pubkeysByRelay = pubkeysByRelay)
     }
 
     override suspend fun subscribeFullProfile(profileId: String) {
