@@ -15,7 +15,6 @@
     <string name="following">Following</string>
     <string name="followers">Followers</string>
     <string name="no_posts_found">No posts found</string>
-    <string name="copy_pubkey">Copy public key</string>
     <string name="copy_content">Copy content</string>
     <string name="copy_id">Copy ID</string>
     <string name="public_key">Public key</string>
@@ -110,6 +109,8 @@
     <string name="advanced">Advanced</string>
     <string name="more">More</string>
     <string name="click_to_load_more">Click to load more</string>
+    <string name="lightning_address_copied">Lightning address copied</string>
+    <string name="open">Open</string>
     <plurals name="other_relays">
         <item quantity="one">other</item>
         <item quantity="other">others</item>

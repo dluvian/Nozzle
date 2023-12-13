@@ -36,6 +36,7 @@ import com.dluvian.nozzle.ui.app.navigation.PostCardNavLambdas
 import com.dluvian.nozzle.ui.components.CopyIcon
 import com.dluvian.nozzle.ui.components.EditProfileButton
 import com.dluvian.nozzle.ui.components.FollowButton
+import com.dluvian.nozzle.ui.components.LightningIcon
 import com.dluvian.nozzle.ui.components.dialog.RelaysDialog
 import com.dluvian.nozzle.ui.components.hint.NoPostsHint
 import com.dluvian.nozzle.ui.components.media.ProfilePicture
@@ -123,10 +124,11 @@ private fun ProfileData(
             onUnfollow = onUnfollow,
             onNavToEditProfile = onNavToEditProfile,
         )
-        NameAndNprofile(
+        ProfileStrings(
             name = profile.metadata.name.orEmpty()
                 .ifEmpty { getShortenedNpubFromPubkey(profile.pubkey) ?: profile.pubkey },
             nprofile = profile.nprofile,
+            lud16 = profile.metadata.lud16
         )
         Spacer(Modifier.height(spacing.medium))
         profile.metadata.about?.let { about ->
@@ -241,9 +243,10 @@ private fun NumberedCategories(
 }
 
 @Composable
-private fun NameAndNprofile(
+private fun ProfileStrings(
     name: String,
     nprofile: String,
+    lud16: String?
 ) {
     Row(
         modifier = Modifier.fillMaxWidth(),
@@ -269,26 +272,59 @@ private fun NameAndNprofile(
                     )
                 }
             )
+            if (lud16 != null) {
+                Spacer(modifier = Modifier.height(spacing.small))
+                Lud16(
+                    lud16 = lud16,
+                    onCopyLud16 = {
+                        copyAndToast(
+                            text = lud16,
+                            toast = context.getString(R.string.lightning_address_copied),
+                            context = context,
+                            clip = clip
+                        )
+                    }
+                )
+            }
         }
     }
 }
 
 @Composable
-private fun CopyableNprofile(
-    nprofile: String,
-    onCopyNprofile: () -> Unit,
+private fun CopyableNprofile(nprofile: String, onCopyNprofile: () -> Unit) {
+    ProfileStringRow(text = nprofile,
+        onClick = onCopyNprofile,
+        leadingIcon = {
+            CopyIcon(modifier = Modifier.size(sizing.smallItem), tint = Color.LightGray)
+        }
+    )
+}
+
+@Composable
+private fun Lud16(lud16: String, onCopyLud16: () -> Unit) {
+    ProfileStringRow(
+        text = lud16,
+        onClick = onCopyLud16,
+        leadingIcon = {
+            LightningIcon(modifier = Modifier.size(sizing.smallItem), tint = Color.LightGray)
+        },
+    )
+}
+
+@Composable
+private fun ProfileStringRow(
+    text: String,
+    onClick: () -> Unit,
+    leadingIcon: @Composable () -> Unit,
 ) {
     Row(
-        Modifier.clickable(onClick = onCopyNprofile),
-        verticalAlignment = Alignment.CenterVertically
+        modifier = Modifier.clickable(onClick = onClick),
+        verticalAlignment = Alignment.CenterVertically,
     ) {
-        CopyIcon(
-            modifier = Modifier.size(sizing.smallItem),
-            description = stringResource(id = R.string.copy_pubkey),
-            tint = Color.LightGray
-        )
+        leadingIcon()
+        Spacer(modifier = Modifier.width(spacing.small))
         Text(
-            text = nprofile,
+            text = text,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
             color = Color.LightGray,

@@ -14,7 +14,6 @@
     <string name="following">关注</string>
     <string name="followers">粉丝</string>
     <string name="no_posts_found">未发现帖子</string>
-    <string name="copy_pubkey">复制公钥</string>
     <string name="public_key">公钥</string>
     <string name="return_back">返回</string>
     <string name="copy_content">复制</string>
