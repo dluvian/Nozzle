@@ -5,9 +5,8 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.dluvian.nozzle.data.SCOPE_TIMEOUT
 import com.dluvian.nozzle.data.nostr.nip05.INip05Resolver
-import com.dluvian.nozzle.data.nostr.utils.EncodingUtils.URI
+import com.dluvian.nozzle.data.nostr.utils.EncodingUtils
 import com.dluvian.nozzle.data.nostr.utils.EncodingUtils.createNprofileStr
-import com.dluvian.nozzle.data.nostr.utils.EncodingUtils.nostrStrToNostrId
 import com.dluvian.nozzle.data.provider.ISimpleProfileProvider
 import com.dluvian.nozzle.data.subscriber.INozzleSubscriber
 import com.dluvian.nozzle.data.utils.HashtagUtils
@@ -41,13 +40,24 @@ class SearchViewModel(
 
     var profileSearchResult: StateFlow<List<ProfileSearchResult>> = MutableStateFlow(emptyList())
 
-    val onSearch: (String) -> Unit = local@{ input ->
+    private var searchJob: Job? = null
+    val onTypeSearch: (String) -> Unit = { input ->
+        setLoading(true)
+        searchJob?.cancel()
+        searchJob = viewModelScope.launch(context = Dispatchers.IO) {
+            handleNameSearch(input.trim())
+        }
+        searchJob?.invokeOnCompletion { setLoading(false) }
+    }
+
+    val onManualSearch: (String) -> Unit = local@{ input ->
         if (input.isBlank()) return@local
 
         val trimmed = input.trim()
         if (HashtagUtils.isHashtag(trimmed)) setFinalId(trimmed)
         else if (nip05Resolver.isNip05(trimmed)) resolveNip05(trimmed)
-        else when (val nostrId = nostrStrToNostrId(nostrStr = trimmed.removePrefix(URI))) {
+        else when (val nostrId =
+            EncodingUtils.nostrStrToNostrId(nostrStr = trimmed.removePrefix(EncodingUtils.URI))) {
             is NpubNostrId,
             is NprofileNostrId,
             is NoteNostrId,
@@ -94,12 +104,11 @@ class SearchViewModel(
         }
     }
 
+    private var nameSearchJob: Job? = null
     private fun handleNameSearch(name: String) {
-        if (name.isBlank()) return
-        if (_uiState.value.isLoading) return
         setLoading(true)
-
-        viewModelScope.launch(context = Dispatchers.IO) {
+        nameSearchJob?.cancel()
+        nameSearchJob = viewModelScope.launch(context = Dispatchers.IO) {
             profileSearchResult = simpleProfileProvider
                 .getSimpleProfilesFlow(nameLike = name)
                 .distinctUntilChanged()
@@ -107,9 +116,8 @@ class SearchViewModel(
                 .stateIn(
                     viewModelScope, SharingStarted.WhileSubscribed(SCOPE_TIMEOUT), emptyList()
                 )
-        }.invokeOnCompletion {
-            setLoading(false)
         }
+        nameSearchJob?.invokeOnCompletion { setLoading(false) }
     }
 
     private fun setNip05Invalid() {

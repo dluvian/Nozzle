@@ -31,7 +31,8 @@ import com.dluvian.nozzle.ui.components.itemRow.PictureAndName
 fun SearchScreen(
     uiState: SearchViewModelState,
     profileSearchResult: List<ProfileSearchResult>,
-    onSearch: (String) -> Unit,
+    onManualSearch: (String) -> Unit,
+    onTypeSearch: (String) -> Unit,
     onResetUI: () -> Unit,
     onSubscribeUnknownContacts: () -> Unit,
     onNavigateToId: (String) -> Unit,
@@ -48,7 +49,7 @@ fun SearchScreen(
                 if (uiState.isLoading) TopBarCircleProgressIndicator()
                 else SearchTopBarButton(
                     hasChanges = input.value.text.isNotBlank(),
-                    onSearch = { onSearch(input.value.text) },
+                    onSearch = { onManualSearch(input.value.text) },
                 )
             }
         )
@@ -56,7 +57,8 @@ fun SearchScreen(
             input = input,
             isInvalidNip05 = uiState.isInvalidNip05,
             focusRequester = focusRequester,
-            onSearch = { onSearch(input.value.text) }
+            onManualSearch = { onManualSearch(input.value.text) },
+            onTypeSearch = { onTypeSearch(input.value.text) },
         )
         LazyColumn(modifier = Modifier.fillMaxSize()) {
             items(profileSearchResult) {
@@ -86,7 +88,8 @@ private fun SearchBar(
     input: MutableState<TextFieldValue>,
     isInvalidNip05: Boolean,
     focusRequester: FocusRequester,
-    onSearch: () -> Unit,
+    onManualSearch: () -> Unit,
+    onTypeSearch: () -> Unit,
 ) {
     ChangeableTextField(
         modifier = Modifier
@@ -99,6 +102,7 @@ private fun SearchBar(
         errorLabel = if (isInvalidNip05) stringResource(id = R.string.failed_to_resolve_nip05)
         else null,
         keyboardImeAction = ImeAction.Search,
-        onImeAction = onSearch,
+        onChangeInput = { onTypeSearch() },
+        onImeAction = onManualSearch,
     )
 }

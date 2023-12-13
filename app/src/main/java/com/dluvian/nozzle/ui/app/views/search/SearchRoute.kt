@@ -17,7 +17,8 @@ fun SearchRoute(
     SearchScreen(
         uiState = uiState,
         profileSearchResult = profileSearchResult,
-        onSearch = searchViewModel.onSearch,
+        onManualSearch = searchViewModel.onManualSearch,
+        onTypeSearch = searchViewModel.onTypeSearch,
         onResetUI = searchViewModel.onResetUI,
         onSubscribeUnknownContacts = searchViewModel.onSubscribeUnknownContacts,
         onNavigateToId = onNavigateToId,
