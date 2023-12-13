@@ -272,7 +272,7 @@ private fun ProfileStrings(
                     )
                 }
             )
-            if (lud16 != null) {
+            if (!lud16.isNullOrBlank()) {
                 Spacer(modifier = Modifier.height(spacing.small))
                 Lud16(
                     lud16 = lud16,
