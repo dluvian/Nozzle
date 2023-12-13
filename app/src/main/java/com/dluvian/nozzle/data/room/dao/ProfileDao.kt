@@ -94,7 +94,11 @@ interface ProfileDao {
                 "UNION ALL " +
                 "SELECT pubkey FROM profile WHERE name LIKE :start " +
                 "UNION ALL " +
+                "SELECT pubkey FROM profile WHERE nip05 LIKE :start " +
+                "UNION ALL " +
                 "SELECT pubkey FROM profile WHERE name LIKE :somewhere " +
+                "UNION ALL " +
+                "SELECT pubkey FROM profile WHERE nip05 LIKE :somewhere " +
                 "UNION ALL " +
                 "SELECT pubkey FROM profile WHERE about LIKE :start " +
                 "UNION ALL " +
