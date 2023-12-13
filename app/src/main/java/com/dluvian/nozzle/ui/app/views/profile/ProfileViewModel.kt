@@ -5,7 +5,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.dluvian.nozzle.data.DB_BATCH_SIZE
-import com.dluvian.nozzle.data.MAX_RELAYS
 import com.dluvian.nozzle.data.SCOPE_TIMEOUT
 import com.dluvian.nozzle.data.cache.IClickedMediaUrlCache
 import com.dluvian.nozzle.data.nostr.utils.EncodingUtils.profileIdToNostrId
@@ -18,6 +17,7 @@ import com.dluvian.nozzle.data.provider.IPubkeyProvider
 import com.dluvian.nozzle.data.provider.IRelayProvider
 import com.dluvian.nozzle.data.provider.feed.IFeedProvider
 import com.dluvian.nozzle.data.utils.getCurrentTimeInSeconds
+import com.dluvian.nozzle.data.utils.getMaxRelays
 import com.dluvian.nozzle.model.CreatedAt
 import com.dluvian.nozzle.model.FeedSettings
 import com.dluvian.nozzle.model.MultipleRelays
@@ -148,15 +148,9 @@ class ProfileViewModel(
     }
 
     private suspend fun getRelays(pubkey: String): List<String> {
-        // TODO: Refactor into util function. Same in ProfileWithAdditionalInfoProvider
-        return recommendedRelays + relayProvider.getWriteRelaysOfPubkey(pubkey)
-            .let {
-                if (it.size > MAX_RELAYS) it.shuffled()
-                    .sortedByDescending { relay -> relayProvider.getReadRelays().contains(relay) }
-                    .take(MAX_RELAYS)
-                else it
-            }
-            .ifEmpty { relayProvider.getReadRelays() }
+        val relays = recommendedRelays + relayProvider.getWriteRelaysOfPubkey(pubkey)
+        val maxRelays = getMaxRelays(from = relays, prefer = relayProvider.getReadRelays())
+        return maxRelays.ifEmpty { relayProvider.getReadRelays() }
     }
 
     companion object {

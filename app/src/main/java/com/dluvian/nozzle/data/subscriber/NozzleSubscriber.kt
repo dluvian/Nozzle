@@ -1,7 +1,6 @@
 package com.dluvian.nozzle.data.subscriber
 
 import android.util.Log
-import com.dluvian.nozzle.data.MAX_RELAYS
 import com.dluvian.nozzle.data.WAIT_TIME
 import com.dluvian.nozzle.data.cache.IIdCache
 import com.dluvian.nozzle.data.nostr.INostrSubscriber
@@ -14,6 +13,7 @@ import com.dluvian.nozzle.data.provider.IPubkeyProvider
 import com.dluvian.nozzle.data.provider.IRelayProvider
 import com.dluvian.nozzle.data.room.AppDatabase
 import com.dluvian.nozzle.data.room.entity.PostEntity
+import com.dluvian.nozzle.data.utils.getMaxRelays
 import com.dluvian.nozzle.data.utils.takeRandom80percent
 import com.dluvian.nozzle.model.AllRelays
 import com.dluvian.nozzle.model.FeedInfo
@@ -444,14 +444,11 @@ class NozzleSubscriber(
             pubkeys = postIdsByPubkey.map { (pubkey, _) -> pubkey }
         )
         for ((pubkey, readRelays) in readRelaysByPubkey) {
-            readRelays.shuffled()
-                .sortedByDescending { result.keys.contains(it) }
-                .take(MAX_RELAYS)
-                .forEach { relay ->
-                    val postIdsToAdd = postIdsByPubkey[pubkey].orEmpty().toMutableList()
-                    val present = result.putIfAbsent(relay, postIdsToAdd)
-                    present?.addAll(postIdsToAdd)
-                }
+            getMaxRelays(from = readRelays, prefer = result.keys).forEach { relay ->
+                val postIdsToAdd = postIdsByPubkey[pubkey].orEmpty().toMutableList()
+                val present = result.putIfAbsent(relay, postIdsToAdd)
+                present?.addAll(postIdsToAdd)
+            }
         }
 
         return result
