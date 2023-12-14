@@ -8,8 +8,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import com.dluvian.nozzle.R
 import com.dluvian.nozzle.model.PostWithMeta
-import com.dluvian.nozzle.model.Pubkey
-import com.dluvian.nozzle.ui.app.navigation.PostCardNavLambdas
+import com.dluvian.nozzle.ui.app.navigation.PostCardLambdas
 import com.dluvian.nozzle.ui.components.ReturnableTopBar
 import com.dluvian.nozzle.ui.components.ShowRelaysButton
 import com.dluvian.nozzle.ui.components.hint.NoPostsHint
@@ -19,15 +18,10 @@ import com.dluvian.nozzle.ui.components.postCard.PostCardList
 fun InboxScreen(
     uiState: InboxViewModelState,
     feed: List<PostWithMeta>,
-    postCardNavLambdas: PostCardNavLambdas,
-    onLike: (PostWithMeta) -> Unit,
-    onShowMedia: (String) -> Unit,
-    onShouldShowMedia: (String) -> Boolean,
+    postCardLambdas: PostCardLambdas,
     onRefresh: () -> Unit,
     onLoadMore: () -> Unit,
     onPrepareReply: (PostWithMeta) -> Unit,
-    onFollow: (Pubkey) -> Unit,
-    onUnfollow: (Pubkey) -> Unit,
     onGoBack: () -> Unit,
 ) {
     Column {
@@ -45,15 +39,10 @@ fun InboxScreen(
             PostCardList(
                 posts = feed,
                 isRefreshing = uiState.isRefreshing,
-                postCardNavLambdas = postCardNavLambdas,
+                postCardLambdas = postCardLambdas,
                 onRefresh = onRefresh,
-                onLike = onLike,
-                onShowMedia = onShowMedia,
-                onShouldShowMedia = onShouldShowMedia, // TODO: Delete dis
                 onPrepareReply = onPrepareReply,
                 onLoadMore = onLoadMore,
-                onFollow = onFollow,
-                onUnfollow = onUnfollow
             )
         }
     }

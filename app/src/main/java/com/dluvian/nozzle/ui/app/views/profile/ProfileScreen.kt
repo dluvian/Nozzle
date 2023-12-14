@@ -32,7 +32,7 @@ import com.dluvian.nozzle.model.PostWithMeta
 import com.dluvian.nozzle.model.ProfileWithMeta
 import com.dluvian.nozzle.model.Pubkey
 import com.dluvian.nozzle.model.TrustType
-import com.dluvian.nozzle.ui.app.navigation.PostCardNavLambdas
+import com.dluvian.nozzle.ui.app.navigation.PostCardLambdas
 import com.dluvian.nozzle.ui.components.CopyIcon
 import com.dluvian.nozzle.ui.components.EditProfileButton
 import com.dluvian.nozzle.ui.components.FollowButton
@@ -53,15 +53,10 @@ fun ProfileScreen(
     profile: ProfileWithMeta,
     isFollowedByMe: Boolean,
     feed: List<PostWithMeta>,
-    postCardNavLambdas: PostCardNavLambdas,
+    postCardLambdas: PostCardLambdas,
     onPrepareReply: (PostWithMeta) -> Unit,
-    onLike: (PostWithMeta) -> Unit,
-    onFollow: (Pubkey) -> Unit,
-    onUnfollow: (Pubkey) -> Unit,
     onOpenFollowerList: (String) -> Unit,
     onOpenFollowedByList: (String) -> Unit,
-    onShowMedia: (String) -> Unit,
-    onShouldShowMedia: (String) -> Boolean,
     onRefresh: () -> Unit,
     onLoadMore: () -> Unit,
     onNavigateToEditProfile: () -> Unit,
@@ -70,10 +65,10 @@ fun ProfileScreen(
         ProfileData(
             profile = profile,
             isFollowedByMe = isFollowedByMe,
-            onFollow = onFollow,
-            onUnfollow = onUnfollow,
+            onFollow = postCardLambdas.onFollow,
+            onUnfollow = postCardLambdas.onUnfollow,
             onNavToEditProfile = onNavigateToEditProfile,
-            onNavigateToId = postCardNavLambdas.onNavigateToId,
+            onNavigateToId = postCardLambdas.navLambdas.onNavigateToId,
         )
         Spacer(Modifier.height(spacing.medium))
         NumberedCategories(
@@ -88,15 +83,10 @@ fun ProfileScreen(
         PostCardList(
             posts = feed,
             isRefreshing = isRefreshing,
-            postCardNavLambdas = postCardNavLambdas,
+            postCardLambdas = postCardLambdas,
             onRefresh = onRefresh,
-            onLike = onLike,
-            onShowMedia = onShowMedia,
-            onShouldShowMedia = onShouldShowMedia,
             onPrepareReply = onPrepareReply,
             onLoadMore = onLoadMore,
-            onFollow = onFollow,
-            onUnfollow = onUnfollow
         )
     }
     if (feed.isEmpty()) NoPostsHint()

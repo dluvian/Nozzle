@@ -4,20 +4,15 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
-import androidx.lifecycle.viewModelScope
-import com.dluvian.nozzle.data.cache.IClickedMediaUrlCache
-import com.dluvian.nozzle.data.postCardInteractor.IPostCardInteractor
 import com.dluvian.nozzle.data.profileFollower.IProfileFollower
 import com.dluvian.nozzle.model.PostWithMeta
-import com.dluvian.nozzle.ui.app.navigation.PostCardNavLambdas
+import com.dluvian.nozzle.ui.app.navigation.PostCardLambdas
 
 @Composable
 fun InboxRoute(
     inboxViewModel: InboxViewModel,
-    postCardInteractor: IPostCardInteractor,
-    mediaCache: IClickedMediaUrlCache,
     profileFollower: IProfileFollower,
-    postCardNavLambdas: PostCardNavLambdas,
+    postCardLambdas: PostCardLambdas,
     onPrepareReply: (PostWithMeta) -> Unit,
     onGoBack: () -> Unit,
 ) {
@@ -32,25 +27,10 @@ fun InboxRoute(
     InboxScreen(
         uiState = uiState,
         feed = adjustedFeed,
-        postCardNavLambdas = postCardNavLambdas,
-        onLike = { post ->
-            postCardInteractor.like(
-                scope = inboxViewModel.viewModelScope,
-                postId = post.entity.id,
-                postPubkey = post.pubkey
-            )
-        },
-        onShowMedia = { mediaUrl -> mediaCache.insert(mediaUrl) },
-        onShouldShowMedia = { mediaUrl -> mediaCache.contains(mediaUrl) },
+        postCardLambdas = postCardLambdas,
         onRefresh = inboxViewModel.onRefresh,
         onLoadMore = inboxViewModel.onLoadMore,
         onPrepareReply = onPrepareReply,
-        onFollow = { pubkeyToFollow ->
-            profileFollower.follow(pubkeyToFollow = pubkeyToFollow)
-        },
-        onUnfollow = { pubkeyToUnfollow ->
-            profileFollower.unfollow(pubkeyToUnfollow = pubkeyToUnfollow)
-        },
         onGoBack = onGoBack
     )
 }

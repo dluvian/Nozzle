@@ -21,9 +21,8 @@ import androidx.compose.ui.res.stringResource
 import com.dluvian.nozzle.R
 import com.dluvian.nozzle.model.PostThread
 import com.dluvian.nozzle.model.PostWithMeta
-import com.dluvian.nozzle.model.Pubkey
 import com.dluvian.nozzle.model.ThreadPosition
-import com.dluvian.nozzle.ui.app.navigation.PostCardNavLambdas
+import com.dluvian.nozzle.ui.app.navigation.PostCardLambdas
 import com.dluvian.nozzle.ui.components.PullRefreshBox
 import com.dluvian.nozzle.ui.components.ReturnableTopBar
 import com.dluvian.nozzle.ui.components.hint.NoPostsHint
@@ -37,15 +36,10 @@ import com.dluvian.nozzle.ui.theme.spacing
 fun ThreadScreen(
     thread: PostThread,
     isRefreshing: Boolean,
-    postCardNavLambdas: PostCardNavLambdas,
+    postCardLambdas: PostCardLambdas,
     onPrepareReply: (PostWithMeta) -> Unit,
-    onLike: (PostWithMeta) -> Unit,
     onRefreshThreadView: () -> Unit,
     onFindPrevious: () -> Unit,
-    onShowMedia: (String) -> Unit,
-    onShouldShowMedia: (String) -> Boolean,
-    onFollow: (Pubkey) -> Unit,
-    onUnfollow: (Pubkey) -> Unit,
     onGoBack: () -> Unit,
 ) {
     Column {
@@ -54,15 +48,10 @@ fun ThreadScreen(
             ThreadedPosts(
                 thread = thread,
                 isRefreshing = isRefreshing,
-                postCardNavLambdas = postCardNavLambdas,
+                postCardLambdas = postCardLambdas,
                 onPrepareReply = onPrepareReply,
                 onRefresh = onRefreshThreadView,
-                onLike = onLike,
                 onFindPrevious = onFindPrevious,
-                onShowMedia = onShowMedia,
-                onShouldShowMedia = onShouldShowMedia,
-                onFollow = onFollow,
-                onUnfollow = onUnfollow,
             )
         }
     }
@@ -73,15 +62,10 @@ fun ThreadScreen(
 private fun ThreadedPosts(
     thread: PostThread,
     isRefreshing: Boolean,
-    postCardNavLambdas: PostCardNavLambdas,
+    postCardLambdas: PostCardLambdas,
     onPrepareReply: (PostWithMeta) -> Unit,
     onRefresh: () -> Unit,
-    onLike: (PostWithMeta) -> Unit,
     onFindPrevious: () -> Unit,
-    onShowMedia: (String) -> Unit,
-    onShouldShowMedia: (String) -> Boolean,
-    onFollow: (Pubkey) -> Unit,
-    onUnfollow: (Pubkey) -> Unit,
 ) {
     val lazyListState = rememberLazyListState(initialFirstVisibleItemIndex = thread.previous.size)
     val alreadyScrolled = remember(thread.current?.entity?.id) { mutableStateOf(false) }
@@ -110,14 +94,9 @@ private fun ThreadedPosts(
                     }
                     PostCard(
                         post = post,
-                        postCardNavLambdas = postCardNavLambdas,
-                        onLike = { onLike(post) },
+                        postCardLambdas = postCardLambdas,
                         onPrepareReply = onPrepareReply,
-                        onShowMedia = onShowMedia,
-                        onShouldShowMedia = onShouldShowMedia,
                         threadPosition = if (index == 0) ThreadPosition.START else ThreadPosition.MIDDLE,
-                        onFollow = onFollow,
-                        onUnfollow = onUnfollow
                     )
                 }
                 item {
@@ -130,8 +109,7 @@ private fun ThreadedPosts(
                     val focusColor = colors.primaryVariant
                     PostCard(
                         post = it,
-                        postCardNavLambdas = postCardNavLambdas,
-                        onLike = { onLike(it) },
+                        postCardLambdas = postCardLambdas,
                         onPrepareReply = onPrepareReply,
                         modifier = Modifier.drawBehind {
                             drawLine(
@@ -141,12 +119,8 @@ private fun ThreadedPosts(
                                 end = Offset(x = 0f, y = size.height),
                             )
                         },
-                        onShowMedia = onShowMedia,
-                        onShouldShowMedia = onShouldShowMedia,
                         isCurrent = true,
                         threadPosition = thread.getCurrentThreadPosition(),
-                        onFollow = onFollow,
-                        onUnfollow = onUnfollow
                     )
                     Divider()
                     Spacer(modifier = Modifier.height(spacing.tiny))
@@ -155,13 +129,8 @@ private fun ThreadedPosts(
                 items(items = thread.replies, key = { it.entity.id }) { post ->
                     PostCard(
                         post = post,
-                        postCardNavLambdas = postCardNavLambdas,
-                        onLike = { onLike(post) },
+                        postCardLambdas = postCardLambdas,
                         onPrepareReply = onPrepareReply,
-                        onShowMedia = onShowMedia,
-                        onShouldShowMedia = onShouldShowMedia,
-                        onFollow = onFollow,
-                        onUnfollow = onUnfollow
                     )
                 }
             }

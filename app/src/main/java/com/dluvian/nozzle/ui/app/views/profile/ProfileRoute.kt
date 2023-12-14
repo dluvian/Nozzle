@@ -4,20 +4,15 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
-import androidx.lifecycle.viewModelScope
-import com.dluvian.nozzle.data.cache.IClickedMediaUrlCache
-import com.dluvian.nozzle.data.postCardInteractor.IPostCardInteractor
 import com.dluvian.nozzle.data.profileFollower.IProfileFollower
 import com.dluvian.nozzle.model.PostWithMeta
-import com.dluvian.nozzle.ui.app.navigation.PostCardNavLambdas
+import com.dluvian.nozzle.ui.app.navigation.PostCardLambdas
 
 @Composable
 fun ProfileRoute(
     profileViewModel: ProfileViewModel,
     profileFollower: IProfileFollower,
-    postCardInteractor: IPostCardInteractor,
-    mediaCache: IClickedMediaUrlCache,
-    postCardNavLambdas: PostCardNavLambdas,
+    postCardLambdas: PostCardLambdas,
     onOpenFollowerList: (String) -> Unit,
     onOpenFollowedByList: (String) -> Unit,
     onPrepareReply: (PostWithMeta) -> Unit,
@@ -38,25 +33,10 @@ fun ProfileRoute(
         profile = profile,
         isFollowedByMe = forceFollowed[profile.pubkey] ?: contactList.contains(profile.pubkey),
         feed = adjustedFeed,
-        postCardNavLambdas = postCardNavLambdas,
+        postCardLambdas = postCardLambdas,
         onPrepareReply = onPrepareReply,
-        onLike = { post ->
-            postCardInteractor.like(
-                scope = profileViewModel.viewModelScope,
-                postId = post.entity.id,
-                postPubkey = post.pubkey
-            )
-        },
-        onFollow = { pubkeyToFollow ->
-            profileFollower.follow(pubkeyToFollow = pubkeyToFollow)
-        },
-        onUnfollow = { pubkeyToUnfollow ->
-            profileFollower.unfollow(pubkeyToUnfollow = pubkeyToUnfollow)
-        },
         onOpenFollowerList = onOpenFollowerList,
         onOpenFollowedByList = onOpenFollowedByList,
-        onShowMedia = { mediaUrl -> mediaCache.insert(mediaUrl) },
-        onShouldShowMedia = { mediaUrl -> mediaCache.contains(mediaUrl) },
         onRefresh = profileViewModel.onRefresh,
         onLoadMore = profileViewModel.onLoadMore,
         onNavigateToEditProfile = onNavigateToEditProfile,

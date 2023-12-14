@@ -5,13 +5,13 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import com.dluvian.nozzle.data.profileFollower.IProfileFollower
-import com.dluvian.nozzle.model.Pubkey
+import com.dluvian.nozzle.ui.app.navigation.PostCardLambdas
 
 @Composable
 fun ProfileListRoute(
     profileListViewModel: ProfileListViewModel,
     profileFollower: IProfileFollower,
-    onNavigateToProfile: (Pubkey) -> Unit,
+    postCardLambdas: PostCardLambdas,
     onGoBack: () -> Unit,
 ) {
     val isRefreshing by profileListViewModel.isRefreshing.collectAsState()
@@ -29,15 +29,11 @@ fun ProfileListRoute(
         pubkey = pubkey,
         isRefreshing = isRefreshing,
         type = type,
-        onFollow = { pubkeyToFollow ->
-            profileFollower.follow(pubkeyToFollow = pubkeyToFollow)
-        },
-        onUnfollow = { pubkeyToUnfollow ->
-            profileFollower.unfollow(pubkeyToUnfollow = pubkeyToUnfollow)
-        },
+        onFollow = postCardLambdas.onFollow,
+        onUnfollow = postCardLambdas.onUnfollow,
         onLoadMore = profileListViewModel.onLoadMore,
         onSubscribeToUnknowns = profileListViewModel.onSubscribeToUnknowns,
-        onNavigateToProfile = onNavigateToProfile,
+        onNavigateToProfile = postCardLambdas.navLambdas.onNavigateToProfile,
         onGoBack = onGoBack
     )
 }

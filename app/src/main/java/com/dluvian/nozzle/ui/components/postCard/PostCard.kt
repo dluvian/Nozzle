@@ -31,10 +31,9 @@ import com.dluvian.nozzle.R
 import com.dluvian.nozzle.data.nostr.utils.EncodingUtils.createNeventStr
 import com.dluvian.nozzle.data.utils.copyAndToast
 import com.dluvian.nozzle.model.PostWithMeta
-import com.dluvian.nozzle.model.Pubkey
 import com.dluvian.nozzle.model.ThreadPosition
 import com.dluvian.nozzle.model.TrustType
-import com.dluvian.nozzle.ui.app.navigation.PostCardNavLambdas
+import com.dluvian.nozzle.ui.app.navigation.PostCardLambdas
 import com.dluvian.nozzle.ui.components.LikeIcon
 import com.dluvian.nozzle.ui.components.QuoteIcon
 import com.dluvian.nozzle.ui.components.ReplyIcon
@@ -50,14 +49,9 @@ import com.dluvian.nozzle.ui.theme.spacing
 @Composable
 fun PostCard(
     post: PostWithMeta,
-    postCardNavLambdas: PostCardNavLambdas,
-    onLike: () -> Unit,
+    postCardLambdas: PostCardLambdas,
     onPrepareReply: (PostWithMeta) -> Unit,
-    onFollow: (Pubkey) -> Unit,
-    onUnfollow: (Pubkey) -> Unit,
     modifier: Modifier = Modifier,
-    onShowMedia: (String) -> Unit,
-    onShouldShowMedia: (String) -> Boolean,
     isCurrent: Boolean = false,
     threadPosition: ThreadPosition = ThreadPosition.SINGLE,
 ) {
@@ -68,7 +62,7 @@ fun PostCard(
     Row(modifier
         .combinedClickable(
             enabled = !isCurrent,
-            onClick = { postCardNavLambdas.onNavigateToThread(post.entity.id) })
+            onClick = { postCardLambdas.navLambdas.onNavigateToThread(post.entity.id) })
         .fillMaxWidth()
         .drawBehind {
             when (threadPosition) {
@@ -124,22 +118,14 @@ fun PostCard(
                 isFollowed = post.isFollowedByMe,
                 trustScore = post.trustScore,
             ),
-            onNavigateToProfile = postCardNavLambdas.onNavigateToProfile,
+            onNavigateToProfile = postCardLambdas.navLambdas.onNavigateToProfile,
         )
         Spacer(Modifier.width(spacing.large))
         Column {
             PostCardHeaderAndContent(
                 post = post,
                 isCurrent = isCurrent,
-                onNavigateToProfile = postCardNavLambdas.onNavigateToProfile,
-                onNavigateToThread = {
-                    if (!isCurrent) {
-                        postCardNavLambdas.onNavigateToThread(post.entity.id)
-                    }
-                },
-                onNavigateToId = postCardNavLambdas.onNavigateToId,
-                onFollow = onFollow,
-                onUnfollow = onUnfollow,
+                postCardLambdas = postCardLambdas,
             )
 
             post.mediaUrls.forEach { mediaUrl ->
@@ -147,8 +133,8 @@ fun PostCard(
                 MediaDecisionCard(
                     modifier = Modifier.fillMaxWidth(),
                     mediaUrl = mediaUrl,
-                    onShowMedia = onShowMedia,
-                    onShouldShowMedia = onShouldShowMedia,
+                    onShowMedia = postCardLambdas.onShowMedia,
+                    onShouldShowMedia = postCardLambdas.onShouldShowMedia,
                 )
             }
 
@@ -156,9 +142,9 @@ fun PostCard(
                 Spacer(Modifier.height(spacing.medium))
                 AnnotatedMentionedPostCard(
                     post = mentionedPost,
-                    onNavigateToProfile = postCardNavLambdas.onNavigateToProfile,
-                    onNavigateToThread = postCardNavLambdas.onNavigateToThread,
-                    onNavigateToId = postCardNavLambdas.onNavigateToId,
+                    onNavigateToProfile = postCardLambdas.navLambdas.onNavigateToProfile,
+                    onNavigateToThread = postCardLambdas.navLambdas.onNavigateToThread,
+                    onNavigateToId = postCardLambdas.navLambdas.onNavigateToId,
                 )
             }
 
@@ -167,10 +153,10 @@ fun PostCard(
                 modifier = Modifier.fillMaxWidth(0.92f),
                 numOfReplies = post.numOfReplies,
                 post = post,
-                onLike = onLike,
+                onLike = { postCardLambdas.onLike(post) },
                 onPrepareReply = onPrepareReply, // TODO: No prepareReply
-                onNavigateToReply = postCardNavLambdas.onNavigateToReply,
-                onNavigateToQuote = postCardNavLambdas.onNavigateToQuote,
+                onNavigateToReply = postCardLambdas.navLambdas.onNavigateToReply,
+                onNavigateToQuote = postCardLambdas.navLambdas.onNavigateToQuote,
             )
         }
     }
@@ -180,11 +166,7 @@ fun PostCard(
 private fun PostCardHeaderAndContent(
     post: PostWithMeta,
     isCurrent: Boolean,
-    onNavigateToProfile: ((String) -> Unit)?,
-    onNavigateToThread: () -> Unit,
-    onNavigateToId: (String) -> Unit,
-    onFollow: (Pubkey) -> Unit,
-    onUnfollow: (Pubkey) -> Unit,
+    postCardLambdas: PostCardLambdas,
 ) {
     val context = LocalContext.current
     val clip = LocalClipboardManager.current
@@ -193,7 +175,7 @@ private fun PostCardHeaderAndContent(
             name = post.name,
             pubkey = post.pubkey,
             createdAt = post.entity.createdAt,
-            onOpenProfile = onNavigateToProfile,
+            onOpenProfile = postCardLambdas.navLambdas.onNavigateToProfile,
             showOptions = true,
             onCopyId = {
                 copyAndToast(
@@ -212,10 +194,10 @@ private fun PostCardHeaderAndContent(
                 )
             },
             onFollow = if (post.isFollowedByMe) null else {
-                { onFollow(post.pubkey) }
+                { postCardLambdas.onFollow(post.pubkey) }
             },
             onUnfollow = if (!post.isFollowedByMe) null else {
-                { onUnfollow(post.pubkey) }
+                { postCardLambdas.onUnfollow(post.pubkey) }
             }
         )
         PostCardContentBase(
@@ -224,8 +206,12 @@ private fun PostCardHeaderAndContent(
             relays = post.relays,
             annotatedContent = post.annotatedContent,
             isCurrent = isCurrent,
-            onNavigateToThread = onNavigateToThread,
-            onNavigateToId = onNavigateToId,
+            onNavigateToThread = {
+                if (!isCurrent) {
+                    postCardLambdas.navLambdas.onNavigateToThread(post.entity.id)
+                }
+            },
+            onNavigateToId = postCardLambdas.navLambdas.onNavigateToId,
         )
     }
 }

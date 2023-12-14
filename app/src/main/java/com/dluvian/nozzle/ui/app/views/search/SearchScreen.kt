@@ -35,9 +35,8 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import com.dluvian.nozzle.R
 import com.dluvian.nozzle.model.PostWithMeta
-import com.dluvian.nozzle.model.Pubkey
 import com.dluvian.nozzle.model.SimpleProfile
-import com.dluvian.nozzle.ui.app.navigation.PostCardNavLambdas
+import com.dluvian.nozzle.ui.app.navigation.PostCardLambdas
 import com.dluvian.nozzle.ui.components.ChangeableTextField
 import com.dluvian.nozzle.ui.components.ReturnableTopBar
 import com.dluvian.nozzle.ui.components.SearchTopBarButton
@@ -52,22 +51,15 @@ import com.dluvian.nozzle.ui.theme.spacing
 @Composable
 fun SearchScreen(
     uiState: SearchViewModelState,
+    postCardLambdas: PostCardLambdas,
     profileSearchResult: List<SimpleProfile>,
     postSearchResult: List<PostWithMeta>,
-    postCardNavLambdas: PostCardNavLambdas,
     onManualSearch: (String) -> Unit,
     onTypeSearch: (String) -> Unit,
     onChangeSearchType: (SearchType) -> Unit,
     onResetUI: () -> Unit,
     onSubscribeUnknownContacts: () -> Unit,
-    onLike: (PostWithMeta) -> Unit,
     onPrepareReply: (PostWithMeta) -> Unit,
-    onShowMedia: (String) -> Unit,
-    onShouldShowMedia: (String) -> Boolean,
-    onFollow: (Pubkey) -> Unit,
-    onUnfollow: (Pubkey) -> Unit,
-    onNavigateToId: (String) -> Unit,
-    onNavigateToProfile: (Pubkey) -> Unit,
     onGoBack: () -> Unit,
 ) {
     val focusRequester = remember { FocusRequester() }
@@ -105,9 +97,9 @@ fun SearchScreen(
                         ItemRow(content = {
                             PictureAndName(
                                 profile = it,
-                                onNavigateToProfile = onNavigateToProfile
+                                onNavigateToProfile = postCardLambdas.navLambdas.onNavigateToProfile
                             )
-                        }, onClick = { onNavigateToProfile(it.pubkey) })
+                        }, onClick = { postCardLambdas.navLambdas.onNavigateToProfile(it.pubkey) })
                     }
                 }
 
@@ -116,23 +108,18 @@ fun SearchScreen(
                         ItemRow(content = {
                             PostCard(
                                 post = it,
-                                postCardNavLambdas = postCardNavLambdas,
-                                onLike = { onLike(it) },
+                                postCardLambdas = postCardLambdas,
                                 onPrepareReply = onPrepareReply,
-                                onShowMedia = onShowMedia,
-                                onShouldShowMedia = onShouldShowMedia,
                                 isCurrent = true,
-                                onFollow = onFollow,
-                                onUnfollow = onUnfollow
                             )
-                        }, onClick = { onNavigateToProfile(it.pubkey) })
+                        }, onClick = { postCardLambdas.navLambdas.onNavigateToProfile(it.pubkey) })
                     }
                 }
             }
         }
     }
     val finalIdIsNotEmpty = remember(uiState.finalId) { uiState.finalId.isNotEmpty() }
-    if (finalIdIsNotEmpty) onNavigateToId(uiState.finalId)
+    if (finalIdIsNotEmpty) postCardLambdas.navLambdas.onNavigateToId(uiState.finalId)
 
 
     DisposableEffect(true) {
