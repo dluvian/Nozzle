@@ -180,7 +180,7 @@ private fun PostCardHeaderAndContent(
             onCopyId = {
                 copyAndToast(
                     text = createNeventStr(postId = post.entity.id, relays = post.relays).orEmpty(),
-                    toast = context.getString(R.string.note_id_copied),
+                    toast = context.getString(R.string.copied_note_id),
                     context = context,
                     clip = clip
                 )
@@ -188,7 +188,7 @@ private fun PostCardHeaderAndContent(
             onCopyContent = {
                 copyAndToast(
                     text = post.entity.content,
-                    toast = context.getString(R.string.content_copied),
+                    toast = context.getString(R.string.copied_content),
                     context = context,
                     clip = clip
                 )

@@ -256,7 +256,7 @@ private fun ProfileStrings(
                 onCopyNprofile = {
                     copyAndToast(
                         text = nprofile,
-                        toast = context.getString(R.string.profile_id_copied),
+                        toast = context.getString(R.string.copied_profile_id),
                         context = context,
                         clip = clip
                     )
@@ -269,7 +269,7 @@ private fun ProfileStrings(
                     onCopyLud16 = {
                         copyAndToast(
                             text = lud16,
-                            toast = context.getString(R.string.lightning_address_copied),
+                            toast = context.getString(R.string.copied_lightning_address),
                             context = context,
                             clip = clip
                         )

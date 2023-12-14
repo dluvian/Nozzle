@@ -64,7 +64,7 @@ private fun Npub(npub: String) {
             CopyIcon(onCopy = {
                 copyAndToast(
                     text = npub,
-                    toast = context.getString(R.string.public_key_copied),
+                    toast = context.getString(R.string.copied_public_key),
                     context = context,
                     clip = clip
                 )
@@ -110,7 +110,7 @@ private fun NsecTrailingIcons(nsec: String, isVisible: Boolean, onToggleVisibili
         CopyIcon(onCopy = {
             copyAndToast(
                 text = nsec,
-                toast = context.getString(R.string.private_key_copied),
+                toast = context.getString(R.string.copied_private_key),
                 context = context,
                 clip = clip
             )

@@ -25,9 +25,12 @@
     <string name="public_key_explanation">Your public key identifies your account. You can share it with anyone trying to find you.</string>
     <string name="private_key_description">Your private key verifies your identity.</string>
     <string name="private_key_warning">Do not share it with anyone else!</string>
-    <string name="profile_id_copied">Profile ID copied</string>
-    <string name="public_key_copied">Public key copied</string>
-    <string name="private_key_copied">Private key copied</string>
+    <string name="copied_profile_id">Copied profile ID</string>
+    <string name="copied_public_key">Copied public key</string>
+    <string name="copied_private_key">Copied private key</string>
+    <string name="copied_note_id">Copied note ID</string>
+    <string name="copied_content">Copied content</string>
+    <string name="copied_lightning_address">Copied lightning address</string>
     <string name="enter_your_username">Enter your username</string>
     <string name="username">Username</string>
     <string name="about_you">About you</string>
@@ -66,8 +69,7 @@
     <string name="time_abbr_week">w</string>
     <string name="time_abbr_month">M</string>
     <string name="time_abbr_year">y</string>
-    <string name="note_id_copied">Note ID copied</string>
-    <string name="content_copied">Content copied</string>
+
     <string name="in_relay">in</string>
     <string name="and">and</string>
     <string name="relays">Relays</string>
@@ -109,7 +111,6 @@
     <string name="advanced">Advanced</string>
     <string name="more">More</string>
     <string name="click_to_load_more">Click to load more</string>
-    <string name="lightning_address_copied">Lightning address copied</string>
     <string name="open">Open</string>
     <string name="notes">Notes</string>
     <string name="people">People</string>

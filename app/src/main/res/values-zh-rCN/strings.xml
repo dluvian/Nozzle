@@ -23,9 +23,9 @@
     <string name="public_key_explanation">你的公钥就是你对外身份的标志，通过分享公钥可以让其他人找到你</string>
     <string name="private_key_description">你的密钥则是用于验证你的身份</string>
     <string name="private_key_warning">不要！不要！不要把它交给任何人</string>
-    <string name="profile_id_copied">身份ID已复制</string>
-    <string name="public_key_copied">公钥已复制</string>
-    <string name="private_key_copied">私钥已复制</string>
+    <string name="copied_profile_id">身份ID已复制</string>
+    <string name="copied_public_key">公钥已复制</string>
+    <string name="copied_private_key">私钥已复制</string>
     <string name="enter_your_username">给你自己起个名字吧！</string>
     <string name="username">用户名</string>
     <string name="about_you">个性签名</string>
@@ -63,7 +63,7 @@
     <string name="time_abbr_week">周</string>
     <string name="time_abbr_month">月</string>
     <string name="time_abbr_year">年</string>
-    <string name="note_id_copied">帖子ID已复制</string>
+    <string name="copied_note_id">帖子ID已复制</string>
     <string name="in_relay">在</string>
     <string name="and">和</string>
     <string name="relays">转发器</string>
