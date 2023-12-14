@@ -93,17 +93,17 @@ interface ProfileDao {
     @Query(
         "SELECT pubkey FROM profile WHERE name = :name " +
                 "UNION ALL " +
-                "SELECT pubkey FROM profile WHERE name LIKE :start " +
+                "SELECT pubkey FROM profile WHERE name LIKE :start ESCAPE '\\' " +
                 "UNION ALL " +
-                "SELECT pubkey FROM profile WHERE nip05 LIKE :start " +
+                "SELECT pubkey FROM profile WHERE nip05 LIKE :start ESCAPE '\\' " +
                 "UNION ALL " +
-                "SELECT pubkey FROM profile WHERE name LIKE :somewhere " +
+                "SELECT pubkey FROM profile WHERE name LIKE :somewhere ESCAPE '\\' " +
                 "UNION ALL " +
-                "SELECT pubkey FROM profile WHERE nip05 LIKE :somewhere " +
+                "SELECT pubkey FROM profile WHERE nip05 LIKE :somewhere ESCAPE '\\' " +
                 "UNION ALL " +
-                "SELECT pubkey FROM profile WHERE about LIKE :start " +
+                "SELECT pubkey FROM profile WHERE about LIKE :start ESCAPE '\\' " +
                 "UNION ALL " +
-                "SELECT pubkey FROM profile WHERE about LIKE :somewhere " +
+                "SELECT pubkey FROM profile WHERE about LIKE :somewhere ESCAPE '\\' " +
                 "LIMIT :limit"
     )
     suspend fun internalGetPubkeysWithNameLike(

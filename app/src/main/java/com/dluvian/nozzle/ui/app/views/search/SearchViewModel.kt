@@ -90,7 +90,6 @@ class SearchViewModel(
                 isLoading = false,
                 isInvalidNip05 = false,
                 finalId = "",
-                searchType = SearchType.PEOPLE
             )
         }
     }

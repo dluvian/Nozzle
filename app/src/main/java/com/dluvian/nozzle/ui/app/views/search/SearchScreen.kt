@@ -96,7 +96,7 @@ fun SearchScreen(
             searchType = currentSearchType.value,
             onChangeSearchType = { newSearchType ->
                 onChangeSearchType(newSearchType)
-                onTypeSearch(input.value.text)
+                if (uiState.searchType != newSearchType) onTypeSearch(input.value.text)
             })
         LazyColumn(modifier = Modifier.fillMaxSize()) {
             when (currentSearchType.value) {
@@ -141,6 +141,7 @@ fun SearchScreen(
     LaunchedEffect(Unit) {
         focusRequester.requestFocus()
         onSubscribeUnknownContacts()
+        onTypeSearch("")
     }
 }
 

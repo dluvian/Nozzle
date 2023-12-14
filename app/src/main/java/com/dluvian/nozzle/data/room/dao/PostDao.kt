@@ -263,9 +263,9 @@ interface PostDao {
 
     // UNION ALL retains order
     @Query(
-        "SELECT * FROM post WHERE content LIKE :start " +
+        "SELECT * FROM post WHERE content LIKE :start ESCAPE '\\' " +
                 "UNION ALL " +
-                "SELECT * FROM post WHERE content LIKE :somewhere " +
+                "SELECT * FROM post WHERE content LIKE :somewhere ESCAPE '\\' " +
                 "LIMIT :limit"
     )
     suspend fun internalGetPostsWithSimilarContent(
