@@ -5,6 +5,8 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.lifecycle.viewModelScope
+import com.dluvian.nozzle.data.cache.IClickedMediaUrlCache
+import com.dluvian.nozzle.data.postCardInteractor.IPostCardInteractor
 import com.dluvian.nozzle.data.profileFollower.IProfileFollower
 import com.dluvian.nozzle.model.PostWithMeta
 import com.dluvian.nozzle.ui.app.navigation.PostCardNavLambdas
@@ -13,6 +15,8 @@ import com.dluvian.nozzle.ui.app.navigation.PostCardNavLambdas
 fun ProfileRoute(
     profileViewModel: ProfileViewModel,
     profileFollower: IProfileFollower,
+    postCardInteractor: IPostCardInteractor,
+    mediaCache: IClickedMediaUrlCache,
     postCardNavLambdas: PostCardNavLambdas,
     onOpenFollowerList: (String) -> Unit,
     onOpenFollowedByList: (String) -> Unit,
@@ -37,7 +41,7 @@ fun ProfileRoute(
         postCardNavLambdas = postCardNavLambdas,
         onPrepareReply = onPrepareReply,
         onLike = { post ->
-            profileViewModel.postCardInteractor.like(
+            postCardInteractor.like(
                 scope = profileViewModel.viewModelScope,
                 postId = post.entity.id,
                 postPubkey = post.pubkey
@@ -51,12 +55,8 @@ fun ProfileRoute(
         },
         onOpenFollowerList = onOpenFollowerList,
         onOpenFollowedByList = onOpenFollowedByList,
-        onShowMedia = { mediaUrl ->
-            profileViewModel.clickedMediaUrlCache.insert(mediaUrl)
-        },
-        onShouldShowMedia = { mediaUrl ->
-            profileViewModel.clickedMediaUrlCache.contains(mediaUrl)
-        },
+        onShowMedia = { mediaUrl -> mediaCache.insert(mediaUrl) },
+        onShouldShowMedia = { mediaUrl -> mediaCache.contains(mediaUrl) },
         onRefresh = profileViewModel.onRefresh,
         onLoadMore = profileViewModel.onLoadMore,
         onNavigateToEditProfile = onNavigateToEditProfile,

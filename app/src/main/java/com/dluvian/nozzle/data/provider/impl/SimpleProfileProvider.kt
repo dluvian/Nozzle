@@ -40,9 +40,10 @@ class SimpleProfileProvider(
     }
 
     override suspend fun getSimpleProfilesFlow(nameLike: String): Flow<List<SimpleProfile>> {
-        if (nameLike.isBlank()) return flowOf(emptyList())
-
-        val pubkeys = profileDao.getPubkeysWithNameLike(name = nameLike, limit = MAX_LIST_LENGTH)
+        val pubkeys = profileDao.getPubkeysWithNameLike(
+            name = nameLike.ifBlank { "a" },
+            limit = MAX_LIST_LENGTH
+        )
         if (pubkeys.isEmpty()) return flowOf(emptyList())
 
         return getFlow(pubkeys = pubkeys)

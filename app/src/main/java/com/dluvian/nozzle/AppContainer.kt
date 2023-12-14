@@ -42,9 +42,11 @@ import com.dluvian.nozzle.data.provider.IThreadProvider
 import com.dluvian.nozzle.data.provider.feed.IFeedProvider
 import com.dluvian.nozzle.data.provider.feed.IInboxFeedProvider
 import com.dluvian.nozzle.data.provider.feed.ILikeFeedProvider
+import com.dluvian.nozzle.data.provider.feed.ISearchFeedProvider
 import com.dluvian.nozzle.data.provider.feed.impl.FeedProvider
 import com.dluvian.nozzle.data.provider.feed.impl.InboxFeedProvider
 import com.dluvian.nozzle.data.provider.feed.impl.LikeFeedProvider
+import com.dluvian.nozzle.data.provider.feed.impl.SearchFeedProvider
 import com.dluvian.nozzle.data.provider.impl.AccountProvider
 import com.dluvian.nozzle.data.provider.impl.AutopilotProvider
 import com.dluvian.nozzle.data.provider.impl.ContactListProvider
@@ -200,6 +202,10 @@ class AppContainer(context: Context) {
         pubkeyProvider = keyManager,
         profileDao = roomDb.profileDao(),
         contactDao = roomDb.contactDao(),
+    )
+    val searchFeedProvider: ISearchFeedProvider = SearchFeedProvider(
+        postWithMetaProvider = postWithMetaProvider,
+        postDao = roomDb.postDao(),
     )
 
     val postPreparer: IPostPreparer = PostPreparer(

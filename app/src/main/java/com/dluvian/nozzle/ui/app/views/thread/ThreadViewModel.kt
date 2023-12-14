@@ -6,7 +6,6 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.dluvian.nozzle.data.SCOPE_TIMEOUT
 import com.dluvian.nozzle.data.WAIT_TIME
-import com.dluvian.nozzle.data.cache.IClickedMediaUrlCache
 import com.dluvian.nozzle.data.nostr.utils.EncodingUtils.postIdToNostrId
 import com.dluvian.nozzle.data.postCardInteractor.IPostCardInteractor
 import com.dluvian.nozzle.data.provider.IThreadProvider
@@ -27,7 +26,6 @@ private const val TAG = "ThreadViewModel"
 
 class ThreadViewModel(
     val postCardInteractor: IPostCardInteractor,
-    val clickedMediaUrlCache: IClickedMediaUrlCache,
     private val threadProvider: IThreadProvider,
 ) : ViewModel() {
     var threadState: StateFlow<PostThread> = MutableStateFlow(PostThread.createEmpty())
@@ -118,13 +116,11 @@ class ThreadViewModel(
         fun provideFactory(
             threadProvider: IThreadProvider,
             postCardInteractor: IPostCardInteractor,
-            clickedMediaUrlCache: IClickedMediaUrlCache,
         ): ViewModelProvider.Factory = object : ViewModelProvider.Factory {
             @Suppress("UNCHECKED_CAST")
             override fun <T : ViewModel> create(modelClass: Class<T>): T {
                 return ThreadViewModel(
                     postCardInteractor = postCardInteractor,
-                    clickedMediaUrlCache = clickedMediaUrlCache,
                     threadProvider = threadProvider,
                 ) as T
             }

@@ -5,23 +5,22 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.dluvian.nozzle.data.DB_BATCH_SIZE
 import com.dluvian.nozzle.data.SCOPE_TIMEOUT
-import com.dluvian.nozzle.data.cache.IClickedMediaUrlCache
 import com.dluvian.nozzle.data.paginator.IPaginator
 import com.dluvian.nozzle.data.paginator.Paginator
-import com.dluvian.nozzle.data.postCardInteractor.IPostCardInteractor
 import com.dluvian.nozzle.data.provider.IRelayProvider
 import com.dluvian.nozzle.data.provider.feed.IFeedProvider
-import com.dluvian.nozzle.data.utils.*
 import com.dluvian.nozzle.data.utils.HashtagUtils.removeHashtagPrefix
+import com.dluvian.nozzle.data.utils.getCurrentTimeInSeconds
 import com.dluvian.nozzle.model.CreatedAt
 import com.dluvian.nozzle.model.MultipleRelays
 import com.dluvian.nozzle.model.PostWithMeta
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.update
 
 
 class HashtagViewModel(
-    val clickedMediaUrlCache: IClickedMediaUrlCache,
-    val postCardInteractor: IPostCardInteractor,
     private val feedProvider: IFeedProvider,
     private val relayProvider: IRelayProvider,
 ) : ViewModel() {
@@ -76,16 +75,12 @@ class HashtagViewModel(
 
     companion object {
         fun provideFactory(
-            clickedMediaUrlCache: IClickedMediaUrlCache,
-            postCardInteractor: IPostCardInteractor,
             feedProvider: IFeedProvider,
             relayProvider: IRelayProvider,
         ): ViewModelProvider.Factory = object : ViewModelProvider.Factory {
             @Suppress("UNCHECKED_CAST")
             override fun <T : ViewModel> create(modelClass: Class<T>): T {
                 return HashtagViewModel(
-                    clickedMediaUrlCache = clickedMediaUrlCache,
-                    postCardInteractor = postCardInteractor,
                     feedProvider = feedProvider,
                     relayProvider = relayProvider
                 ) as T

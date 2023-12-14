@@ -13,8 +13,10 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import androidx.navigation.navDeepLink
+import com.dluvian.nozzle.data.cache.IClickedMediaUrlCache
 import com.dluvian.nozzle.data.nostr.utils.EncodingUtils.URI
 import com.dluvian.nozzle.data.nostr.utils.EncodingUtils.nostrStrToNostrId
+import com.dluvian.nozzle.data.postCardInteractor.IPostCardInteractor
 import com.dluvian.nozzle.data.profileFollower.IProfileFollower
 import com.dluvian.nozzle.model.nostr.NeventNostrId
 import com.dluvian.nozzle.model.nostr.NoteNostrId
@@ -45,6 +47,8 @@ fun NozzleNavGraph(
     vmContainer: VMContainer,
     navActions: NozzleNavActions,
     profileFollower: IProfileFollower,
+    clickedMediaUrlCache: IClickedMediaUrlCache,
+    postCardInteractor: IPostCardInteractor,
     drawerState: DrawerState,
     modifier: Modifier = Modifier,
     navController: NavHostController = rememberNavController(),
@@ -61,6 +65,8 @@ fun NozzleNavGraph(
             FeedRoute(
                 feedViewModel = vmContainer.feedViewModel,
                 profileFollower = profileFollower,
+                mediaCache = clickedMediaUrlCache,
+                postCardInteractor = postCardInteractor,
                 postCardNavLambdas = postCardNavLambdas,
                 onPrepareReply = vmContainer.replyViewModel.onPrepareReply,
                 onOpenDrawer = { scope.launch { drawerState.open() } },
@@ -77,6 +83,8 @@ fun NozzleNavGraph(
             ProfileRoute(
                 profileViewModel = vmContainer.profileViewModel,
                 profileFollower = profileFollower,
+                mediaCache = clickedMediaUrlCache,
+                postCardInteractor = postCardInteractor,
                 postCardNavLambdas = postCardNavLambdas,
                 onOpenFollowerList = navActions.navigateToFollowerList,
                 onOpenFollowedByList = navActions.navigateToFollowedByList,
@@ -116,6 +124,8 @@ fun NozzleNavGraph(
             InboxRoute(
                 inboxViewModel = vmContainer.inboxViewModel,
                 profileFollower = profileFollower,
+                mediaCache = clickedMediaUrlCache,
+                postCardInteractor = postCardInteractor,
                 postCardNavLambdas = postCardNavLambdas,
                 onPrepareReply = vmContainer.replyViewModel.onPrepareReply,
                 onGoBack = navActions.popStack,
@@ -125,6 +135,7 @@ fun NozzleNavGraph(
             LikesRoute(
                 likesViewModel = vmContainer.likesViewModel,
                 profileFollower = profileFollower,
+                mediaCache = clickedMediaUrlCache,
                 postCardNavLambdas = postCardNavLambdas,
                 onPrepareReply = vmContainer.replyViewModel.onPrepareReply,
                 onGoBack = navActions.popStack,
@@ -133,8 +144,13 @@ fun NozzleNavGraph(
         composable(route = NozzleRoute.SEARCH) {
             SearchRoute(
                 searchViewModel = vmContainer.searchViewModel,
+                profileFollower = profileFollower,
+                mediaCache = clickedMediaUrlCache,
+                postCardInteractor = postCardInteractor,
+                postCardNavLambdas = postCardNavLambdas,
                 onNavigateToId = navActions.navigateToId,
                 onNavigateToProfile = navActions.navigateToProfile,
+                onPrepareReply = vmContainer.replyViewModel.onPrepareReply,
                 onGoBack = navActions.popStack,
             )
         }
@@ -166,6 +182,8 @@ fun NozzleNavGraph(
             ThreadRoute(
                 threadViewModel = vmContainer.threadViewModel,
                 profileFollower = profileFollower,
+                mediaCache = clickedMediaUrlCache,
+                postCardInteractor = postCardInteractor,
                 postCardNavLambdas = postCardNavLambdas,
                 onPrepareReply = vmContainer.replyViewModel.onPrepareReply,
                 onGoBack = navActions.popStack,
@@ -204,6 +222,8 @@ fun NozzleNavGraph(
                 HashtagRoute(
                     hashtagViewModel = vmContainer.hashtagViewModel,
                     profileFollower = profileFollower,
+                    mediaCache = clickedMediaUrlCache,
+                    postCardInteractor = postCardInteractor,
                     postCardNavLambdas = postCardNavLambdas,
                     onPrepareReply = vmContainer.replyViewModel.onPrepareReply,
                     onGoBack = navActions.popStack,

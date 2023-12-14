@@ -1,10 +1,16 @@
 package com.dluvian.nozzle.data.room.dao
 
-import androidx.room.*
+import androidx.room.Dao
+import androidx.room.Insert
+import androidx.room.MapInfo
+import androidx.room.OnConflictStrategy
+import androidx.room.Query
+import androidx.room.Transaction
 import com.dluvian.nozzle.data.room.entity.HashtagEntity
 import com.dluvian.nozzle.data.room.entity.MentionEntity
 import com.dluvian.nozzle.data.room.entity.PostEntity
 import com.dluvian.nozzle.data.room.helper.extended.PostEntityExtended
+import com.dluvian.nozzle.data.utils.escapeSQLPercentChars
 import com.dluvian.nozzle.model.MentionedPost
 import com.dluvian.nozzle.model.nostr.Event
 import kotlinx.coroutines.flow.Flow
@@ -254,4 +260,26 @@ interface PostDao {
                 "AND pubkey NOT IN (SELECT pubkey FROM profile)"
     )
     suspend fun getUnknownAuthors(postIds: Collection<String>): List<String>
+
+    // UNION ALL retains order
+    @Query(
+        "SELECT * FROM post WHERE content LIKE :start " +
+                "UNION ALL " +
+                "SELECT * FROM post WHERE content LIKE :somewhere " +
+                "LIMIT :limit"
+    )
+    suspend fun internalGetPostsWithSimilarContent(
+        start: String,
+        somewhere: String,
+        limit: Int
+    ): List<PostEntity>
+
+    suspend fun getPostsWithSimilarContent(content: String, limit: Int): List<PostEntity> {
+        val fixedContent = content.escapeSQLPercentChars()
+        return internalGetPostsWithSimilarContent(
+            start = "$fixedContent%",
+            somewhere = "%$fixedContent%",
+            limit = limit
+        )
+    }
 }

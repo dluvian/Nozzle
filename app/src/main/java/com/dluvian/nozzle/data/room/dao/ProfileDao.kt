@@ -10,6 +10,7 @@ import androidx.room.RewriteQueriesToDropUnusedColumns
 import androidx.room.Transaction
 import com.dluvian.nozzle.data.room.entity.ProfileEntity
 import com.dluvian.nozzle.data.room.helper.extended.ProfileEntityExtended
+import com.dluvian.nozzle.data.utils.escapeSQLPercentChars
 import com.dluvian.nozzle.model.Pubkey
 import com.dluvian.nozzle.model.nostr.Metadata
 import kotlinx.coroutines.flow.Flow
@@ -113,7 +114,7 @@ interface ProfileDao {
     ): List<Pubkey>
 
     suspend fun getPubkeysWithNameLike(name: String, limit: Int): List<Pubkey> {
-        val fixedName = name.filter { it != '%' }
+        val fixedName = name.escapeSQLPercentChars()
         return internalGetPubkeysWithNameLike(
             name = fixedName,
             start = "$fixedName%",

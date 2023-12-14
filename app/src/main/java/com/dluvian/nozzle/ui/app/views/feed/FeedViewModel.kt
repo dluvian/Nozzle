@@ -5,10 +5,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.dluvian.nozzle.data.DB_BATCH_SIZE
-import com.dluvian.nozzle.data.cache.IClickedMediaUrlCache
 import com.dluvian.nozzle.data.paginator.IPaginator
 import com.dluvian.nozzle.data.paginator.Paginator
-import com.dluvian.nozzle.data.postCardInteractor.IPostCardInteractor
 import com.dluvian.nozzle.data.preferences.IFeedSettingsPreferences
 import com.dluvian.nozzle.data.provider.IAutopilotProvider
 import com.dluvian.nozzle.data.provider.IPubkeyProvider
@@ -38,8 +36,6 @@ import java.util.Collections
 private const val TAG = "FeedViewModel"
 
 class FeedViewModel(
-    val clickedMediaUrlCache: IClickedMediaUrlCache,
-    val postCardInteractor: IPostCardInteractor,
     private val pubkeyProvider: IPubkeyProvider,
     private val feedProvider: IFeedProvider,
     private val relayProvider: IRelayProvider,
@@ -240,8 +236,6 @@ class FeedViewModel(
 
     companion object {
         fun provideFactory(
-            clickedMediaUrlCache: IClickedMediaUrlCache,
-            postCardInteractor: IPostCardInteractor,
             pubkeyProvider: IPubkeyProvider,
             feedProvider: IFeedProvider,
             relayProvider: IRelayProvider,
@@ -251,8 +245,6 @@ class FeedViewModel(
             @Suppress("UNCHECKED_CAST")
             override fun <T : ViewModel> create(modelClass: Class<T>): T {
                 return FeedViewModel(
-                    clickedMediaUrlCache = clickedMediaUrlCache,
-                    postCardInteractor = postCardInteractor,
                     pubkeyProvider = pubkeyProvider,
                     feedProvider = feedProvider,
                     relayProvider = relayProvider,

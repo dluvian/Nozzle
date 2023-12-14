@@ -6,7 +6,6 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.dluvian.nozzle.data.DB_BATCH_SIZE
 import com.dluvian.nozzle.data.SCOPE_TIMEOUT
-import com.dluvian.nozzle.data.cache.IClickedMediaUrlCache
 import com.dluvian.nozzle.data.nostr.utils.EncodingUtils.profileIdToNostrId
 import com.dluvian.nozzle.data.paginator.IPaginator
 import com.dluvian.nozzle.data.paginator.Paginator
@@ -40,7 +39,6 @@ private const val TAG = "ProfileViewModel"
 
 class ProfileViewModel(
     val postCardInteractor: IPostCardInteractor,
-    val clickedMediaUrlCache: IClickedMediaUrlCache,
     private val feedProvider: IFeedProvider,
     private val profileProvider: IProfileWithMetaProvider,
     private val relayProvider: IRelayProvider,
@@ -156,7 +154,6 @@ class ProfileViewModel(
     companion object {
         fun provideFactory(
             postCardInteractor: IPostCardInteractor,
-            clickedMediaUrlCache: IClickedMediaUrlCache,
             feedProvider: IFeedProvider,
             relayProvider: IRelayProvider,
             profileProvider: IProfileWithMetaProvider,
@@ -168,7 +165,6 @@ class ProfileViewModel(
                 override fun <T : ViewModel> create(modelClass: Class<T>): T {
                     return ProfileViewModel(
                         postCardInteractor = postCardInteractor,
-                        clickedMediaUrlCache = clickedMediaUrlCache,
                         feedProvider = feedProvider,
                         profileProvider = profileProvider,
                         relayProvider = relayProvider,

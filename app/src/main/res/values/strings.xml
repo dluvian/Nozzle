@@ -56,7 +56,7 @@
     <string name="post_your_thoughts">Post your thoughts</string>
     <string name="add">Add</string>
     <string name="invalid_nsec">Invalid nsec</string>
-    <string name="search_profiles">Search profiles or open nostr ID</string>
+    <string name="search_profiles">Search local database or open nostr ID</string>
     <string name="post_published">Post published</string>
     <string name="time_abbr_now">Now</string>
     <string name="time_abbr_second">s</string>
@@ -111,6 +111,8 @@
     <string name="click_to_load_more">Click to load more</string>
     <string name="lightning_address_copied">Lightning address copied</string>
     <string name="open">Open</string>
+    <string name="notes">Notes</string>
+    <string name="people">People</string>
     <plurals name="other_relays">
         <item quantity="one">other</item>
         <item quantity="other">others</item>
