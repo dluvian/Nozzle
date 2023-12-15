@@ -5,7 +5,10 @@ import androidx.room.Index
 import androidx.room.PrimaryKey
 import com.dluvian.nozzle.model.nostr.Event
 
-@Entity(tableName = "post", indices = [Index(value = ["id"]), Index(value = ["createdAt"])])
+@Entity(
+    tableName = "post",
+    indices = [Index(value = ["id"]), Index(value = ["createdAt"]), Index(value = ["content"])]
+)
 data class PostEntity(
     @PrimaryKey(autoGenerate = false) val id: String,
     val pubkey: String,
