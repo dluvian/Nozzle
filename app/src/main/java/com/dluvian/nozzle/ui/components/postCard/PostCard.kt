@@ -193,10 +193,10 @@ private fun PostCardHeaderAndContent(
                     clip = clip
                 )
             },
-            onFollow = if (post.isFollowedByMe) null else {
+            onFollow = if (post.isFollowedByMe || post.isOneself) null else {
                 { postCardLambdas.onFollow(post.pubkey) }
             },
-            onUnfollow = if (!post.isFollowedByMe) null else {
+            onUnfollow = if (!post.isFollowedByMe || post.isOneself) null else {
                 { postCardLambdas.onUnfollow(post.pubkey) }
             }
         )
