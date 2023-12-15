@@ -70,7 +70,7 @@ dependencies {
     implementation "androidx.compose.ui:ui-tooling-preview:$compose_version"
     implementation "androidx.compose.material:material-icons-extended:$compose_version"
     implementation 'androidx.lifecycle:lifecycle-runtime-ktx:2.6.2'
-    implementation 'androidx.activity:activity-compose:1.8.1'
+    implementation 'androidx.activity:activity-compose:1.8.2'
     implementation 'androidx.appcompat:appcompat:1.6.1'
     implementation 'androidx.security:security-crypto-ktx:1.1.0-alpha06'
     testImplementation 'junit:junit:4.13.2'
@@ -88,7 +88,7 @@ dependencies {
     coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:2.0.4'
 
     // Navigation
-    implementation 'androidx.navigation:navigation-compose:2.7.5'
+    implementation 'androidx.navigation:navigation-compose:2.7.6'
 
     // Images and GIFs
     implementation('io.coil-kt:coil-compose:2.5.0')
