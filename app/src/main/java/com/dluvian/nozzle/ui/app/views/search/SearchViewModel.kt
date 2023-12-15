@@ -127,7 +127,9 @@ class SearchViewModel(
             profileSearchResult = simpleProfileProvider
                 .getSimpleProfilesFlow(nameLike = name)
                 .stateIn(
-                    viewModelScope, SharingStarted.WhileSubscribed(SCOPE_TIMEOUT), emptyList()
+                    viewModelScope,
+                    SharingStarted.WhileSubscribed(SCOPE_TIMEOUT),
+                    profileSearchResult.value
                 )
         }
         nameSearchJob?.invokeOnCompletion { setLoading(false) }
@@ -141,7 +143,9 @@ class SearchViewModel(
             postSearchResult = searchFeedProvider
                 .getSearchFeedFlow(searchString = searchString)
                 .stateIn(
-                    viewModelScope, SharingStarted.WhileSubscribed(SCOPE_TIMEOUT), emptyList()
+                    viewModelScope,
+                    SharingStarted.WhileSubscribed(SCOPE_TIMEOUT),
+                    postSearchResult.value
                 )
         }
         noteSearchJob?.invokeOnCompletion { setLoading(false) }
