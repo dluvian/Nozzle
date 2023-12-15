@@ -68,7 +68,6 @@ fun NozzleApp(appContainer: AppContainer) {
                 ),
                 profileViewModel = viewModel(
                     factory = ProfileViewModel.provideFactory(
-                        postCardInteractor = appContainer.postCardInteractor,
                         feedProvider = appContainer.feedProvider,
                         relayProvider = appContainer.relayProvider,
                         profileProvider = appContainer.profileWithMetaProvider,
@@ -99,7 +98,6 @@ fun NozzleApp(appContainer: AppContainer) {
                 ),
                 inboxViewModel = viewModel(
                     factory = InboxViewModel.provideFactory(
-                        postCardInteractor = appContainer.postCardInteractor,
                         inboxFeedProvider = appContainer.inboxFeedProvider,
                         relayProvider = appContainer.relayProvider,
                     )
@@ -112,7 +110,6 @@ fun NozzleApp(appContainer: AppContainer) {
                 threadViewModel = viewModel(
                     factory = ThreadViewModel.provideFactory(
                         threadProvider = appContainer.threadProvider,
-                        postCardInteractor = appContainer.postCardInteractor,
                     )
                 ),
                 replyViewModel = viewModel(

@@ -7,7 +7,6 @@ import com.dluvian.nozzle.data.DB_BATCH_SIZE
 import com.dluvian.nozzle.data.SCOPE_TIMEOUT
 import com.dluvian.nozzle.data.paginator.IPaginator
 import com.dluvian.nozzle.data.paginator.Paginator
-import com.dluvian.nozzle.data.postCardInteractor.IPostCardInteractor
 import com.dluvian.nozzle.data.provider.IRelayProvider
 import com.dluvian.nozzle.data.provider.feed.IInboxFeedProvider
 import com.dluvian.nozzle.data.utils.getCurrentTimeInSeconds
@@ -19,7 +18,6 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 
 class InboxViewModel(
-    val postCardInteractor: IPostCardInteractor,
     private val inboxFeedProvider: IInboxFeedProvider,
     private val relayProvider: IRelayProvider,
 ) : ViewModel() {
@@ -59,7 +57,6 @@ class InboxViewModel(
 
     companion object {
         fun provideFactory(
-            postCardInteractor: IPostCardInteractor,
             inboxFeedProvider: IInboxFeedProvider,
             relayProvider: IRelayProvider,
         ): ViewModelProvider.Factory =
@@ -67,7 +64,6 @@ class InboxViewModel(
                 @Suppress("UNCHECKED_CAST")
                 override fun <T : ViewModel> create(modelClass: Class<T>): T {
                     return InboxViewModel(
-                        postCardInteractor = postCardInteractor,
                         inboxFeedProvider = inboxFeedProvider,
                         relayProvider = relayProvider
                     ) as T

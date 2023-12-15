@@ -65,7 +65,7 @@ class FeedProvider(
     private fun listPubkeys(authorSelection: AuthorSelection): List<String>? {
         return when (authorSelection) {
             is Everyone -> null
-            is Contacts -> contactListProvider.listPersonalContactPubkeys() + pubkeyProvider.getActivePubkey()
+            is Contacts -> contactListProvider.listPersonalContactPubkeysOrDefault() + pubkeyProvider.getActivePubkey()
             is SingleAuthor -> listOf(authorSelection.pubkey)
         }
     }

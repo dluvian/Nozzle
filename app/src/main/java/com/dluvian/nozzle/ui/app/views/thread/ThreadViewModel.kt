@@ -7,7 +7,6 @@ import androidx.lifecycle.viewModelScope
 import com.dluvian.nozzle.data.SCOPE_TIMEOUT
 import com.dluvian.nozzle.data.WAIT_TIME
 import com.dluvian.nozzle.data.nostr.utils.EncodingUtils.postIdToNostrId
-import com.dluvian.nozzle.data.postCardInteractor.IPostCardInteractor
 import com.dluvian.nozzle.data.provider.IThreadProvider
 import com.dluvian.nozzle.model.PostThread
 import kotlinx.coroutines.Dispatchers
@@ -25,7 +24,6 @@ import java.util.concurrent.atomic.AtomicBoolean
 private const val TAG = "ThreadViewModel"
 
 class ThreadViewModel(
-    val postCardInteractor: IPostCardInteractor,
     private val threadProvider: IThreadProvider,
 ) : ViewModel() {
     var threadState: StateFlow<PostThread> = MutableStateFlow(PostThread.createEmpty())
@@ -115,12 +113,10 @@ class ThreadViewModel(
     companion object {
         fun provideFactory(
             threadProvider: IThreadProvider,
-            postCardInteractor: IPostCardInteractor,
         ): ViewModelProvider.Factory = object : ViewModelProvider.Factory {
             @Suppress("UNCHECKED_CAST")
             override fun <T : ViewModel> create(modelClass: Class<T>): T {
                 return ThreadViewModel(
-                    postCardInteractor = postCardInteractor,
                     threadProvider = threadProvider,
                 ) as T
             }

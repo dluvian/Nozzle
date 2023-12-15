@@ -9,7 +9,6 @@ import com.dluvian.nozzle.data.SCOPE_TIMEOUT
 import com.dluvian.nozzle.data.nostr.utils.EncodingUtils.profileIdToNostrId
 import com.dluvian.nozzle.data.paginator.IPaginator
 import com.dluvian.nozzle.data.paginator.Paginator
-import com.dluvian.nozzle.data.postCardInteractor.IPostCardInteractor
 import com.dluvian.nozzle.data.provider.IContactListProvider
 import com.dluvian.nozzle.data.provider.IProfileWithMetaProvider
 import com.dluvian.nozzle.data.provider.IPubkeyProvider
@@ -38,7 +37,6 @@ private const val TAG = "ProfileViewModel"
 // TODO: Sub contactlist of contacts if its your personal profile page. Only once tho
 
 class ProfileViewModel(
-    val postCardInteractor: IPostCardInteractor,
     private val feedProvider: IFeedProvider,
     private val profileProvider: IProfileWithMetaProvider,
     private val relayProvider: IRelayProvider,
@@ -153,7 +151,6 @@ class ProfileViewModel(
 
     companion object {
         fun provideFactory(
-            postCardInteractor: IPostCardInteractor,
             feedProvider: IFeedProvider,
             relayProvider: IRelayProvider,
             profileProvider: IProfileWithMetaProvider,
@@ -164,7 +161,6 @@ class ProfileViewModel(
                 @Suppress("UNCHECKED_CAST")
                 override fun <T : ViewModel> create(modelClass: Class<T>): T {
                     return ProfileViewModel(
-                        postCardInteractor = postCardInteractor,
                         feedProvider = feedProvider,
                         profileProvider = profileProvider,
                         relayProvider = relayProvider,
