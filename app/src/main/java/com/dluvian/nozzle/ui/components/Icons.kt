@@ -25,6 +25,7 @@ import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material.icons.outlined.Chat
 import androidx.compose.material.icons.rounded.Check
+import androidx.compose.material.icons.rounded.OfflineBolt
 import androidx.compose.material.icons.rounded.Search
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -55,6 +56,20 @@ fun CopyIcon(
     Icon(
         modifier = modifier,
         imageVector = Icons.Default.ContentCopy,
+        contentDescription = description,
+        tint = tint,
+    )
+}
+
+@Composable
+fun LightningIcon(
+    modifier: Modifier = Modifier,
+    description: String = stringResource(id = R.string.lightning_address),
+    tint: Color = LocalContentColor.current.copy(alpha = LocalContentAlpha.current)
+) {
+    Icon(
+        modifier = modifier,
+        imageVector = Icons.Rounded.OfflineBolt,
         contentDescription = description,
         tint = tint,
     )

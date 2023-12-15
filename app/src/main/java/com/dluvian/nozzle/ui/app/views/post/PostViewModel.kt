@@ -56,11 +56,11 @@ class PostViewModel(
 
     private val isPreparing = AtomicBoolean(false)
     val onPrepareQuote: (String) -> Unit = local@{ postIdToQuote ->
-        if (isPreparing.get() || uiState.value.postToQuote?.mentionedPost?.id == postIdToQuote) return@local
         val nostrId = nostrStrToNostrId(postIdToQuote) ?: return@local
-
-        isPreparing.set(true)
+        val isSame = uiState.value.postToQuote?.mentionedPost?.id == nostrId.hex
+        if (isSame || !isPreparing.compareAndSet(false, true)) return@local
         _uiState.update { it.copy(postToQuote = null) }
+
         viewModelScope.launch(context = Dispatchers.IO) {
             preparePost(
                 postToQuote = getCleanMentionedPost(postIdHex = nostrId.hex),
@@ -97,9 +97,9 @@ class PostViewModel(
         }
     }
 
-    val onSend: (String) -> Unit = { content ->
+    val onSend: (String, PostViewModelState) -> Unit = { content, state ->
         viewModelScope.launch(context = Dispatchers.IO) {
-            val event = sendPost(state = uiState.value, content = content)
+            val event = sendPost(state = state, content = content)
             fullPostInserter.insertFullPost(events = listOf(event))
             dbExcludingCache.addPostIds(listOf(event.id))
         }

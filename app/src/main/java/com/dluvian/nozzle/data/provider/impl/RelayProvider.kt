@@ -25,14 +25,14 @@ class RelayProvider(
         .firstThenDistinctDebounce(SHORT_DEBOUNCE)
         .stateIn(scope, SharingStarted.Eagerly, emptyList())
 
-    override fun getReadRelays(): List<String> {
+    override fun getReadRelays(): List<Relay> {
         return personalNip65State.value
             .filter { it.isRead }
             .map { it.url }
             .ifEmpty { getDefaultRelays() }
     }
 
-    override fun getWriteRelays(): List<String> {
+    override fun getWriteRelays(): List<Relay> {
         return personalNip65State.value
             .filter { it.isWrite }
             .map { it.url }
@@ -43,16 +43,23 @@ class RelayProvider(
         return personalNip65State.value.ifEmpty { getDefaultNip65s() }
     }
 
-    override suspend fun getReadRelaysOfPubkey(pubkey: String): List<String> {
+    override suspend fun getReadRelaysOfPubkey(pubkey: Pubkey): List<Relay> {
         return nip65Dao.getReadRelaysOfPubkey(pubkey = pubkey)
     }
 
-    override suspend fun getWriteRelaysOfPubkey(pubkey: String): List<String> {
+    override suspend fun getReadRelaysOfPubkeys(pubkeys: Collection<Pubkey>): Map<Pubkey, List<Relay>> {
+        val dbResult = nip65Dao.getReadRelaysByPubkeys(pubkeys = pubkeys.distinct()).toMutableMap()
+        pubkeys.forEach { pubkey -> dbResult.putIfAbsent(pubkey, emptyList()) }
+
+        return dbResult
+    }
+
+    override suspend fun getWriteRelaysOfPubkey(pubkey: Pubkey): List<Relay> {
         return nip65Dao.getWriteRelaysOfPubkey(pubkey = pubkey)
     }
 
-    override suspend fun getWriteRelaysOfPubkeys(pubkeys: Collection<String>): Map<Pubkey, List<Relay>> {
-        val dbResult = nip65Dao.getWriteRelaysOfPubkeys(pubkeys = pubkeys.distinct()).toMutableMap()
+    override suspend fun getWriteRelaysByPubkeys(pubkeys: Collection<Pubkey>): Map<Pubkey, List<Relay>> {
+        val dbResult = nip65Dao.getWriteRelaysByPubkeys(pubkeys = pubkeys.distinct()).toMutableMap()
         pubkeys.forEach { pubkey -> dbResult.putIfAbsent(pubkey, emptyList()) }
 
         return dbResult
@@ -60,7 +67,8 @@ class RelayProvider(
 
     override suspend fun getRelaysOfContacts(): List<Relay> {
         // TODO: Remove contactListProvider. Use account query
-        return nip65Dao.getRelaysOfPubkeys(pubkeys = contactListProvider.listPersonalContactPubkeys())
+        val pubkeys = contactListProvider.listPersonalContactPubkeysOrDefault()
+        return nip65Dao.getRelaysOfPubkeys(pubkeys = pubkeys)
     }
 
     private fun getDefaultNip65s() = getDefaultRelays()

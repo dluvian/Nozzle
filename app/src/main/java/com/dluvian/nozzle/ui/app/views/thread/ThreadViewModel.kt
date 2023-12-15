@@ -4,19 +4,19 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
-import com.dluvian.nozzle.data.APPEND_RETRY_TIME
 import com.dluvian.nozzle.data.SCOPE_TIMEOUT
 import com.dluvian.nozzle.data.WAIT_TIME
-import com.dluvian.nozzle.data.cache.IClickedMediaUrlCache
 import com.dluvian.nozzle.data.nostr.utils.EncodingUtils.postIdToNostrId
-import com.dluvian.nozzle.data.postCardInteractor.IPostCardInteractor
 import com.dluvian.nozzle.data.provider.IThreadProvider
-import com.dluvian.nozzle.data.utils.*
 import com.dluvian.nozzle.model.PostThread
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.util.concurrent.CancellationException
 import java.util.concurrent.atomic.AtomicBoolean
@@ -24,8 +24,6 @@ import java.util.concurrent.atomic.AtomicBoolean
 private const val TAG = "ThreadViewModel"
 
 class ThreadViewModel(
-    val postCardInteractor: IPostCardInteractor,
-    val clickedMediaUrlCache: IClickedMediaUrlCache,
     private val threadProvider: IThreadProvider,
 ) : ViewModel() {
     var threadState: StateFlow<PostThread> = MutableStateFlow(PostThread.createEmpty())
@@ -56,26 +54,23 @@ class ThreadViewModel(
         viewModelScope.launch(context = Dispatchers.IO) {
             updateScreen(postId = postId)
             isRefreshingFlow.update { false }
-            delay(APPEND_RETRY_TIME)
         }.invokeOnCompletion {
             isSettingThread.set(false)
         }
     }
 
-    val onRefreshThreadView: () -> Unit = {
-        if (!isSettingThread.get()) {
-            viewModelScope.launch(context = Dispatchers.IO) {
-                Log.i(TAG, "Refresh thread view")
-                findingParentsProcess?.cancel(CancellationException("Refreshing thread"))
-                isRefreshingFlow.update { true }
-                updateScreen(
-                    postId = currentPostId,
-                    waitForSubscription = WAIT_TIME,
-                    initValue = threadState.value
-                )
-                delay(WAIT_TIME)
-                isRefreshingFlow.update { false }
-            }
+    val onRefreshThreadView: () -> Unit = local@{
+        if (isSettingThread.get()) return@local
+        viewModelScope.launch(context = Dispatchers.IO) {
+            Log.i(TAG, "Refresh thread view")
+            isRefreshingFlow.update { true }
+            updateScreen(
+                postId = currentPostId,
+                waitForSubscription = WAIT_TIME,
+                initValue = threadState.value
+            )
+            delay(WAIT_TIME)
+            isRefreshingFlow.update { false }
         }
     }
 
@@ -90,14 +85,12 @@ class ThreadViewModel(
             return@local
         }
 
-        viewModelScope.launch(context = Dispatchers.IO) {
+        findingParentsProcess = viewModelScope.launch(context = Dispatchers.IO) {
             threadProvider.findParents(earliestPost = earliestPost)
-        }.let { job ->
-            job.invokeOnCompletion {
-                Log.i(TAG, "Finding parent process completed: error=${it?.localizedMessage}")
-                isFindingPrevious.set(false)
-            }
-            findingParentsProcess = job
+        }
+        findingParentsProcess?.invokeOnCompletion {
+            Log.i(TAG, "Finding parent process completed: error=${it?.localizedMessage}")
+            isFindingPrevious.set(false)
         }
     }
 
@@ -120,14 +113,10 @@ class ThreadViewModel(
     companion object {
         fun provideFactory(
             threadProvider: IThreadProvider,
-            postCardInteractor: IPostCardInteractor,
-            clickedMediaUrlCache: IClickedMediaUrlCache,
         ): ViewModelProvider.Factory = object : ViewModelProvider.Factory {
             @Suppress("UNCHECKED_CAST")
             override fun <T : ViewModel> create(modelClass: Class<T>): T {
                 return ThreadViewModel(
-                    postCardInteractor = postCardInteractor,
-                    clickedMediaUrlCache = clickedMediaUrlCache,
                     threadProvider = threadProvider,
                 ) as T
             }

@@ -7,8 +7,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import com.dluvian.nozzle.R
 import com.dluvian.nozzle.model.PostWithMeta
-import com.dluvian.nozzle.model.Pubkey
-import com.dluvian.nozzle.ui.app.navigation.PostCardNavLambdas
+import com.dluvian.nozzle.ui.app.navigation.PostCardLambdas
 import com.dluvian.nozzle.ui.components.ReturnableTopBar
 import com.dluvian.nozzle.ui.components.hint.NoPostsHint
 import com.dluvian.nozzle.ui.components.postCard.PostCardList
@@ -17,14 +16,10 @@ import com.dluvian.nozzle.ui.components.postCard.PostCardList
 fun LikesScreen(
     feed: List<PostWithMeta>,
     isRefreshing: Boolean,
-    postCardNavLambdas: PostCardNavLambdas,
-    onShowMedia: (String) -> Unit,
-    onShouldShowMedia: (String) -> Boolean,
+    postCardLambdas: PostCardLambdas,
     onRefresh: () -> Unit,
     onLoadMore: () -> Unit,
     onPrepareReply: (PostWithMeta) -> Unit,
-    onFollow: (Pubkey) -> Unit,
-    onUnfollow: (Pubkey) -> Unit,
     onGoBack: () -> Unit,
 ) {
     Column {
@@ -36,15 +31,10 @@ fun LikesScreen(
             PostCardList(
                 posts = feed,
                 isRefreshing = isRefreshing,
-                postCardNavLambdas = postCardNavLambdas,
+                postCardLambdas = postCardLambdas,
                 onRefresh = onRefresh,
-                onLike = { /** Everything is already liked and likes are irreversable*/ },
-                onShowMedia = onShowMedia,
-                onShouldShowMedia = onShouldShowMedia,
                 onPrepareReply = onPrepareReply,
                 onLoadMore = onLoadMore,
-                onFollow = onFollow,
-                onUnfollow = onUnfollow,
             )
         }
     }

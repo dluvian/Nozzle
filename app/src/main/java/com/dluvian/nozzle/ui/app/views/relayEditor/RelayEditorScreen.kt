@@ -20,7 +20,7 @@ import androidx.compose.ui.graphics.Color.Companion.DarkGray
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import com.dluvian.nozzle.R
-import com.dluvian.nozzle.data.RECOMMENDED_RELAY_NUM
+import com.dluvian.nozzle.data.MAX_RELAYS
 import com.dluvian.nozzle.data.room.helper.Nip65Relay
 import com.dluvian.nozzle.data.utils.UrlUtils.WEBSOCKET_PREFIX
 import com.dluvian.nozzle.data.utils.UrlUtils.removeWebsocketPrefix
@@ -113,7 +113,7 @@ private fun ScreenContent(
             itemsIndexed(items = popularRelays) { index, relay ->
                 PopularRelayRow(
                     relay = relay,
-                    isAddable = myRelays.size < RECOMMENDED_RELAY_NUM
+                    isAddable = myRelays.size < MAX_RELAYS
                             && myRelays.none { it.url == relay },
                     onUseRelay = { onUsePopularRelay(index) })
                 if (index != popularRelays.size - 1) {

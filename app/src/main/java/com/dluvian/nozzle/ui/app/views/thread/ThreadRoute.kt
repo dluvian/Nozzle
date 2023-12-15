@@ -4,17 +4,16 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
-import androidx.lifecycle.viewModelScope
 import com.dluvian.nozzle.data.profileFollower.IProfileFollower
 import com.dluvian.nozzle.model.PostThread
 import com.dluvian.nozzle.model.PostWithMeta
-import com.dluvian.nozzle.ui.app.navigation.PostCardNavLambdas
+import com.dluvian.nozzle.ui.app.navigation.PostCardLambdas
 
 @Composable
 fun ThreadRoute(
     threadViewModel: ThreadViewModel,
     profileFollower: IProfileFollower,
-    postCardNavLambdas: PostCardNavLambdas,
+    postCardLambdas: PostCardLambdas,
     onPrepareReply: (PostWithMeta) -> Unit,
     onGoBack: () -> Unit,
 ) {
@@ -37,29 +36,10 @@ fun ThreadRoute(
     ThreadScreen(
         thread = adjustedThread,
         isRefreshing = isRefreshing,
-        postCardNavLambdas = postCardNavLambdas,
+        postCardLambdas = postCardLambdas,
         onPrepareReply = onPrepareReply,
-        onLike = { post ->
-            threadViewModel.postCardInteractor.like(
-                scope = threadViewModel.viewModelScope,
-                postId = post.entity.id,
-                postPubkey = post.pubkey
-            )
-        },
         onRefreshThreadView = threadViewModel.onRefreshThreadView,
         onFindPrevious = threadViewModel.onFindPrevious,
-        onShowMedia = { mediaUrl ->
-            threadViewModel.clickedMediaUrlCache.insert(mediaUrl)
-        },
-        onShouldShowMedia = { mediaUrl ->
-            threadViewModel.clickedMediaUrlCache.contains(mediaUrl)
-        },
-        onFollow = { pubkeyToFollow ->
-            profileFollower.follow(pubkeyToFollow = pubkeyToFollow)
-        },
-        onUnfollow = { pubkeyToUnfollow ->
-            profileFollower.unfollow(pubkeyToUnfollow = pubkeyToUnfollow)
-        },
         onGoBack = onGoBack,
     )
 }

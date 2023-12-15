@@ -9,23 +9,17 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import com.dluvian.nozzle.data.DB_BATCH_SIZE
 import com.dluvian.nozzle.model.PostWithMeta
-import com.dluvian.nozzle.model.Pubkey
-import com.dluvian.nozzle.ui.app.navigation.PostCardNavLambdas
+import com.dluvian.nozzle.ui.app.navigation.PostCardLambdas
 import com.dluvian.nozzle.ui.components.PullRefreshBox
 
 @Composable
 fun PostCardList(
     posts: List<PostWithMeta>,
     isRefreshing: Boolean,
-    postCardNavLambdas: PostCardNavLambdas,
+    postCardLambdas: PostCardLambdas,
     onRefresh: () -> Unit,
-    onLike: (PostWithMeta) -> Unit,
-    onShowMedia: (String) -> Unit,
-    onShouldShowMedia: (String) -> Boolean,
     onPrepareReply: (PostWithMeta) -> Unit,
     onLoadMore: () -> Unit,
-    onFollow: (Pubkey) -> Unit,
-    onUnfollow: (Pubkey) -> Unit,
     lazyListState: LazyListState = rememberLazyListState(),
 ) {
     PullRefreshBox(isRefreshing = isRefreshing, onRefresh = onRefresh) {
@@ -35,13 +29,8 @@ fun PostCardList(
             itemsIndexed(items = posts, key = { _, item -> item.entity.id }) { index, post ->
                 PostCard(
                     post = post,
-                    postCardNavLambdas = postCardNavLambdas,
-                    onLike = { onLike(post) },
+                    postCardLambdas = postCardLambdas,
                     onPrepareReply = onPrepareReply,
-                    onShowMedia = onShowMedia,
-                    onShouldShowMedia = onShouldShowMedia,
-                    onFollow = onFollow,
-                    onUnfollow = onUnfollow,
                 )
                 if (index == posts.size - 3 && posts.size >= DB_BATCH_SIZE / 2) onLoadMore()
             }

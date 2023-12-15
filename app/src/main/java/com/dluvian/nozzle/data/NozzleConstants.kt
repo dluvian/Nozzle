@@ -9,15 +9,11 @@ const val DB_BATCH_SIZE = 30
 const val SCOPE_TIMEOUT = 7_000L
 const val WAIT_TIME = 1300L
 
-const val APPEND_RETRY_TIME = 3333L
+const val MAX_RELAYS = 5
 
-const val MAX_RELAYS = 7
-
-const val SWEEP_THRESHOLD = 1500
+const val SWEEP_THRESHOLD = 1000
 
 const val RESUB_AFTER = 5000L
-
-const val RECOMMENDED_RELAY_NUM = 5
 
 const val EVENT_PROCESSING_DELAY = 1111L
 

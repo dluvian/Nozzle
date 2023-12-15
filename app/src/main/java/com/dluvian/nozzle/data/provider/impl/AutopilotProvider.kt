@@ -25,7 +25,7 @@ class AutopilotProvider(
     // javax.net.ssl.SSLPeerUnverifiedException: Hostname relay.nostr.vision not verified:
 
     override suspend fun getAutopilotRelays(): Map<Relay, Set<Pubkey>> {
-        val pubkeys = contactListProvider.listPersonalContactPubkeys()
+        val pubkeys = contactListProvider.listPersonalContactPubkeysOrDefault()
         Log.i(TAG, "Get autopilot relays of ${pubkeys.size} pubkeys")
         if (pubkeys.isEmpty()) return emptyMap()
 

@@ -3,6 +3,7 @@ package com.dluvian.nozzle.data.utils
 import com.dluvian.nozzle.data.MAX_RELAYS
 import com.dluvian.nozzle.model.AllRelays
 import com.dluvian.nozzle.model.MultipleRelays
+import com.dluvian.nozzle.model.Relay
 import com.dluvian.nozzle.model.RelayActive
 import com.dluvian.nozzle.model.RelaySelection
 import com.dluvian.nozzle.model.UserSpecific
@@ -19,17 +20,19 @@ fun addLimitedRelayStatuses(
 ): List<RelayActive> {
     val result = list.toMutableList()
     val present = list.map { it.relayUrl }.toSet()
-    relaysUrlsToAdd
-        .shuffled()
-        .sortedByDescending { present.contains(it) }
-        .take(MAX_RELAYS)
-        .forEach {
-            if (!present.contains(it)) {
-                result.add(RelayActive(relayUrl = it, isActive = true))
-            }
+    getMaxRelays(from = relaysUrlsToAdd, prefer = present).forEach {
+        if (!present.contains(it)) {
+            result.add(RelayActive(relayUrl = it, isActive = true))
         }
+    }
 
     return result
+}
+
+fun getMaxRelays(from: List<Relay>, prefer: Collection<Relay> = emptyList()): List<Relay> {
+    return from.shuffled()
+        .sortedByDescending { prefer.contains(it) }
+        .take(MAX_RELAYS)
 }
 
 fun listRelayStatuses(

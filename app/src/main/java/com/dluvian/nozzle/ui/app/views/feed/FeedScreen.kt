@@ -32,10 +32,9 @@ import com.dluvian.nozzle.model.Everyone
 import com.dluvian.nozzle.model.FeedSettings
 import com.dluvian.nozzle.model.Oneself
 import com.dluvian.nozzle.model.PostWithMeta
-import com.dluvian.nozzle.model.Pubkey
 import com.dluvian.nozzle.model.RelayActive
 import com.dluvian.nozzle.model.UserSpecific
-import com.dluvian.nozzle.ui.app.navigation.PostCardNavLambdas
+import com.dluvian.nozzle.ui.app.navigation.PostCardLambdas
 import com.dluvian.nozzle.ui.components.AddIcon
 import com.dluvian.nozzle.ui.components.ChooseRelayButton
 import com.dluvian.nozzle.ui.components.FeedSettingsButton
@@ -51,10 +50,7 @@ fun FeedScreen(
     uiState: FeedViewModelState,
     pubkey: String,
     feed: List<PostWithMeta>,
-    postCardNavLambdas: PostCardNavLambdas,
-    onLike: (PostWithMeta) -> Unit,
-    onShowMedia: (String) -> Unit,
-    onShouldShowMedia: (String) -> Boolean,
+    postCardLambdas: PostCardLambdas,
     onRefresh: () -> Unit,
     onRefreshOnMenuDismiss: () -> Unit,
     onPrepareReply: (PostWithMeta) -> Unit,
@@ -65,8 +61,6 @@ fun FeedScreen(
     onToggleAutopilot: () -> Unit,
     onLoadMore: () -> Unit,
     onOpenDrawer: () -> Unit,
-    onFollow: (Pubkey) -> Unit,
-    onUnfollow: (Pubkey) -> Unit,
     onNavigateToPost: () -> Unit,
 ) {
     val lazyListState = rememberLazyListState()
@@ -98,16 +92,11 @@ fun FeedScreen(
             PostCardList(
                 posts = feed,
                 isRefreshing = uiState.isRefreshing,
-                postCardNavLambdas = postCardNavLambdas,
+                postCardLambdas = postCardLambdas,
                 onRefresh = onRefresh,
-                onLike = onLike,
-                onShowMedia = onShowMedia,
-                onShouldShowMedia = onShouldShowMedia,
                 onPrepareReply = onPrepareReply,
                 onLoadMore = onLoadMore,
                 lazyListState = lazyListState,
-                onFollow = onFollow,
-                onUnfollow = onUnfollow,
             )
         }
         if (feed.isEmpty()) NoPostsHint()
@@ -148,7 +137,7 @@ private fun FeedTopBar(
             }
             Headline(
                 modifier = Modifier.weight(0.7f),
-                headline = stringResource(id = com.dluvian.nozzle.R.string.home),
+                headline = stringResource(id = com.dluvian.nozzle.R.string.Feed),
                 onScrollToTop = onScrollToTop,
             )
             Row(horizontalArrangement = Arrangement.End, modifier = Modifier.weight(0.15f)) {

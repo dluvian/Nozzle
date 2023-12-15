@@ -32,10 +32,11 @@ import com.dluvian.nozzle.model.PostWithMeta
 import com.dluvian.nozzle.model.ProfileWithMeta
 import com.dluvian.nozzle.model.Pubkey
 import com.dluvian.nozzle.model.TrustType
-import com.dluvian.nozzle.ui.app.navigation.PostCardNavLambdas
+import com.dluvian.nozzle.ui.app.navigation.PostCardLambdas
 import com.dluvian.nozzle.ui.components.CopyIcon
 import com.dluvian.nozzle.ui.components.EditProfileButton
 import com.dluvian.nozzle.ui.components.FollowButton
+import com.dluvian.nozzle.ui.components.LightningIcon
 import com.dluvian.nozzle.ui.components.dialog.RelaysDialog
 import com.dluvian.nozzle.ui.components.hint.NoPostsHint
 import com.dluvian.nozzle.ui.components.media.ProfilePicture
@@ -52,15 +53,10 @@ fun ProfileScreen(
     profile: ProfileWithMeta,
     isFollowedByMe: Boolean,
     feed: List<PostWithMeta>,
-    postCardNavLambdas: PostCardNavLambdas,
+    postCardLambdas: PostCardLambdas,
     onPrepareReply: (PostWithMeta) -> Unit,
-    onLike: (PostWithMeta) -> Unit,
-    onFollow: (Pubkey) -> Unit,
-    onUnfollow: (Pubkey) -> Unit,
     onOpenFollowerList: (String) -> Unit,
     onOpenFollowedByList: (String) -> Unit,
-    onShowMedia: (String) -> Unit,
-    onShouldShowMedia: (String) -> Boolean,
     onRefresh: () -> Unit,
     onLoadMore: () -> Unit,
     onNavigateToEditProfile: () -> Unit,
@@ -69,10 +65,10 @@ fun ProfileScreen(
         ProfileData(
             profile = profile,
             isFollowedByMe = isFollowedByMe,
-            onFollow = onFollow,
-            onUnfollow = onUnfollow,
+            onFollow = postCardLambdas.onFollow,
+            onUnfollow = postCardLambdas.onUnfollow,
             onNavToEditProfile = onNavigateToEditProfile,
-            onNavigateToId = postCardNavLambdas.onNavigateToId,
+            onNavigateToId = postCardLambdas.navLambdas.onNavigateToId,
         )
         Spacer(Modifier.height(spacing.medium))
         NumberedCategories(
@@ -87,15 +83,10 @@ fun ProfileScreen(
         PostCardList(
             posts = feed,
             isRefreshing = isRefreshing,
-            postCardNavLambdas = postCardNavLambdas,
+            postCardLambdas = postCardLambdas,
             onRefresh = onRefresh,
-            onLike = onLike,
-            onShowMedia = onShowMedia,
-            onShouldShowMedia = onShouldShowMedia,
             onPrepareReply = onPrepareReply,
             onLoadMore = onLoadMore,
-            onFollow = onFollow,
-            onUnfollow = onUnfollow
         )
     }
     if (feed.isEmpty()) NoPostsHint()
@@ -123,10 +114,11 @@ private fun ProfileData(
             onUnfollow = onUnfollow,
             onNavToEditProfile = onNavToEditProfile,
         )
-        NameAndNprofile(
+        ProfileStrings(
             name = profile.metadata.name.orEmpty()
                 .ifEmpty { getShortenedNpubFromPubkey(profile.pubkey) ?: profile.pubkey },
             nprofile = profile.nprofile,
+            lud16 = profile.metadata.lud16
         )
         Spacer(Modifier.height(spacing.medium))
         profile.metadata.about?.let { about ->
@@ -241,9 +233,10 @@ private fun NumberedCategories(
 }
 
 @Composable
-private fun NameAndNprofile(
+private fun ProfileStrings(
     name: String,
     nprofile: String,
+    lud16: String?
 ) {
     Row(
         modifier = Modifier.fillMaxWidth(),
@@ -263,32 +256,65 @@ private fun NameAndNprofile(
                 onCopyNprofile = {
                     copyAndToast(
                         text = nprofile,
-                        toast = context.getString(R.string.profile_id_copied),
+                        toast = context.getString(R.string.copied_profile_id),
                         context = context,
                         clip = clip
                     )
                 }
             )
+            if (!lud16.isNullOrBlank()) {
+                Spacer(modifier = Modifier.height(spacing.small))
+                Lud16(
+                    lud16 = lud16,
+                    onCopyLud16 = {
+                        copyAndToast(
+                            text = lud16,
+                            toast = context.getString(R.string.copied_lightning_address),
+                            context = context,
+                            clip = clip
+                        )
+                    }
+                )
+            }
         }
     }
 }
 
 @Composable
-private fun CopyableNprofile(
-    nprofile: String,
-    onCopyNprofile: () -> Unit,
+private fun CopyableNprofile(nprofile: String, onCopyNprofile: () -> Unit) {
+    ProfileStringRow(text = nprofile,
+        onClick = onCopyNprofile,
+        leadingIcon = {
+            CopyIcon(modifier = Modifier.size(sizing.smallItem), tint = Color.LightGray)
+        }
+    )
+}
+
+@Composable
+private fun Lud16(lud16: String, onCopyLud16: () -> Unit) {
+    ProfileStringRow(
+        text = lud16,
+        onClick = onCopyLud16,
+        leadingIcon = {
+            LightningIcon(modifier = Modifier.size(sizing.smallItem), tint = Color.LightGray)
+        },
+    )
+}
+
+@Composable
+private fun ProfileStringRow(
+    text: String,
+    onClick: () -> Unit,
+    leadingIcon: @Composable () -> Unit,
 ) {
     Row(
-        Modifier.clickable(onClick = onCopyNprofile),
-        verticalAlignment = Alignment.CenterVertically
+        modifier = Modifier.clickable(onClick = onClick),
+        verticalAlignment = Alignment.CenterVertically,
     ) {
-        CopyIcon(
-            modifier = Modifier.size(sizing.smallItem),
-            description = stringResource(id = R.string.copy_pubkey),
-            tint = Color.LightGray
-        )
+        leadingIcon()
+        Spacer(modifier = Modifier.width(spacing.small))
         Text(
-            text = nprofile,
+            text = text,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
             color = Color.LightGray,

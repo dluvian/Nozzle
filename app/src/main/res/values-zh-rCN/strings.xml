@@ -14,7 +14,6 @@
     <string name="following">关注</string>
     <string name="followers">粉丝</string>
     <string name="no_posts_found">未发现帖子</string>
-    <string name="copy_pubkey">复制公钥</string>
     <string name="public_key">公钥</string>
     <string name="return_back">返回</string>
     <string name="copy_content">复制</string>
@@ -24,9 +23,9 @@
     <string name="public_key_explanation">你的公钥就是你对外身份的标志，通过分享公钥可以让其他人找到你</string>
     <string name="private_key_description">你的密钥则是用于验证你的身份</string>
     <string name="private_key_warning">不要！不要！不要把它交给任何人</string>
-    <string name="profile_id_copied">身份ID已复制</string>
-    <string name="public_key_copied">公钥已复制</string>
-    <string name="private_key_copied">私钥已复制</string>
+    <string name="copied_profile_id">身份ID已复制</string>
+    <string name="copied_public_key">公钥已复制</string>
+    <string name="copied_private_key">私钥已复制</string>
     <string name="enter_your_username">给你自己起个名字吧！</string>
     <string name="username">用户名</string>
     <string name="about_you">个性签名</string>
@@ -54,7 +53,7 @@
     <string name="post_your_thoughts">想法要大声说出来</string>
     <string name="add">添加</string>
     <string name="invalid_nsec">无效nsec</string>
-    <string name="open_nostr_id">打开NostrID, hash值或者nip05</string>
+    <string name="search_profiles">打开NostrID, hash值或者nip05</string>
     <string name="post_published">帖子已发送</string>
     <string name="time_abbr_now">现在</string>
     <string name="time_abbr_second">秒</string>
@@ -64,7 +63,7 @@
     <string name="time_abbr_week">周</string>
     <string name="time_abbr_month">月</string>
     <string name="time_abbr_year">年</string>
-    <string name="note_id_copied">帖子ID已复制</string>
+    <string name="copied_note_id">帖子ID已复制</string>
     <string name="in_relay">在</string>
     <string name="and">和</string>
     <string name="relays">转发器</string>
@@ -76,7 +75,7 @@
     <string name="contacts_only">仅限好友</string>
     <string name="posts">帖子</string>
     <string name="replies">回复</string>
-    <string name="home">主页</string>
+    <string name="Feed">主页</string>
     <string name="autopilot">自动</string>
     <string name="quote">引用帖子</string>
     <string name="click_to_show_media">显示媒体内容</string>

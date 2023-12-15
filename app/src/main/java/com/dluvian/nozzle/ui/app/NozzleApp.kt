@@ -19,6 +19,8 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import com.dluvian.nozzle.AppContainer
+import com.dluvian.nozzle.data.cache.IClickedMediaUrlCache
+import com.dluvian.nozzle.data.postCardInteractor.IPostCardInteractor
 import com.dluvian.nozzle.data.profileFollower.IProfileFollower
 import com.dluvian.nozzle.ui.app.navigation.NozzleNavActions
 import com.dluvian.nozzle.ui.app.navigation.NozzleNavGraph
@@ -66,8 +68,6 @@ fun NozzleApp(appContainer: AppContainer) {
                 ),
                 profileViewModel = viewModel(
                     factory = ProfileViewModel.provideFactory(
-                        postCardInteractor = appContainer.postCardInteractor,
-                        clickedMediaUrlCache = appContainer.clickedMediaUrlCache,
                         feedProvider = appContainer.feedProvider,
                         relayProvider = appContainer.relayProvider,
                         profileProvider = appContainer.profileWithMetaProvider,
@@ -89,8 +89,6 @@ fun NozzleApp(appContainer: AppContainer) {
                 ),
                 feedViewModel = viewModel(
                     factory = FeedViewModel.provideFactory(
-                        clickedMediaUrlCache = appContainer.clickedMediaUrlCache,
-                        postCardInteractor = appContainer.postCardInteractor,
                         pubkeyProvider = appContainer.keyManager,
                         feedProvider = appContainer.feedProvider,
                         relayProvider = appContainer.relayProvider,
@@ -100,23 +98,18 @@ fun NozzleApp(appContainer: AppContainer) {
                 ),
                 inboxViewModel = viewModel(
                     factory = InboxViewModel.provideFactory(
-                        clickedMediaUrlCache = appContainer.clickedMediaUrlCache,
-                        postCardInteractor = appContainer.postCardInteractor,
                         inboxFeedProvider = appContainer.inboxFeedProvider,
                         relayProvider = appContainer.relayProvider,
                     )
                 ),
                 likesViewModel = viewModel(
                     factory = LikesViewModel.provideFactory(
-                        clickedMediaUrlCache = appContainer.clickedMediaUrlCache,
                         likeFeedProvider = appContainer.likeFeedProvider
                     )
                 ),
                 threadViewModel = viewModel(
                     factory = ThreadViewModel.provideFactory(
                         threadProvider = appContainer.threadProvider,
-                        clickedMediaUrlCache = appContainer.clickedMediaUrlCache,
-                        postCardInteractor = appContainer.postCardInteractor,
                     )
                 ),
                 replyViewModel = viewModel(
@@ -144,13 +137,13 @@ fun NozzleApp(appContainer: AppContainer) {
                 searchViewModel = viewModel(
                     factory = SearchViewModel.provideFactory(
                         nip05Resolver = appContainer.nip05Resolver,
-                        simpleProfileProvider = appContainer.simpleProfileProvider
+                        simpleProfileProvider = appContainer.simpleProfileProvider,
+                        searchFeedProvider = appContainer.searchFeedProvider,
+                        nozzleSubscriber = appContainer.nozzleSubscriber,
                     )
                 ),
                 hashtagViewModel = viewModel(
                     factory = HashtagViewModel.provideFactory(
-                        clickedMediaUrlCache = appContainer.clickedMediaUrlCache,
-                        postCardInteractor = appContainer.postCardInteractor,
                         feedProvider = appContainer.feedProvider,
                         relayProvider = appContainer.relayProvider,
                     )
@@ -183,8 +176,10 @@ fun NozzleApp(appContainer: AppContainer) {
             Screen(
                 drawerState = drawerState,
                 vmContainer = vmContainer,
-                navActions = navActions,
                 profileFollower = appContainer.profileFollower,
+                clickedMediaUrlCache = appContainer.clickedMediaUrlCache,
+                postCardInteractor = appContainer.postCardInteractor,
+                navActions = navActions,
                 navController = navController,
                 hasPrivkey = hasPrivkey
             )
@@ -196,8 +191,10 @@ fun NozzleApp(appContainer: AppContainer) {
 private fun Screen(
     drawerState: DrawerState,
     vmContainer: VMContainer,
-    navActions: NozzleNavActions,
     profileFollower: IProfileFollower,
+    clickedMediaUrlCache: IClickedMediaUrlCache,
+    postCardInteractor: IPostCardInteractor,
+    navActions: NozzleNavActions,
     navController: NavHostController,
     hasPrivkey: Boolean,
 ) {
@@ -205,8 +202,10 @@ private fun Screen(
         Drawer(
             drawerState = drawerState,
             vmContainer = vmContainer,
-            navActions = navActions,
             profileFollower = profileFollower,
+            clickedMediaUrlCache = clickedMediaUrlCache,
+            postCardInteractor = postCardInteractor,
+            navActions = navActions,
             navController = navController,
             scope = rememberCoroutineScope()
         )
@@ -214,8 +213,10 @@ private fun Screen(
         NozzleContent(
             drawerState = drawerState,
             vmContainer = vmContainer,
-            navActions = navActions,
             profileFollower = profileFollower,
+            clickedMediaUrlCache = clickedMediaUrlCache,
+            postCardInteractor = postCardInteractor,
+            navActions = navActions,
             navController = navController,
             hasPrivkey = false
         )
@@ -226,8 +227,10 @@ private fun Screen(
 private fun Drawer(
     drawerState: DrawerState,
     vmContainer: VMContainer,
-    navActions: NozzleNavActions,
     profileFollower: IProfileFollower,
+    clickedMediaUrlCache: IClickedMediaUrlCache,
+    postCardInteractor: IPostCardInteractor,
+    navActions: NozzleNavActions,
     navController: NavHostController,
     scope: CoroutineScope,
 ) {
@@ -248,6 +251,8 @@ private fun Drawer(
             vmContainer = vmContainer,
             navActions = navActions,
             profileFollower = profileFollower,
+            clickedMediaUrlCache = clickedMediaUrlCache,
+            postCardInteractor = postCardInteractor,
             drawerState = drawerState,
             navController = navController,
             hasPrivkey = true
@@ -260,6 +265,8 @@ private fun NozzleContent(
     drawerState: DrawerState,
     vmContainer: VMContainer,
     profileFollower: IProfileFollower,
+    clickedMediaUrlCache: IClickedMediaUrlCache,
+    postCardInteractor: IPostCardInteractor,
     navActions: NozzleNavActions,
     navController: NavHostController,
     hasPrivkey: Boolean,
@@ -273,6 +280,8 @@ private fun NozzleContent(
             vmContainer = vmContainer,
             navActions = navActions,
             profileFollower = profileFollower,
+            clickedMediaUrlCache = clickedMediaUrlCache,
+            postCardInteractor = postCardInteractor,
             drawerState = drawerState,
             navController = navController,
             startDestination = if (hasPrivkey) NozzleRoute.FEED else NozzleRoute.ADD_ACCOUNT

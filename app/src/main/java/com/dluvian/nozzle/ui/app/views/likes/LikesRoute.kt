@@ -6,13 +6,13 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import com.dluvian.nozzle.data.profileFollower.IProfileFollower
 import com.dluvian.nozzle.model.PostWithMeta
-import com.dluvian.nozzle.ui.app.navigation.PostCardNavLambdas
+import com.dluvian.nozzle.ui.app.navigation.PostCardLambdas
 
 @Composable
 fun LikesRoute(
     likesViewModel: LikesViewModel,
     profileFollower: IProfileFollower,
-    postCardNavLambdas: PostCardNavLambdas,
+    postCardLambdas: PostCardLambdas,
     onPrepareReply: (PostWithMeta) -> Unit,
     onGoBack: () -> Unit,
 ) {
@@ -27,22 +27,10 @@ fun LikesRoute(
     LikesScreen(
         feed = adjustedFeed,
         isRefreshing = isRefreshing,
-        postCardNavLambdas = postCardNavLambdas,
-        onShowMedia = { mediaUrl ->
-            likesViewModel.clickedMediaUrlCache.insert(mediaUrl)
-        },
-        onShouldShowMedia = { mediaUrl ->
-            likesViewModel.clickedMediaUrlCache.contains(mediaUrl)
-        },
+        postCardLambdas = postCardLambdas,
         onRefresh = likesViewModel.onRefresh,
         onLoadMore = likesViewModel.onLoadMore,
         onPrepareReply = onPrepareReply,
-        onFollow = { pubkeyToFollow ->
-            profileFollower.follow(pubkeyToFollow = pubkeyToFollow)
-        },
-        onUnfollow = { pubkeyToUnfollow ->
-            profileFollower.unfollow(pubkeyToUnfollow = pubkeyToUnfollow)
-        },
         onGoBack = onGoBack
     )
 }

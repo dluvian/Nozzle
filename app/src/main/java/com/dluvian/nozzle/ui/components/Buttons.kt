@@ -14,7 +14,6 @@ import androidx.compose.material.MaterialTheme.colors
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Send
@@ -151,23 +150,6 @@ fun FeedSettingsButton(
             .clickable { if (isOpenable) showMenu.value = true },
         imageVector = Icons.Default.SettingsSuggest,
         contentDescription = stringResource(id = R.string.feed_settings),
-    )
-}
-
-@Composable
-fun CheckTopBarButton(
-    hasChanges: Boolean,
-    onCheck: () -> Unit,
-    onCanGoBack: (() -> Boolean)? = null,
-    onGoBack: (() -> Unit)? = null,
-) {
-    TopBarButton(
-        imageVector = Icons.Default.Check,
-        hasChanges = hasChanges,
-        description = stringResource(id = R.string.update),
-        onClick = onCheck,
-        onCanGoBack = onCanGoBack,
-        onGoBack = onGoBack,
     )
 }
 

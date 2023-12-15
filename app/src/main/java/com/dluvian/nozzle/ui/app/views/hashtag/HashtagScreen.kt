@@ -6,8 +6,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import com.dluvian.nozzle.model.PostWithMeta
-import com.dluvian.nozzle.model.Pubkey
-import com.dluvian.nozzle.ui.app.navigation.PostCardNavLambdas
+import com.dluvian.nozzle.ui.app.navigation.PostCardLambdas
 import com.dluvian.nozzle.ui.components.ReturnableTopBar
 import com.dluvian.nozzle.ui.components.hint.NoPostsHint
 import com.dluvian.nozzle.ui.components.postCard.PostCardList
@@ -17,15 +16,10 @@ import com.dluvian.nozzle.ui.components.postCard.PostCardList
 fun HashtagScreen(
     uiState: HashtagViewModelState,
     feed: List<PostWithMeta>,
-    postCardNavLambdas: PostCardNavLambdas,
-    onLike: (PostWithMeta) -> Unit,
-    onShowMedia: (String) -> Unit,
-    onShouldShowMedia: (String) -> Boolean,
+    postCardLambdas: PostCardLambdas,
     onRefresh: () -> Unit,
     onLoadMore: () -> Unit,
     onPrepareReply: (PostWithMeta) -> Unit,
-    onFollow: (Pubkey) -> Unit,
-    onUnfollow: (Pubkey) -> Unit,
     onGoBack: () -> Unit,
 ) {
     Column {
@@ -37,15 +31,10 @@ fun HashtagScreen(
             PostCardList(
                 posts = feed,
                 isRefreshing = uiState.isRefreshing,
-                postCardNavLambdas = postCardNavLambdas,
+                postCardLambdas = postCardLambdas,
                 onRefresh = onRefresh,
-                onLike = onLike,
-                onShowMedia = onShowMedia,
-                onShouldShowMedia = onShouldShowMedia,
                 onPrepareReply = onPrepareReply, // TODO: Delete dis
                 onLoadMore = onLoadMore,
-                onFollow = onFollow,
-                onUnfollow = onUnfollow
             )
         }
     }

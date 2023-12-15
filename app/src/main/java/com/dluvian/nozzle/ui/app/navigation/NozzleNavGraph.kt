@@ -13,8 +13,10 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import androidx.navigation.navDeepLink
+import com.dluvian.nozzle.data.cache.IClickedMediaUrlCache
 import com.dluvian.nozzle.data.nostr.utils.EncodingUtils.URI
 import com.dluvian.nozzle.data.nostr.utils.EncodingUtils.nostrStrToNostrId
+import com.dluvian.nozzle.data.postCardInteractor.IPostCardInteractor
 import com.dluvian.nozzle.data.profileFollower.IProfileFollower
 import com.dluvian.nozzle.model.nostr.NeventNostrId
 import com.dluvian.nozzle.model.nostr.NoteNostrId
@@ -45,13 +47,23 @@ fun NozzleNavGraph(
     vmContainer: VMContainer,
     navActions: NozzleNavActions,
     profileFollower: IProfileFollower,
+    clickedMediaUrlCache: IClickedMediaUrlCache,
+    postCardInteractor: IPostCardInteractor,
     drawerState: DrawerState,
     modifier: Modifier = Modifier,
     navController: NavHostController = rememberNavController(),
     startDestination: String = NozzleRoute.FEED,
 ) {
     val scope = rememberCoroutineScope()
-    val postCardNavLambdas = remember { navActions.getPostCardNavigation() }
+    val postCardLambdas = remember {
+        PostCardLambdas.create(
+            navLambdas = navActions.getPostCardNavigation(),
+            postCardInteractor = postCardInteractor,
+            profileFollower = profileFollower,
+            clickedMediaUrlCache = clickedMediaUrlCache
+        )
+    }
+
     NavHost(
         navController = navController,
         startDestination = startDestination,
@@ -61,7 +73,7 @@ fun NozzleNavGraph(
             FeedRoute(
                 feedViewModel = vmContainer.feedViewModel,
                 profileFollower = profileFollower,
-                postCardNavLambdas = postCardNavLambdas,
+                postCardLambdas = postCardLambdas,
                 onPrepareReply = vmContainer.replyViewModel.onPrepareReply,
                 onOpenDrawer = { scope.launch { drawerState.open() } },
                 onNavigateToPost = navActions.navigateToPost,
@@ -77,7 +89,7 @@ fun NozzleNavGraph(
             ProfileRoute(
                 profileViewModel = vmContainer.profileViewModel,
                 profileFollower = profileFollower,
-                postCardNavLambdas = postCardNavLambdas,
+                postCardLambdas = postCardLambdas,
                 onOpenFollowerList = navActions.navigateToFollowerList,
                 onOpenFollowedByList = navActions.navigateToFollowedByList,
                 onPrepareReply = vmContainer.replyViewModel.onPrepareReply,
@@ -94,7 +106,7 @@ fun NozzleNavGraph(
             ProfileListRoute(
                 profileListViewModel = vmContainer.profileListViewModel,
                 profileFollower = profileFollower,
-                onNavigateToProfile = navActions.navigateToProfile,
+                postCardLambdas = postCardLambdas,
                 onGoBack = navActions.popStack,
             )
         }
@@ -108,7 +120,7 @@ fun NozzleNavGraph(
             ProfileListRoute(
                 profileListViewModel = vmContainer.profileListViewModel,
                 profileFollower = profileFollower,
-                onNavigateToProfile = navActions.navigateToProfile,
+                postCardLambdas = postCardLambdas,
                 onGoBack = navActions.popStack,
             )
         }
@@ -116,7 +128,7 @@ fun NozzleNavGraph(
             InboxRoute(
                 inboxViewModel = vmContainer.inboxViewModel,
                 profileFollower = profileFollower,
-                postCardNavLambdas = postCardNavLambdas,
+                postCardLambdas = postCardLambdas,
                 onPrepareReply = vmContainer.replyViewModel.onPrepareReply,
                 onGoBack = navActions.popStack,
             )
@@ -125,7 +137,7 @@ fun NozzleNavGraph(
             LikesRoute(
                 likesViewModel = vmContainer.likesViewModel,
                 profileFollower = profileFollower,
-                postCardNavLambdas = postCardNavLambdas,
+                postCardLambdas = postCardLambdas,
                 onPrepareReply = vmContainer.replyViewModel.onPrepareReply,
                 onGoBack = navActions.popStack,
             )
@@ -133,8 +145,8 @@ fun NozzleNavGraph(
         composable(route = NozzleRoute.SEARCH) {
             SearchRoute(
                 searchViewModel = vmContainer.searchViewModel,
-                onNavigateToId = navActions.navigateToId,
-                onNavigateToProfile = navActions.navigateToProfile,
+                postCardLambdas = postCardLambdas,
+                onPrepareReply = vmContainer.replyViewModel.onPrepareReply,
                 onGoBack = navActions.popStack,
             )
         }
@@ -166,7 +178,7 @@ fun NozzleNavGraph(
             ThreadRoute(
                 threadViewModel = vmContainer.threadViewModel,
                 profileFollower = profileFollower,
-                postCardNavLambdas = postCardNavLambdas,
+                postCardLambdas = postCardLambdas,
                 onPrepareReply = vmContainer.replyViewModel.onPrepareReply,
                 onGoBack = navActions.popStack,
             )
@@ -204,7 +216,7 @@ fun NozzleNavGraph(
                 HashtagRoute(
                     hashtagViewModel = vmContainer.hashtagViewModel,
                     profileFollower = profileFollower,
-                    postCardNavLambdas = postCardNavLambdas,
+                    postCardLambdas = postCardLambdas,
                     onPrepareReply = vmContainer.replyViewModel.onPrepareReply,
                     onGoBack = navActions.popStack,
                 )

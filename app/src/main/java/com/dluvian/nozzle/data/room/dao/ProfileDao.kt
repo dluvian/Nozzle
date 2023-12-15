@@ -1,8 +1,16 @@
 package com.dluvian.nozzle.data.room.dao
 
-import androidx.room.*
+import androidx.room.Dao
+import androidx.room.Insert
+import androidx.room.MapColumn
+import androidx.room.MapInfo
+import androidx.room.OnConflictStrategy
+import androidx.room.Query
+import androidx.room.RewriteQueriesToDropUnusedColumns
+import androidx.room.Transaction
 import com.dluvian.nozzle.data.room.entity.ProfileEntity
 import com.dluvian.nozzle.data.room.helper.extended.ProfileEntityExtended
+import com.dluvian.nozzle.data.utils.escapeSQLPercentChars
 import com.dluvian.nozzle.model.Pubkey
 import com.dluvian.nozzle.model.nostr.Metadata
 import kotlinx.coroutines.flow.Flow
@@ -14,7 +22,6 @@ interface ProfileDao {
 
     @Query("SELECT * FROM profile WHERE pubkey IN (:pubkeys)")
     fun getProfilesFlow(pubkeys: Collection<Pubkey>): Flow<List<ProfileEntity>>
-
 
     @Query("SELECT * FROM profile WHERE pubkey IN (:pubkeys)")
     suspend fun getProfiles(pubkeys: Collection<Pubkey>): List<ProfileEntity>
@@ -86,13 +93,17 @@ interface ProfileDao {
     @Query(
         "SELECT pubkey FROM profile WHERE name = :name " +
                 "UNION ALL " +
-                "SELECT pubkey FROM profile WHERE name LIKE :start " +
+                "SELECT pubkey FROM profile WHERE name LIKE :start ESCAPE '\\' " +
                 "UNION ALL " +
-                "SELECT pubkey FROM profile WHERE name LIKE :somewhere " +
+                "SELECT pubkey FROM profile WHERE nip05 LIKE :start ESCAPE '\\' " +
                 "UNION ALL " +
-                "SELECT pubkey FROM profile WHERE about LIKE :start " +
+                "SELECT pubkey FROM profile WHERE name LIKE :somewhere ESCAPE '\\' " +
                 "UNION ALL " +
-                "SELECT pubkey FROM profile WHERE about LIKE :somewhere " +
+                "SELECT pubkey FROM profile WHERE nip05 LIKE :somewhere ESCAPE '\\' " +
+                "UNION ALL " +
+                "SELECT pubkey FROM profile WHERE about LIKE :start ESCAPE '\\' " +
+                "UNION ALL " +
+                "SELECT pubkey FROM profile WHERE about LIKE :somewhere ESCAPE '\\' " +
                 "LIMIT :limit"
     )
     suspend fun internalGetPubkeysWithNameLike(
@@ -103,7 +114,7 @@ interface ProfileDao {
     ): List<Pubkey>
 
     suspend fun getPubkeysWithNameLike(name: String, limit: Int): List<Pubkey> {
-        val fixedName = name.filter { it != '%' }
+        val fixedName = name.escapeSQLPercentChars()
         return internalGetPubkeysWithNameLike(
             name = fixedName,
             start = "$fixedName%",

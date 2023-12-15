@@ -1,9 +1,18 @@
 package com.dluvian.nozzle.ui.components.postCard
 
-import androidx.compose.foundation.*
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
@@ -18,38 +27,31 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.style.TextAlign
 import com.dluvian.nozzle.R
 import com.dluvian.nozzle.data.nostr.utils.EncodingUtils.createNeventStr
 import com.dluvian.nozzle.data.utils.copyAndToast
 import com.dluvian.nozzle.model.PostWithMeta
-import com.dluvian.nozzle.model.Pubkey
 import com.dluvian.nozzle.model.ThreadPosition
 import com.dluvian.nozzle.model.TrustType
-import com.dluvian.nozzle.ui.app.navigation.PostCardNavLambdas
-import com.dluvian.nozzle.ui.components.*
-import com.dluvian.nozzle.ui.components.postCard.atoms.BorderedCard
+import com.dluvian.nozzle.ui.app.navigation.PostCardLambdas
+import com.dluvian.nozzle.ui.components.LikeIcon
+import com.dluvian.nozzle.ui.components.QuoteIcon
+import com.dluvian.nozzle.ui.components.ReplyIcon
 import com.dluvian.nozzle.ui.components.postCard.atoms.PostCardContentBase
 import com.dluvian.nozzle.ui.components.postCard.atoms.PostCardProfilePicture
 import com.dluvian.nozzle.ui.components.postCard.molecules.MediaDecisionCard
 import com.dluvian.nozzle.ui.components.postCard.molecules.PostCardHeader
-import com.dluvian.nozzle.ui.components.text.*
-import com.dluvian.nozzle.ui.theme.*
+import com.dluvian.nozzle.ui.theme.sizing
+import com.dluvian.nozzle.ui.theme.spacing
 
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun PostCard(
     post: PostWithMeta,
-    postCardNavLambdas: PostCardNavLambdas,
-    onLike: () -> Unit,
+    postCardLambdas: PostCardLambdas,
     onPrepareReply: (PostWithMeta) -> Unit,
-    onFollow: (Pubkey) -> Unit,
-    onUnfollow: (Pubkey) -> Unit,
     modifier: Modifier = Modifier,
-    onShowMedia: (String) -> Unit,
-    onShouldShowMedia: (String) -> Boolean,
     isCurrent: Boolean = false,
     threadPosition: ThreadPosition = ThreadPosition.SINGLE,
 ) {
@@ -60,7 +62,7 @@ fun PostCard(
     Row(modifier
         .combinedClickable(
             enabled = !isCurrent,
-            onClick = { postCardNavLambdas.onNavigateToThread(post.entity.id) })
+            onClick = { postCardLambdas.navLambdas.onNavigateToThread(post.entity.id) })
         .fillMaxWidth()
         .drawBehind {
             when (threadPosition) {
@@ -116,22 +118,14 @@ fun PostCard(
                 isFollowed = post.isFollowedByMe,
                 trustScore = post.trustScore,
             ),
-            onNavigateToProfile = postCardNavLambdas.onNavigateToProfile,
+            onNavigateToProfile = postCardLambdas.navLambdas.onNavigateToProfile,
         )
         Spacer(Modifier.width(spacing.large))
         Column {
             PostCardHeaderAndContent(
                 post = post,
                 isCurrent = isCurrent,
-                onNavigateToProfile = postCardNavLambdas.onNavigateToProfile,
-                onNavigateToThread = {
-                    if (!isCurrent) {
-                        postCardNavLambdas.onNavigateToThread(post.entity.id)
-                    }
-                },
-                onNavigateToId = postCardNavLambdas.onNavigateToId,
-                onFollow = onFollow,
-                onUnfollow = onUnfollow,
+                postCardLambdas = postCardLambdas,
             )
 
             post.mediaUrls.forEach { mediaUrl ->
@@ -139,8 +133,8 @@ fun PostCard(
                 MediaDecisionCard(
                     modifier = Modifier.fillMaxWidth(),
                     mediaUrl = mediaUrl,
-                    onShowMedia = onShowMedia,
-                    onShouldShowMedia = onShouldShowMedia,
+                    onShowMedia = postCardLambdas.onShowMedia,
+                    onShouldShowMedia = postCardLambdas.onShouldShowMedia,
                 )
             }
 
@@ -148,9 +142,9 @@ fun PostCard(
                 Spacer(Modifier.height(spacing.medium))
                 AnnotatedMentionedPostCard(
                     post = mentionedPost,
-                    onNavigateToProfile = postCardNavLambdas.onNavigateToProfile,
-                    onNavigateToThread = postCardNavLambdas.onNavigateToThread,
-                    onNavigateToId = postCardNavLambdas.onNavigateToId,
+                    onNavigateToProfile = postCardLambdas.navLambdas.onNavigateToProfile,
+                    onNavigateToThread = postCardLambdas.navLambdas.onNavigateToThread,
+                    onNavigateToId = postCardLambdas.navLambdas.onNavigateToId,
                 )
             }
 
@@ -159,10 +153,10 @@ fun PostCard(
                 modifier = Modifier.fillMaxWidth(0.92f),
                 numOfReplies = post.numOfReplies,
                 post = post,
-                onLike = onLike,
+                onLike = { postCardLambdas.onLike(post) },
                 onPrepareReply = onPrepareReply, // TODO: No prepareReply
-                onNavigateToReply = postCardNavLambdas.onNavigateToReply,
-                onNavigateToQuote = postCardNavLambdas.onNavigateToQuote,
+                onNavigateToReply = postCardLambdas.navLambdas.onNavigateToReply,
+                onNavigateToQuote = postCardLambdas.navLambdas.onNavigateToQuote,
             )
         }
     }
@@ -172,11 +166,7 @@ fun PostCard(
 private fun PostCardHeaderAndContent(
     post: PostWithMeta,
     isCurrent: Boolean,
-    onNavigateToProfile: ((String) -> Unit)?,
-    onNavigateToThread: () -> Unit,
-    onNavigateToId: (String) -> Unit,
-    onFollow: (Pubkey) -> Unit,
-    onUnfollow: (Pubkey) -> Unit,
+    postCardLambdas: PostCardLambdas,
 ) {
     val context = LocalContext.current
     val clip = LocalClipboardManager.current
@@ -185,12 +175,12 @@ private fun PostCardHeaderAndContent(
             name = post.name,
             pubkey = post.pubkey,
             createdAt = post.entity.createdAt,
-            onOpenProfile = onNavigateToProfile,
+            onOpenProfile = postCardLambdas.navLambdas.onNavigateToProfile,
             showOptions = true,
             onCopyId = {
                 copyAndToast(
                     text = createNeventStr(postId = post.entity.id, relays = post.relays).orEmpty(),
-                    toast = context.getString(R.string.note_id_copied),
+                    toast = context.getString(R.string.copied_note_id),
                     context = context,
                     clip = clip
                 )
@@ -198,16 +188,16 @@ private fun PostCardHeaderAndContent(
             onCopyContent = {
                 copyAndToast(
                     text = post.entity.content,
-                    toast = context.getString(R.string.content_copied),
+                    toast = context.getString(R.string.copied_content),
                     context = context,
                     clip = clip
                 )
             },
-            onFollow = if (post.isFollowedByMe) null else {
-                { onFollow(post.pubkey) }
+            onFollow = if (post.isFollowedByMe || post.isOneself) null else {
+                { postCardLambdas.onFollow(post.pubkey) }
             },
-            onUnfollow = if (!post.isFollowedByMe) null else {
-                { onUnfollow(post.pubkey) }
+            onUnfollow = if (!post.isFollowedByMe || post.isOneself) null else {
+                { postCardLambdas.onUnfollow(post.pubkey) }
             }
         )
         PostCardContentBase(
@@ -216,27 +206,12 @@ private fun PostCardHeaderAndContent(
             relays = post.relays,
             annotatedContent = post.annotatedContent,
             isCurrent = isCurrent,
-            onNavigateToThread = onNavigateToThread,
-            onNavigateToId = onNavigateToId,
-        )
-    }
-}
-
-@Composable
-fun PostNotFound() {
-    BorderedCard(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = spacing.screenEdge)
-            .padding(top = spacing.screenEdge),
-        backgroundColor = MaterialTheme.colors.hintGray
-    ) {
-        Text(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(spacing.screenEdge),
-            text = stringResource(id = R.string.post_not_found),
-            textAlign = TextAlign.Center,
+            onNavigateToThread = {
+                if (!isCurrent) {
+                    postCardLambdas.navLambdas.onNavigateToThread(post.entity.id)
+                }
+            },
+            onNavigateToId = postCardLambdas.navLambdas.onNavigateToId,
         )
     }
 }

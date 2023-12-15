@@ -3,24 +3,31 @@ package com.dluvian.nozzle.ui.app.views.search
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import com.dluvian.nozzle.model.PostWithMeta
+import com.dluvian.nozzle.ui.app.navigation.PostCardLambdas
 
 @Composable
 fun SearchRoute(
     searchViewModel: SearchViewModel,
-    onNavigateToId: (String) -> Unit,
-    onNavigateToProfile: (String) -> Unit,
+    postCardLambdas: PostCardLambdas,
+    onPrepareReply: (PostWithMeta) -> Unit,
     onGoBack: () -> Unit,
 ) {
     val uiState by searchViewModel.uiState.collectAsState()
     val profileSearchResult by searchViewModel.profileSearchResult.collectAsState()
+    val postSearchResult by searchViewModel.postSearchResult.collectAsState()
 
     SearchScreen(
         uiState = uiState,
+        postCardLambdas = postCardLambdas,
         profileSearchResult = profileSearchResult,
-        onSearch = searchViewModel.onSearch,
+        postSearchResult = postSearchResult,
+        onManualSearch = searchViewModel.onManualSearch,
+        onTypeSearch = searchViewModel.onTypeSearch,
+        onChangeSearchType = searchViewModel.onChangeSearchType,
         onResetUI = searchViewModel.onResetUI,
-        onNavigateToId = onNavigateToId,
-        onNavigateToProfile = onNavigateToProfile,
+        onSubscribeUnknownContacts = searchViewModel.onSubscribeUnknownContacts,
+        onPrepareReply = onPrepareReply,
         onGoBack = onGoBack,
     )
 }
