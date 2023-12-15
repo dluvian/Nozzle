@@ -97,9 +97,9 @@ class PostViewModel(
         }
     }
 
-    val onSend: (String) -> Unit = { content ->
+    val onSend: (String, PostViewModelState) -> Unit = { content, state ->
         viewModelScope.launch(context = Dispatchers.IO) {
-            val event = sendPost(state = uiState.value, content = content)
+            val event = sendPost(state = state, content = content)
             fullPostInserter.insertFullPost(events = listOf(event))
             dbExcludingCache.addPostIds(listOf(event.id))
         }
