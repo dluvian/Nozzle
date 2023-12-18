@@ -56,7 +56,7 @@ class AutopilotProvider(
 
         if (pubkeys.size > processedPubkeys.size) {
             val unprocessedCount = pubkeys.size - processedPubkeys.size
-            Log.i(TAG, "Failed identify relay for $unprocessedCount of ${pubkeys.size} pubkeys")
+            Log.i(TAG, "Failed to identify relays for $unprocessedCount of ${pubkeys.size} pubkeys")
         }
 
         return mergeResult(result)

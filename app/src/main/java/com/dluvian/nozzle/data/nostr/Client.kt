@@ -106,12 +106,6 @@ class Client(private val httpClient: OkHttpClient) {
 
         val request = """["EVENT",${event.toJson()}]"""
         Log.i(TAG, "Publish to ${filteredRelays.size} relays: $request")
-        Log.i(
-            TAG,
-            "Published to ${
-                filteredRelays.map { it.key }.distinct().size
-            }/${filteredRelays.size} ${filteredRelays.map { it.key }}"
-        )
         filteredRelays.forEach { it.value.send(request) }
     }
 
