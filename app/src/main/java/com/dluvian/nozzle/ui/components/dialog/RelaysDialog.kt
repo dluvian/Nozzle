@@ -57,7 +57,7 @@ private fun DialogSection(header: String, relays: List<String>) {
                 .fillMaxWidth()
                 .padding(horizontal = spacing.dialogEdge)
                 .padding(top = spacing.large, bottom = spacing.medium),
-            text = header,
+            text = header + " (${relays.size})",
             fontWeight = FontWeight.SemiBold,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis
