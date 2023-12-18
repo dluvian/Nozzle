@@ -33,11 +33,7 @@ class AutopilotProvider(
 
         nozzleSubscriber.subscribeNip65(pubkeys = pubkeys)
 
-        // Always use your read relays
-        val result = getMaxRelays(from = relayProvider.getReadRelays())
-            .associateWith { pubkeys }
-            .toList()
-            .toMutableList()
+        val result = associatePubkeysInRandomChunksWithReadRelays(pubkeys = pubkeys)
         val processedPubkeys = mutableSetOf<Pubkey>()
 
         processNip65(
@@ -129,5 +125,17 @@ class AutopilotProvider(
             }
         }
         return result
+    }
+
+    private fun associatePubkeysInRandomChunksWithReadRelays(
+        pubkeys: Collection<Pubkey>
+    ): MutableList<Pair<Relay, Set<String>>> {
+        if (pubkeys.isEmpty()) return mutableListOf()
+
+        val readRelays = getMaxRelays(from = relayProvider.getReadRelays())
+        val chunkSize = pubkeys.size / readRelays.size + 1
+        val chunkedPubkeys = pubkeys.shuffled().chunked(chunkSize) { it.toSet() }
+
+        return readRelays.zip(chunkedPubkeys).toMutableList()
     }
 }
