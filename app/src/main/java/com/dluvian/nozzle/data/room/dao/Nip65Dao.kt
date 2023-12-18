@@ -101,6 +101,13 @@ interface Nip65Dao {
     fun getPersonalRelaysFlow(): Flow<List<Nip65Relay>>
 
     @Query(
+        "SELECT url, isRead, isWrite " +
+                "FROM nip65 " +
+                "WHERE pubkey = :pubkey"
+    )
+    fun getNip65RelaysOfPubkeyFlow(pubkey: Pubkey): Flow<List<Nip65Relay>>
+
+    @Query(
         "DELETE FROM nip65 " +
                 "WHERE pubkey NOT IN (SELECT pubkey FROM profile) " +
                 "AND pubkey NOT IN (:excludePubkeys) " +

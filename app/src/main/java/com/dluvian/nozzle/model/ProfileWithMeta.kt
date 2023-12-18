@@ -8,7 +8,9 @@ data class ProfileWithMeta(
     val metadata: Metadata,
     val numOfFollowing: Int,
     val numOfFollowers: Int,
-    val relays: List<String>,
+    val seenInRelays: List<String>,
+    val writesInRelays: List<String>,
+    val readsInRelays: List<String>,
     val isOneself: Boolean,
     val trustScore: Float?,
 ) {
@@ -19,7 +21,9 @@ data class ProfileWithMeta(
             metadata = Metadata(),
             numOfFollowing = 0,
             numOfFollowers = 0,
-            relays = emptyList(),
+            seenInRelays = emptyList(),
+            writesInRelays = emptyList(),
+            readsInRelays = emptyList(),
             isOneself = false,
             trustScore = null,
         )

@@ -114,6 +114,9 @@
     <string name="open">Open</string>
     <string name="notes">Notes</string>
     <string name="people">People</string>
+    <string name="seen_in">Seen in</string>
+    <string name="writes_in">Writes in</string>
+    <string name="reads_in">Reads in</string>
     <plurals name="other_relays">
         <item quantity="one">other</item>
         <item quantity="other">others</item>
