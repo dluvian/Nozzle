@@ -14,6 +14,7 @@ class DatabaseSweeper(
     private val database: AppDatabase
 ) : IDatabaseSweeper {
     private val isSweeping = AtomicBoolean(false)
+    private val maxSQLParams = 250
     override suspend fun sweep() {
         if (!isSweeping.compareAndSet(false, true)) {
             Log.i(TAG, "Sweep blocked by ongoing sweep")
@@ -35,7 +36,7 @@ class DatabaseSweeper(
     private suspend fun deletePosts() {
         val deletePostCount = database.postDao().deleteAllExceptNewest(
             amountToKeep = keepPosts,
-            exclude = dbSweepExcludingCache.getPostIds(),
+            exclude = dbSweepExcludingCache.getPostIds().take(maxSQLParams),
         )
         dbSweepExcludingCache.clearPostIds()
         Log.i(TAG, "Deleted $deletePostCount posts")
@@ -44,7 +45,7 @@ class DatabaseSweeper(
     private suspend fun deleteProfiles() {
         val deleteProfileCount = database
             .profileDao()
-            .deleteOrphaned(exclude = dbSweepExcludingCache.getPubkeys())
+            .deleteOrphaned(exclude = dbSweepExcludingCache.getPubkeys().take(maxSQLParams))
         dbSweepExcludingCache.clearPubkeys()
         Log.i(TAG, "Deleted $deleteProfileCount profiles")
     }
@@ -52,7 +53,9 @@ class DatabaseSweeper(
     private suspend fun deleteContactLists() {
         val deleteContactCount = database
             .contactDao()
-            .deleteOrphaned(exclude = dbSweepExcludingCache.getContactListAuthors())
+            .deleteOrphaned(
+                exclude = dbSweepExcludingCache.getContactListAuthors().take(maxSQLParams)
+            )
         dbSweepExcludingCache.clearContactListAuthors()
         Log.i(TAG, "Deleted $deleteContactCount contact entries")
     }
@@ -60,7 +63,7 @@ class DatabaseSweeper(
     private suspend fun deleteNip65() {
         val deleteNip65Count = database
             .nip65Dao()
-            .deleteOrphaned(dbSweepExcludingCache.getNip65Authors())
+            .deleteOrphaned(dbSweepExcludingCache.getNip65Authors().take(maxSQLParams))
         dbSweepExcludingCache.clearNip65Authors()
         Log.i(TAG, "Deleted $deleteNip65Count nip65 entries")
     }

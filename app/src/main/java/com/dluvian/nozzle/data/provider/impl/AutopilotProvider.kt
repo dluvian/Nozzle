@@ -90,6 +90,7 @@ class AutopilotProvider(
         val newlyProcessedEventRelays = mutableMapOf<String, MutableSet<String>>()
 
         eventRelayDao.getCountedRelaysPerPubkey(pubkeys = pubkeys)
+            .shuffled()
             .sortedByDescending { it.numOfPosts }
             .forEach {
                 if (!newlyProcessedPubkeys.contains(it.pubkey)) {
