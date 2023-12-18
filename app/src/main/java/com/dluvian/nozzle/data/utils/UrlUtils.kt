@@ -6,7 +6,7 @@ object UrlUtils {
     private val wssPattern =
         Regex("^(wss)://[a-zA-Z0-9-]+(\\.[a-zA-Z0-9-]+)*(:(\\d{1,5}))?(/.*)?\$")
     const val WEBSOCKET_PREFIX = "wss://"
-    private const val MAX_URL_LENGTH = 35
+    private const val MAX_URL_LENGTH = 30
 
     // Video suffixes from https://developer.android.com/guide/topics/media/platform/supported-formats#video-formats
     val mediaSuffixes = listOf(
