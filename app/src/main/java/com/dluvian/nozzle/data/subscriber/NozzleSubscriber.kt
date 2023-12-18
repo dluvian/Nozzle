@@ -324,7 +324,7 @@ class NozzleSubscriber(
         parentPostSubs.addAll(subIds)
     }
 
-    override suspend fun subscribeNip65(pubkeys: List<String>) {
+    override suspend fun subscribeNip65(pubkeys: Set<String>) {
         if (pubkeys.isEmpty()) return
 
         Log.i(TAG, "Subscribe nip65 of ${pubkeys.size} pubkeys")

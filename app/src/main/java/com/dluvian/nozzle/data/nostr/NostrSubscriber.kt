@@ -275,11 +275,11 @@ class NostrSubscriber(private val nostrService: INostrService) : INostrSubscribe
     }
 
     // No relaySelection needed because nip65 could be anywhere
-    override fun subscribeNip65(pubkeys: List<String>): List<String> {
+    override fun subscribeNip65(pubkeys: Collection<String>): List<String> {
         if (pubkeys.isEmpty()) return emptyList()
 
         Log.i(TAG, "Subscribe to ${pubkeys.size} nip65s")
-        val nip65Filter = Filter.createNip65Filter(pubkeys = pubkeys)
+        val nip65Filter = Filter.createNip65Filter(pubkeys = pubkeys.toList())
 
         return nostrService.subscribe(
             filters = listOf(nip65Filter),
