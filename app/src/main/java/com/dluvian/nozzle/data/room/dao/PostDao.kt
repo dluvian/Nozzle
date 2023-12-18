@@ -12,6 +12,7 @@ import com.dluvian.nozzle.data.room.entity.PostEntity
 import com.dluvian.nozzle.data.room.helper.extended.PostEntityExtended
 import com.dluvian.nozzle.data.utils.escapeSQLPercentChars
 import com.dluvian.nozzle.model.MentionedPost
+import com.dluvian.nozzle.model.NoteId
 import com.dluvian.nozzle.model.nostr.Event
 import kotlinx.coroutines.flow.Flow
 
@@ -282,4 +283,7 @@ interface PostDao {
             limit = limit
         )
     }
+
+    @Query("DELETE FROM post WHERE id = :postId")
+    suspend fun deletePost(postId: NoteId)
 }

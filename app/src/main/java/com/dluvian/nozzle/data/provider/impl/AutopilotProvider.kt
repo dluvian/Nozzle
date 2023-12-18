@@ -128,7 +128,6 @@ class AutopilotProvider(
                 current?.addAll(pubkeys)
             }
         }
-        Log.i("LOLOL", result.toString())
         return result
     }
 }

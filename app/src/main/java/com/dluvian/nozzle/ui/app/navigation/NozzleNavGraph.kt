@@ -14,6 +14,7 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import androidx.navigation.navDeepLink
 import com.dluvian.nozzle.data.cache.IClickedMediaUrlCache
+import com.dluvian.nozzle.data.deletor.INoteDeletor
 import com.dluvian.nozzle.data.nostr.utils.EncodingUtils.URI
 import com.dluvian.nozzle.data.nostr.utils.EncodingUtils.nostrStrToNostrId
 import com.dluvian.nozzle.data.postCardInteractor.IPostCardInteractor
@@ -49,6 +50,7 @@ fun NozzleNavGraph(
     profileFollower: IProfileFollower,
     clickedMediaUrlCache: IClickedMediaUrlCache,
     postCardInteractor: IPostCardInteractor,
+    noteDeletor: INoteDeletor,
     drawerState: DrawerState,
     modifier: Modifier = Modifier,
     navController: NavHostController = rememberNavController(),
@@ -59,6 +61,7 @@ fun NozzleNavGraph(
         PostCardLambdas.create(
             navLambdas = navActions.getPostCardNavigation(),
             postCardInteractor = postCardInteractor,
+            noteDeletor = noteDeletor,
             profileFollower = profileFollower,
             clickedMediaUrlCache = clickedMediaUrlCache
         )

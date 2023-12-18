@@ -8,8 +8,10 @@ import com.dluvian.nozzle.data.cache.ClickedMediaUrlCache
 import com.dluvian.nozzle.data.cache.IClickedMediaUrlCache
 import com.dluvian.nozzle.data.cache.IIdCache
 import com.dluvian.nozzle.data.cache.IdCache
-import com.dluvian.nozzle.data.databaseSweeper.DatabaseSweeper
-import com.dluvian.nozzle.data.databaseSweeper.IDatabaseSweeper
+import com.dluvian.nozzle.data.deletor.DatabaseSweeper
+import com.dluvian.nozzle.data.deletor.IDatabaseSweeper
+import com.dluvian.nozzle.data.deletor.INoteDeletor
+import com.dluvian.nozzle.data.deletor.NoteDeletor
 import com.dluvian.nozzle.data.eventProcessor.EventProcessor
 import com.dluvian.nozzle.data.eventProcessor.IEventProcessor
 import com.dluvian.nozzle.data.manager.IKeyManager
@@ -138,6 +140,13 @@ class AppContainer(context: Context) {
         nostrService = nostrService,
         relayProvider = relayProvider,
         reactionDao = roomDb.reactionDao(),
+    )
+
+    val noteDeletor: INoteDeletor = NoteDeletor(
+        nostrService = nostrService,
+        dbExcludingCache = dbSweepExcludingCache,
+        postDao = roomDb.postDao(),
+        eventRelayDao = roomDb.eventRelayDao(),
     )
 
     val profileFollower: IProfileFollower = ProfileFollower(

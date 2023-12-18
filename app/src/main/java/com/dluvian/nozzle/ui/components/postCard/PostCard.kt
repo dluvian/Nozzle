@@ -198,7 +198,10 @@ private fun PostCardHeaderAndContent(
             },
             onUnfollow = if (!post.isFollowedByMe || post.isOneself) null else {
                 { postCardLambdas.onUnfollow(post.pubkey) }
-            }
+            },
+            onDelete = if (post.isOneself) {
+                { postCardLambdas.onDelete(post.entity.id) }
+            } else null
         )
         PostCardContentBase(
             replyToName = post.replyToName,

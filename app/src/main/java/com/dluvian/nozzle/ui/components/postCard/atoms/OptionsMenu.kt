@@ -16,6 +16,7 @@ fun OptionsMenu(
     onCopyContent: () -> Unit,
     onFollow: (() -> Unit)? = null,
     onUnfollow: (() -> Unit)? = null,
+    onDelete: (() -> Unit)? = null,
 ) {
     DropdownMenu(
         expanded = isOpen,
@@ -52,6 +53,15 @@ fun OptionsMenu(
                 onDismiss()
             }
         )
+        if (onDelete != null) {
+            SimpleDropdownLine(
+                text = stringResource(id = R.string.attempt_deletion),
+                onClick = {
+                    onDelete()
+                    onDismiss()
+                }
+            )
+        }
     }
 }
 

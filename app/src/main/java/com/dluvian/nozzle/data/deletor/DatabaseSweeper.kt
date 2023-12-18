@@ -1,4 +1,4 @@
-package com.dluvian.nozzle.data.databaseSweeper
+package com.dluvian.nozzle.data.deletor
 
 import android.util.Log
 import com.dluvian.nozzle.data.cache.IIdCache

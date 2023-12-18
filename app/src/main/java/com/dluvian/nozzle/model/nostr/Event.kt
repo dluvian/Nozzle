@@ -31,6 +31,7 @@ class Event(
         const val METADATA = 0
         const val TEXT_NOTE = 1
         const val CONTACT_LIST = 3
+        const val DELETE = 5
         const val REACTION = 7
         const val NIP65 = 10002
     }
@@ -157,6 +158,20 @@ class Event(
                     listOf("k", "${Kind.TEXT_NOTE}")
                 ),
                 content = "+",
+                keys = keys
+            )
+        }
+
+        fun createDeleteEvent(
+            eventId: String,
+            keys: Keys
+        ): Event {
+            return create(
+                kind = Kind.DELETE,
+                tags = listOf(
+                    listOf("e", eventId),
+                ),
+                content = "",
                 keys = keys
             )
         }

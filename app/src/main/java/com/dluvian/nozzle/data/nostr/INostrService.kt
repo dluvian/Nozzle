@@ -1,6 +1,8 @@
 package com.dluvian.nozzle.data.nostr
 
 import com.dluvian.nozzle.data.room.helper.Nip65Relay
+import com.dluvian.nozzle.model.NoteId
+import com.dluvian.nozzle.model.Relay
 import com.dluvian.nozzle.model.nostr.Event
 import com.dluvian.nozzle.model.nostr.Filter
 import com.dluvian.nozzle.model.nostr.Metadata
@@ -29,6 +31,8 @@ interface INostrService {
         hashtags: List<String>,
         relays: Collection<String>?
     ): Event
+
+    fun deleteNote(noteId: NoteId, seenInRelays: Collection<Relay>)
 
     fun updateContactList(contactPubkeys: List<String>, relays: Collection<String>?): Event
 
