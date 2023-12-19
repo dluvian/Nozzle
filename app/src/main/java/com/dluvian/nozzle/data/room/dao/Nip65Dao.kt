@@ -127,4 +127,15 @@ interface Nip65Dao {
                 "ORDER BY COUNT(url) DESC"
     )
     suspend fun getRelaysOfPubkeys(pubkeys: Collection<String>): List<Relay>
+
+    // Query to get relay respectors
+//    @Query(
+//        "SELECT DISTINCT pubkey " +
+//                "FROM post " +
+//                "WHERE post.replyToId IS NOT NULL AND post.replyRelayHint IS NOT NULL " +
+//                "AND pubkey NOT IN (SELECT pubkey FROM post WHERE post.replyToId IS NOT NULL AND post.replyRelayHint IS NULL) " +
+//                "AND pubkey NOT IN (SELECT pubkey FROM post GROUP BY pubkey HAVING  COUNT(post.id) < 5)"
+//    )
+//    suspend fun getGoodPubkeys(): List<Pubkey>
+
 }
