@@ -5,7 +5,7 @@ import com.dluvian.nozzle.data.eventProcessor.IEventProcessor
 import com.dluvian.nozzle.data.getDefaultRelays
 import com.dluvian.nozzle.data.manager.IKeyManager
 import com.dluvian.nozzle.data.room.helper.Nip65Relay
-import com.dluvian.nozzle.model.NoteId
+import com.dluvian.nozzle.model.EventId
 import com.dluvian.nozzle.model.Relay
 import com.dluvian.nozzle.model.nostr.Event
 import com.dluvian.nozzle.model.nostr.Filter
@@ -136,9 +136,9 @@ class NostrService(
         return event
     }
 
-    override fun deleteNote(noteId: NoteId, seenInRelays: Collection<Relay>) {
+    override fun deleteEvent(eventId: EventId, seenInRelays: Collection<Relay>) {
         val event = Event.createDeleteEvent(
-            eventId = noteId,
+            eventId = eventId,
             keys = keyManager.getActiveKeys()
         )
         client.addRelays(seenInRelays)

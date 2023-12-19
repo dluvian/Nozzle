@@ -20,9 +20,11 @@ class NoteDeletor(
     override fun deleteNote(noteId: NoteId) {
         dbExcludingCache.removePostId(noteId = noteId)
         scope.launch {
-            val seenInRelays = eventRelayDao.listSeenInRelays(eventId = noteId)
-            nostrService.deleteNote(noteId = noteId, seenInRelays = seenInRelays)
             postDao.deletePost(postId = noteId)
+            nostrService.deleteEvent(
+                eventId = noteId,
+                seenInRelays = eventRelayDao.listSeenInRelays(eventId = noteId)
+            )
         }
     }
 }

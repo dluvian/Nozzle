@@ -1,12 +1,10 @@
 package com.dluvian.nozzle.ui.components.postCard.atoms
 
 import androidx.compose.material.DropdownMenu
-import androidx.compose.material.DropdownMenuItem
-import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.style.TextOverflow
 import com.dluvian.nozzle.R
+import com.dluvian.nozzle.ui.components.dropdown.SimpleDropdownMenuItem
 
 @Composable
 fun OptionsMenu(
@@ -23,7 +21,7 @@ fun OptionsMenu(
         onDismissRequest = onDismiss
     ) {
         if (onFollow != null) {
-            SimpleDropdownLine(
+            SimpleDropdownMenuItem(
                 text = stringResource(id = R.string.follow),
                 onClick = {
                     onFollow()
@@ -31,7 +29,7 @@ fun OptionsMenu(
                 }
             )
         } else if (onUnfollow != null) {
-            SimpleDropdownLine(
+            SimpleDropdownMenuItem(
                 text = stringResource(id = R.string.unfollow),
                 onClick = {
                     onUnfollow()
@@ -39,14 +37,14 @@ fun OptionsMenu(
                 }
             )
         }
-        SimpleDropdownLine(
+        SimpleDropdownMenuItem(
             text = stringResource(id = R.string.copy_id),
             onClick = {
                 onCopyId()
                 onDismiss()
             }
         )
-        SimpleDropdownLine(
+        SimpleDropdownMenuItem(
             text = stringResource(id = R.string.copy_content),
             onClick = {
                 onCopyContent()
@@ -54,7 +52,7 @@ fun OptionsMenu(
             }
         )
         if (onDelete != null) {
-            SimpleDropdownLine(
+            SimpleDropdownMenuItem(
                 text = stringResource(id = R.string.attempt_deletion),
                 onClick = {
                     onDelete()
@@ -62,16 +60,5 @@ fun OptionsMenu(
                 }
             )
         }
-    }
-}
-
-@Composable
-private fun SimpleDropdownLine(text: String, onClick: () -> Unit) {
-    DropdownMenuItem(onClick = onClick) {
-        Text(
-            text = text,
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis,
-        )
     }
 }

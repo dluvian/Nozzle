@@ -11,6 +11,7 @@ import com.dluvian.nozzle.model.Pubkey
 data class PostCardLambdas(
     val navLambdas: PostCardNavLambdas,
     val onLike: (PostWithMeta) -> Unit,
+    val onDeleteLike: (NoteId) -> Unit,
     val onFollow: (Pubkey) -> Unit,
     val onUnfollow: (Pubkey) -> Unit,
     val onShowMedia: (String) -> Unit,
@@ -29,9 +30,12 @@ data class PostCardLambdas(
                 navLambdas = navLambdas,
                 onLike = { post ->
                     postCardInteractor.like(
-                        postId = post.entity.id,
+                        noteId = post.entity.id,
                         postPubkey = post.pubkey
                     )
+                },
+                onDeleteLike = { noteId ->
+                    postCardInteractor.deleteLike(noteId = noteId)
                 },
                 onFollow = { pubkeyToFollow ->
                     profileFollower.follow(pubkeyToFollow = pubkeyToFollow)

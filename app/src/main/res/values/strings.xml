@@ -118,6 +118,7 @@
     <string name="writes_in">Writes in</string>
     <string name="reads_in">Reads in</string>
     <string name="attempt_deletion">Attempt deletion</string>
+    <string name="attempt_to_delete_reaction">Attempt to delete reaction</string>
     <plurals name="other_relays">
         <item quantity="one">other</item>
         <item quantity="other">others</item>
