@@ -6,17 +6,16 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.withStyle
+import com.dluvian.nozzle.ui.theme.BoldStyle
 import com.dluvian.nozzle.ui.theme.Shapes
 
 @Composable
 fun NumberedCategory(number: Int, category: String, onClick: () -> Unit) {
     val text = remember(number, category) {
         buildAnnotatedString {
-            withStyle(style = SpanStyle(fontWeight = FontWeight.Bold)) {
+            withStyle(style = BoldStyle) {
                 append(number.toString())
                 append(" ")
             }
