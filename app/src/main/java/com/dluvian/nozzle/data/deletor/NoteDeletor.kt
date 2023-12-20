@@ -18,8 +18,8 @@ class NoteDeletor(
     private val scope = CoroutineScope(Dispatchers.IO)
 
     override fun deleteNote(noteId: NoteId) {
-        dbExcludingCache.removePostId(noteId = noteId)
         scope.launch {
+            dbExcludingCache.removePostId(noteId = noteId)
             postDao.deletePost(postId = noteId)
             nostrService.deleteEvent(
                 eventId = noteId,

@@ -335,8 +335,7 @@ private fun LikeAction(
                             onLike()
                         }
                     },
-
-                    ),
+                ),
             isLiked = isLiked.value,
         )
         DeleteLikePopup(

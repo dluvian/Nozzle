@@ -136,7 +136,6 @@ class EventProcessor(
     private fun processReposts(relayedEvents: Collection<RelayedEvent>) {
         val newReposts = processEventRelaysAndReturnNewRePosts(relayedEvents = relayedEvents)
         if (newReposts.isEmpty()) return
-        Log.i("LOLOL", "${newReposts.size} reposts processing")
 
         scope.launch {
             fullPostInserter.insertReposts(events = newReposts.map { it.event })

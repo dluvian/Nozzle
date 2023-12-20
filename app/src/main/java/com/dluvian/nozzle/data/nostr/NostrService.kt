@@ -118,7 +118,6 @@ class NostrService(
             isRepost = isRepost,
             keys = keyManager.getActiveKeys(),
         )
-        Log.i("LOLOL", "isRepost = $isRepost")
         client.publishToRelays(event = event, relays = relays)
 
         return event

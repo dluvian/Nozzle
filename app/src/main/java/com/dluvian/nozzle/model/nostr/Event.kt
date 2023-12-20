@@ -243,16 +243,20 @@ class Event(
         return null
     }
 
+    private fun getFirstETag(): Tag? {
+        return tags.find { it.getOrNull(0) == "e" }
+    }
+
     fun getReactedToId(): String? {
-        return tags.find { it.getOrNull(0) == "e" }?.getOrNull(1)
+        return getFirstETag()?.getOrNull(1)
     }
 
     fun getRepostedId(): String? {
-        return getReactedToId()
+        return getFirstETag()?.getOrNull(1)
     }
 
     fun getRepostedRelayUrlHint(): String? {
-        return tags.find { it.getOrNull(0) == "e" }?.getOrNull(2)
+        return getFirstETag()?.getNip10RelayHint()
     }
 
     fun getNip65Entries(): List<Nip65Entry> {
