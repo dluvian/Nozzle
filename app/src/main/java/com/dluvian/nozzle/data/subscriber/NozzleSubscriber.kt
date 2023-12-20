@@ -19,7 +19,7 @@ import com.dluvian.nozzle.model.AllRelays
 import com.dluvian.nozzle.model.FeedInfo
 import com.dluvian.nozzle.model.IdAndRelays
 import com.dluvian.nozzle.model.MultipleRelays
-import com.dluvian.nozzle.model.PostId
+import com.dluvian.nozzle.model.NoteId
 import com.dluvian.nozzle.model.PostWithMeta
 import com.dluvian.nozzle.model.Pubkey
 import com.dluvian.nozzle.model.Relay
@@ -324,7 +324,7 @@ class NozzleSubscriber(
         parentPostSubs.addAll(subIds)
     }
 
-    override suspend fun subscribeNip65(pubkeys: List<String>) {
+    override suspend fun subscribeNip65(pubkeys: Set<String>) {
         if (pubkeys.isEmpty()) return
 
         Log.i(TAG, "Subscribe nip65 of ${pubkeys.size} pubkeys")
@@ -429,7 +429,7 @@ class NozzleSubscriber(
         return filtered.toMutableMap().addSpecialRelayMapping(idAndRelays = idAndRelays)
     }
 
-    private suspend fun getPostIdsToSubReplies(postIdsByPubkey: Map<Pubkey, List<PostId>>): Map<Relay, List<PostId>> {
+    private suspend fun getPostIdsToSubReplies(postIdsByPubkey: Map<Pubkey, List<NoteId>>): Map<Relay, List<NoteId>> {
         if (postIdsByPubkey.isEmpty()) return emptyMap()
 
         val allPostIds = postIdsByPubkey.flatMap { (_, postIds) -> postIds }

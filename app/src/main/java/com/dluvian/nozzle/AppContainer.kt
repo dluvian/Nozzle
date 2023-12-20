@@ -8,8 +8,10 @@ import com.dluvian.nozzle.data.cache.ClickedMediaUrlCache
 import com.dluvian.nozzle.data.cache.IClickedMediaUrlCache
 import com.dluvian.nozzle.data.cache.IIdCache
 import com.dluvian.nozzle.data.cache.IdCache
-import com.dluvian.nozzle.data.databaseSweeper.DatabaseSweeper
-import com.dluvian.nozzle.data.databaseSweeper.IDatabaseSweeper
+import com.dluvian.nozzle.data.deletor.DatabaseSweeper
+import com.dluvian.nozzle.data.deletor.IDatabaseSweeper
+import com.dluvian.nozzle.data.deletor.INoteDeletor
+import com.dluvian.nozzle.data.deletor.NoteDeletor
 import com.dluvian.nozzle.data.eventProcessor.EventProcessor
 import com.dluvian.nozzle.data.eventProcessor.IEventProcessor
 import com.dluvian.nozzle.data.manager.IKeyManager
@@ -85,7 +87,8 @@ class AppContainer(context: Context) {
     val fullPostInserter = FullPostInserter(
         postDao = roomDb.postDao(),
         hashtagDao = roomDb.hashtagDao(),
-        mentionDao = roomDb.mentionDao()
+        mentionDao = roomDb.mentionDao(),
+        repostDao = roomDb.repostDao(),
     )
 
     private val eventProcessor: IEventProcessor = EventProcessor(
@@ -138,6 +141,14 @@ class AppContainer(context: Context) {
         nostrService = nostrService,
         relayProvider = relayProvider,
         reactionDao = roomDb.reactionDao(),
+        repostDao = roomDb.repostDao()
+    )
+
+    val noteDeletor: INoteDeletor = NoteDeletor(
+        nostrService = nostrService,
+        dbExcludingCache = dbSweepExcludingCache,
+        postDao = roomDb.postDao(),
+        eventRelayDao = roomDb.eventRelayDao(),
     )
 
     val profileFollower: IProfileFollower = ProfileFollower(
@@ -177,6 +188,7 @@ class AppContainer(context: Context) {
             profileDao = roomDb.profileDao(),
             contactDao = roomDb.contactDao(),
             eventRelayDao = roomDb.eventRelayDao(),
+            nip65Dao = roomDb.nip65Dao(),
         )
 
     val personalProfileManager: IPersonalProfileManager = PersonalProfileManager(

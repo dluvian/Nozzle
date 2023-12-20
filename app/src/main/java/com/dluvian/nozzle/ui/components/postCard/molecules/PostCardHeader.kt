@@ -25,6 +25,7 @@ fun PostCardHeader(
     onCopyContent: () -> Unit = {},
     onFollow: (() -> Unit)? = null,
     onUnfollow: (() -> Unit)? = null,
+    onDelete: (() -> Unit)? = null,
 ) {
     Row(
         modifier = Modifier.fillMaxWidth(),
@@ -47,7 +48,8 @@ fun PostCardHeader(
                 onCopyId = onCopyId,
                 onCopyContent = onCopyContent,
                 onFollow = onFollow,
-                onUnfollow = onUnfollow
+                onUnfollow = onUnfollow,
+                onDelete = onDelete
             )
         }
     }

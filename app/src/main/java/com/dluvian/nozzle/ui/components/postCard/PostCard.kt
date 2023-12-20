@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.DropdownMenu
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
@@ -27,6 +28,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import com.dluvian.nozzle.R
 import com.dluvian.nozzle.data.nostr.utils.EncodingUtils.createNeventStr
 import com.dluvian.nozzle.data.utils.copyAndToast
@@ -37,6 +39,7 @@ import com.dluvian.nozzle.ui.app.navigation.PostCardLambdas
 import com.dluvian.nozzle.ui.components.LikeIcon
 import com.dluvian.nozzle.ui.components.QuoteIcon
 import com.dluvian.nozzle.ui.components.ReplyIcon
+import com.dluvian.nozzle.ui.components.dropdown.SimpleDropdownMenuItem
 import com.dluvian.nozzle.ui.components.postCard.atoms.PostCardContentBase
 import com.dluvian.nozzle.ui.components.postCard.atoms.PostCardProfilePicture
 import com.dluvian.nozzle.ui.components.postCard.molecules.MediaDecisionCard
@@ -154,6 +157,7 @@ fun PostCard(
                 numOfReplies = post.numOfReplies,
                 post = post,
                 onLike = { postCardLambdas.onLike(post) },
+                onDeleteLike = { postCardLambdas.onDeleteLike(post.entity.id) },
                 onPrepareReply = onPrepareReply, // TODO: No prepareReply
                 onNavigateToReply = postCardLambdas.navLambdas.onNavigateToReply,
                 onNavigateToQuote = postCardLambdas.navLambdas.onNavigateToQuote,
@@ -198,7 +202,10 @@ private fun PostCardHeaderAndContent(
             },
             onUnfollow = if (!post.isFollowedByMe || post.isOneself) null else {
                 { postCardLambdas.onUnfollow(post.pubkey) }
-            }
+            },
+            onDelete = if (post.isOneself) {
+                { postCardLambdas.onDelete(post.entity.id) }
+            } else null
         )
         PostCardContentBase(
             replyToName = post.replyToName,
@@ -221,6 +228,7 @@ private fun PostCardActions(
     numOfReplies: Int,
     post: PostWithMeta,
     onLike: () -> Unit,
+    onDeleteLike: () -> Unit,
     onPrepareReply: (PostWithMeta) -> Unit,
     onNavigateToReply: () -> Unit,
     onNavigateToQuote: (String) -> Unit,
@@ -252,7 +260,8 @@ private fun PostCardActions(
         LikeAction(
             modifier = Modifier.weight(1f),
             isLikedByMe = post.isLikedByMe,
-            onLike = onLike
+            onLike = onLike,
+            onDeleteLike = onDeleteLike,
         )
     }
 }
@@ -303,24 +312,55 @@ private fun QuoteAction(
 private fun LikeAction(
     isLikedByMe: Boolean,
     onLike: () -> Unit,
+    onDeleteLike: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val isClicked = remember { mutableStateOf(false) }
+    val isLiked = remember(isLikedByMe) { mutableStateOf(isLikedByMe) }
+    val showDeletePopup = remember { mutableStateOf(false) }
     Row(
         modifier = modifier,
         horizontalArrangement = Arrangement.End,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        val iconModifier = Modifier
-            .size(sizing.smallItem)
-            .clip(RoundedCornerShape(spacing.medium))
         LikeIcon(
-            modifier = if (isLikedByMe) iconModifier.clickable { }
-            else iconModifier.clickable {
-                onLike()
-                isClicked.value = true
-            },
-            isLiked = isLikedByMe || isClicked.value,
+            modifier = Modifier
+                .size(sizing.smallItem)
+                .clip(RoundedCornerShape(spacing.medium))
+                .clickable(
+                    enabled = true,
+                    onClick = {
+                        if (isLiked.value) showDeletePopup.value = true
+                        else {
+                            isLiked.value = true
+                            onLike()
+                        }
+                    },
+                ),
+            isLiked = isLiked.value,
+        )
+        DeleteLikePopup(
+            isOpen = showDeletePopup.value,
+            onDismiss = { showDeletePopup.value = false },
+            onDeleteLike = {
+                isLiked.value = false
+                onDeleteLike()
+            }
+        )
+    }
+}
+
+@Composable
+private fun DeleteLikePopup(isOpen: Boolean, onDismiss: () -> Unit, onDeleteLike: () -> Unit) {
+    DropdownMenu(
+        expanded = isOpen,
+        onDismissRequest = onDismiss
+    ) {
+        SimpleDropdownMenuItem(
+            text = stringResource(id = R.string.attempt_to_delete_reaction),
+            onClick = {
+                onDeleteLike()
+                onDismiss()
+            }
         )
     }
 }

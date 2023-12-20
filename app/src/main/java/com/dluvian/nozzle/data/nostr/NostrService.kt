@@ -5,6 +5,8 @@ import com.dluvian.nozzle.data.eventProcessor.IEventProcessor
 import com.dluvian.nozzle.data.getDefaultRelays
 import com.dluvian.nozzle.data.manager.IKeyManager
 import com.dluvian.nozzle.data.room.helper.Nip65Relay
+import com.dluvian.nozzle.model.EventId
+import com.dluvian.nozzle.model.Relay
 import com.dluvian.nozzle.model.nostr.Event
 import com.dluvian.nozzle.model.nostr.Filter
 import com.dluvian.nozzle.model.nostr.Metadata
@@ -103,11 +105,17 @@ class NostrService(
         return event
     }
 
-    override fun sendLike(postId: String, postPubkey: String, relays: Collection<String>?): Event {
+    override fun sendLike(
+        postId: String,
+        postPubkey: String,
+        isRepost: Boolean,
+        relays: Collection<String>?
+    ): Event {
         Log.i(TAG, "Send like reaction for $postId to ${relays?.size} relays")
         val event = Event.createReactionEvent(
             eventId = postId,
             eventPubkey = postPubkey,
+            isRepost = isRepost,
             keys = keyManager.getActiveKeys(),
         )
         client.publishToRelays(event = event, relays = relays)
@@ -132,6 +140,15 @@ class NostrService(
         client.publishToRelays(event = event, relays = relays)
 
         return event
+    }
+
+    override fun deleteEvent(eventId: EventId, seenInRelays: Collection<Relay>) {
+        val event = Event.createDeleteEvent(
+            eventId = eventId,
+            keys = keyManager.getActiveKeys()
+        )
+        client.addRelays(seenInRelays)
+        client.publishToRelays(event = event)
     }
 
     override fun updateContactList(

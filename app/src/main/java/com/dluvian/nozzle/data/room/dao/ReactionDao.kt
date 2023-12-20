@@ -5,6 +5,7 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import com.dluvian.nozzle.data.room.entity.ReactionEntity
+import com.dluvian.nozzle.model.EventId
 
 @Dao
 interface ReactionDao {
@@ -29,4 +30,7 @@ interface ReactionDao {
 
     @Query("DELETE FROM reaction WHERE pubkey NOT IN (SELECT pubkey FROM account)")
     suspend fun deleteOrphaned(): Int
+
+    @Query("DELETE FROM reaction WHERE eventId = :eventId")
+    suspend fun deleteReaction(eventId: EventId)
 }

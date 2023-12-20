@@ -2,6 +2,8 @@ package com.dluvian.nozzle.ui.app.views.profileList
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.runtime.Composable
@@ -20,6 +22,7 @@ import com.dluvian.nozzle.ui.components.TopBarCircleProgressIndicator
 import com.dluvian.nozzle.ui.components.hint.EmptyListHint
 import com.dluvian.nozzle.ui.components.itemRow.ItemRow
 import com.dluvian.nozzle.ui.components.itemRow.PictureAndName
+import com.dluvian.nozzle.ui.theme.spacing
 
 @Composable
 fun ProfileListScreen(
@@ -78,6 +81,9 @@ private fun ProfileRow(
     onNavigateToProfile: (Pubkey) -> Unit
 ) {
     ItemRow(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = spacing.medium, horizontal = spacing.screenEdge),
         content = { PictureAndName(profile = profile, onNavigateToProfile = onNavigateToProfile) },
         onClick = { onNavigateToProfile(profile.pubkey) },
         trailingContent = {

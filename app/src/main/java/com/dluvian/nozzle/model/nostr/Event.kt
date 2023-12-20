@@ -31,6 +31,8 @@ class Event(
         const val METADATA = 0
         const val TEXT_NOTE = 1
         const val CONTACT_LIST = 3
+        const val DELETE = 5
+        const val REPOST = 6
         const val REACTION = 7
         const val NIP65 = 10002
     }
@@ -146,17 +148,32 @@ class Event(
         fun createReactionEvent(
             eventId: String, // Must be last e tag
             eventPubkey: String, // Must be last p tag
+            isRepost: Boolean,
             keys: Keys
         ): Event {
+            val kTag = if (isRepost) Kind.REPOST else Kind.TEXT_NOTE
             return create(
                 kind = Kind.REACTION,
                 tags = listOf(
                     listOf("e", eventId),
                     listOf("p", eventPubkey),
-                    // Always k="1" because Nozzle only shows kind 1 notes
-                    listOf("k", "${Kind.TEXT_NOTE}")
+                    listOf("k", "$kTag")
                 ),
                 content = "+",
+                keys = keys
+            )
+        }
+
+        fun createDeleteEvent(
+            eventId: String,
+            keys: Keys
+        ): Event {
+            return create(
+                kind = Kind.DELETE,
+                tags = listOf(
+                    listOf("e", eventId),
+                ),
+                content = "",
                 keys = keys
             )
         }
@@ -226,8 +243,20 @@ class Event(
         return null
     }
 
+    private fun getFirstETag(): Tag? {
+        return tags.find { it.getOrNull(0) == "e" }
+    }
+
     fun getReactedToId(): String? {
-        return tags.find { it.getOrNull(0) == "e" }?.getOrNull(1)
+        return getFirstETag()?.getOrNull(1)
+    }
+
+    fun getRepostedId(): String? {
+        return getFirstETag()?.getOrNull(1)
+    }
+
+    fun getRepostedRelayUrlHint(): String? {
+        return getFirstETag()?.getNip10RelayHint()
     }
 
     fun getNip65Entries(): List<Nip65Entry> {
@@ -273,6 +302,7 @@ class Event(
         this.kind == Kind.REACTION && (this.content.isEmpty() || this.content == "+")
 
     fun isPost() = this.kind == Kind.TEXT_NOTE
+    fun isRepost() = this.kind == Kind.REPOST
     fun isProfileMetadata() = this.kind == Kind.METADATA
     fun isContactList() = this.kind == Kind.CONTACT_LIST
     fun isNip65() = this.kind == Kind.NIP65

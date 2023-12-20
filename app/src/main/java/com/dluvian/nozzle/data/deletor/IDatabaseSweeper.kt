@@ -1,4 +1,4 @@
-package com.dluvian.nozzle.data.databaseSweeper
+package com.dluvian.nozzle.data.deletor
 
 interface IDatabaseSweeper {
     suspend fun sweep()

@@ -7,6 +7,7 @@ import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import com.dluvian.nozzle.data.room.entity.EventRelayEntity
 import com.dluvian.nozzle.model.CountedRelayUsage
+import com.dluvian.nozzle.model.EventId
 import com.dluvian.nozzle.model.Relay
 import kotlinx.coroutines.flow.Flow
 
@@ -26,6 +27,13 @@ interface EventRelayDao {
                 "WHERE eventId IN (:eventIds)"
     )
     fun getRelaysPerEventIdMapFlow(eventIds: Collection<String>): Flow<Map<String, List<String>>>
+
+    @Query(
+        "SELECT relayUrl " +
+                "FROM eventRelay " +
+                "WHERE eventId = :eventId"
+    )
+    fun listSeenInRelays(eventId: EventId): List<Relay>
 
     @Query(
         "SELECT post.pubkey, eventRelay.relayUrl, COUNT(post.id) AS numOfPosts " +

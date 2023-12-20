@@ -1,12 +1,14 @@
 package com.dluvian.nozzle.data.provider.impl
 
 import android.util.Log
+import com.dluvian.nozzle.data.MAX_RELAYS
 import com.dluvian.nozzle.data.provider.IAutopilotProvider
 import com.dluvian.nozzle.data.provider.IContactListProvider
 import com.dluvian.nozzle.data.provider.IRelayProvider
 import com.dluvian.nozzle.data.room.dao.EventRelayDao
 import com.dluvian.nozzle.data.room.dao.Nip65Dao
 import com.dluvian.nozzle.data.subscriber.INozzleSubscriber
+import com.dluvian.nozzle.data.utils.getMaxRelays
 import com.dluvian.nozzle.model.Pubkey
 import com.dluvian.nozzle.model.Relay
 
@@ -25,14 +27,14 @@ class AutopilotProvider(
     // javax.net.ssl.SSLPeerUnverifiedException: Hostname relay.nostr.vision not verified:
 
     override suspend fun getAutopilotRelays(): Map<Relay, Set<Pubkey>> {
-        val pubkeys = contactListProvider.listPersonalContactPubkeysOrDefault()
+        val pubkeys = contactListProvider.listPersonalContactPubkeysOrDefault().toSet()
         Log.i(TAG, "Get autopilot relays of ${pubkeys.size} pubkeys")
         if (pubkeys.isEmpty()) return emptyMap()
 
         nozzleSubscriber.subscribeNip65(pubkeys = pubkeys)
 
-        val result = mutableListOf<Pair<String, Set<String>>>()
-        val processedPubkeys = mutableSetOf<String>()
+        val result = associatePubkeysInRandomChunksWithReadRelays(pubkeys = pubkeys)
+        val processedPubkeys = mutableSetOf<Pubkey>()
 
         processNip65(
             result = result,
@@ -49,15 +51,8 @@ class AutopilotProvider(
         }
 
         if (pubkeys.size > processedPubkeys.size) {
-            processFallback(
-                result = result,
-                processedPubkeys = processedPubkeys,
-                pubkeys = pubkeys.minus(processedPubkeys).toSet()
-            )
-        }
-
-        if (pubkeys.size > processedPubkeys.size) {
-            Log.w(TAG, "Failed to process all pubkeys")
+            val unprocessedCount = pubkeys.size - processedPubkeys.size
+            Log.i(TAG, "Failed to identify relays for $unprocessedCount of ${pubkeys.size} pubkeys")
         }
 
         return mergeResult(result)
@@ -68,7 +63,8 @@ class AutopilotProvider(
         processedPubkeys: MutableSet<String>,
         pubkeys: Collection<String>,
     ) {
-        val mostUsedRelays = eventRelayDao.getAllSortedByNumOfEvents(limit = 5).toSet()
+        val mostUsedRelays = eventRelayDao.getAllSortedByNumOfEvents(limit = MAX_RELAYS).toSet()
+        var count = 0
         nip65Dao.getPubkeysByWriteRelays(pubkeys = pubkeys)
             .toList()
             .shuffled()
@@ -79,9 +75,10 @@ class AutopilotProvider(
                 if (pubkeysToAdd.isNotEmpty()) {
                     processedPubkeys.addAll(pubkeysToAdd)
                     result.add(Pair(relay, pubkeysToAdd))
+                    count++
                 }
             }
-        Log.d(TAG, "Processed ${result.size} nip65 relays for ${processedPubkeys.size} pubkeys")
+        Log.d(TAG, "Processed $count nip65 relays for ${processedPubkeys.size} pubkeys")
     }
 
     private suspend fun processEventRelays(
@@ -93,12 +90,14 @@ class AutopilotProvider(
         val newlyProcessedEventRelays = mutableMapOf<String, MutableSet<String>>()
 
         eventRelayDao.getCountedRelaysPerPubkey(pubkeys = pubkeys)
+            .shuffled()
             .sortedByDescending { it.numOfPosts }
             .forEach {
                 if (!newlyProcessedPubkeys.contains(it.pubkey)) {
                     newlyProcessedPubkeys.add(it.pubkey)
-                    val current = newlyProcessedEventRelays
-                        .putIfAbsent(it.relayUrl, mutableSetOf(it.pubkey))
+                    val current = newlyProcessedEventRelays.putIfAbsent(
+                        it.relayUrl, mutableSetOf(it.pubkey)
+                    )
                     current?.add(it.pubkey)
                 }
             }
@@ -118,39 +117,26 @@ class AutopilotProvider(
         )
     }
 
-    private fun processFallback(
-        result: MutableList<Pair<String, Set<String>>>,
-        processedPubkeys: MutableSet<String>,
-        pubkeys: Set<String>
-    ) {
-        if (pubkeys.isEmpty()) return
-
-        val myReadRelays = relayProvider.getReadRelays().toSet()
-
-        val chunkSize = (pubkeys.size / myReadRelays.size) + 1
-        val chunkedPubkeys = pubkeys.chunked(chunkSize) { it.toSet() }
-
-        myReadRelays.shuffled().zip(chunkedPubkeys).forEach {
-            result.add(Pair(it.first, it.second))
-            processedPubkeys.addAll(it.second)
-        }
-
-        Log.i(
-            TAG,
-            "Fall back to ${myReadRelays.size} read relays for " +
-                    "${pubkeys.size} pubkeys in ${chunkedPubkeys.size} chunks"
-        )
-    }
-
-    private fun mergeResult(toMerge: List<Pair<String, Set<String>>>): Map<String, Set<String>> {
-        val result = mutableMapOf<String, MutableSet<String>>()
-        toMerge.forEach {
-            if (it.second.isNotEmpty()) {
-                val current = result.putIfAbsent(it.first, it.second.toMutableSet())
-                current?.let { _ -> result[it.first]?.addAll(it.second) }
+    private fun mergeResult(toMerge: List<Pair<Relay, Set<Pubkey>>>): Map<Relay, Set<Pubkey>> {
+        val result = mutableMapOf<Relay, MutableSet<Pubkey>>()
+        toMerge.forEach { (relay, pubkeys) ->
+            if (pubkeys.isNotEmpty()) {
+                val current = result.putIfAbsent(relay, pubkeys.toMutableSet())
+                current?.addAll(pubkeys)
             }
         }
-
         return result
+    }
+
+    private fun associatePubkeysInRandomChunksWithReadRelays(
+        pubkeys: Collection<Pubkey>
+    ): MutableList<Pair<Relay, Set<String>>> {
+        if (pubkeys.isEmpty()) return mutableListOf()
+
+        val readRelays = getMaxRelays(from = relayProvider.getReadRelays())
+        val chunkSize = pubkeys.size / readRelays.size + 1
+        val chunkedPubkeys = pubkeys.shuffled().chunked(chunkSize) { it.toSet() }
+
+        return readRelays.zip(chunkedPubkeys).toMutableList()
     }
 }

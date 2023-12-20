@@ -1,10 +1,13 @@
 package com.dluvian.nozzle.data.cache
 
+import com.dluvian.nozzle.model.NoteId
+
 interface IIdCache {
     fun addPostIds(ids: Collection<String>): Boolean
     fun containsPostId(id: String): Boolean
     fun getPostIds(): Set<String>
     fun clearPostIds()
+    fun removePostId(noteId: NoteId)
 
     fun addPubkeys(pubkeys: Collection<String>): Boolean
     fun getPubkeys(): Set<String>

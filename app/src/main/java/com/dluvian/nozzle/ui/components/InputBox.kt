@@ -103,6 +103,9 @@ private fun SearchSuggestions(
         items(items = suggestions) {
             Row(modifier = Modifier.fillMaxWidth()) {
                 ItemRow(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = spacing.medium, horizontal = spacing.screenEdge),
                     content = { PictureAndName(profile = it, onNavigateToProfile = { }) },
                     onClick = { onReplaceSuggestion(it) },
                 )

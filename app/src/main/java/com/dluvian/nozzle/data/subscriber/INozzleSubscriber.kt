@@ -46,7 +46,7 @@ interface INozzleSubscriber {
 
     suspend fun subscribeParentPost(postId: String, relayHint: String?)
 
-    suspend fun subscribeNip65(pubkeys: List<String>)
+    suspend fun subscribeNip65(pubkeys: Set<String>)
 
     fun subscribeToPosts(postIds: Collection<String>)
 }

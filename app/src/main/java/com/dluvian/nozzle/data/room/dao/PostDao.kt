@@ -6,12 +6,16 @@ import androidx.room.MapInfo
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Transaction
+import com.dluvian.nozzle.data.nostr.utils.EncodingUtils
 import com.dluvian.nozzle.data.room.entity.HashtagEntity
 import com.dluvian.nozzle.data.room.entity.MentionEntity
 import com.dluvian.nozzle.data.room.entity.PostEntity
+import com.dluvian.nozzle.data.room.entity.RepostEntity
 import com.dluvian.nozzle.data.room.helper.extended.PostEntityExtended
+import com.dluvian.nozzle.data.utils.UrlUtils.isWebsocketUrl
 import com.dluvian.nozzle.data.utils.escapeSQLPercentChars
 import com.dluvian.nozzle.model.MentionedPost
+import com.dluvian.nozzle.model.NoteId
 import com.dluvian.nozzle.model.nostr.Event
 import kotlinx.coroutines.flow.Flow
 
@@ -202,6 +206,30 @@ interface PostDao {
         }
     }
 
+    @Transaction
+    suspend fun insertRepost(events: Collection<Event>, repostDao: RepostDao) {
+        val reposts = events
+            .filter { it.isRepost() }
+            .mapNotNull {
+                val repostedId = it.getRepostedId() ?: return@mapNotNull null
+                val relay = it.getRepostedRelayUrlHint()
+                val neventUri = EncodingUtils.createNeventUri(
+                    postId = repostedId,
+                    relays = if (relay.isNullOrBlank() || !relay.isWebsocketUrl()) emptyList()
+                    else listOf(relay)
+                ) ?: return@mapNotNull null
+
+                PostEntity
+                    .fromEvent(it)
+                    .copy(content = neventUri, replyToId = null, replyRelayHint = null)
+            }
+        if (reposts.isEmpty()) return
+
+        val repostEntities = reposts.map { RepostEntity(eventId = it.id) }
+        insertOrIgnore(*reposts.toTypedArray())
+        repostDao.insertOrIgnore(*repostEntities.toTypedArray())
+    }
+
     @Query("SELECT * FROM post WHERE id = :id")
     suspend fun getPost(id: String): PostEntity?
 
@@ -282,4 +310,7 @@ interface PostDao {
             limit = limit
         )
     }
+
+    @Query("DELETE FROM post WHERE id = :postId")
+    suspend fun deletePost(postId: NoteId)
 }

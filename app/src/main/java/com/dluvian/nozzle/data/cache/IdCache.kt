@@ -1,5 +1,6 @@
 package com.dluvian.nozzle.data.cache
 
+import com.dluvian.nozzle.model.NoteId
 import java.util.Collections
 
 class IdCache : IIdCache {
@@ -12,6 +13,9 @@ class IdCache : IIdCache {
     override fun containsPostId(id: String): Boolean = postIds.contains(id)
     override fun getPostIds(): Set<String> = postIds.toSet()
     override fun clearPostIds() = postIds.clear()
+    override fun removePostId(noteId: NoteId) {
+        postIds.remove(noteId)
+    }
 
     override fun addPubkeys(pubkeys: Collection<String>) = this.pubkeys.addAll(pubkeys)
     override fun getPubkeys(): Set<String> = pubkeys.toSet()

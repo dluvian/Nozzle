@@ -35,6 +35,7 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import com.dluvian.nozzle.R
 import com.dluvian.nozzle.model.PostWithMeta
+import com.dluvian.nozzle.model.Pubkey
 import com.dluvian.nozzle.model.SimpleProfile
 import com.dluvian.nozzle.ui.app.navigation.PostCardLambdas
 import com.dluvian.nozzle.ui.components.ChangeableTextField
@@ -94,25 +95,25 @@ fun SearchScreen(
             when (currentSearchType.value) {
                 SearchType.PEOPLE -> {
                     items(profileSearchResult) {
-                        ItemRow(content = {
-                            PictureAndName(
-                                profile = it,
-                                onNavigateToProfile = postCardLambdas.navLambdas.onNavigateToProfile
-                            )
-                        }, onClick = { postCardLambdas.navLambdas.onNavigateToProfile(it.pubkey) })
+                        ProfileRow(
+                            profile = it,
+                            onNavigateToProfile = postCardLambdas.navLambdas.onNavigateToProfile
+                        )
                     }
                 }
 
                 SearchType.NOTES -> {
                     items(postSearchResult) {
-                        ItemRow(content = {
-                            PostCard(
-                                post = it,
-                                postCardLambdas = postCardLambdas,
-                                onPrepareReply = onPrepareReply,
-                                isCurrent = true,
-                            )
-                        }, onClick = { postCardLambdas.navLambdas.onNavigateToProfile(it.pubkey) })
+                        ItemRow(
+                            modifier = Modifier.fillMaxWidth(),
+                            content = {
+                                PostCard(
+                                    post = it,
+                                    postCardLambdas = postCardLambdas,
+                                    onPrepareReply = onPrepareReply,
+                                )
+                            },
+                            onClick = { postCardLambdas.navLambdas.onNavigateToProfile(it.pubkey) })
                     }
                 }
             }
@@ -176,7 +177,12 @@ private fun SelectionOptions(searchType: SearchType, onChangeSearchType: (Search
 }
 
 @Composable
-fun SelectionItem(text: String, icon: ImageVector, isSelected: Boolean, onClick: () -> Unit) {
+private fun SelectionItem(
+    text: String,
+    icon: ImageVector,
+    isSelected: Boolean,
+    onClick: () -> Unit
+) {
     val color = if (isSelected) MaterialTheme.colors.onBackground else MaterialTheme.colors.hintGray
     Button(
         onClick = onClick,
@@ -190,4 +196,23 @@ fun SelectionItem(text: String, icon: ImageVector, isSelected: Boolean, onClick:
         Icon(imageVector = icon, contentDescription = null)
         Text(text = text, color = color)
     }
+}
+
+@Composable
+private fun ProfileRow(profile: SimpleProfile, onNavigateToProfile: (Pubkey) -> Unit) {
+    ItemRow(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(
+                vertical = spacing.medium,
+                horizontal = spacing.screenEdge
+            ),
+        content = {
+            PictureAndName(
+                profile = profile,
+                onNavigateToProfile = onNavigateToProfile
+            )
+        },
+        onClick = { onNavigateToProfile(profile.pubkey) }
+    )
 }

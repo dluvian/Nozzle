@@ -74,7 +74,9 @@ fun ProfileScreen(
         NumberedCategories(
             numOfFollowing = profile.numOfFollowing,
             numOfFollowers = profile.numOfFollowers,
-            relays = profile.relays,
+            seenInRelays = profile.seenInRelays,
+            writesInRelays = profile.writesInRelays,
+            readsInRelays = profile.readsInRelays,
             onOpenFollowerList = { onOpenFollowerList(profile.pubkey) },
             onOpenFollowedByList = { onOpenFollowedByList(profile.pubkey) }
         )
@@ -197,7 +199,9 @@ private fun FollowOrEditButton(
 private fun NumberedCategories(
     numOfFollowing: Int,
     numOfFollowers: Int,
-    relays: List<String>,
+    seenInRelays: List<String>,
+    writesInRelays: List<String>,
+    readsInRelays: List<String>,
     onOpenFollowerList: () -> Unit,
     onOpenFollowedByList: () -> Unit,
 ) {
@@ -221,10 +225,15 @@ private fun NumberedCategories(
             Spacer(Modifier.width(spacing.large))
             val openRelayDialog = remember { mutableStateOf(false) }
             if (openRelayDialog.value) {
-                RelaysDialog(relays = relays, onCloseDialog = { openRelayDialog.value = false })
+                RelaysDialog(
+                    seenInRelays = seenInRelays,
+                    writesInRelays = writesInRelays,
+                    readsInRelays = readsInRelays,
+                    onCloseDialog = { openRelayDialog.value = false }
+                )
             }
             NumberedCategory(
-                number = relays.size,
+                number = seenInRelays.size,
                 category = stringResource(id = R.string.relays),
                 onClick = { openRelayDialog.value = true }
             )

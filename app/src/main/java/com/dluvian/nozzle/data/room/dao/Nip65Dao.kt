@@ -101,6 +101,13 @@ interface Nip65Dao {
     fun getPersonalRelaysFlow(): Flow<List<Nip65Relay>>
 
     @Query(
+        "SELECT url, isRead, isWrite " +
+                "FROM nip65 " +
+                "WHERE pubkey = :pubkey"
+    )
+    fun getNip65RelaysOfPubkeyFlow(pubkey: Pubkey): Flow<List<Nip65Relay>>
+
+    @Query(
         "DELETE FROM nip65 " +
                 "WHERE pubkey NOT IN (SELECT pubkey FROM profile) " +
                 "AND pubkey NOT IN (:excludePubkeys) " +
@@ -120,4 +127,15 @@ interface Nip65Dao {
                 "ORDER BY COUNT(url) DESC"
     )
     suspend fun getRelaysOfPubkeys(pubkeys: Collection<String>): List<Relay>
+
+    // Query to get relay respectors
+//    @Query(
+//        "SELECT DISTINCT pubkey " +
+//                "FROM post " +
+//                "WHERE post.replyToId IS NOT NULL AND post.replyRelayHint IS NOT NULL " +
+//                "AND pubkey NOT IN (SELECT pubkey FROM post WHERE post.replyToId IS NOT NULL AND post.replyRelayHint IS NULL) " +
+//                "AND pubkey NOT IN (SELECT pubkey FROM post GROUP BY pubkey HAVING  COUNT(post.id) < 5)"
+//    )
+//    suspend fun getGoodPubkeys(): List<Pubkey>
+
 }

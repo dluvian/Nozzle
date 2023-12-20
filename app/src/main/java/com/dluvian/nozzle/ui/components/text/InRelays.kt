@@ -27,7 +27,7 @@ import com.dluvian.nozzle.ui.theme.hintGray
 fun InRelays(relays: List<String>) {
     val openDialog = remember { mutableStateOf(false) }
     if (openDialog.value) {
-        RelaysDialog(relays = relays, onCloseDialog = { openDialog.value = false })
+        RelaysDialog(seenInRelays = relays, onCloseDialog = { openDialog.value = false })
     }
     if (relays.isNotEmpty()) {
         Row(modifier = Modifier

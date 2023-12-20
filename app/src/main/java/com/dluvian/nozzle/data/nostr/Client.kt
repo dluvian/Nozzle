@@ -100,14 +100,13 @@ class Client(private val httpClient: OkHttpClient) {
         }
     }
 
-    fun publishToRelays(
-        event: Event,
-        relays: Collection<String>? = null
-    ) {
-        val request = """["EVENT",${event.toJson()}]"""
-        Log.i(TAG, "Publish to ${relays?.size} relays: $request")
+    fun publishToRelays(event: Event, relays: Collection<String>? = null) {
         relays?.let { addRelays(it) }
-        filterSocketsByRelays(relays = relays).forEach { it.value.send(request) }
+        val filteredRelays = filterSocketsByRelays(relays = relays)
+
+        val request = """["EVENT",${event.toJson()}]"""
+        Log.i(TAG, "Publish to ${filteredRelays.size} relays: $request")
+        filteredRelays.forEach { it.value.send(request) }
     }
 
     fun addRelays(urls: Collection<String>) {
