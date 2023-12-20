@@ -87,7 +87,8 @@ class AppContainer(context: Context) {
     val fullPostInserter = FullPostInserter(
         postDao = roomDb.postDao(),
         hashtagDao = roomDb.hashtagDao(),
-        mentionDao = roomDb.mentionDao()
+        mentionDao = roomDb.mentionDao(),
+        repostDao = roomDb.repostDao(),
     )
 
     private val eventProcessor: IEventProcessor = EventProcessor(
@@ -140,6 +141,7 @@ class AppContainer(context: Context) {
         nostrService = nostrService,
         relayProvider = relayProvider,
         reactionDao = roomDb.reactionDao(),
+        repostDao = roomDb.repostDao()
     )
 
     val noteDeletor: INoteDeletor = NoteDeletor(

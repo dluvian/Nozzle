@@ -32,6 +32,7 @@ class Event(
         const val TEXT_NOTE = 1
         const val CONTACT_LIST = 3
         const val DELETE = 5
+        const val REPOST = 6
         const val REACTION = 7
         const val NIP65 = 10002
     }
@@ -147,15 +148,16 @@ class Event(
         fun createReactionEvent(
             eventId: String, // Must be last e tag
             eventPubkey: String, // Must be last p tag
+            isRepost: Boolean,
             keys: Keys
         ): Event {
+            val kTag = if (isRepost) Kind.REPOST else Kind.TEXT_NOTE
             return create(
                 kind = Kind.REACTION,
                 tags = listOf(
                     listOf("e", eventId),
                     listOf("p", eventPubkey),
-                    // Always k="1" because Nozzle only shows kind 1 notes
-                    listOf("k", "${Kind.TEXT_NOTE}")
+                    listOf("k", "$kTag")
                 ),
                 content = "+",
                 keys = keys
@@ -245,6 +247,14 @@ class Event(
         return tags.find { it.getOrNull(0) == "e" }?.getOrNull(1)
     }
 
+    fun getRepostedId(): String? {
+        return getReactedToId()
+    }
+
+    fun getRepostedRelayUrlHint(): String? {
+        return tags.find { it.getOrNull(0) == "e" }?.getOrNull(2)
+    }
+
     fun getNip65Entries(): List<Nip65Entry> {
         return tags.filter {
             it.size >= 2
@@ -288,6 +298,7 @@ class Event(
         this.kind == Kind.REACTION && (this.content.isEmpty() || this.content == "+")
 
     fun isPost() = this.kind == Kind.TEXT_NOTE
+    fun isRepost() = this.kind == Kind.REPOST
     fun isProfileMetadata() = this.kind == Kind.METADATA
     fun isContactList() = this.kind == Kind.CONTACT_LIST
     fun isNip65() = this.kind == Kind.NIP65

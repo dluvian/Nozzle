@@ -12,6 +12,7 @@ import com.dluvian.nozzle.data.room.dao.Nip65Dao
 import com.dluvian.nozzle.data.room.dao.PostDao
 import com.dluvian.nozzle.data.room.dao.ProfileDao
 import com.dluvian.nozzle.data.room.dao.ReactionDao
+import com.dluvian.nozzle.data.room.dao.RepostDao
 import com.dluvian.nozzle.data.room.entity.AccountEntity
 import com.dluvian.nozzle.data.room.entity.ContactEntity
 import com.dluvian.nozzle.data.room.entity.EventRelayEntity
@@ -21,15 +22,18 @@ import com.dluvian.nozzle.data.room.entity.Nip65Entity
 import com.dluvian.nozzle.data.room.entity.PostEntity
 import com.dluvian.nozzle.data.room.entity.ProfileEntity
 import com.dluvian.nozzle.data.room.entity.ReactionEntity
+import com.dluvian.nozzle.data.room.entity.RepostEntity
 
 @Database(
-    version = 23,
+    version = 25,
     exportSchema = true,
     autoMigrations = [
         AutoMigration(from = 19, to = 20),
         AutoMigration(from = 20, to = 21),
         AutoMigration(from = 21, to = 22),
         AutoMigration(from = 22, to = 23),
+        AutoMigration(from = 23, to = 24),
+        AutoMigration(from = 24, to = 25),
     ],
     entities = [
         ContactEntity::class,
@@ -41,6 +45,7 @@ import com.dluvian.nozzle.data.room.entity.ReactionEntity
         HashtagEntity::class,
         MentionEntity::class,
         AccountEntity::class,
+        RepostEntity::class,
     ],
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -53,4 +58,5 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun hashtagDao(): HashtagDao
     abstract fun mentionDao(): MentionDao
     abstract fun accountDao(): AccountDao
+    abstract fun repostDao(): RepostDao
 }

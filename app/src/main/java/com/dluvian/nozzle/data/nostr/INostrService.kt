@@ -22,7 +22,12 @@ interface INostrService {
         relays: Collection<String>?
     ): Event
 
-    fun sendLike(postId: String, postPubkey: String, relays: Collection<String>?): Event
+    fun sendLike(
+        postId: String,
+        postPubkey: String,
+        isRepost: Boolean,
+        relays: Collection<String>?
+    ): Event
 
     fun sendReply(
         replyTo: ReplyTo,

@@ -105,13 +105,20 @@ class NostrService(
         return event
     }
 
-    override fun sendLike(postId: String, postPubkey: String, relays: Collection<String>?): Event {
+    override fun sendLike(
+        postId: String,
+        postPubkey: String,
+        isRepost: Boolean,
+        relays: Collection<String>?
+    ): Event {
         Log.i(TAG, "Send like reaction for $postId to ${relays?.size} relays")
         val event = Event.createReactionEvent(
             eventId = postId,
             eventPubkey = postPubkey,
+            isRepost = isRepost,
             keys = keyManager.getActiveKeys(),
         )
+        Log.i("LOLOL", "isRepost = $isRepost")
         client.publishToRelays(event = event, relays = relays)
 
         return event

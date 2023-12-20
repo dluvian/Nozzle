@@ -40,7 +40,7 @@ class Filter(
                 e = e,
                 p = p,
                 t = t,
-                kinds = listOf(Event.Kind.TEXT_NOTE),
+                kinds = listOf(Event.Kind.TEXT_NOTE, Event.Kind.REPOST),
                 since = since,
                 until = until,
                 limit = limit
@@ -55,7 +55,7 @@ class Filter(
         ): Filter {
             return Filter(
                 authors = pubkeys,
-                kinds = listOf(Event.Kind.REACTION),
+                kinds = listOf(Event.Kind.REACTION, Event.Kind.REPOST),
                 e = e,
                 until = until,
                 limit = limit

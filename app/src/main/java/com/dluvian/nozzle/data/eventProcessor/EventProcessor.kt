@@ -85,6 +85,7 @@ class EventProcessor(
         Log.d(TAG, "Process queue of ${items.size} events")
 
         val posts = mutableListOf<RelayedEvent>()
+        val reposts = mutableListOf<RelayedEvent>()
         val profiles = mutableListOf<Event>()
         val contactLists = mutableListOf<Event>()
         val nip65s = mutableListOf<Event>()
@@ -92,6 +93,7 @@ class EventProcessor(
 
         items.forEach {
             if (it.event.isPost()) posts.add(it)
+            else if (it.event.isRepost()) reposts.add(it)
             else if (it.event.isProfileMetadata()) profiles.add(it.event)
             else if (it.event.isContactList()) contactLists.add(it.event)
             else if (it.event.isNip65()) nip65s.add(it.event)
@@ -99,6 +101,7 @@ class EventProcessor(
         }
 
         processPosts(relayedEvents = posts)
+        processReposts(relayedEvents = reposts)
         processProfiles(events = profiles)
         processContactLists(events = contactLists)
         processNip65s(events = nip65s)
@@ -106,7 +109,7 @@ class EventProcessor(
     }
 
     private fun isNewAndValid(event: Event): Boolean {
-        return event.isPost() && verify(event) ||
+        return (event.isPost() || event.isRepost()) && verify(event) ||
                 (event.isProfileMetadata() ||
                         event.isContactList() ||
                         event.isNip65() ||
@@ -115,14 +118,8 @@ class EventProcessor(
     }
 
     private fun processPosts(relayedEvents: Collection<RelayedEvent>) {
-        if (relayedEvents.isEmpty()) return
-
-        val alreadyPresent = relayedEvents
-            .filter { dbSweepExcludingCache.containsPostId(it.event.id) }
-        if (alreadyPresent.isNotEmpty()) insertEventRelays(relayedEvents = alreadyPresent)
-        if (alreadyPresent.size == relayedEvents.size) return
-
-        val newPosts = relayedEvents - alreadyPresent.toSet()
+        val newPosts = processEventRelaysAndReturnNewRePosts(relayedEvents = relayedEvents)
+        if (newPosts.isEmpty()) return
 
         scope.launch {
             fullPostInserter.insertFullPost(events = newPosts.map { it.event })
@@ -134,6 +131,36 @@ class EventProcessor(
             dbSweepExcludingCache.addPostIds(newPosts.map { post -> post.event.id })
             insertEventRelays(relayedEvents = newPosts)
         }
+    }
+
+    private fun processReposts(relayedEvents: Collection<RelayedEvent>) {
+        val newReposts = processEventRelaysAndReturnNewRePosts(relayedEvents = relayedEvents)
+        if (newReposts.isEmpty()) return
+        Log.i("LOLOL", "${newReposts.size} reposts processing")
+
+        scope.launch {
+            fullPostInserter.insertReposts(events = newReposts.map { it.event })
+        }.invokeOnCompletion { exception ->
+            if (exception != null) {
+                Log.w(TAG, "Failed to process reposts", exception)
+                return@invokeOnCompletion
+            }
+            dbSweepExcludingCache.addPostIds(newReposts.map { post -> post.event.id })
+            insertEventRelays(relayedEvents = newReposts)
+        }
+    }
+
+    private fun processEventRelaysAndReturnNewRePosts(
+        relayedEvents: Collection<RelayedEvent>
+    ): List<RelayedEvent> {
+        if (relayedEvents.isEmpty()) return emptyList()
+
+        val alreadyPresent = relayedEvents
+            .filter { dbSweepExcludingCache.containsPostId(it.event.id) }
+        if (alreadyPresent.isNotEmpty()) insertEventRelays(relayedEvents = alreadyPresent)
+        if (alreadyPresent.size == relayedEvents.size) return emptyList()
+
+        return relayedEvents - alreadyPresent.toSet()
     }
 
     private fun processProfiles(events: Collection<Event>) {
