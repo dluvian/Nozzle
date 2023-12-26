@@ -104,17 +104,19 @@ class ProfileViewModel(
         }
     }
 
-    val onRefresh: () -> Unit = { paginator.refresh() }
+    val onRefresh: () -> Unit =
+        { paginator.refresh(waitForSubscription = true, useInitialValue = true) }
 
     val onLoadMore: () -> Unit = { paginator.loadMore() }
 
     private suspend fun setProfileAndFeed(profileId: String) {
         val nostrProfileId = profileIdToNostrId(profileId)
         val pubkey = nostrProfileId?.hex ?: profileId
+        val isSamePubkey = pubkey == profilePubkey
         profilePubkey = pubkey
         setProfile(profileId = profileId, pubkey = pubkey)
         setRecommendedRelays(recommended = nostrProfileId?.recommendedRelays.orEmpty())
-        paginator.reset()
+        paginator.refresh(waitForSubscription = true, useInitialValue = isSamePubkey)
     }
 
     private fun setRecommendedRelays(recommended: List<String>) {

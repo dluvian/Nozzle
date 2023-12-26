@@ -44,15 +44,15 @@ class InboxViewModel(
 
     val feed = paginator.getList()
 
-    val onOpenInbox: () -> Unit = { updateScreen() }
+    val onOpenInbox: () -> Unit = { updateScreen(useInitialValue = false) }
 
-    val onRefresh: () -> Unit = { updateScreen() }
+    val onRefresh: () -> Unit = { updateScreen(useInitialValue = true) }
 
     val onLoadMore: () -> Unit = { paginator.loadMore() }
 
-    private fun updateScreen() {
+    private fun updateScreen(useInitialValue: Boolean) {
         _uiState.update { it.copy(relays = relayProvider.getReadRelays()) }
-        paginator.refresh()
+        paginator.refresh(waitForSubscription = true, useInitialValue = useInitialValue)
     }
 
     companion object {

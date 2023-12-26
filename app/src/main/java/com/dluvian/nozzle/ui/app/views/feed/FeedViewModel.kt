@@ -73,8 +73,8 @@ class FeedViewModel(
             if (it.isEmpty()) return@local
             useCachedFeedSettings()
             updateRelaySelection()
-            if (isInit.compareAndSet(true, false)) paginator.refresh()
-            else paginator.reset()
+            val isInitial = isInit.compareAndSet(true, false)
+            paginator.refresh(waitForSubscription = false, useInitialValue = isInitial)
         }
         .stateIn(viewModelScope, SharingStarted.Eagerly, "")
 
@@ -87,7 +87,7 @@ class FeedViewModel(
         _uiState.update { it.copy(isRefreshing = true) }
         viewModelScope.launch(Dispatchers.IO) {
             updateRelaySelection()
-            paginator.refresh()
+            paginator.refresh(waitForSubscription = true, useInitialValue = true)
         }
     }
 

@@ -41,9 +41,13 @@ class LikesViewModel(
 
     val feed = paginator.getList()
 
-    val onOpenLikes: () -> Unit = { paginator.refresh() }
+    val onOpenLikes: () -> Unit = {
+        paginator.refresh(waitForSubscription = true, useInitialValue = false)
+    }
 
-    val onRefresh: () -> Unit = { paginator.refresh() }
+    val onRefresh: () -> Unit = {
+        paginator.refresh(waitForSubscription = true, useInitialValue = true)
+    }
 
     val onLoadMore: () -> Unit = { paginator.loadMore() }
 

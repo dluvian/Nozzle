@@ -61,19 +61,15 @@ class Paginator<T : Identifiable, S>(
         }
     }
 
-    override fun reset() = resetOrRefresh(isRefresh = false)
-
-    override fun refresh() = resetOrRefresh(isRefresh = true)
-
-    private fun resetOrRefresh(isRefresh: Boolean) {
+    override fun refresh(waitForSubscription: Boolean, useInitialValue: Boolean) {
         onSetRefreshing(true)
         val firstPage = pages.firstOrNull()?.value ?: emptyList()
         lastIdToLoadMore.value = ""
-        val initialValue = if (isRefresh) firstPage else emptyList()
+        val initialValue = if (useInitialValue) firstPage else emptyList()
         pages.clear()
         scope.launch(context = Dispatchers.IO) {
-            val waitForSubscription = if (isRefresh) WAIT_TIME else 0L
-            val newPage = onGetPage(onIdentifyLastParam(null), waitForSubscription).stateIn(
+            val waitTime = if (waitForSubscription) WAIT_TIME else 0L
+            val newPage = onGetPage(onIdentifyLastParam(null), waitTime).stateIn(
                 scope = scope,
                 started = SharingStarted.WhileSubscribed(
                     stopTimeoutMillis = SCOPE_TIMEOUT,

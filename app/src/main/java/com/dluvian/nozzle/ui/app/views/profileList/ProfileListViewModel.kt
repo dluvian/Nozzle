@@ -57,16 +57,18 @@ class ProfileListViewModel(
     val type: MutableState<ProfileListType> = mutableStateOf(ProfileListType.FOLLOWER_LIST)
     val pubkey: MutableState<Pubkey> = mutableStateOf("")
 
-    val onSetFollowerList: (Pubkey) -> Unit = {
+    val onSetFollowerList: (Pubkey) -> Unit = local@{
+        val isSame = pubkey.value == it && type.value == ProfileListType.FOLLOWER_LIST
         pubkey.value = it
         type.value = ProfileListType.FOLLOWER_LIST
-        paginator.reset()
+        paginator.refresh(waitForSubscription = !isSame, useInitialValue = isSame)
     }
 
     val onSetFollowedByList: (Pubkey) -> Unit = {
+        val isSame = pubkey.value == it && type.value == ProfileListType.FOLLOWED_BY_LIST
         pubkey.value = it
         type.value = ProfileListType.FOLLOWED_BY_LIST
-        paginator.reset()
+        paginator.refresh(waitForSubscription = !isSame, useInitialValue = isSame)
     }
 
     val onLoadMore: () -> Unit = { paginator.loadMore() }
