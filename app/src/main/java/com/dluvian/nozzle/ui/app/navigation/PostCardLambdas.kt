@@ -1,5 +1,6 @@
 package com.dluvian.nozzle.ui.app.navigation
 
+import androidx.compose.runtime.Immutable
 import com.dluvian.nozzle.data.cache.IClickedMediaUrlCache
 import com.dluvian.nozzle.data.deletor.INoteDeletor
 import com.dluvian.nozzle.data.postCardInteractor.IPostCardInteractor
@@ -8,6 +9,7 @@ import com.dluvian.nozzle.model.NoteId
 import com.dluvian.nozzle.model.PostWithMeta
 import com.dluvian.nozzle.model.Pubkey
 
+@Immutable
 data class PostCardLambdas(
     val navLambdas: PostCardNavLambdas,
     val onLike: (PostWithMeta) -> Unit,

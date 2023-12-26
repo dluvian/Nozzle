@@ -1,8 +1,10 @@
 package com.dluvian.nozzle.model
 
+import androidx.compose.runtime.Immutable
 import androidx.compose.ui.text.AnnotatedString
 import com.dluvian.nozzle.data.room.entity.PostEntity
 
+@Immutable
 data class PostWithMeta(
     val entity: PostEntity,
     val replyToName: String?,
