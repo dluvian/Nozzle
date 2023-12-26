@@ -32,6 +32,7 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.util.Collections
+import java.util.concurrent.atomic.AtomicBoolean
 
 private const val TAG = "FeedViewModel"
 
@@ -66,12 +67,14 @@ class FeedViewModel(
     private val lastAutopilotResult: MutableMap<String, Set<String>> =
         Collections.synchronizedMap(mutableMapOf<String, Set<String>>())
 
+    private val isInit = AtomicBoolean(true)
     val pubkeyState = pubkeyProvider.getActivePubkeyStateFlow()
         .onEach local@{
             if (it.isEmpty()) return@local
             useCachedFeedSettings()
             updateRelaySelection()
-            paginator.reset()
+            if (isInit.compareAndSet(true, false)) paginator.refresh()
+            else paginator.reset()
         }
         .stateIn(viewModelScope, SharingStarted.Eagerly, "")
 
