@@ -11,6 +11,7 @@ import com.dluvian.nozzle.data.paginator.Paginator
 import com.dluvian.nozzle.data.provider.ISimpleProfileProvider
 import com.dluvian.nozzle.data.room.dao.ContactDao
 import com.dluvian.nozzle.data.subscriber.INozzleSubscriber
+import com.dluvian.nozzle.model.ListAndNumberFlow
 import com.dluvian.nozzle.model.Pubkey
 import com.dluvian.nozzle.model.SimpleProfile
 import kotlinx.coroutines.Dispatchers
@@ -42,12 +43,14 @@ class ProfileListViewModel(
         scope = viewModelScope,
         onSetRefreshing = { bool -> _isRefreshing.update { bool } },
         onGetPage = { lastPubkey, waitForSubscription ->
-            simpleProfileProvider.getSimpleProfilesFlow(
-                type = type.value,
-                pubkey = pubkey.value,
-                underPubkey = lastPubkey,
-                limit = MAX_LIST_LENGTH,
-                waitForSubscription = waitForSubscription
+            ListAndNumberFlow(
+                listFlow = simpleProfileProvider.getSimpleProfilesFlow(
+                    type = type.value,
+                    pubkey = pubkey.value,
+                    underPubkey = lastPubkey,
+                    limit = MAX_LIST_LENGTH,
+                    waitForSubscription = waitForSubscription
+                )
             )
         },
         onIdentifyLastParam = { profile -> profile?.pubkey.orEmpty() }

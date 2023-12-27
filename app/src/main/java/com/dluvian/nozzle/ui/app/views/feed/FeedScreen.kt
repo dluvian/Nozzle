@@ -1,11 +1,14 @@
 package com.dluvian.nozzle.ui.app.views.feed
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -13,6 +16,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.Button
 import androidx.compose.material.FloatingActionButton
 import androidx.compose.material.MaterialTheme.typography
 import androidx.compose.material.Scaffold
@@ -28,6 +32,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.zIndex
+import com.dluvian.nozzle.data.Z_INDEX_UNDER_PULL_REFRESH
+import com.dluvian.nozzle.data.utils.isScrollingUp
 import com.dluvian.nozzle.model.Everyone
 import com.dluvian.nozzle.model.FeedSettings
 import com.dluvian.nozzle.model.Oneself
@@ -50,6 +57,7 @@ fun FeedScreen(
     uiState: FeedViewModelState,
     pubkey: String,
     feed: List<PostWithMeta>,
+    numOfNewPosts: Int,
     postCardLambdas: PostCardLambdas,
     onRefresh: () -> Unit,
     onRefreshOnMenuDismiss: () -> Unit,
@@ -65,6 +73,7 @@ fun FeedScreen(
 ) {
     val lazyListState = rememberLazyListState()
     val scope = rememberCoroutineScope()
+    val onScrollToTop: () -> Unit = { scope.launch { lazyListState.animateScrollToItem(0) } }
     Scaffold(
         topBar = {
             FeedTopBar(
@@ -79,11 +88,19 @@ fun FeedScreen(
                 onPictureClick = onOpenDrawer,
                 onToggleRelayIndex = onToggleRelayIndex,
                 onToggleAutopilot = onToggleAutopilot,
-                onScrollToTop = { scope.launch { lazyListState.animateScrollToItem(0) } }
+                onScrollToTop = onScrollToTop
             )
         },
         floatingActionButton = { FeedFab(onNavigateToPost = onNavigateToPost) },
     ) {
+        ShowNewPostsButton(
+            isVisible = numOfNewPosts > 0 && !uiState.isRefreshing && lazyListState.isScrollingUp(),
+            numOfNewPosts = numOfNewPosts,
+            onRefresh = {
+                onScrollToTop()
+                onRefresh()
+            }
+        )
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -193,5 +210,21 @@ private fun Headline(
 private fun FeedFab(onNavigateToPost: () -> Unit) {
     FloatingActionButton(onClick = onNavigateToPost, contentColor = Color.White) {
         AddIcon()
+    }
+}
+
+@Composable
+private fun ShowNewPostsButton(isVisible: Boolean, numOfNewPosts: Int, onRefresh: () -> Unit) {
+    Box(
+        modifier = Modifier
+            .zIndex(Z_INDEX_UNDER_PULL_REFRESH)
+            .fillMaxWidth()
+            .fillMaxHeight(0.15f), contentAlignment = Alignment.BottomCenter
+    ) {
+        AnimatedVisibility(visible = isVisible) {
+            Button(onClick = onRefresh) {
+                Text("$numOfNewPosts new posts")
+            }
+        }
     }
 }
