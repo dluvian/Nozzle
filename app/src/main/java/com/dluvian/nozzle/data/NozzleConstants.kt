@@ -23,3 +23,6 @@ const val MAX_SUGGESTION_LENGTH = 30
 
 const val PULL_REFRESH_Z_INDEX = 3f
 const val Z_INDEX_UNDER_PULL_REFRESH = PULL_REFRESH_Z_INDEX - 1f
+
+// TODO: Figure out the real max value to not exceed SQL's max query length
+const val MAX_SQL_PARAMS = 250

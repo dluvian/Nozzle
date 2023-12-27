@@ -2,6 +2,7 @@ package com.dluvian.nozzle.data.eventProcessor
 
 import android.util.Log
 import com.dluvian.nozzle.data.EVENT_PROCESSING_DELAY
+import com.dluvian.nozzle.data.MAX_SQL_PARAMS
 import com.dluvian.nozzle.data.cache.IIdCache
 import com.dluvian.nozzle.data.room.AppDatabase
 import com.dluvian.nozzle.data.room.FullPostInserter
@@ -100,13 +101,12 @@ class EventProcessor(
             else if (it.event.isLikeReaction()) reactions.add(it.event)
         }
 
-        val maxSql = 250
-        posts.chunked(maxSql).forEach { processPosts(relayedEvents = it) }
-        reposts.chunked(maxSql).forEach { processReposts(relayedEvents = it) }
-        profiles.chunked(maxSql).forEach { processProfiles(events = it) }
-        contactLists.chunked(maxSql).forEach { processContactLists(events = it) }
-        nip65s.chunked(maxSql).forEach { processNip65s(events = it) }
-        reactions.chunked(maxSql).forEach { processReactions(events = it) }
+        posts.chunked(MAX_SQL_PARAMS).forEach { processPosts(relayedEvents = it) }
+        reposts.chunked(MAX_SQL_PARAMS).forEach { processReposts(relayedEvents = it) }
+        profiles.chunked(MAX_SQL_PARAMS).forEach { processProfiles(events = it) }
+        contactLists.chunked(MAX_SQL_PARAMS).forEach { processContactLists(events = it) }
+        nip65s.chunked(MAX_SQL_PARAMS).forEach { processNip65s(events = it) }
+        reactions.chunked(MAX_SQL_PARAMS).forEach { processReactions(events = it) }
     }
 
     private fun isNewAndValid(event: Event): Boolean {

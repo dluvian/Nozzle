@@ -1,6 +1,7 @@
 package com.dluvian.nozzle.data.deletor
 
 import android.util.Log
+import com.dluvian.nozzle.data.MAX_SQL_PARAMS
 import com.dluvian.nozzle.data.cache.IIdCache
 import com.dluvian.nozzle.data.room.AppDatabase
 import java.util.concurrent.atomic.AtomicBoolean
@@ -14,7 +15,7 @@ class DatabaseSweeper(
     private val database: AppDatabase
 ) : IDatabaseSweeper {
     private val isSweeping = AtomicBoolean(false)
-    private val maxSQLParams = 250
+
     override suspend fun sweep() {
         if (!isSweeping.compareAndSet(false, true)) {
             Log.i(TAG, "Sweep blocked by ongoing sweep")
@@ -36,7 +37,7 @@ class DatabaseSweeper(
     private suspend fun deletePosts() {
         val deletePostCount = database.postDao().deleteAllExceptNewest(
             amountToKeep = keepPosts,
-            exclude = dbSweepExcludingCache.getPostIds().take(maxSQLParams),
+            exclude = dbSweepExcludingCache.getPostIds().take(MAX_SQL_PARAMS),
         )
         dbSweepExcludingCache.clearPostIds()
         Log.i(TAG, "Deleted $deletePostCount posts")
@@ -45,7 +46,7 @@ class DatabaseSweeper(
     private suspend fun deleteProfiles() {
         val deleteProfileCount = database
             .profileDao()
-            .deleteOrphaned(exclude = dbSweepExcludingCache.getPubkeys().take(maxSQLParams))
+            .deleteOrphaned(exclude = dbSweepExcludingCache.getPubkeys().take(MAX_SQL_PARAMS))
         dbSweepExcludingCache.clearPubkeys()
         Log.i(TAG, "Deleted $deleteProfileCount profiles")
     }
@@ -54,7 +55,7 @@ class DatabaseSweeper(
         val deleteContactCount = database
             .contactDao()
             .deleteOrphaned(
-                exclude = dbSweepExcludingCache.getContactListAuthors().take(maxSQLParams)
+                exclude = dbSweepExcludingCache.getContactListAuthors().take(MAX_SQL_PARAMS)
             )
         dbSweepExcludingCache.clearContactListAuthors()
         Log.i(TAG, "Deleted $deleteContactCount contact entries")
@@ -63,7 +64,7 @@ class DatabaseSweeper(
     private suspend fun deleteNip65() {
         val deleteNip65Count = database
             .nip65Dao()
-            .deleteOrphaned(dbSweepExcludingCache.getNip65Authors().take(maxSQLParams))
+            .deleteOrphaned(dbSweepExcludingCache.getNip65Authors().take(MAX_SQL_PARAMS))
         dbSweepExcludingCache.clearNip65Authors()
         Log.i(TAG, "Deleted $deleteNip65Count nip65 entries")
     }
