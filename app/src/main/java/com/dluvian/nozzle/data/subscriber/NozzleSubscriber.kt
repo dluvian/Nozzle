@@ -135,6 +135,7 @@ class NozzleSubscriber(
     ) {
         Log.i(TAG, "Subscribe feed posts")
         if (authorPubkeys != null && authorPubkeys.isEmpty()) return
+        Log.i("LOLOL", "lol ${relaySelection.selectedRelays}")
 
         val subIds = when (relaySelection) {
             is AllRelays, is MultipleRelays -> {
@@ -173,6 +174,8 @@ class NozzleSubscriber(
                 }
             }
         }
+        Log.i("LOLOL", "subids $subIds")
+
         feedPostSubs.unsubThenAddAll(subIds)
     }
 

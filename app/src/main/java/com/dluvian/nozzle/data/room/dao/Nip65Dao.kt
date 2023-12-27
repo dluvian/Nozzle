@@ -40,7 +40,7 @@ interface Nip65Dao {
 
         val pubkeys = nip65s.map(Nip65Entity::pubkey).toSet()
         val currentTimestamps = getTimestampByPubkey(pubkeys = pubkeys)
-        val pubkeysToUpdate = mutableListOf<Pubkey>()
+        val pubkeysToUpdate = mutableSetOf<Pubkey>()
         for (nip65 in nip65s) {
             val createdAt = currentTimestamps[nip65.pubkey]
             if (createdAt == null || createdAt < nip65.createdAt) pubkeysToUpdate.add(nip65.pubkey)

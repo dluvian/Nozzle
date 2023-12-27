@@ -61,14 +61,14 @@ class ProfileListViewModel(
         val isSame = pubkey.value == it && type.value == ProfileListType.FOLLOWER_LIST
         pubkey.value = it
         type.value = ProfileListType.FOLLOWER_LIST
-        paginator.refresh(waitForSubscription = !isSame, useInitialValue = isSame)
+        paginator.refresh(waitForSubscription = isSame, useInitialValue = isSame)
     }
 
     val onSetFollowedByList: (Pubkey) -> Unit = {
         val isSame = pubkey.value == it && type.value == ProfileListType.FOLLOWED_BY_LIST
         pubkey.value = it
         type.value = ProfileListType.FOLLOWED_BY_LIST
-        paginator.refresh(waitForSubscription = !isSame, useInitialValue = isSame)
+        paginator.refresh(waitForSubscription = isSame, useInitialValue = isSame)
     }
 
     val onLoadMore: () -> Unit = { paginator.loadMore() }

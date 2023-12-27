@@ -100,12 +100,13 @@ class EventProcessor(
             else if (it.event.isLikeReaction()) reactions.add(it.event)
         }
 
-        processPosts(relayedEvents = posts)
-        processReposts(relayedEvents = reposts)
-        processProfiles(events = profiles)
-        processContactLists(events = contactLists)
-        processNip65s(events = nip65s)
-        processReactions(events = reactions)
+        val maxSql = 250
+        posts.chunked(maxSql).forEach { processPosts(relayedEvents = it) }
+        reposts.chunked(maxSql).forEach { processReposts(relayedEvents = it) }
+        profiles.chunked(maxSql).forEach { processProfiles(events = it) }
+        contactLists.chunked(maxSql).forEach { processContactLists(events = it) }
+        nip65s.chunked(maxSql).forEach { processNip65s(events = it) }
+        reactions.chunked(maxSql).forEach { processReactions(events = it) }
     }
 
     private fun isNewAndValid(event: Event): Boolean {
@@ -118,6 +119,7 @@ class EventProcessor(
     }
 
     private fun processPosts(relayedEvents: Collection<RelayedEvent>) {
+        Log.d(TAG, "Process ${relayedEvents.size} posts")
         val newPosts = processEventRelaysAndReturnNewRePosts(relayedEvents = relayedEvents)
         if (newPosts.isEmpty()) return
 
@@ -134,6 +136,7 @@ class EventProcessor(
     }
 
     private fun processReposts(relayedEvents: Collection<RelayedEvent>) {
+        Log.d(TAG, "Process ${relayedEvents.size} reposts")
         val newReposts = processEventRelaysAndReturnNewRePosts(relayedEvents = relayedEvents)
         if (newReposts.isEmpty()) return
 
@@ -163,6 +166,7 @@ class EventProcessor(
     }
 
     private fun processProfiles(events: Collection<Event>) {
+        Log.d(TAG, "Process ${events.size} profiles")
         if (events.isEmpty()) return
 
         val metadata = events.associate { Pair(it.id, deserializeMetadata(it.content)) }
@@ -195,6 +199,7 @@ class EventProcessor(
     }
 
     private fun processContactLists(events: Collection<Event>) {
+        Log.d(TAG, "Process ${events.size} contact lists")
         if (events.isEmpty()) return
 
         val contactEntities = events
@@ -224,6 +229,7 @@ class EventProcessor(
     }
 
     private fun processNip65s(events: Collection<Event>) {
+        Log.d(TAG, "Process ${events.size} nip65s")
         if (events.isEmpty()) return
 
         val nip65Entities = events
@@ -254,6 +260,7 @@ class EventProcessor(
     }
 
     private fun processReactions(events: Collection<Event>) {
+        Log.d(TAG, "Process ${events.size} reactions")
         if (events.isEmpty()) return
 
         val reactionEntities = events.mapNotNull { event ->

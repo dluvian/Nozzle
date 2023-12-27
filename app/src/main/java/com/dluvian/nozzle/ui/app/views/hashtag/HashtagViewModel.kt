@@ -71,7 +71,7 @@ class HashtagViewModel(
                 )
             )
         }
-        paginator.refresh(waitForSubscription = true, useInitialValue = isSameHashtag)
+        paginator.refresh(waitForSubscription = isSameHashtag, useInitialValue = isSameHashtag)
     }
 
     companion object {
