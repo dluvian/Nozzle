@@ -32,6 +32,8 @@ interface PostDao {
         until: Long,
         limit: Int,
     ): List<PostEntity> {
+        // TODO: Combine it into single query.
+        //  Currently not possible because the null check will make the query too long
         return if (authorPubkeys == null && relays == null) {
             internalGetGlobalFeedBasePosts(
                 isPosts = isPosts,
@@ -150,112 +152,137 @@ interface PostDao {
 
 
     fun getNumOfNewMainFeedPostsFlow(
+        oldPostIds: List<String>,
         isPosts: Boolean,
         isReplies: Boolean,
         hashtag: String?,
         authorPubkeys: Collection<String>?,
         relays: Collection<String>?,
-        until: Long,
+        limit: Int,
     ): Flow<Int> {
         return if (authorPubkeys == null && relays == null) {
             internalGetNumOfNewGlobalFeedPostsFlow(
+                oldPostIds = oldPostIds,
                 isPosts = isPosts,
                 isReplies = isReplies,
                 hashtag = hashtag,
-                until = until
+                limit = limit,
             )
         } else if (!authorPubkeys.isNullOrEmpty() && relays == null) {
             internalGetNumOfNewAuthoredGlobalFeedPostsFlow(
+                oldPostIds = oldPostIds,
                 isPosts = isPosts,
                 isReplies = isReplies,
                 hashtag = hashtag,
                 authorPubkeys = authorPubkeys,
-                until = until
+                limit = limit
             )
         } else if (authorPubkeys == null && !relays.isNullOrEmpty()) {
             internalGetNumOfNewRelayedGlobalPostsFlow(
+                oldPostIds = oldPostIds,
                 isPosts = isPosts,
                 isReplies = isReplies,
                 hashtag = hashtag,
                 relays = relays,
-                until = until
+                limit = limit
             )
         } else {
             if (authorPubkeys!!.isEmpty() || relays!!.isEmpty()) flowOf(0)
             else internalGetNumOfNewMainFeedPostsFlow(
+                oldPostIds = oldPostIds,
                 isPosts = isPosts,
                 isReplies = isReplies,
                 hashtag = hashtag,
                 authorPubkeys = authorPubkeys,
                 relays = relays,
-                until = until
+                limit = limit
             )
         }
     }
 
-    // Like getMainFeedBasePosts but with createdAt >= :until and no limit
     @Query(
         "SELECT COUNT(*) " +
+                "FROM (" +
+                "SELECT id " +
                 "FROM post " +
                 "WHERE ((:isReplies AND replyToId IS NOT NULL) OR (:isPosts AND replyToId IS NULL)) " +
-                "AND createdAt >= :until " +
                 "AND (:hashtag IS NULL OR id IN (SELECT eventId FROM hashtag WHERE hashtag = :hashtag)) " +
                 "AND pubkey IN (:authorPubkeys) " +
-                "AND id IN (SELECT DISTINCT eventId FROM eventRelay WHERE relayUrl IN (:relays)) "
+                "AND id IN (SELECT DISTINCT eventId FROM eventRelay WHERE relayUrl IN (:relays)) " +
+                "ORDER BY createdAt DESC " +
+                "LIMIT :limit" +
+                ") " +
+                "WHERE id NOT IN (:oldPostIds)"
     )
     fun internalGetNumOfNewMainFeedPostsFlow(
+        oldPostIds: List<String>,
         isPosts: Boolean,
         isReplies: Boolean,
         hashtag: String?,
         authorPubkeys: Collection<String>,
         relays: Collection<String>,
-        until: Long,
+        limit: Int,
     ): Flow<Int>
 
     @Query(
         "SELECT COUNT(*) " +
+                "FROM (SELECT id " +
                 "FROM post " +
                 "WHERE ((:isReplies AND replyToId IS NOT NULL) OR (:isPosts AND replyToId IS NULL)) " +
-                "AND createdAt >= :until " +
-                "AND (:hashtag IS NULL OR id IN (SELECT eventId FROM hashtag WHERE hashtag = :hashtag)) "
+                "AND (:hashtag IS NULL OR id IN (SELECT eventId FROM hashtag WHERE hashtag = :hashtag)) " +
+                "ORDER BY createdAt DESC " +
+                "LIMIT :limit" +
+                ") " +
+                "WHERE id NOT IN (:oldPostIds)"
     )
     fun internalGetNumOfNewGlobalFeedPostsFlow(
+        oldPostIds: List<String>,
         isPosts: Boolean,
         isReplies: Boolean,
         hashtag: String?,
-        until: Long,
+        limit: Int
     ): Flow<Int>
 
     @Query(
         "SELECT COUNT(*) " +
+                "FROM (SELECT id " +
                 "FROM post " +
                 "WHERE ((:isReplies AND replyToId IS NOT NULL) OR (:isPosts AND replyToId IS NULL)) " +
-                "AND createdAt >= :until " +
                 "AND (:hashtag IS NULL OR id IN (SELECT eventId FROM hashtag WHERE hashtag = :hashtag)) " +
-                "AND pubkey IN (:authorPubkeys) "
+                "AND pubkey IN (:authorPubkeys) " +
+                "ORDER BY createdAt DESC " +
+                "LIMIT :limit" +
+                ") " +
+                "WHERE id NOT IN (:oldPostIds)"
     )
     fun internalGetNumOfNewAuthoredGlobalFeedPostsFlow(
+        oldPostIds: List<String>,
         isPosts: Boolean,
         isReplies: Boolean,
         hashtag: String?,
         authorPubkeys: Collection<String>,
-        until: Long,
+        limit: Int
     ): Flow<Int>
 
     @Query(
         "SELECT COUNT(*) " +
+                "FROM (SELECT id " +
                 "FROM post " +
                 "WHERE ((:isReplies AND replyToId IS NOT NULL) OR (:isPosts AND replyToId IS NULL)) " +
-                "AND createdAt >= :until " +
                 "AND (:hashtag IS NULL OR id IN (SELECT eventId FROM hashtag WHERE hashtag = :hashtag)) " +
-                "AND id IN (SELECT DISTINCT eventId FROM eventRelay WHERE relayUrl IN (:relays)) "
+                "AND id IN (SELECT DISTINCT eventId FROM eventRelay WHERE relayUrl IN (:relays)) " +
+                "ORDER BY createdAt DESC " +
+                "LIMIT :limit" +
+                ") " +
+                "WHERE id NOT IN (:oldPostIds)"
     )
     fun internalGetNumOfNewRelayedGlobalPostsFlow(
+        oldPostIds: List<String>,
         isPosts: Boolean,
         isReplies: Boolean,
         hashtag: String?,
         relays: Collection<String>,
-        until: Long,
+        limit: Int,
     ): Flow<Int>
 
     @Query(
@@ -275,7 +302,7 @@ interface PostDao {
         limit: Int,
     ): List<PostEntity>
 
-    // Like bruhh but with createdAt >= :until and no limit
+    // TODO: Fix query like in internalGetNumOfNewMainFeedPostsFlow
     @Query(
         "SELECT COUNT(*) " +
                 "FROM post " +
@@ -303,7 +330,7 @@ interface PostDao {
         limit: Int,
     ): List<PostEntity>
 
-    // Like getLikedPosts but with createdAt >= :until and no limit
+    // TODO: Fix query like in internalGetNumOfNewMainFeedPostsFlow
     @Query(
         "SELECT COUNT(*) " +
                 "FROM post " +

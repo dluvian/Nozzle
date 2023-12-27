@@ -33,6 +33,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.zIndex
+import com.dluvian.nozzle.data.DB_BATCH_SIZE
 import com.dluvian.nozzle.data.Z_INDEX_UNDER_PULL_REFRESH
 import com.dluvian.nozzle.data.utils.isScrollingUp
 import com.dluvian.nozzle.model.Everyone
@@ -94,7 +95,8 @@ fun FeedScreen(
         floatingActionButton = { FeedFab(onNavigateToPost = onNavigateToPost) },
     ) {
         ShowNewPostsButton(
-            isVisible = numOfNewPosts > 0 && !uiState.isRefreshing && lazyListState.isScrollingUp(),
+            isVisible = !uiState.isRefreshing && numOfNewPosts > 0
+                    && (feed.size < DB_BATCH_SIZE || lazyListState.isScrollingUp()),
             numOfNewPosts = numOfNewPosts,
             onRefresh = {
                 onScrollToTop()
@@ -223,6 +225,7 @@ private fun ShowNewPostsButton(isVisible: Boolean, numOfNewPosts: Int, onRefresh
     ) {
         AnimatedVisibility(visible = isVisible) {
             Button(onClick = onRefresh) {
+                // TODO: Move to resources
                 Text("$numOfNewPosts new posts")
             }
         }

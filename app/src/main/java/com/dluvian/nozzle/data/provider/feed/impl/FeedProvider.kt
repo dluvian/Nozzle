@@ -54,16 +54,6 @@ class FeedProvider(
         val relays = if (feedSettings.relaySelection is UserSpecific) null
         else feedSettings.relaySelection.selectedRelays
 
-        // Params like in getMainFeedBasePosts(..)
-        val numOfNewPostsFlow = postDao.getNumOfNewMainFeedPostsFlow(
-            isPosts = feedSettings.isPosts,
-            isReplies = feedSettings.isReplies,
-            hashtag = feedSettings.hashtag,
-            authorPubkeys = authorSelectionPubkeys,
-            relays = relays,
-            until = until,
-        )
-
         val posts = postDao.getMainFeedBasePosts(
             isPosts = feedSettings.isPosts,
             isReplies = feedSettings.isReplies,
@@ -71,6 +61,18 @@ class FeedProvider(
             authorPubkeys = authorSelectionPubkeys,
             relays = relays,
             until = until,
+            limit = limit,
+        )
+
+        // Params like in getMainFeedBasePosts(..)
+        // TODO: Do the same with the other functions
+        val numOfNewPostsFlow = postDao.getNumOfNewMainFeedPostsFlow(
+            oldPostIds = posts.map { it.id },
+            isPosts = feedSettings.isPosts,
+            isReplies = feedSettings.isReplies,
+            hashtag = feedSettings.hashtag,
+            authorPubkeys = authorSelectionPubkeys,
+            relays = relays,
             limit = limit,
         )
 
