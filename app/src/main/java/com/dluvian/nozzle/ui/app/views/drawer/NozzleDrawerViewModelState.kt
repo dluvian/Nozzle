@@ -1,8 +1,10 @@
 package com.dluvian.nozzle.ui.app.views.drawer
 
+import androidx.compose.runtime.Immutable
 import com.dluvian.nozzle.data.room.helper.extended.AccountEntityExtended
 import com.dluvian.nozzle.model.Account
 
+@Immutable
 data class NozzleDrawerViewModelState(
     val activeAccount: Account = Account(name = "", pubkey = "", isActive = true),
     val allAccounts: List<Account> = emptyList(),

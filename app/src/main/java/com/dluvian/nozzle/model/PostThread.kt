@@ -1,5 +1,8 @@
 package com.dluvian.nozzle.model
 
+import androidx.compose.runtime.Immutable
+
+@Immutable
 data class PostThread(
     val current: PostWithMeta?,
     val previous: List<PostWithMeta>,
