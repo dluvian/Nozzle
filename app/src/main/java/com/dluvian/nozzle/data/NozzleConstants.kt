@@ -15,7 +15,8 @@ const val SWEEP_THRESHOLD = 1000
 
 const val RESUB_AFTER = 5000L
 
-const val EVENT_PROCESSING_DELAY = 1111L
+// Should be smaller than WAIT_TIME
+const val EVENT_PROCESSING_DELAY = 500L
 
 const val MAX_LIST_LENGTH = 100
 
