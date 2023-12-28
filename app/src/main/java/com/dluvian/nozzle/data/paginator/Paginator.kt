@@ -119,10 +119,7 @@ class Paginator<T : Identifiable, S>(
         }
             .stateIn(
                 scope = scope,
-                started = SharingStarted.WhileSubscribed(
-                    stopTimeoutMillis = SCOPE_TIMEOUT,
-                    replayExpirationMillis = 0
-                ),
+                started = SharingStarted.Eagerly,
                 initialValue = initialValue
             )
     }

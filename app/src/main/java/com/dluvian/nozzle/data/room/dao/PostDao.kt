@@ -302,19 +302,24 @@ interface PostDao {
         limit: Int,
     ): List<PostEntity>
 
-    // TODO: Fix query like in internalGetNumOfNewMainFeedPostsFlow
     @Query(
         "SELECT COUNT(*) " +
+                "FROM (" +
+                "SELECT id " +
                 "FROM post " +
-                "WHERE createdAt >= :until " +
-                "AND id IN (SELECT DISTINCT eventId FROM eventRelay WHERE relayUrl IN (:relays)) " +
+                "WHERE id IN (SELECT DISTINCT eventId FROM eventRelay WHERE relayUrl IN (:relays)) " +
                 "AND (id IN (SELECT eventId FROM mention WHERE pubkey = (SELECT pubkey FROM account WHERE isActive = 1)) " +
                 "  AND pubkey != (SELECT pubkey FROM account WHERE isActive = 1)" +
-                ") "
+                ") " +
+                "ORDER BY createdAt DESC " +
+                "LIMIT :limit" +
+                ") " +
+                "WHERE id NOT IN (:oldPostIds)"
     )
     fun getNumOfNewInboxPostsFlow(
+        oldPostIds: List<String>,
         relays: Collection<String>,
-        until: Long,
+        limit: Int
     ): Flow<Int>
 
     @Query(
@@ -330,14 +335,21 @@ interface PostDao {
         limit: Int,
     ): List<PostEntity>
 
-    // TODO: Fix query like in internalGetNumOfNewMainFeedPostsFlow
     @Query(
         "SELECT COUNT(*) " +
+                "FROM (" +
+                "SELECT id " +
                 "FROM post " +
-                "WHERE createdAt >= :until " +
-                "AND id IN (SELECT eventId FROM reaction WHERE pubkey = (SELECT pubkey FROM account WHERE isActive = 1)) "
+                "WHERE id IN (SELECT eventId FROM reaction WHERE pubkey = (SELECT pubkey FROM account WHERE isActive = 1)) " +
+                "ORDER BY createdAt DESC " +
+                "LIMIT :limit" +
+                ") " +
+                "WHERE id NOT IN (:oldPostIds)"
     )
-    fun getNumOfNewLikedPostsFlow(until: Long): Flow<Int>
+    fun getNumOfNewLikedPostsFlow(
+        oldPostIds: List<String>,
+        limit: Int
+    ): Flow<Int>
 
     @Query(
         // SELECT PostEntity

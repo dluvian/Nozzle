@@ -17,8 +17,13 @@ fun HashtagRoute(
     onGoBack: () -> Unit,
 ) {
     val uiState by hashtagViewModel.uiState.collectAsState()
+
     val feedFlow by hashtagViewModel.feed.collectAsState()
     val feed by feedFlow.collectAsState()
+
+    val numOfNewPostsFlow by hashtagViewModel.numOfNewPosts.collectAsState()
+    val numOfNewPosts by numOfNewPostsFlow.collectAsState()
+
     val forceFollowed by profileFollower.getForceFollowedState()
     val adjustedFeed = remember(forceFollowed, feed) {
         feed.map { it.copy(isFollowedByMe = forceFollowed[it.pubkey] ?: it.isFollowedByMe) }
@@ -27,6 +32,7 @@ fun HashtagRoute(
     HashtagScreen(
         uiState = uiState,
         feed = adjustedFeed,
+        numOfNewPosts = numOfNewPosts,
         postCardLambdas = postCardLambdas,
         onRefresh = hashtagViewModel.onRefresh,
         onLoadMore = hashtagViewModel.onLoadMore,

@@ -67,12 +67,14 @@ class FeedViewModel(
     private val lastAutopilotResult: MutableMap<String, Set<String>> =
         Collections.synchronizedMap(mutableMapOf<String, Set<String>>())
 
+    private var isInit = true
     val pubkeyState = pubkeyProvider.getActivePubkeyStateFlow()
         .onEach local@{
             if (it.isEmpty()) return@local
             useCachedFeedSettings()
             updateRelaySelection()
-            paginator.refresh(waitForSubscription = false, useInitialValue = false)
+            paginator.refresh(waitForSubscription = isInit, useInitialValue = false)
+            isInit = false
         }
         .stateIn(viewModelScope, SharingStarted.Eagerly, "")
 

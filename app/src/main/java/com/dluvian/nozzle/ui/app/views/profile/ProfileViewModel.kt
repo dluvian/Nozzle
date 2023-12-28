@@ -79,6 +79,7 @@ class ProfileViewModel(
     )
 
     val feed = paginator.getList()
+    val numOfNewPosts = paginator.getNumOfNewItems()
 
     private val recommendedRelays = mutableListOf<String>()
 

@@ -65,7 +65,6 @@ class FeedProvider(
         )
 
         // Params like in getMainFeedBasePosts(..)
-        // TODO: Do the same with the other functions
         val numOfNewPostsFlow = postDao.getNumOfNewMainFeedPostsFlow(
             oldPostIds = posts.map { it.id },
             isPosts = feedSettings.isPosts,
@@ -95,15 +94,15 @@ class FeedProvider(
         )
         delay(waitForSubscription)
 
-        // Params like in getInboxPosts(..)
-        val numOfNewPostsFlow = postDao.getNumOfNewInboxPostsFlow(
-            relays = relays,
-            until = until,
-        )
         val posts = postDao.getInboxPosts(
             relays = relays,
             until = until,
             limit = limit
+        )
+        val numOfNewPostsFlow = postDao.getNumOfNewInboxPostsFlow(
+            oldPostIds = posts.map { it.id },
+            relays = relays,
+            limit = limit,
         )
 
         return getResult(posts = posts, numOfNewPostsFlow = numOfNewPostsFlow)
@@ -125,11 +124,13 @@ class FeedProvider(
 
         delay(waitForSubscription)
 
-        // Params like in getLikedPosts(..)
-        val numOfNewPostsFlow = postDao.getNumOfNewLikedPostsFlow(until = until)
         val posts = postDao.getLikedPosts(
             until = until,
             limit = limit,
+        )
+        val numOfNewPostsFlow = postDao.getNumOfNewLikedPostsFlow(
+            oldPostIds = posts.map { it.id },
+            limit = limit
         )
 
         return getResult(posts = posts, numOfNewPostsFlow = numOfNewPostsFlow)

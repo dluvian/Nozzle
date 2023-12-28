@@ -46,6 +46,7 @@ class HashtagViewModel(
     )
 
     val feed = paginator.getList()
+    val numOfNewPosts = paginator.getNumOfNewItems()
 
     val onOpenHashtag: (String) -> Unit = local@{ hashtag ->
         val lowerCaseHashtag = hashtag.lowercase().removeHashtagPrefix()

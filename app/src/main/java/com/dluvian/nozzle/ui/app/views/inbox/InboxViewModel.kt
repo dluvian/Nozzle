@@ -43,6 +43,7 @@ class InboxViewModel(
     )
 
     val feed = paginator.getList()
+    val numOfNewPosts = paginator.getNumOfNewItems()
 
     val onOpenInbox: () -> Unit = { updateScreen(useInitialValue = false) }
 
