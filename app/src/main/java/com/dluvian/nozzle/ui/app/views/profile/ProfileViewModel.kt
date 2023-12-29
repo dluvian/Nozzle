@@ -15,7 +15,7 @@ import com.dluvian.nozzle.data.provider.IPubkeyProvider
 import com.dluvian.nozzle.data.provider.IRelayProvider
 import com.dluvian.nozzle.data.provider.feed.IFeedProvider
 import com.dluvian.nozzle.data.utils.getCurrentTimeInSeconds
-import com.dluvian.nozzle.data.utils.getMaxRelays
+import com.dluvian.nozzle.data.utils.getMaxRelaysAndAddIfTooSmall
 import com.dluvian.nozzle.model.CreatedAt
 import com.dluvian.nozzle.model.FeedSettings
 import com.dluvian.nozzle.model.MultipleRelays
@@ -149,8 +149,7 @@ class ProfileViewModel(
 
     private suspend fun getRelays(pubkey: String): List<String> {
         val relays = recommendedRelays + relayProvider.getWriteRelaysOfPubkey(pubkey)
-        val maxRelays = getMaxRelays(from = relays, prefer = relayProvider.getReadRelays())
-        return maxRelays.ifEmpty { relayProvider.getReadRelays() }
+        return getMaxRelaysAndAddIfTooSmall(from = relays, prefer = relayProvider.getReadRelays())
     }
 
     companion object {

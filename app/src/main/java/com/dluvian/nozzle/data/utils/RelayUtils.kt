@@ -35,6 +35,16 @@ fun getMaxRelays(from: List<Relay>, prefer: Collection<Relay> = emptyList()): Li
         .take(MAX_RELAYS)
 }
 
+fun getMaxRelaysAndAddIfTooSmall(
+    from: List<Relay>,
+    prefer: Collection<Relay> = emptyList()
+): List<Relay> {
+    val result = getMaxRelays(from = from, prefer = prefer)
+
+    return if (result.size >= MAX_RELAYS) result
+    else (result + prefer.shuffled()).distinct().take(MAX_RELAYS)
+}
+
 fun listRelayStatuses(
     allRelayUrls: List<String>,
     relaySelection: RelaySelection

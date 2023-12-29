@@ -9,7 +9,7 @@ data class PostWithMeta(
     val entity: PostEntity,
     val replyToName: String?,
     val replyToPubkey: String?,
-    val pubkey: String,
+    val pubkey: Pubkey,
     val annotatedContent: AnnotatedString,
     val mediaUrls: List<String>,
     val annotatedMentionedPosts: List<AnnotatedMentionedPost>,
@@ -20,6 +20,7 @@ data class PostWithMeta(
     val trustScore: Float?,
     val numOfReplies: Int,
     val relays: List<String>,
+    val hasUnknownAuthor: Boolean,
 ) : Identifiable {
     override fun getId() = entity.id
 }

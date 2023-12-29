@@ -1,9 +1,9 @@
 package com.dluvian.nozzle.model
 
 data class MentionedPost(
-    val id: String,
-    val pubkey: String,
-    val content: String,
+    val id: NoteId,
+    val pubkey: Pubkey?,
+    val content: String?,
     val name: String?,
-    val createdAt: Long,
+    val createdAt: Long?,
 )

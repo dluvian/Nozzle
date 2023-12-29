@@ -1,7 +1,6 @@
 package com.dluvian.nozzle.data.provider.impl
 
 import androidx.compose.ui.text.AnnotatedString
-import com.dluvian.nozzle.data.RESUB_AFTER
 import com.dluvian.nozzle.data.annotatedContent.IAnnotatedContentHandler
 import com.dluvian.nozzle.data.nostr.utils.ShortenedNameUtils.getShortenedNpubFromPubkey
 import com.dluvian.nozzle.data.provider.IContactListProvider
@@ -22,13 +21,11 @@ import com.dluvian.nozzle.model.FeedInfo
 import com.dluvian.nozzle.model.MentionedNamesAndPosts
 import com.dluvian.nozzle.model.MentionedPost
 import com.dluvian.nozzle.model.PostWithMeta
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
-import java.util.concurrent.atomic.AtomicInteger
+import kotlinx.coroutines.flow.onEach
 
 class PostWithMetaProvider(
     private val pubkeyProvider: IPubkeyProvider,
@@ -66,22 +63,15 @@ class PostWithMetaProvider(
             mentionedPostIds = feedInfo.mentionedPostIds
         ).firstThenDistinctDebounce(NORMAL_DEBOUNCE)
 
-        val intervalCounter = AtomicInteger(0)
         return getFinalFlow(
             extendedPostsFlow = extendedPostsFlow,
             contactPubkeysFlow = contactPubkeysFlow,
             relaysFlow = relaysFlow,
             trustScorePerPubkeyFlow = trustScorePerPubkeyFlow,
             mentionedNamesAndPostsFlow = mentionedNamesAndPostsFlow,
-        )
-            .distinctUntilChanged()
-            .combine(getIntervalFlow()) { posts, count ->
-                if (intervalCounter.compareAndSet(count - 1, count)) {
-                    nozzleSubscriber.subscribeUnknowns(posts = posts)
-                }
-                posts
-            }
-
+        ).onEach { notes ->
+            nozzleSubscriber.subscribeUnknowns(notes = notes)
+        }
     }
 
     private fun getMentionedNamesAndPostsFlow(
@@ -144,16 +134,9 @@ class PostWithMetaProvider(
                         annotatedContent = annotatedContent,
                         mentionedNamesAndPosts = mentionedNamesAndPosts,
                     ),
+                    hasUnknownAuthor = it.name == null
                 )
             }
-        }
-    }
-
-    private fun getIntervalFlow(): Flow<Int> {
-        return flow {
-            emit(0)
-            delay(RESUB_AFTER)
-            emit(1)
         }
     }
 
@@ -166,16 +149,17 @@ class PostWithMetaProvider(
                 val post = mentionedNamesAndPosts.mentionedPostsById[nevent.eventId]
                     ?: MentionedPost(
                         id = nevent.eventId,
-                        pubkey = "",
-                        content = "",
-                        name = "",
-                        createdAt = 0L
+                        pubkey = null,
+                        content = null,
+                        name = null,
+                        createdAt = null
                     )
-                val annotated = annotatedContentHandler.annotateContent(
+                val annotated = if (post.content.isNullOrEmpty()) AnnotatedString("")
+                else annotatedContentHandler.annotateContent(
                     content = post.content,
                     mentionedNamesByPubkey = mentionedNamesAndPosts.mentionedNamesByPubkey
                 )
-                val finalPost = if (post.name.isNullOrEmpty() && post.pubkey.isNotEmpty()) {
+                val finalPost = if (post.name.isNullOrEmpty() && !post.pubkey.isNullOrEmpty()) {
                     post.copy(name = getShortenedNpubFromPubkey(post.pubkey))
                 } else post
 

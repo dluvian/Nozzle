@@ -7,6 +7,7 @@ import androidx.compose.ui.text.buildAnnotatedString
 import com.dluvian.nozzle.data.nostr.utils.EncodingUtils.nostrUriToNostrId
 import com.dluvian.nozzle.data.nostr.utils.EncodingUtils.note1ToHex
 import com.dluvian.nozzle.data.nostr.utils.EncodingUtils.readNevent
+import com.dluvian.nozzle.data.nostr.utils.EncodingUtils.readNprofile
 import com.dluvian.nozzle.data.nostr.utils.MentionUtils
 import com.dluvian.nozzle.data.nostr.utils.ShortenedNameUtils.getShortenedNevent
 import com.dluvian.nozzle.data.nostr.utils.ShortenedNameUtils.getShortenedNote1
@@ -20,6 +21,7 @@ import com.dluvian.nozzle.model.Pubkey
 import com.dluvian.nozzle.model.nostr.Nevent
 import com.dluvian.nozzle.model.nostr.NeventNostrId
 import com.dluvian.nozzle.model.nostr.NoteNostrId
+import com.dluvian.nozzle.model.nostr.Nprofile
 import com.dluvian.nozzle.model.nostr.NprofileNostrId
 import com.dluvian.nozzle.model.nostr.NpubNostrId
 import com.dluvian.nozzle.ui.theme.HyperlinkStyle
@@ -165,6 +167,17 @@ class AnnotatedContentHandler : IAnnotatedContentHandler {
             }
 
         return (nevents + note1s).sortedBy { it.first }.map { it.second }
+    }
+
+    override fun extractNprofiles(annotatedContent: AnnotatedString): List<Nprofile> {
+        val nprofiles = annotatedContent
+            .getStringAnnotations(tag = NPROFILE_TAG, start = 0, end = annotatedContent.length)
+            .mapNotNull { readNprofile(it.item) }
+        val npubs = annotatedContent
+            .getStringAnnotations(tag = NPUB_TAG, start = 0, end = annotatedContent.length)
+            .map { Nprofile(pubkey = it.item, relays = emptyList()) }
+
+        return nprofiles + npubs
     }
 
     private fun isOverlappingHashtag(hashtagRange: IntRange, otherRange: IntRange): Boolean {

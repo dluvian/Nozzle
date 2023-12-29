@@ -23,6 +23,7 @@ import com.dluvian.nozzle.data.cache.IClickedMediaUrlCache
 import com.dluvian.nozzle.data.deletor.INoteDeletor
 import com.dluvian.nozzle.data.postCardInteractor.IPostCardInteractor
 import com.dluvian.nozzle.data.profileFollower.IProfileFollower
+import com.dluvian.nozzle.data.subscriber.ISubscriptionQueue
 import com.dluvian.nozzle.ui.app.navigation.NozzleNavActions
 import com.dluvian.nozzle.ui.app.navigation.NozzleNavGraph
 import com.dluvian.nozzle.ui.app.navigation.NozzleRoute
@@ -181,6 +182,7 @@ fun NozzleApp(appContainer: AppContainer) {
                 clickedMediaUrlCache = appContainer.clickedMediaUrlCache,
                 postCardInteractor = appContainer.postCardInteractor,
                 noteDeletor = appContainer.noteDeletor,
+                subscriptionQueue = appContainer.subscriptionQueue,
                 navActions = navActions,
                 navController = navController,
                 hasPrivkey = hasPrivkey
@@ -197,6 +199,7 @@ private fun Screen(
     clickedMediaUrlCache: IClickedMediaUrlCache,
     postCardInteractor: IPostCardInteractor,
     noteDeletor: INoteDeletor,
+    subscriptionQueue: ISubscriptionQueue,
     navActions: NozzleNavActions,
     navController: NavHostController,
     hasPrivkey: Boolean,
@@ -209,6 +212,7 @@ private fun Screen(
             clickedMediaUrlCache = clickedMediaUrlCache,
             postCardInteractor = postCardInteractor,
             noteDeletor = noteDeletor,
+            subscriptionQueue = subscriptionQueue,
             navActions = navActions,
             navController = navController,
             scope = rememberCoroutineScope()
@@ -221,6 +225,7 @@ private fun Screen(
             clickedMediaUrlCache = clickedMediaUrlCache,
             postCardInteractor = postCardInteractor,
             noteDeletor = noteDeletor,
+            subscriptionQueue = subscriptionQueue,
             navActions = navActions,
             navController = navController,
             hasPrivkey = false
@@ -236,6 +241,7 @@ private fun Drawer(
     clickedMediaUrlCache: IClickedMediaUrlCache,
     postCardInteractor: IPostCardInteractor,
     noteDeletor: INoteDeletor,
+    subscriptionQueue: ISubscriptionQueue,
     navActions: NozzleNavActions,
     navController: NavHostController,
     scope: CoroutineScope,
@@ -260,6 +266,7 @@ private fun Drawer(
             clickedMediaUrlCache = clickedMediaUrlCache,
             postCardInteractor = postCardInteractor,
             noteDeletor = noteDeletor,
+            subscriptionQueue = subscriptionQueue,
             drawerState = drawerState,
             navController = navController,
             hasPrivkey = true
@@ -275,6 +282,7 @@ private fun NozzleContent(
     clickedMediaUrlCache: IClickedMediaUrlCache,
     postCardInteractor: IPostCardInteractor,
     noteDeletor: INoteDeletor,
+    subscriptionQueue: ISubscriptionQueue,
     navActions: NozzleNavActions,
     navController: NavHostController,
     hasPrivkey: Boolean,
@@ -291,6 +299,7 @@ private fun NozzleContent(
             clickedMediaUrlCache = clickedMediaUrlCache,
             postCardInteractor = postCardInteractor,
             noteDeletor = noteDeletor,
+            subscriptionQueue = subscriptionQueue,
             drawerState = drawerState,
             navController = navController,
             startDestination = if (hasPrivkey) NozzleRoute.FEED else NozzleRoute.ADD_ACCOUNT

@@ -3,8 +3,8 @@ package com.dluvian.nozzle.data.nostr.utils
 import com.dluvian.nozzle.data.nostr.utils.EncodingUtils.hexToNpub
 
 object ShortenedNameUtils {
-    fun getShortenedNpubFromPubkey(pubkey: String): String? {
-        return if (pubkey.length < 32) {
+    fun getShortenedNpubFromPubkey(pubkey: String?): String? {
+        return if (pubkey == null || pubkey.length < 32) {
             null
         } else {
             getShortenedNpub(hexToNpub(pubkey))

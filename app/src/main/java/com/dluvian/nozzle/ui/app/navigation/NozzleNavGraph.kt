@@ -19,6 +19,7 @@ import com.dluvian.nozzle.data.nostr.utils.EncodingUtils.URI
 import com.dluvian.nozzle.data.nostr.utils.EncodingUtils.nostrStrToNostrId
 import com.dluvian.nozzle.data.postCardInteractor.IPostCardInteractor
 import com.dluvian.nozzle.data.profileFollower.IProfileFollower
+import com.dluvian.nozzle.data.subscriber.ISubscriptionQueue
 import com.dluvian.nozzle.model.nostr.NeventNostrId
 import com.dluvian.nozzle.model.nostr.NoteNostrId
 import com.dluvian.nozzle.model.nostr.NprofileNostrId
@@ -51,6 +52,7 @@ fun NozzleNavGraph(
     clickedMediaUrlCache: IClickedMediaUrlCache,
     postCardInteractor: IPostCardInteractor,
     noteDeletor: INoteDeletor,
+    subscriptionQueue: ISubscriptionQueue,
     drawerState: DrawerState,
     modifier: Modifier = Modifier,
     navController: NavHostController = rememberNavController(),
@@ -63,7 +65,8 @@ fun NozzleNavGraph(
             postCardInteractor = postCardInteractor,
             noteDeletor = noteDeletor,
             profileFollower = profileFollower,
-            clickedMediaUrlCache = clickedMediaUrlCache
+            clickedMediaUrlCache = clickedMediaUrlCache,
+            subscriptionQueue = subscriptionQueue
         )
     }
 
