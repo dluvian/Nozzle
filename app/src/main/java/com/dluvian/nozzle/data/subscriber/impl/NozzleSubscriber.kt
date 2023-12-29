@@ -532,7 +532,7 @@ class NozzleSubscriber(
             .map { it.pubkey }
         val unknownReplyParents = notes
             .filter { it.replyToName == null }
-            .mapNotNull { it.replyToPubkey }
+            .mapNotNull { it.replyToPubkey } // TODO: Reply hint???
         val unknownAuthorsOfMentionedPost = notes
             .flatMap { it.annotatedMentionedPosts }
             .filter { it.mentionedPost.name == null }
