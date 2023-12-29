@@ -17,8 +17,13 @@ fun LikesRoute(
     onGoBack: () -> Unit,
 ) {
     val isRefreshing by likesViewModel.isRefreshing.collectAsState()
+
     val feedFlow by likesViewModel.feed.collectAsState()
     val feed by feedFlow.collectAsState()
+
+    val numOfNewPostsFlow by likesViewModel.numOfNewPosts.collectAsState()
+    val numOfNewPosts by numOfNewPostsFlow.collectAsState()
+
     val forceFollowed by profileFollower.getForceFollowedState()
     val adjustedFeed = remember(forceFollowed, feed) {
         feed.map { it.copy(isFollowedByMe = forceFollowed[it.pubkey] ?: it.isFollowedByMe) }
@@ -26,6 +31,7 @@ fun LikesRoute(
 
     LikesScreen(
         feed = adjustedFeed,
+        numOfNewPosts = numOfNewPosts,
         isRefreshing = isRefreshing,
         postCardLambdas = postCardLambdas,
         onRefresh = likesViewModel.onRefresh,

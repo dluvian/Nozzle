@@ -28,6 +28,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import com.dluvian.nozzle.data.DB_BATCH_SIZE
+import com.dluvian.nozzle.data.utils.isScrollingUp
 import com.dluvian.nozzle.model.Everyone
 import com.dluvian.nozzle.model.FeedSettings
 import com.dluvian.nozzle.model.Oneself
@@ -38,6 +40,7 @@ import com.dluvian.nozzle.ui.app.navigation.PostCardLambdas
 import com.dluvian.nozzle.ui.components.AddIcon
 import com.dluvian.nozzle.ui.components.ChooseRelayButton
 import com.dluvian.nozzle.ui.components.FeedSettingsButton
+import com.dluvian.nozzle.ui.components.ShowNewPostsButton
 import com.dluvian.nozzle.ui.components.hint.NoPostsHint
 import com.dluvian.nozzle.ui.components.media.ProfilePicture
 import com.dluvian.nozzle.ui.components.postCard.PostCardList
@@ -50,6 +53,7 @@ fun FeedScreen(
     uiState: FeedViewModelState,
     pubkey: String,
     feed: List<PostWithMeta>,
+    numOfNewPosts: Int,
     postCardLambdas: PostCardLambdas,
     onRefresh: () -> Unit,
     onRefreshOnMenuDismiss: () -> Unit,
@@ -84,6 +88,13 @@ fun FeedScreen(
         },
         floatingActionButton = { FeedFab(onNavigateToPost = onNavigateToPost) },
     ) {
+        ShowNewPostsButton(
+            isVisible = !uiState.isRefreshing && numOfNewPosts > 0
+                    && (feed.size < DB_BATCH_SIZE || lazyListState.isScrollingUp()),
+            numOfNewPosts = numOfNewPosts,
+            lazyListState = lazyListState,
+            onRefresh = onRefresh
+        )
         Column(
             modifier = Modifier
                 .fillMaxSize()

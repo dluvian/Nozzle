@@ -20,8 +20,13 @@ fun FeedRoute(
 ) {
     val uiState by feedViewModel.uiState.collectAsState()
     val pubkey by feedViewModel.pubkeyState.collectAsState()
+
+    val numOfNewPostsFlow by feedViewModel.numOfNewPosts.collectAsState()
+    val numOfNewPosts by numOfNewPostsFlow.collectAsState()
+
     val feedFlow by feedViewModel.feed.collectAsState()
     val feed by feedFlow.collectAsState()
+
     val forceFollowed by profileFollower.getForceFollowedState()
     val adjustedFeed = remember(forceFollowed, feed) {
         feed.map { it.copy(isFollowedByMe = forceFollowed[it.pubkey] ?: it.isFollowedByMe) }
@@ -31,6 +36,7 @@ fun FeedRoute(
         uiState = uiState,
         pubkey = pubkey,
         feed = adjustedFeed,
+        numOfNewPosts = numOfNewPosts,
         postCardLambdas = postCardLambdas,
         onRefresh = feedViewModel.onRefresh,
         onRefreshOnMenuDismiss = feedViewModel.onRefreshOnMenuDismiss,

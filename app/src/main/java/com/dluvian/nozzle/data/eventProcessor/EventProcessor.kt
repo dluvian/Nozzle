@@ -2,6 +2,7 @@ package com.dluvian.nozzle.data.eventProcessor
 
 import android.util.Log
 import com.dluvian.nozzle.data.EVENT_PROCESSING_DELAY
+import com.dluvian.nozzle.data.MAX_SQL_PARAMS
 import com.dluvian.nozzle.data.cache.IIdCache
 import com.dluvian.nozzle.data.room.AppDatabase
 import com.dluvian.nozzle.data.room.FullPostInserter
@@ -100,12 +101,12 @@ class EventProcessor(
             else if (it.event.isLikeReaction()) reactions.add(it.event)
         }
 
-        processPosts(relayedEvents = posts)
-        processReposts(relayedEvents = reposts)
-        processProfiles(events = profiles)
-        processContactLists(events = contactLists)
-        processNip65s(events = nip65s)
-        processReactions(events = reactions)
+        posts.chunked(MAX_SQL_PARAMS).forEach { processPosts(relayedEvents = it) }
+        reposts.chunked(MAX_SQL_PARAMS).forEach { processReposts(relayedEvents = it) }
+        profiles.chunked(MAX_SQL_PARAMS).forEach { processProfiles(events = it) }
+        contactLists.chunked(MAX_SQL_PARAMS).forEach { processContactLists(events = it) }
+        nip65s.chunked(MAX_SQL_PARAMS).forEach { processNip65s(events = it) }
+        reactions.chunked(MAX_SQL_PARAMS).forEach { processReactions(events = it) }
     }
 
     private fun isNewAndValid(event: Event): Boolean {
@@ -118,6 +119,7 @@ class EventProcessor(
     }
 
     private fun processPosts(relayedEvents: Collection<RelayedEvent>) {
+        Log.d(TAG, "Process ${relayedEvents.size} posts")
         val newPosts = processEventRelaysAndReturnNewRePosts(relayedEvents = relayedEvents)
         if (newPosts.isEmpty()) return
 
@@ -134,6 +136,7 @@ class EventProcessor(
     }
 
     private fun processReposts(relayedEvents: Collection<RelayedEvent>) {
+        Log.d(TAG, "Process ${relayedEvents.size} reposts")
         val newReposts = processEventRelaysAndReturnNewRePosts(relayedEvents = relayedEvents)
         if (newReposts.isEmpty()) return
 
@@ -163,6 +166,7 @@ class EventProcessor(
     }
 
     private fun processProfiles(events: Collection<Event>) {
+        Log.d(TAG, "Process ${events.size} profiles")
         if (events.isEmpty()) return
 
         val metadata = events.associate { Pair(it.id, deserializeMetadata(it.content)) }
@@ -195,6 +199,7 @@ class EventProcessor(
     }
 
     private fun processContactLists(events: Collection<Event>) {
+        Log.d(TAG, "Process ${events.size} contact lists")
         if (events.isEmpty()) return
 
         val contactEntities = events
@@ -224,6 +229,7 @@ class EventProcessor(
     }
 
     private fun processNip65s(events: Collection<Event>) {
+        Log.d(TAG, "Process ${events.size} nip65s")
         if (events.isEmpty()) return
 
         val nip65Entities = events
@@ -254,6 +260,7 @@ class EventProcessor(
     }
 
     private fun processReactions(events: Collection<Event>) {
+        Log.d(TAG, "Process ${events.size} reactions")
         if (events.isEmpty()) return
 
         val reactionEntities = events.mapNotNull { event ->

@@ -24,14 +24,14 @@ interface Nip65Dao {
     suspend fun delete(pubkeys: Collection<Pubkey>)
 
     @Query(
-        "SELECT pubkey, MAX(createdAt) as maxCreatedAt " +
+        "SELECT pubkey, MIN(createdAt) as minCreatedAt " +
                 "FROM nip65 " +
                 "WHERE pubkey IN (:pubkeys)" +
                 "GROUP BY pubkey"
     )
     suspend fun getTimestampByPubkey(pubkeys: Collection<String>): Map<
             @MapColumn("pubkey") Pubkey,
-            @MapColumn("maxCreatedAt") Long
+            @MapColumn("minCreatedAt") Long
             >
 
     @Transaction
@@ -39,15 +39,25 @@ interface Nip65Dao {
         if (nip65s.isEmpty()) return
 
         val pubkeys = nip65s.map(Nip65Entity::pubkey).toSet()
-        val timestamps = getTimestampByPubkey(pubkeys = pubkeys)
-        val outdatedPubkeys = nip65s
-            .filter { it.createdAt > (timestamps[it.pubkey] ?: Long.MAX_VALUE) }
-            .map { it.pubkey }
-            .toSet()
+        val currentTimestamps = getTimestampByPubkey(pubkeys = pubkeys)
+        val pubkeysToUpdate = mutableSetOf<Pubkey>()
+        for (nip65 in nip65s) {
+            val createdAt = currentTimestamps[nip65.pubkey]
+            if (createdAt == null || createdAt < nip65.createdAt) pubkeysToUpdate.add(nip65.pubkey)
+        }
 
-        if (outdatedPubkeys.isNotEmpty()) delete(pubkeys = outdatedPubkeys)
+        if (pubkeysToUpdate.isEmpty()) return
 
-        insertOrIgnore(*nip65s.toTypedArray())
+        delete(pubkeys = pubkeysToUpdate)
+
+        val toInsert = nip65s.filter { pubkeysToUpdate.contains(it.pubkey) }
+            .groupBy { it.pubkey }
+            .flatMap { (_, nip65List) ->
+                val maxCreatedAt = nip65List.maxBy { it.createdAt }.createdAt
+                nip65List.filter { it.createdAt >= maxCreatedAt }
+            }
+
+        insertOrIgnore(*toInsert.toTypedArray())
     }
 
     @MapInfo(keyColumn = "url", valueColumn = "pubkey")

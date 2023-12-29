@@ -46,6 +46,7 @@ class HashtagViewModel(
     )
 
     val feed = paginator.getList()
+    val numOfNewPosts = paginator.getNumOfNewItems()
 
     val onOpenHashtag: (String) -> Unit = local@{ hashtag ->
         val lowerCaseHashtag = hashtag.lowercase().removeHashtagPrefix()
@@ -60,6 +61,7 @@ class HashtagViewModel(
     val onLoadMore: () -> Unit = { paginator.loadMore() }
 
     private fun updateScreen(hashtag: String) {
+        val isSameHashtag = hashtag == uiState.value.feedSettings.hashtag
         _uiState.update { ui ->
             ui.copy(
                 feedSettings = ui.feedSettings.copy(
@@ -70,7 +72,7 @@ class HashtagViewModel(
                 )
             )
         }
-        paginator.refresh()
+        paginator.refresh(waitForSubscription = isSameHashtag, useInitialValue = isSameHashtag)
     }
 
     companion object {

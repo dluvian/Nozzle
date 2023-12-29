@@ -15,8 +15,15 @@ const val SWEEP_THRESHOLD = 1000
 
 const val RESUB_AFTER = 5000L
 
-const val EVENT_PROCESSING_DELAY = 1111L
+// Should be smaller than WAIT_TIME
+const val EVENT_PROCESSING_DELAY = 500L
 
 const val MAX_LIST_LENGTH = 100
 
 const val MAX_SUGGESTION_LENGTH = 30
+
+const val PULL_REFRESH_Z_INDEX = 3f
+const val Z_INDEX_UNDER_PULL_REFRESH = PULL_REFRESH_Z_INDEX - 1f
+
+// TODO: Figure out the real max value to not exceed SQL's max query length
+const val MAX_SQL_PARAMS = 250

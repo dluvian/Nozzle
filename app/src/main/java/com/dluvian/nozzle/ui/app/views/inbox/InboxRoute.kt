@@ -17,8 +17,13 @@ fun InboxRoute(
     onGoBack: () -> Unit,
 ) {
     val uiState by inboxViewModel.uiState.collectAsState()
+
     val feedFlow by inboxViewModel.feed.collectAsState()
     val feed by feedFlow.collectAsState()
+
+    val numOfNewPostsFlow by inboxViewModel.numOfNewPosts.collectAsState()
+    val numOfNewPosts by numOfNewPostsFlow.collectAsState()
+
     val forceFollowed by profileFollower.getForceFollowedState()
     val adjustedFeed = remember(forceFollowed, feed) {
         feed.map { it.copy(isFollowedByMe = forceFollowed[it.pubkey] ?: it.isFollowedByMe) }
@@ -27,6 +32,7 @@ fun InboxRoute(
     InboxScreen(
         uiState = uiState,
         feed = adjustedFeed,
+        numOfNewPosts = numOfNewPosts,
         postCardLambdas = postCardLambdas,
         onRefresh = inboxViewModel.onRefresh,
         onLoadMore = inboxViewModel.onLoadMore,

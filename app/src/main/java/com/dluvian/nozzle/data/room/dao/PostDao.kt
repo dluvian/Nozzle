@@ -18,132 +18,338 @@ import com.dluvian.nozzle.model.MentionedPost
 import com.dluvian.nozzle.model.NoteId
 import com.dluvian.nozzle.model.nostr.Event
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flowOf
 
 @Dao
 interface PostDao {
 
-    /**
-     * Sorted from newest to oldest
-     */
-    @Query(
-        "SELECT * " +
-                "FROM post " +
-                "WHERE ((:isReplies AND replyToId IS NOT NULL) OR (:isPosts AND replyToId IS NULL)) " +
-                "AND pubkey IN (:authorPubkeys) " +
-                "AND id IN (SELECT DISTINCT eventId FROM eventRelay WHERE relayUrl IN (:relays)) " +
-                "AND createdAt < :until " +
-                "AND (:hashtag IS NULL OR id IN (SELECT eventId FROM hashtag WHERE hashtag = :hashtag)) " +
-                "ORDER BY createdAt DESC " +
-                "LIMIT :limit"
-    )
-    suspend fun getAuthoredFeedBasePostsByRelays(
+    suspend fun getMainFeedBasePosts(
         isPosts: Boolean,
         isReplies: Boolean,
         hashtag: String?,
-        authorPubkeys: Collection<String>,
-        relays: Collection<String>,
+        authorPubkeys: Collection<String>?,
+        relays: Collection<String>?,
         until: Long,
         limit: Int,
-    ): List<PostEntity>
-
-    /**
-     * Sorted from newest to oldest
-     */
-    @Query(
-        "SELECT * " +
-                "FROM post " +
-                "WHERE ((:isReplies AND replyToId IS NOT NULL) OR (:isPosts AND replyToId IS NULL)) " +
-                "AND pubkey IN (:authorPubkeys) " +
-                "AND createdAt < :until " +
-                "AND (:hashtag IS NULL OR id IN (SELECT eventId FROM hashtag WHERE hashtag = :hashtag)) " +
-                "ORDER BY createdAt DESC " +
-                "LIMIT :limit"
-    )
-    suspend fun getAuthoredFeedBasePosts(
-        isPosts: Boolean,
-        isReplies: Boolean,
-        hashtag: String?,
-        authorPubkeys: Collection<String>,
-        until: Long,
-        limit: Int,
-    ): List<PostEntity>
-
-    /**
-     * Sorted from newest to oldest
-     */
-    @Query(
-        "SELECT * " +
-                "FROM post " +
-                "WHERE ((:isReplies AND replyToId IS NOT NULL) OR (:isPosts AND replyToId IS NULL)) " +
-                "AND id IN (SELECT DISTINCT eventId FROM eventRelay WHERE relayUrl IN (:relays)) " +
-                "AND createdAt < :until " +
-                "AND (:hashtag IS NULL OR id IN (SELECT eventId FROM hashtag WHERE hashtag = :hashtag)) " +
-                "AND (:isOnlyMention = 0 OR (id IN (SELECT eventId FROM mention WHERE pubkey = (SELECT pubkey FROM account WHERE isActive = 1)) " +
-                "  AND pubkey != (SELECT pubkey FROM account WHERE isActive = 1)" +
-                ")) " +
-                "ORDER BY createdAt DESC " +
-                "LIMIT :limit"
-    )
-    suspend fun getGlobalFeedBasePostsByRelays(
-        isPosts: Boolean,
-        isReplies: Boolean,
-        hashtag: String?,
-        relays: Collection<String>,
-        until: Long,
-        limit: Int,
-        isOnlyMention: Boolean = false,
-    ): List<PostEntity>
-
-    /**
-     * Sorted from newest to oldest
-     */
-    @Query(
-        "SELECT * " +
-                "FROM post " +
-                "WHERE ((:isReplies AND replyToId IS NOT NULL) OR (:isPosts AND replyToId IS NULL)) " +
-                "AND createdAt < :until " +
-                "AND (:hashtag IS NULL OR id IN (SELECT eventId FROM hashtag WHERE hashtag = :hashtag)) " +
-                "AND (:isOnlyLikedByMe = 0 OR (id IN (SELECT eventId FROM reaction WHERE pubkey = (SELECT pubkey FROM account WHERE isActive = 1)))) " +
-                "ORDER BY createdAt DESC " +
-                "LIMIT :limit"
-    )
-    suspend fun getGlobalFeedBasePosts(
-        isPosts: Boolean,
-        isReplies: Boolean,
-        hashtag: String?,
-        until: Long,
-        limit: Int,
-        isOnlyLikedByMe: Boolean = false,
-    ): List<PostEntity>
-
-
-    // TODO: Determine mentionedPubkey via db table
-    suspend fun getInboxBasePosts(
-        until: Long,
-        limit: Int,
-        relays: Collection<String>
     ): List<PostEntity> {
-        return getGlobalFeedBasePostsByRelays(
-            isPosts = true,
-            isReplies = true,
-            hashtag = null,
-            relays = relays,
-            until = until,
-            limit = limit,
-            isOnlyMention = true,
-        )
+        // TODO: Combine it into single query.
+        //  Currently not possible because the null check will make the query too long
+        return if (authorPubkeys == null && relays == null) {
+            internalGetGlobalFeedBasePosts(
+                isPosts = isPosts,
+                isReplies = isReplies,
+                hashtag = hashtag,
+                until = until,
+                limit = limit
+            )
+        } else if (!authorPubkeys.isNullOrEmpty() && relays == null) {
+            internalGetAuthoredGlobalFeedBasePosts(
+                isPosts = isPosts,
+                isReplies = isReplies,
+                hashtag = hashtag,
+                authorPubkeys = authorPubkeys,
+                until = until,
+                limit = limit
+            )
+        } else if (authorPubkeys == null && !relays.isNullOrEmpty()) {
+            internalGetRelayedGlobalFeedBasePosts(
+                isPosts = isPosts,
+                isReplies = isReplies,
+                hashtag = hashtag,
+                relays = relays,
+                until = until,
+                limit = limit
+            )
+        } else {
+            if (authorPubkeys!!.isEmpty() || relays!!.isEmpty()) emptyList()
+            else internalGetMainFeedBasePosts(
+                isPosts = isPosts,
+                isReplies = isReplies,
+                hashtag = hashtag,
+                authorPubkeys = authorPubkeys,
+                relays = relays,
+                until = until,
+                limit = limit
+            )
+        }
     }
 
-    suspend fun getLikedPosts(until: Long, limit: Int): List<PostEntity> {
-        return getGlobalFeedBasePosts(
-            isPosts = true,
-            isReplies = true,
-            hashtag = null,
-            until = until,
-            limit = limit,
-            isOnlyLikedByMe = true
-        )
+    @Query(
+        "SELECT * " +
+                "FROM post " +
+                "WHERE ((:isReplies AND replyToId IS NOT NULL) OR (:isPosts AND replyToId IS NULL)) " +
+                "AND createdAt < :until " +
+                "AND (:hashtag IS NULL OR id IN (SELECT eventId FROM hashtag WHERE hashtag = :hashtag)) " +
+                "AND pubkey IN (:authorPubkeys) " +
+                "AND id IN (SELECT DISTINCT eventId FROM eventRelay WHERE relayUrl IN (:relays)) " +
+                "ORDER BY createdAt DESC " +
+                "LIMIT :limit"
+    )
+    suspend fun internalGetMainFeedBasePosts(
+        isPosts: Boolean,
+        isReplies: Boolean,
+        hashtag: String?,
+        authorPubkeys: Collection<String>,
+        relays: Collection<String>,
+        until: Long,
+        limit: Int,
+    ): List<PostEntity>
+
+    @Query(
+        "SELECT * " +
+                "FROM post " +
+                "WHERE ((:isReplies AND replyToId IS NOT NULL) OR (:isPosts AND replyToId IS NULL)) " +
+                "AND createdAt < :until " +
+                "AND (:hashtag IS NULL OR id IN (SELECT eventId FROM hashtag WHERE hashtag = :hashtag)) " +
+                "ORDER BY createdAt DESC " +
+                "LIMIT :limit"
+    )
+    suspend fun internalGetGlobalFeedBasePosts(
+        isPosts: Boolean,
+        isReplies: Boolean,
+        hashtag: String?,
+        until: Long,
+        limit: Int,
+    ): List<PostEntity>
+
+    @Query(
+        "SELECT * " +
+                "FROM post " +
+                "WHERE ((:isReplies AND replyToId IS NOT NULL) OR (:isPosts AND replyToId IS NULL)) " +
+                "AND createdAt < :until " +
+                "AND (:hashtag IS NULL OR id IN (SELECT eventId FROM hashtag WHERE hashtag = :hashtag)) " +
+                "AND pubkey IN (:authorPubkeys) " +
+                "ORDER BY createdAt DESC " +
+                "LIMIT :limit"
+    )
+    suspend fun internalGetAuthoredGlobalFeedBasePosts(
+        isPosts: Boolean,
+        isReplies: Boolean,
+        hashtag: String?,
+        authorPubkeys: Collection<String>,
+        until: Long,
+        limit: Int,
+    ): List<PostEntity>
+
+    @Query(
+        "SELECT * " +
+                "FROM post " +
+                "WHERE ((:isReplies AND replyToId IS NOT NULL) OR (:isPosts AND replyToId IS NULL)) " +
+                "AND createdAt < :until " +
+                "AND (:hashtag IS NULL OR id IN (SELECT eventId FROM hashtag WHERE hashtag = :hashtag)) " +
+                "AND id IN (SELECT DISTINCT eventId FROM eventRelay WHERE relayUrl IN (:relays)) " +
+                "ORDER BY createdAt DESC " +
+                "LIMIT :limit"
+    )
+    suspend fun internalGetRelayedGlobalFeedBasePosts(
+        isPosts: Boolean,
+        isReplies: Boolean,
+        hashtag: String?,
+        relays: Collection<String>,
+        until: Long,
+        limit: Int,
+    ): List<PostEntity>
+
+
+    fun getNumOfNewMainFeedPostsFlow(
+        oldPostIds: List<String>,
+        isPosts: Boolean,
+        isReplies: Boolean,
+        hashtag: String?,
+        authorPubkeys: Collection<String>?,
+        relays: Collection<String>?,
+        limit: Int,
+    ): Flow<Int> {
+        return if (authorPubkeys == null && relays == null) {
+            internalGetNumOfNewGlobalFeedPostsFlow(
+                oldPostIds = oldPostIds,
+                isPosts = isPosts,
+                isReplies = isReplies,
+                hashtag = hashtag,
+                limit = limit,
+            )
+        } else if (!authorPubkeys.isNullOrEmpty() && relays == null) {
+            internalGetNumOfNewAuthoredGlobalFeedPostsFlow(
+                oldPostIds = oldPostIds,
+                isPosts = isPosts,
+                isReplies = isReplies,
+                hashtag = hashtag,
+                authorPubkeys = authorPubkeys,
+                limit = limit
+            )
+        } else if (authorPubkeys == null && !relays.isNullOrEmpty()) {
+            internalGetNumOfNewRelayedGlobalPostsFlow(
+                oldPostIds = oldPostIds,
+                isPosts = isPosts,
+                isReplies = isReplies,
+                hashtag = hashtag,
+                relays = relays,
+                limit = limit
+            )
+        } else {
+            if (authorPubkeys!!.isEmpty() || relays!!.isEmpty()) flowOf(0)
+            else internalGetNumOfNewMainFeedPostsFlow(
+                oldPostIds = oldPostIds,
+                isPosts = isPosts,
+                isReplies = isReplies,
+                hashtag = hashtag,
+                authorPubkeys = authorPubkeys,
+                relays = relays,
+                limit = limit
+            )
+        }
     }
+
+    @Query(
+        "SELECT COUNT(*) " +
+                "FROM (" +
+                "SELECT id " +
+                "FROM post " +
+                "WHERE ((:isReplies AND replyToId IS NOT NULL) OR (:isPosts AND replyToId IS NULL)) " +
+                "AND (:hashtag IS NULL OR id IN (SELECT eventId FROM hashtag WHERE hashtag = :hashtag)) " +
+                "AND pubkey IN (:authorPubkeys) " +
+                "AND id IN (SELECT DISTINCT eventId FROM eventRelay WHERE relayUrl IN (:relays)) " +
+                "ORDER BY createdAt DESC " +
+                "LIMIT :limit" +
+                ") " +
+                "WHERE id NOT IN (:oldPostIds)"
+    )
+    fun internalGetNumOfNewMainFeedPostsFlow(
+        oldPostIds: List<String>,
+        isPosts: Boolean,
+        isReplies: Boolean,
+        hashtag: String?,
+        authorPubkeys: Collection<String>,
+        relays: Collection<String>,
+        limit: Int,
+    ): Flow<Int>
+
+    @Query(
+        "SELECT COUNT(*) " +
+                "FROM (SELECT id " +
+                "FROM post " +
+                "WHERE ((:isReplies AND replyToId IS NOT NULL) OR (:isPosts AND replyToId IS NULL)) " +
+                "AND (:hashtag IS NULL OR id IN (SELECT eventId FROM hashtag WHERE hashtag = :hashtag)) " +
+                "ORDER BY createdAt DESC " +
+                "LIMIT :limit" +
+                ") " +
+                "WHERE id NOT IN (:oldPostIds)"
+    )
+    fun internalGetNumOfNewGlobalFeedPostsFlow(
+        oldPostIds: List<String>,
+        isPosts: Boolean,
+        isReplies: Boolean,
+        hashtag: String?,
+        limit: Int
+    ): Flow<Int>
+
+    @Query(
+        "SELECT COUNT(*) " +
+                "FROM (SELECT id " +
+                "FROM post " +
+                "WHERE ((:isReplies AND replyToId IS NOT NULL) OR (:isPosts AND replyToId IS NULL)) " +
+                "AND (:hashtag IS NULL OR id IN (SELECT eventId FROM hashtag WHERE hashtag = :hashtag)) " +
+                "AND pubkey IN (:authorPubkeys) " +
+                "ORDER BY createdAt DESC " +
+                "LIMIT :limit" +
+                ") " +
+                "WHERE id NOT IN (:oldPostIds)"
+    )
+    fun internalGetNumOfNewAuthoredGlobalFeedPostsFlow(
+        oldPostIds: List<String>,
+        isPosts: Boolean,
+        isReplies: Boolean,
+        hashtag: String?,
+        authorPubkeys: Collection<String>,
+        limit: Int
+    ): Flow<Int>
+
+    @Query(
+        "SELECT COUNT(*) " +
+                "FROM (SELECT id " +
+                "FROM post " +
+                "WHERE ((:isReplies AND replyToId IS NOT NULL) OR (:isPosts AND replyToId IS NULL)) " +
+                "AND (:hashtag IS NULL OR id IN (SELECT eventId FROM hashtag WHERE hashtag = :hashtag)) " +
+                "AND id IN (SELECT DISTINCT eventId FROM eventRelay WHERE relayUrl IN (:relays)) " +
+                "ORDER BY createdAt DESC " +
+                "LIMIT :limit" +
+                ") " +
+                "WHERE id NOT IN (:oldPostIds)"
+    )
+    fun internalGetNumOfNewRelayedGlobalPostsFlow(
+        oldPostIds: List<String>,
+        isPosts: Boolean,
+        isReplies: Boolean,
+        hashtag: String?,
+        relays: Collection<String>,
+        limit: Int,
+    ): Flow<Int>
+
+    @Query(
+        "SELECT * " +
+                "FROM post " +
+                "WHERE createdAt < :until " +
+                "AND (id IN (SELECT eventId FROM mention WHERE pubkey = (SELECT pubkey FROM account WHERE isActive = 1)) " +
+                "  AND pubkey != (SELECT pubkey FROM account WHERE isActive = 1)" +
+                ") " +
+                "AND id IN (SELECT DISTINCT eventId FROM eventRelay WHERE relayUrl IN (:relays)) " +
+                "ORDER BY createdAt DESC " +
+                "LIMIT :limit"
+    )
+    suspend fun getInboxPosts(
+        relays: Collection<String>,
+        until: Long,
+        limit: Int,
+    ): List<PostEntity>
+
+    @Query(
+        "SELECT COUNT(*) " +
+                "FROM (" +
+                "SELECT id " +
+                "FROM post " +
+                "WHERE id IN (SELECT DISTINCT eventId FROM eventRelay WHERE relayUrl IN (:relays)) " +
+                "AND (id IN (SELECT eventId FROM mention WHERE pubkey = (SELECT pubkey FROM account WHERE isActive = 1)) " +
+                "  AND pubkey != (SELECT pubkey FROM account WHERE isActive = 1)" +
+                ") " +
+                "ORDER BY createdAt DESC " +
+                "LIMIT :limit" +
+                ") " +
+                "WHERE id NOT IN (:oldPostIds)"
+    )
+    fun getNumOfNewInboxPostsFlow(
+        oldPostIds: List<String>,
+        relays: Collection<String>,
+        limit: Int
+    ): Flow<Int>
+
+    @Query(
+        "SELECT * " +
+                "FROM post " +
+                "WHERE createdAt < :until " +
+                "AND id IN (SELECT eventId FROM reaction WHERE pubkey = (SELECT pubkey FROM account WHERE isActive = 1)) " +
+                "ORDER BY createdAt DESC " +
+                "LIMIT :limit"
+    )
+    suspend fun getLikedPosts(
+        until: Long,
+        limit: Int,
+    ): List<PostEntity>
+
+    @Query(
+        "SELECT COUNT(*) " +
+                "FROM (" +
+                "SELECT id " +
+                "FROM post " +
+                "WHERE id IN (SELECT eventId FROM reaction WHERE pubkey = (SELECT pubkey FROM account WHERE isActive = 1)) " +
+                "ORDER BY createdAt DESC " +
+                "LIMIT :limit" +
+                ") " +
+                "WHERE id NOT IN (:oldPostIds)"
+    )
+    fun getNumOfNewLikedPostsFlow(
+        oldPostIds: List<String>,
+        limit: Int
+    ): Flow<Int>
 
     @Query(
         // SELECT PostEntity

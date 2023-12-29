@@ -9,6 +9,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.zIndex
+import com.dluvian.nozzle.data.PULL_REFRESH_Z_INDEX
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
@@ -22,7 +23,7 @@ fun PullRefreshBox(isRefreshing: Boolean, onRefresh: () -> Unit, content: @Compo
             state = pullRefreshState,
             modifier = Modifier
                 .align(Alignment.TopCenter)
-                .zIndex(2f),
+                .zIndex(PULL_REFRESH_Z_INDEX),
         )
         content()
     }

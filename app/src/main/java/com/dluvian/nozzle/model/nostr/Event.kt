@@ -288,7 +288,7 @@ class Event(
 
     fun getHashtags() = tags
         .filter { it[0] == "t" }
-        .mapNotNull { it.getOrNull(1)?.trim() }
+        .mapNotNull { it.getOrNull(1)?.trim()?.lowercase() }
         .filter { it.isNotEmpty() }
         .distinct()
 

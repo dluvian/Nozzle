@@ -99,13 +99,13 @@ fun NozzleApp(appContainer: AppContainer) {
                 ),
                 inboxViewModel = viewModel(
                     factory = InboxViewModel.provideFactory(
-                        inboxFeedProvider = appContainer.inboxFeedProvider,
+                        inboxFeedProvider = appContainer.feedProvider,
                         relayProvider = appContainer.relayProvider,
                     )
                 ),
                 likesViewModel = viewModel(
                     factory = LikesViewModel.provideFactory(
-                        likeFeedProvider = appContainer.likeFeedProvider
+                        likeFeedProvider = appContainer.feedProvider
                     )
                 ),
                 threadViewModel = viewModel(

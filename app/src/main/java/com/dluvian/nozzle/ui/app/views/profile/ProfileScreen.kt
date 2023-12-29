@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.Divider
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
@@ -26,8 +27,10 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.style.TextOverflow
 import com.dluvian.nozzle.R
+import com.dluvian.nozzle.data.DB_BATCH_SIZE
 import com.dluvian.nozzle.data.nostr.utils.ShortenedNameUtils.getShortenedNpubFromPubkey
 import com.dluvian.nozzle.data.utils.copyAndToast
+import com.dluvian.nozzle.data.utils.isScrollingUp
 import com.dluvian.nozzle.model.PostWithMeta
 import com.dluvian.nozzle.model.ProfileWithMeta
 import com.dluvian.nozzle.model.Pubkey
@@ -37,6 +40,7 @@ import com.dluvian.nozzle.ui.components.CopyIcon
 import com.dluvian.nozzle.ui.components.EditProfileButton
 import com.dluvian.nozzle.ui.components.FollowButton
 import com.dluvian.nozzle.ui.components.LightningIcon
+import com.dluvian.nozzle.ui.components.ShowNewPostsButton
 import com.dluvian.nozzle.ui.components.dialog.RelaysDialog
 import com.dluvian.nozzle.ui.components.hint.NoPostsHint
 import com.dluvian.nozzle.ui.components.media.ProfilePicture
@@ -53,6 +57,7 @@ fun ProfileScreen(
     profile: ProfileWithMeta,
     isFollowedByMe: Boolean,
     feed: List<PostWithMeta>,
+    numOfNewPosts: Int,
     postCardLambdas: PostCardLambdas,
     onPrepareReply: (PostWithMeta) -> Unit,
     onOpenFollowerList: (String) -> Unit,
@@ -61,6 +66,14 @@ fun ProfileScreen(
     onLoadMore: () -> Unit,
     onNavigateToEditProfile: () -> Unit,
 ) {
+    val lazyListState = rememberLazyListState()
+    ShowNewPostsButton(
+        isVisible = !isRefreshing && numOfNewPosts > 0
+                && (feed.size < DB_BATCH_SIZE || lazyListState.isScrollingUp()),
+        numOfNewPosts = numOfNewPosts,
+        lazyListState = lazyListState,
+        onRefresh = onRefresh
+    )
     Column {
         ProfileData(
             profile = profile,
@@ -89,6 +102,7 @@ fun ProfileScreen(
             onRefresh = onRefresh,
             onPrepareReply = onPrepareReply,
             onLoadMore = onLoadMore,
+            lazyListState = lazyListState
         )
     }
     if (feed.isEmpty()) NoPostsHint()

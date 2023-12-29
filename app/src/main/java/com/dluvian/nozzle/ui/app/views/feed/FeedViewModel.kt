@@ -62,16 +62,19 @@ class FeedViewModel(
     )
 
     val feed = paginator.getList()
+    val numOfNewPosts = paginator.getNumOfNewItems()
 
     private val lastAutopilotResult: MutableMap<String, Set<String>> =
         Collections.synchronizedMap(mutableMapOf<String, Set<String>>())
 
+    private var isInit = true
     val pubkeyState = pubkeyProvider.getActivePubkeyStateFlow()
         .onEach local@{
             if (it.isEmpty()) return@local
             useCachedFeedSettings()
             updateRelaySelection()
-            paginator.reset()
+            paginator.refresh(waitForSubscription = isInit, useInitialValue = false)
+            isInit = false
         }
         .stateIn(viewModelScope, SharingStarted.Eagerly, "")
 
@@ -79,14 +82,7 @@ class FeedViewModel(
         useCachedFeedSettings()
     }
 
-    val onRefresh: () -> Unit = {
-        // Paginator can't set isRefreshing in time
-        _uiState.update { it.copy(isRefreshing = true) }
-        viewModelScope.launch(Dispatchers.IO) {
-            updateRelaySelection()
-            paginator.refresh()
-        }
-    }
+    val onRefresh: () -> Unit = { refresh(useInitialValue = true) }
 
     val onLoadMore: () -> Unit = { paginator.loadMore() }
 
@@ -98,7 +94,7 @@ class FeedViewModel(
 
     val onRefreshOnMenuDismiss: () -> Unit = {
         if (toggledContacts || toggledPosts || toggledReplies || toggledAutopilot || toggledRelay) {
-            onRefresh()
+            refresh(useInitialValue = false)
             if (toggledContacts || toggledPosts || toggledReplies) {
                 feedSettingsPreferences.setFeedSettings(_uiState.value.feedSettings)
             }
@@ -171,6 +167,15 @@ class FeedViewModel(
                     it.copy(feedSettings = it.feedSettings.copy(relaySelection = newValue))
                 }
             }
+        }
+    }
+
+    private fun refresh(useInitialValue: Boolean) {
+        // Paginator can't set isRefreshing in time
+        _uiState.update { it.copy(isRefreshing = true) }
+        viewModelScope.launch(Dispatchers.IO) {
+            updateRelaySelection()
+            paginator.refresh(waitForSubscription = true, useInitialValue = useInitialValue)
         }
     }
 

@@ -20,8 +20,13 @@ fun ProfileRoute(
 ) {
     val isRefreshing by profileViewModel.isRefreshing.collectAsState()
     val profile by profileViewModel.profileState.collectAsState()
+
     val feedFlow by profileViewModel.feed.collectAsState()
     val feed by feedFlow.collectAsState()
+
+    val numOfNewPostsFlow by profileViewModel.numOfNewPosts.collectAsState()
+    val numOfNewPosts by numOfNewPostsFlow.collectAsState()
+
     val contactList by profileViewModel.contactList.collectAsState()
     val forceFollowed by profileFollower.getForceFollowedState()
     val adjustedFeed = remember(forceFollowed, feed) {
@@ -33,6 +38,7 @@ fun ProfileRoute(
         profile = profile,
         isFollowedByMe = forceFollowed[profile.pubkey] ?: contactList.contains(profile.pubkey),
         feed = adjustedFeed,
+        numOfNewPosts = numOfNewPosts,
         postCardLambdas = postCardLambdas,
         onPrepareReply = onPrepareReply,
         onOpenFollowerList = onOpenFollowerList,
