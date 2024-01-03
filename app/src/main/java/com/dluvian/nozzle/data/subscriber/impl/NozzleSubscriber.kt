@@ -62,6 +62,7 @@ class NozzleSubscriber(
         Log.i(TAG, "Subscribe unknown contacts")
         val pubkeys = database.contactDao().listContactPubkeysWithMissingProfile()
         submitFullProfiles(pubkeys = pubkeys)
+        subQueue.processNow()
     }
 
     override suspend fun subscribeUnknowns(notes: Collection<PostWithMeta>) {
@@ -104,6 +105,7 @@ class NozzleSubscriber(
                 val relays = getMaxRelaysAndAddIfTooSmall(from = writeRelays, prefer = myReadRelays)
                 subQueue.submitProfile(pubkey = pubkey, relays = relays)
             }
+        subQueue.processNow()
     }
 
     override fun subscribeToFeed(
@@ -515,12 +517,13 @@ class NozzleSubscriber(
     // **********************************************************
     private suspend fun submitFullProfiles(pubkeys: Collection<Pubkey>) {
         if (pubkeys.isEmpty()) return
-        val myReadRelays = getMaxRelays(from = relayProvider.getReadRelays())
-        val relays = relayProvider.getWriteRelaysByPubkeys(pubkeys = pubkeys)
-        relays.forEach { (pubkey, relays) ->
+        val myReadRelays = relayProvider.getReadRelays()
+        val writeRelays = relayProvider.getWriteRelaysByPubkeys(pubkeys = pubkeys)
+        writeRelays.forEach { (pubkey, relays) ->
             subQueue.submitFullProfile(
                 pubkey = pubkey,
-                relays = relays.ifEmpty { myReadRelays })
+                relays = getMaxRelaysAndAddIfTooSmall(from = relays, prefer = myReadRelays)
+            )
         }
     }
 
@@ -530,15 +533,19 @@ class NozzleSubscriber(
         val unknownAuthors = notes
             .filter { it.hasUnknownAuthor }
             .map { it.pubkey }
-        val unknownReplyParents = notes
-            .filter { it.replyToName == null }
-            .mapNotNull { it.replyToPubkey } // TODO: Reply hint???
+        val unknownReplyParentAuthors = notes
+            .filter { it.replyToName == null && it.entity.replyRelayHint == null }
+            .mapNotNull { it.replyToPubkey }
         val unknownAuthorsOfMentionedPost = notes
             .flatMap { it.annotatedMentionedPosts }
             .filter { it.mentionedPost.name == null }
             .mapNotNull { it.mentionedPost.pubkey }
 
-        val allPubkeys = listOf(unknownAuthors, unknownReplyParents, unknownAuthorsOfMentionedPost)
+        val allPubkeys = listOf(
+            unknownAuthors,
+            unknownReplyParentAuthors,
+            unknownAuthorsOfMentionedPost
+        )
             .flatten()
             .toSet()
         submitFullProfiles(pubkeys = allPubkeys)
@@ -548,6 +555,22 @@ class NozzleSubscriber(
             .filter { it.mentionedPost.content == null }
             .map { it.mentionedPost.id }
         unknownMentionedNoteIds.forEach { subQueue.submitNoteId(noteId = it, relays = null) }
+
+        val myReadRelays = relayProvider.getReadRelays()
+        val unknownParentNotes = notes.filter {
+            it.entity.replyToId != null && it.replyToPubkey == null
+        }
+        unknownParentNotes.forEach {
+            val relays = if (it.entity.replyRelayHint.isNullOrEmpty()) {
+                null
+            } else {
+                getMaxRelaysAndAddIfTooSmall(
+                    from = listOf(it.entity.replyRelayHint),
+                    prefer = myReadRelays
+                )
+            }
+            subQueue.submitNoteId(noteId = it.entity.replyToId!!, relays = relays)
+        }
     }
 
     private suspend fun submitComplexUnknowns(notes: Collection<PostWithMeta>) {
