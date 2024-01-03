@@ -5,10 +5,27 @@ import com.dluvian.nozzle.model.Pubkey
 import com.dluvian.nozzle.model.Relay
 
 interface ISubscriptionQueue {
-    fun submitNoteId(noteId: NoteId, relays: Collection<Relay>?)
-    fun submitProfile(pubkey: Pubkey, relays: Collection<Relay>?)
-    fun submitNip65(pubkey: Pubkey, relays: Collection<Relay>?)
-    fun submitContactList(pubkey: Pubkey, relays: Collection<Relay>?)
+    fun submitNoteId(noteId: NoteId, relays: Collection<Relay>?) {
+        submitNoteIds(noteIds = listOf(noteId), relays = relays)
+    }
+
+    fun submitNoteIds(noteIds: Collection<NoteId>, relays: Collection<Relay>?)
+    fun submitReplies(parentIds: Collection<NoteId>, relays: Collection<Relay>?)
+    fun submitProfile(pubkey: Pubkey, relays: Collection<Relay>?) {
+        submitProfiles(pubkeys = listOf(pubkey), relays = relays)
+    }
+
+    fun submitProfiles(pubkeys: Collection<Pubkey>, relays: Collection<Relay>?)
+    fun submitNip65(pubkey: Pubkey, relays: Collection<Relay>?) {
+        submitNip65s(pubkeys = listOf(pubkey), relays = relays)
+    }
+
+    fun submitNip65s(pubkeys: Collection<Pubkey>, relays: Collection<Relay>?)
+    fun submitContactList(pubkey: Pubkey, relays: Collection<Relay>?) {
+        submitContactLists(pubkeys = listOf(pubkey), relays = relays)
+    }
+
+    fun submitContactLists(pubkeys: Collection<Pubkey>, relays: Collection<Relay>?)
     fun submitNotes(
         until: Long,
         limit: Int,
@@ -57,6 +74,8 @@ interface ISubscriptionQueue {
     }
 
     fun submitLikes(limit: Int, until: Long, author: Pubkey, relays: Collection<Relay>)
+    fun submitLikes(noteIds: Collection<NoteId>, relays: Collection<Relay>)
+
     fun submitFullProfile(pubkey: Pubkey, relays: Collection<Relay>?) {
         submitNip65(pubkey = pubkey, relays = null)
         submitProfile(pubkey = pubkey, relays = relays)

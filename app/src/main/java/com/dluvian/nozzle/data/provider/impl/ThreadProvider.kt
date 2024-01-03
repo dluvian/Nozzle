@@ -67,7 +67,7 @@ class ThreadProvider(
             }
 
             nozzleSubscriber.subscribeParentPost(
-                postId = replyToId,
+                noteId = replyToId,
                 relayHint = oldestPost.replyRelayHint
             )
             delay(delay)
@@ -96,7 +96,7 @@ class ThreadProvider(
             val previousPost = postDao.getPost(id = currentReplyToId)
             if (previousPost == null) {
                 nozzleSubscriber.subscribeParentPost(
-                    postId = currentReplyToId,
+                    noteId = currentReplyToId,
                     relayHint = currentPost.replyRelayHint
                 )
                 break

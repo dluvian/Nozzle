@@ -8,6 +8,7 @@ const val DB_BATCH_SIZE = 30
 
 const val SCOPE_TIMEOUT = 7_000L
 const val WAIT_TIME = 1800L
+const val SHORT_WAIT_TIME = WAIT_TIME / 2
 
 const val MAX_RELAYS = 7
 

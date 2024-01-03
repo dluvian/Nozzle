@@ -104,6 +104,7 @@ class AppContainer(context: Context) {
         eventProcessor = eventProcessor
     )
 
+    // TODO: Use or delete this
     private val nostrSubscriber: INostrSubscriber = NostrSubscriber(nostrService = nostrService)
 
     val relayProvider: IRelayProvider = RelayProvider(
@@ -119,7 +120,6 @@ class AppContainer(context: Context) {
     )
 
     val nozzleSubscriber: INozzleSubscriber = NozzleSubscriber(
-        nostrSubscriber = nostrSubscriber,
         subQueue = subscriptionQueue,
         relayProvider = relayProvider,
         pubkeyProvider = keyManager,

@@ -7,20 +7,28 @@ import com.dluvian.nozzle.model.Pubkey
 import com.dluvian.nozzle.model.Relay
 
 class SubscriptionQueue : ISubscriptionQueue {
-    override fun submitNoteId(noteId: NoteId, relays: Collection<Relay>?) {
+    override fun submitNoteIds(noteIds: Collection<NoteId>, relays: Collection<Relay>?) {
         Log.i("LOLOL", "LOL")
     }
 
-    override fun submitProfile(pubkey: Pubkey, relays: Collection<Relay>?) {
+    override fun submitReplies(parentIds: Collection<NoteId>, relays: Collection<Relay>?) {
+        TODO("Not yet implemented")
+    }
+
+    override fun submitProfiles(pubkeys: Collection<Pubkey>, relays: Collection<Relay>?) {
         Log.i("LOLOL", "LOL")
     }
 
-    override fun submitNip65(pubkey: Pubkey, relays: Collection<Relay>?) {
+    override fun submitNip65s(pubkeys: Collection<Pubkey>, relays: Collection<Relay>?) {
         Log.i("LOLOL", "LOL")
     }
 
     override fun submitContactList(pubkey: Pubkey, relays: Collection<Relay>?) {
         Log.i("LOLOL", "LOL")
+    }
+
+    override fun submitContactLists(pubkeys: Collection<Pubkey>, relays: Collection<Relay>?) {
+        TODO("Not yet implemented")
     }
 
     override fun submitNotes(
@@ -36,6 +44,10 @@ class SubscriptionQueue : ISubscriptionQueue {
 
     override fun submitLikes(limit: Int, until: Long, author: Pubkey, relays: Collection<Relay>) {
         Log.i("LOLOL", "LOL")
+    }
+
+    override fun submitLikes(noteIds: Collection<NoteId>, relays: Collection<Relay>) {
+        TODO("Not yet implemented")
     }
 
     override fun processNow() {

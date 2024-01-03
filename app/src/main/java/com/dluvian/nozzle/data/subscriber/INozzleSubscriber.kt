@@ -3,6 +3,7 @@ package com.dluvian.nozzle.data.subscriber
 import com.dluvian.nozzle.data.room.entity.PostEntity
 import com.dluvian.nozzle.data.utils.getCurrentTimeInSeconds
 import com.dluvian.nozzle.model.FeedInfo
+import com.dluvian.nozzle.model.NoteId
 import com.dluvian.nozzle.model.PostWithMeta
 import com.dluvian.nozzle.model.Pubkey
 import com.dluvian.nozzle.model.Relay
@@ -44,16 +45,16 @@ interface INozzleSubscriber {
     // TODO: NostrId instead of String. Prevents parsing nostrStr multiple times
     suspend fun subscribeFullProfile(profileId: String)
 
-    suspend fun subscribeSimpleProfiles(pubkeys: Collection<String>)
+    suspend fun subscribeSimpleProfiles(pubkeys: Collection<Pubkey>)
 
     suspend fun subscribeFeedInfo(posts: List<PostEntity>): FeedInfo
 
     // TODO: NostrId instead of String. Prevents parsing nostrStr multiple times
     suspend fun subscribeThreadPost(postId: String)
 
-    suspend fun subscribeParentPost(postId: String, relayHint: String?)
+    suspend fun subscribeParentPost(noteId: NoteId, relayHint: Relay?)
 
-    suspend fun subscribeNip65(pubkeys: Set<String>)
+    suspend fun subscribeNip65(pubkeys: Set<Pubkey>)
 
-    fun subscribeToPosts(postIds: Collection<String>)
+    fun subscribeToNotes(noteIds: Collection<NoteId>)
 }

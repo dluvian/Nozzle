@@ -128,7 +128,7 @@ class FeedProvider(
         delay(waitForSubscription)
 
         val postIdsToSub = reactionDao.getMissingEventIds()
-        nozzleSubscriber.subscribeToPosts(postIds = postIdsToSub)
+        nozzleSubscriber.subscribeToNotes(noteIds = postIdsToSub)
 
         delay(waitForSubscription)
 
