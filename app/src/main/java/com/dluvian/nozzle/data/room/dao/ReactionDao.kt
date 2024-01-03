@@ -6,6 +6,7 @@ import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import com.dluvian.nozzle.data.room.entity.ReactionEntity
 import com.dluvian.nozzle.model.EventId
+import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface ReactionDao {
@@ -27,6 +28,14 @@ interface ReactionDao {
                 "AND eventId NOT IN (SELECT id FROM post)"
     )
     suspend fun getMissingEventIds(): List<String>
+
+    @Query(
+        "SELECT COUNT(*) " +
+                "FROM reaction " +
+                "WHERE pubkey = (SELECT pubkey FROM account WHERE isActive = 1) " +
+                "AND eventId IN (SELECT id FROM post)"
+    )
+    fun getLikeCountFlow(): Flow<Int>
 
     @Query("DELETE FROM reaction WHERE pubkey NOT IN (SELECT pubkey FROM account)")
     suspend fun deleteOrphaned(): Int

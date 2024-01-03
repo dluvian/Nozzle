@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import com.dluvian.nozzle.R
@@ -20,6 +21,7 @@ import com.dluvian.nozzle.ui.components.postCard.PostCardList
 fun LikesScreen(
     feed: List<PostWithMeta>,
     numOfNewPosts: Int,
+    likeCount: Int,
     isRefreshing: Boolean,
     postCardLambdas: PostCardLambdas,
     onRefresh: () -> Unit,
@@ -36,8 +38,13 @@ fun LikesScreen(
         onRefresh = onRefresh
     )
     Column {
+        val baseTitle = stringResource(id = R.string.likes)
+        val fullTitle = remember(likeCount) {
+            val countStr = if (likeCount > 0) " ($likeCount)" else ""
+            "$baseTitle$countStr"
+        }
         ReturnableTopBar(
-            text = stringResource(id = R.string.likes),
+            text = fullTitle,
             onGoBack = onGoBack
         )
         Column(modifier = Modifier.fillMaxSize()) {

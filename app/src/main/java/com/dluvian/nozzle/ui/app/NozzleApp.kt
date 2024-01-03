@@ -106,7 +106,8 @@ fun NozzleApp(appContainer: AppContainer) {
                 ),
                 likesViewModel = viewModel(
                     factory = LikesViewModel.provideFactory(
-                        likeFeedProvider = appContainer.feedProvider
+                        likeFeedProvider = appContainer.feedProvider,
+                        reactionDao = appContainer.roomDb.reactionDao()
                     )
                 ),
                 threadViewModel = viewModel(
