@@ -7,11 +7,11 @@ const val TRUST_SCORE_BOOST = 1.1f
 const val DB_BATCH_SIZE = 30
 
 const val SCOPE_TIMEOUT = 7_000L
-const val WAIT_TIME = 1300L
+const val WAIT_TIME = 1800L
 
 const val MAX_RELAYS = 7
 
-const val SWEEP_THRESHOLD = 1000
+const val SWEEP_THRESHOLD = 500
 
 // Should be smaller than WAIT_TIME
 const val EVENT_PROCESSING_DELAY = 500L
