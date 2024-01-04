@@ -25,36 +25,43 @@ class NostrService(
     private val client = Client(httpClient = httpClient)
     private val unsubOnEOSECache = Collections.synchronizedSet(mutableSetOf<String>())
     private val listener = object : NostrListener {
-        override fun onOpen(msg: String) {
-            Log.i(TAG, "OnOpen: $msg")
+        override fun onOpen(relay: String, msg: String) {
+            Log.i(TAG, "OnOpen($relay): $msg")
         }
 
         override fun onEvent(subscriptionId: String, event: Event, relayUrl: String?) {
             eventProcessor.submit(event = event, relayUrl = relayUrl)
         }
 
-        override fun onError(msg: String, throwable: Throwable?) {
-            Log.w(TAG, "OnError: $msg", throwable)
+        override fun onError(relay: String, msg: String, throwable: Throwable?) {
+            // TODO: Fix "bad req: uneven size input to from_hex"
+            // TODO: Fix "invalid: "prefixOrAuthor" must only contain hexadecimal characters"
+            Log.w(TAG, "OnError($relay): $msg", throwable)
         }
 
-        override fun onEOSE(subscriptionId: String) {
-            Log.d(TAG, "OnEOSE: $subscriptionId")
+        override fun onEOSE(relay: String, subscriptionId: String) {
+            Log.d(TAG, "OnEOSE($relay): $subscriptionId")
             if (unsubOnEOSECache.remove(subscriptionId)) {
-                Log.d(TAG, "Unsubscribe onEOSE $subscriptionId")
+                Log.d(TAG, "Unsubscribe onEOSE($relay) $subscriptionId")
                 client.unsubscribe(subscriptionId)
             }
         }
 
-        override fun onClose(reason: String) {
-            Log.i(TAG, "OnClose: $reason")
+        override fun onClosed(relay: String, subscriptionId: SubId, reason: String) {
+            Log.d(TAG, "OnClosed($relay): $subscriptionId, reason: $reason")
+            unsubOnEOSECache.remove(subscriptionId)
         }
 
-        override fun onFailure(msg: String?, throwable: Throwable?) {
-            Log.w(TAG, "OnFailure: $msg", throwable)
+        override fun onClose(relay: String, reason: String) {
+            Log.i(TAG, "OnClose($relay): $reason")
         }
 
-        override fun onOk(id: String) {
-            Log.d(TAG, "OnOk: $id")
+        override fun onFailure(relay: String, msg: String?, throwable: Throwable?) {
+            Log.w(TAG, "OnFailure($relay): $msg", throwable)
+        }
+
+        override fun onOk(relay: String, id: String) {
+            Log.d(TAG, "OnOk($relay): $id")
         }
     }
 

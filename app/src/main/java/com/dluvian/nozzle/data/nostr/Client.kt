@@ -26,10 +26,11 @@ class Client(private val httpClient: OkHttpClient) {
     private var nostrListener: NostrListener? = null
     private val baseListener = object : WebSocketListener() {
         override fun onOpen(webSocket: WebSocket, response: Response) {
-            nostrListener?.onOpen(response.message)
+            nostrListener?.onOpen(relay = getRelayUrl(webSocket).orEmpty(), msg = response.message)
         }
 
         override fun onMessage(webSocket: WebSocket, text: String) {
+            val relay = getRelayUrl(webSocket).orEmpty()
             try {
                 val msg = JsonUtils.gson.fromJson(text, JsonElement::class.java).asJsonArray
                 val type = msg[0].asString
@@ -40,31 +41,58 @@ class Client(private val httpClient: OkHttpClient) {
                                 nostrListener?.onEvent(
                                     subscriptionId = msg[1].asString,
                                     event = event,
-                                    relayUrl = getRelayUrl(webSocket)
+                                    relayUrl = relay
                                 )
                             }
                     }
 
-                    "OK" -> nostrListener?.onOk(id = msg[1].asString.orEmpty())
-                    "NOTICE" -> nostrListener?.onError(msg = msg[1].asString)
-                    "EOSE" -> nostrListener?.onEOSE(subscriptionId = msg[1].asString)
-                    else -> nostrListener?.onError(msg = "Unknown type $type. Msg was $text")
+                    // TODO: Check nip01, Definition changed
+                    "OK" -> nostrListener?.onOk(
+                        relay = relay,
+                        id = msg[1].asString.orEmpty()
+                    )
+
+                    "NOTICE" -> nostrListener?.onError(
+                        relay = relay,
+                        msg = "onNotice: ${msg[1].asString}"
+                    )
+
+                    "EOSE" -> nostrListener?.onEOSE(
+                        relay = relay,
+                        subscriptionId = msg[1].asString
+                    )
+
+                    "CLOSED" -> nostrListener?.onClosed(
+                        relay = relay,
+                        subscriptionId = msg[1].asString,
+                        reason = msg[2].asString
+                    )
+
+                    else -> nostrListener?.onError(
+                        relay = relay,
+                        msg = "Unknown type $type. Msg was $text"
+                    )
 
                 }
             } catch (t: Throwable) {
-                nostrListener?.onError("Problem with $text", t)
-                nostrListener?.onError("Queue size ${webSocket.queueSize()}", t)
+                nostrListener?.onError(
+                    relay = relay,
+                    msg = "Problem with $text, Queue size ${webSocket.queueSize()}",
+                    throwable = t
+                )
             }
         }
 
         override fun onClosing(webSocket: WebSocket, code: Int, reason: String) {
+            val url = getRelayUrl(webSocket).orEmpty()
             removeSocket(socket = webSocket)
-            nostrListener?.onClose(reason)
+            nostrListener?.onClose(relay = url, reason = reason)
         }
 
         override fun onFailure(webSocket: WebSocket, t: Throwable, response: Response?) {
+            val url = getRelayUrl(webSocket).orEmpty()
             removeSocket(socket = webSocket)
-            nostrListener?.onFailure(response?.message, t)
+            nostrListener?.onFailure(relay = url, msg = response?.message, throwable = t)
         }
     }
 

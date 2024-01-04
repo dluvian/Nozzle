@@ -118,7 +118,6 @@ class SubscriptionQueue(
             currentQueue = queue.toMap()
             queue.clear()
         }
-        lastProcessTime.set(getCurrentTimeInSeconds())
         if (currentQueue.isEmpty()) return
 
         Log.i(TAG, "Process queue of ${currentQueue.size} relays")
@@ -147,9 +146,7 @@ class SubscriptionQueue(
                 delay(WAIT_TIME)
                 if (lastProcessTime.get() <= getCurrentTimeInSeconds() - WAIT_TIME / 1000) {
                     processNow()
-                } else {
-                    Log.i(TAG, "Skip job")
-                }
+                } else Log.i(TAG, "Skip job")
             }
         }.invokeOnCompletion {
             Log.w(TAG, "Processing job completed", it)
