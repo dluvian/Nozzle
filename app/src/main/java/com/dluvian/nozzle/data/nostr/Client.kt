@@ -17,6 +17,8 @@ import java.util.UUID
 
 private const val TAG = "Client"
 
+// TODO: Disconnect bad relays and remember them
+
 class Client(private val httpClient: OkHttpClient) {
     private val sockets: MutableMap<Relay, WebSocket> = Collections.synchronizedMap(mutableMapOf())
     private val subscriptions: MutableMap<SubId, WebSocket> =

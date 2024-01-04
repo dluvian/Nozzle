@@ -3,7 +3,7 @@ package com.dluvian.nozzle.model.nostr
 import com.dluvian.nozzle.data.utils.JsonUtils
 import com.google.gson.annotations.SerializedName
 
-class Filter(
+data class Filter(
     val ids: List<String>? = null,
     val authors: List<String>? = null,
     val kinds: List<Int>? = null,
@@ -16,6 +16,26 @@ class Filter(
 ) {
     fun toJson(): String = JsonUtils.gson.toJson(this)
 
+    fun isSimpleNoteFilter() = ids != null
+            && authors == null
+            && kinds == Event.noteKinds
+            && e == null
+            && p == null
+            && t == null
+            && since == null
+            && until == null
+            && limit == null
+
+    fun isSimpleProfileFilter() = ids == null
+            && authors != null
+            && kinds == listOf(Event.Kind.METADATA)
+            && e == null
+            && p == null
+            && t == null
+            && since == null
+            && until == null
+            && limit == null
+
     companion object {
         fun createProfileFilter(pubkeys: List<String>): Filter {
             return Filter(
@@ -24,7 +44,7 @@ class Filter(
             )
         }
 
-        fun createPostFilter(
+        fun createNoteFilter(
             ids: List<String>? = null,
             pubkeys: List<String>? = null,
             e: List<String>? = null,
@@ -40,7 +60,7 @@ class Filter(
                 e = e,
                 p = p,
                 t = t,
-                kinds = listOf(Event.Kind.TEXT_NOTE, Event.Kind.REPOST),
+                kinds = Event.noteKinds,
                 since = since,
                 until = until,
                 limit = limit
@@ -55,7 +75,7 @@ class Filter(
         ): Filter {
             return Filter(
                 authors = pubkeys,
-                kinds = listOf(Event.Kind.REACTION, Event.Kind.REPOST),
+                kinds = Event.noteKinds,
                 e = e,
                 until = until,
                 limit = limit

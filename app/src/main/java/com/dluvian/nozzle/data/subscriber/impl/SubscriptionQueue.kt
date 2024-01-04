@@ -4,7 +4,6 @@ import android.util.Log
 import com.dluvian.nozzle.data.nostr.INostrService
 import com.dluvian.nozzle.data.provider.IRelayProvider
 import com.dluvian.nozzle.data.subscriber.ISubscriptionQueue
-import com.dluvian.nozzle.data.utils.getCurrentTimeInSeconds
 import com.dluvian.nozzle.data.utils.getMaxRelays
 import com.dluvian.nozzle.model.NoteId
 import com.dluvian.nozzle.model.Pubkey
@@ -30,20 +29,14 @@ class SubscriptionQueue(
     override fun submitNoteIds(noteIds: List<NoteId>, relays: Collection<Relay>?) {
         if (noteIds.isEmpty() || relays?.isEmpty() == true) return
 
-        val noteFilter = Filter.createPostFilter(
-            ids = noteIds,
-            until = getCurrentTimeInSeconds(),
-        )
+        val noteFilter = Filter.createNoteFilter(ids = noteIds)
         queue.syncedAddOrCreate(relays = relays, filter = noteFilter)
     }
 
     override fun submitReplies(parentIds: List<NoteId>, relays: Collection<Relay>?) {
         if (parentIds.isEmpty() || relays?.isEmpty() == true) return
 
-        val replyFilter = Filter.createPostFilter(
-            e = parentIds,
-            until = getCurrentTimeInSeconds(),
-        )
+        val replyFilter = Filter.createNoteFilter(e = parentIds)
         queue.syncedAddOrCreate(relays = relays, filter = replyFilter)
 
     }
@@ -79,7 +72,7 @@ class SubscriptionQueue(
     ) {
         if (limit <= 0 || authors?.isEmpty() == true || relays?.isEmpty() == true) return
 
-        val noteFilter = Filter.createPostFilter(
+        val noteFilter = Filter.createNoteFilter(
             pubkeys = authors,
             p = if (mentionedPubkey == null) null else listOf(mentionedPubkey),
             t = if (hashtag == null) null else listOf(hashtag),
@@ -119,14 +112,38 @@ class SubscriptionQueue(
             val relays = if (relay.isEmpty()) {
                 val rndRelays = getMaxRelays(from = nostrService.getActiveRelays()).toSet()
                 Log.i(TAG, "Use random relays: $rndRelays")
-                Log.i(TAG, "${filters.map { it.kinds }}")
                 rndRelays + getMaxRelays(from = relayProvider.getReadRelays())
             } else listOf(relay)
-            // TODO: Batch simple ID filters
+
+            val batchedFilters = batchFilters(filters = filters)
+            Log.i("LOLOL", "${batchedFilters.size}")
             relays.forEach { adjustedRelay ->
-                nostrService.subscribe(filters = filters.toList(), relay = adjustedRelay)
+                nostrService.subscribe(
+                    filters = batchedFilters,
+                    relay = adjustedRelay
+                )
             }
         }
+    }
+
+    private fun batchFilters(filters: Set<Filter>): List<Filter> {
+        val simpleNoteFilters = filters.filter { it.isSimpleNoteFilter() }
+        val simpleProfileFilters = filters.filter { it.isSimpleProfileFilter() }
+
+        if (simpleNoteFilters.size <= 1 && simpleProfileFilters.size <= 1) return filters.toList()
+
+        val batchedFilters = mutableListOf<Filter>()
+        if (simpleNoteFilters.size > 1) {
+            val noteIds = simpleNoteFilters.flatMap { it.ids.orEmpty() }.distinct()
+            batchedFilters.add(Filter.createNoteFilter(ids = noteIds))
+        }
+        if (simpleProfileFilters.size > 1) {
+            val pubkeys = simpleProfileFilters.flatMap { it.authors.orEmpty() }.distinct()
+            batchedFilters.add(Filter.createProfileFilter(pubkeys = pubkeys))
+        }
+
+        return filters
+            .filter { !it.isSimpleNoteFilter() && !it.isSimpleProfileFilter() } + batchedFilters
     }
 
     // TODO: Refactor every occurrence of this pattern
