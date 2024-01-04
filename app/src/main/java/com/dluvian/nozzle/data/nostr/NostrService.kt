@@ -56,7 +56,6 @@ class NostrService(
         override fun onOk(id: String) {
             Log.d(TAG, "OnOk: $id")
         }
-
     }
 
     override fun initialize(initRelays: Collection<String>) {
