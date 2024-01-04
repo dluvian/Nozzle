@@ -19,9 +19,7 @@ import com.dluvian.nozzle.data.manager.IPersonalProfileManager
 import com.dluvian.nozzle.data.manager.impl.KeyManager
 import com.dluvian.nozzle.data.manager.impl.PersonalProfileManager
 import com.dluvian.nozzle.data.nostr.INostrService
-import com.dluvian.nozzle.data.nostr.INostrSubscriber
 import com.dluvian.nozzle.data.nostr.NostrService
-import com.dluvian.nozzle.data.nostr.NostrSubscriber
 import com.dluvian.nozzle.data.nostr.nip05.INip05Resolver
 import com.dluvian.nozzle.data.nostr.nip05.Nip05Resolver
 import com.dluvian.nozzle.data.postCardInteractor.IPostCardInteractor
@@ -104,8 +102,6 @@ class AppContainer(context: Context) {
         eventProcessor = eventProcessor
     )
 
-    // TODO: Use or delete this
-    private val nostrSubscriber: INostrSubscriber = NostrSubscriber(nostrService = nostrService)
 
     val relayProvider: IRelayProvider = RelayProvider(
         contactListProvider = contactListProvider,
@@ -117,6 +113,8 @@ class AppContainer(context: Context) {
     val annotatedContentHandler = AnnotatedContentHandler()
 
     val subscriptionQueue: ISubscriptionQueue = SubscriptionQueue(
+        nostrService = nostrService,
+        relayProvider = relayProvider
     )
 
     val nozzleSubscriber: INozzleSubscriber = NozzleSubscriber(

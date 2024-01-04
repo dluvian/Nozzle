@@ -125,7 +125,7 @@ class NozzleSubscriber(
                     subQueue.submitFeed(
                         until = until,
                         limit = limit,
-                        authors = pubkeys,
+                        authors = pubkeys.toList(),
                         relays = listOf(relay)
                     )
                 }
@@ -231,7 +231,11 @@ class NozzleSubscriber(
             subQueue.submitReplies(parentIds = noteIds, relays = listOf(relay))
         }
         getReactionPostIdsToSub(postIds = postIds).forEach { (relay, noteIds) ->
-            subQueue.submitLikes(noteIds = noteIds, relays = listOf(relay))
+            subQueue.submitLikes(
+                noteIds = noteIds,
+                author = pubkeyProvider.getActivePubkey(),
+                relays = listOf(relay)
+            )
         }
         subQueue.processNow()
 
@@ -288,7 +292,7 @@ class NozzleSubscriber(
         val toSub = filteredPubkeys.minus(pubkeysInDb.takeRandom80percent().toSet())
         if (toSub.isEmpty()) return
 
-        subQueue.submitNip65s(pubkeys = toSub, relays = null)
+        subQueue.submitNip65s(pubkeys = toSub.toList(), relays = null)
         subQueue.processNow()
     }
 

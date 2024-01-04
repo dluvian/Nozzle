@@ -7,6 +7,7 @@ import com.dluvian.nozzle.data.manager.IKeyManager
 import com.dluvian.nozzle.data.room.helper.Nip65Relay
 import com.dluvian.nozzle.model.EventId
 import com.dluvian.nozzle.model.Relay
+import com.dluvian.nozzle.model.SubId
 import com.dluvian.nozzle.model.nostr.Event
 import com.dluvian.nozzle.model.nostr.Filter
 import com.dluvian.nozzle.model.nostr.Metadata
@@ -165,16 +166,15 @@ class NostrService(
         return event
     }
 
-    override fun subscribe(
-        filters: List<Filter>,
-        unsubOnEOSE: Boolean,
-        relays: Collection<String>?,
-    ): List<String> {
-        val subscriptionIds = client.subscribe(filters = filters, relays = relays)
-        if (subscriptionIds.isEmpty()) return emptyList()
-        if (unsubOnEOSE) unsubOnEOSECache.addAll(subscriptionIds)
+    override fun subscribe(filters: List<Filter>, relay: Relay): SubId? {
+        val subId = client.subscribe(filters = filters, relay = relay)
+        if (subId == null) {
+            Log.w(TAG, "Failed to create subscription ID")
+            return null
+        }
+        unsubOnEOSECache.add(subId)
 
-        return subscriptionIds
+        return subId
     }
 
     override fun unsubscribe(subscriptionIds: Collection<String>) {
@@ -183,6 +183,10 @@ class NostrService(
         subscriptionIds.forEach {
             client.unsubscribe(it)
         }
+    }
+
+    override fun getActiveRelays(): List<Relay> {
+        return client.getAllConnectedUrls()
     }
 
     override fun close() {

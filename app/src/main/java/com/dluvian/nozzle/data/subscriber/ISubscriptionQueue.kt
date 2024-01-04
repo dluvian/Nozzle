@@ -9,27 +9,32 @@ interface ISubscriptionQueue {
         submitNoteIds(noteIds = listOf(noteId), relays = relays)
     }
 
-    fun submitNoteIds(noteIds: Collection<NoteId>, relays: Collection<Relay>?)
-    fun submitReplies(parentIds: Collection<NoteId>, relays: Collection<Relay>?)
+    fun submitNoteIds(noteIds: List<NoteId>, relays: Collection<Relay>?)
+
+    fun submitReplies(parentIds: List<NoteId>, relays: Collection<Relay>?)
+
     fun submitProfile(pubkey: Pubkey, relays: Collection<Relay>?) {
         submitProfiles(pubkeys = listOf(pubkey), relays = relays)
     }
 
-    fun submitProfiles(pubkeys: Collection<Pubkey>, relays: Collection<Relay>?)
+    fun submitProfiles(pubkeys: List<Pubkey>, relays: Collection<Relay>?)
+
     fun submitNip65(pubkey: Pubkey, relays: Collection<Relay>?) {
         submitNip65s(pubkeys = listOf(pubkey), relays = relays)
     }
 
-    fun submitNip65s(pubkeys: Collection<Pubkey>, relays: Collection<Relay>?)
+    fun submitNip65s(pubkeys: List<Pubkey>, relays: Collection<Relay>?)
+
     fun submitContactList(pubkey: Pubkey, relays: Collection<Relay>?) {
         submitContactLists(pubkeys = listOf(pubkey), relays = relays)
     }
 
-    fun submitContactLists(pubkeys: Collection<Pubkey>, relays: Collection<Relay>?)
+    fun submitContactLists(pubkeys: List<Pubkey>, relays: Collection<Relay>?)
+
     fun submitNotes(
         until: Long,
         limit: Int,
-        authors: Collection<Pubkey>?,
+        authors: List<Pubkey>?,
         hashtag: String?,
         mentionedPubkey: Pubkey?,
         relays: Collection<Relay>?
@@ -38,7 +43,7 @@ interface ISubscriptionQueue {
     fun submitFeed(
         until: Long,
         limit: Int,
-        authors: Collection<Pubkey>?,
+        authors: List<Pubkey>?,
         relays: Collection<Relay>?
     ) {
         submitNotes(
@@ -51,7 +56,7 @@ interface ISubscriptionQueue {
         )
     }
 
-    fun submitInbox(until: Long, limit: Int, mentionedPubkey: Pubkey, relays: Collection<Relay>) {
+    fun submitInbox(until: Long, limit: Int, mentionedPubkey: Pubkey, relays: Collection<Relay>?) {
         submitNotes(
             until = until,
             limit = limit,
@@ -62,7 +67,7 @@ interface ISubscriptionQueue {
         )
     }
 
-    fun submitHashtag(until: Long, limit: Int, hashtag: String, relays: Collection<Relay>) {
+    fun submitHashtag(until: Long, limit: Int, hashtag: String, relays: Collection<Relay>?) {
         submitNotes(
             until = until,
             limit = limit,
@@ -73,8 +78,8 @@ interface ISubscriptionQueue {
         )
     }
 
-    fun submitLikes(limit: Int, until: Long, author: Pubkey, relays: Collection<Relay>)
-    fun submitLikes(noteIds: Collection<NoteId>, relays: Collection<Relay>)
+    fun submitLikes(limit: Int, until: Long, author: Pubkey, relays: Collection<Relay>?)
+    fun submitLikes(noteIds: List<NoteId>, author: Pubkey, relays: Collection<Relay>?)
 
     fun submitFullProfile(pubkey: Pubkey, relays: Collection<Relay>?) {
         submitNip65(pubkey = pubkey, relays = null)

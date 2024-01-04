@@ -2,6 +2,8 @@ package com.dluvian.nozzle.data.nostr
 
 import android.util.Log
 import com.dluvian.nozzle.data.utils.JsonUtils
+import com.dluvian.nozzle.model.Relay
+import com.dluvian.nozzle.model.SubId
 import com.dluvian.nozzle.model.nostr.Event
 import com.dluvian.nozzle.model.nostr.Filter
 import com.google.gson.JsonElement
@@ -16,8 +18,8 @@ import java.util.UUID
 private const val TAG = "Client"
 
 class Client(private val httpClient: OkHttpClient) {
-    private val sockets: MutableMap<String, WebSocket> = Collections.synchronizedMap(mutableMapOf())
-    private val subscriptions: MutableMap<String, WebSocket> =
+    private val sockets: MutableMap<Relay, WebSocket> = Collections.synchronizedMap(mutableMapOf())
+    private val subscriptions: MutableMap<SubId, WebSocket> =
         Collections.synchronizedMap(mutableMapOf())
     private var nostrListener: NostrListener? = null
     private val baseListener = object : WebSocketListener() {
@@ -64,25 +66,22 @@ class Client(private val httpClient: OkHttpClient) {
         }
     }
 
-    fun subscribe(
-        filters: List<Filter>,
-        relays: Collection<String>? = null
-    ): List<String> {
-        if (filters.isEmpty()) return emptyList()
+    fun subscribe(filters: List<Filter>, relay: Relay): SubId? {
+        if (filters.isEmpty()) return null
 
-        val ids = mutableListOf<String>()
-        relays?.let { addRelays(relays) }
-        filterSocketsByRelays(relays = relays)
-            .forEach {
-                val subscriptionId = UUID.randomUUID().toString()
-                ids.add(subscriptionId)
-                subscriptions[subscriptionId] = it.value
-                val request = createSubscriptionRequest(subscriptionId, filters)
-                Log.d(TAG, "Subscribe in ${it.key}: $request")
-                it.value.send(request)
-            }
+        addRelays(urls = listOf(relay))
+        val socket = sockets[relay]
+        if (socket == null) {
+            Log.w(TAG, "Failed to sub ${filters.size} filters. Relay $relay is not registered")
+            return null
+        }
+        val subId = UUID.randomUUID().toString()
+        subscriptions[subId] = socket
+        val request = createSubscriptionRequest(subId, filters)
+        Log.d(TAG, "Subscribe in $relay: $request")
+        socket.send(request)
 
-        return ids
+        return subId
     }
 
     private fun createSubscriptionRequest(
@@ -111,6 +110,10 @@ class Client(private val httpClient: OkHttpClient) {
 
     fun addRelays(urls: Collection<String>) {
         urls.forEach { addRelay(it) }
+    }
+
+    fun getAllConnectedUrls(): List<Relay> {
+        return sockets.keys.toList()
     }
 
     private fun addRelay(url: String) {
