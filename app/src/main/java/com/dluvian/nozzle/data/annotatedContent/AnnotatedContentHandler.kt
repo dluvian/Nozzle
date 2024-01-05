@@ -6,6 +6,7 @@ import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.compose.ui.text.buildAnnotatedString
 import com.dluvian.nozzle.data.nostr.utils.EncodingUtils.nostrUriToNostrId
 import com.dluvian.nozzle.data.nostr.utils.EncodingUtils.note1ToHex
+import com.dluvian.nozzle.data.nostr.utils.EncodingUtils.npubToHex
 import com.dluvian.nozzle.data.nostr.utils.EncodingUtils.readNevent
 import com.dluvian.nozzle.data.nostr.utils.EncodingUtils.readNprofile
 import com.dluvian.nozzle.data.nostr.utils.MentionUtils
@@ -175,7 +176,9 @@ class AnnotatedContentHandler : IAnnotatedContentHandler {
             .mapNotNull { readNprofile(it.item) }
         val npubs = annotatedContent
             .getStringAnnotations(tag = NPUB_TAG, start = 0, end = annotatedContent.length)
-            .map { Nprofile(pubkey = it.item, relays = emptyList()) }
+            .mapNotNull {
+                npubToHex(it.item)?.let { hex -> Nprofile(pubkey = hex, relays = emptyList()) }
+            }
 
         return nprofiles + npubs
     }
