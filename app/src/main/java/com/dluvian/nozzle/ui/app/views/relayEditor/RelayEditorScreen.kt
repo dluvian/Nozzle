@@ -20,7 +20,6 @@ import androidx.compose.ui.graphics.Color.Companion.DarkGray
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import com.dluvian.nozzle.R
-import com.dluvian.nozzle.data.MAX_RELAYS
 import com.dluvian.nozzle.data.room.helper.Nip65Relay
 import com.dluvian.nozzle.data.utils.UrlUtils.WEBSOCKET_PREFIX
 import com.dluvian.nozzle.data.utils.UrlUtils.removeWebsocketPrefix
@@ -62,6 +61,7 @@ fun RelayEditorScreen(
         ScreenContent(
             myRelays = myRelays,
             popularRelays = popularRelays,
+            addIsEnabled = uiState.addIsEnabled,
             isError = uiState.isError,
             onAddRelay = onAddRelay,
             onDeleteRelay = onDeleteRelay,
@@ -76,6 +76,7 @@ fun RelayEditorScreen(
 private fun ScreenContent(
     myRelays: List<Nip65Relay>,
     popularRelays: List<String>,
+    addIsEnabled: Boolean,
     isError: Boolean,
     onAddRelay: (String) -> Boolean,
     onDeleteRelay: (Int) -> Unit,
@@ -89,7 +90,7 @@ private fun ScreenContent(
             .fillMaxSize()
     )
     {
-        item { AddRelay(isError = isError, onAddRelay = onAddRelay) }
+        item { AddRelay(isError = isError, isEnabled = addIsEnabled, onAddRelay = onAddRelay) }
         item { Spacer(modifier = Modifier.height(spacing.xxl)) }
 
         item { SpacedHeaderText(text = stringResource(id = R.string.my_relays)) }
@@ -113,8 +114,7 @@ private fun ScreenContent(
             itemsIndexed(items = popularRelays) { index, relay ->
                 PopularRelayRow(
                     relay = relay,
-                    isAddable = myRelays.size < MAX_RELAYS
-                            && myRelays.none { it.url == relay },
+                    isAddable = addIsEnabled && myRelays.none { it.url == relay },
                     onUseRelay = { onUsePopularRelay(index) })
                 if (index != popularRelays.size - 1) {
                     Divider()
@@ -135,6 +135,7 @@ private fun SpacedHeaderText(text: String) {
 @Composable
 private fun AddRelay(
     isError: Boolean,
+    isEnabled: Boolean,
     onAddRelay: (String) -> Boolean,
 ) {
     Column {
@@ -143,6 +144,7 @@ private fun AddRelay(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(IntrinsicSize.Max),
+            isEnabled = isEnabled,
             isError = isError,
             placeholder = WEBSOCKET_PREFIX,
             onAdd = onAddRelay
