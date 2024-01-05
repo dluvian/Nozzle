@@ -54,7 +54,6 @@ class NozzleSubscriber(
         Log.i(TAG, "Subscribe unknown contacts")
         val pubkeys = database.contactDao().listContactPubkeysWithMissingProfile()
         submitFullProfiles(pubkeys = pubkeys)
-        subQueue.processNow()
     }
 
     override suspend fun subscribeUnknowns(notes: Collection<PostWithMeta>) {
@@ -237,7 +236,6 @@ class NozzleSubscriber(
                 relays = listOf(relay)
             )
         }
-        subQueue.processNow()
 
         return FeedInfo(
             postIds = postIds,
