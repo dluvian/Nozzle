@@ -34,8 +34,6 @@ class NostrService(
         }
 
         override fun onError(relay: String, msg: String, throwable: Throwable?) {
-            // TODO: Fix "bad req: uneven size input to from_hex"
-            // TODO: Fix "invalid: "prefixOrAuthor" must only contain hexadecimal characters"
             Log.w(TAG, "OnError($relay): $msg", throwable)
         }
 

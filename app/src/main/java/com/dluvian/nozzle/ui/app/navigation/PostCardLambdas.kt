@@ -5,7 +5,6 @@ import com.dluvian.nozzle.data.cache.IClickedMediaUrlCache
 import com.dluvian.nozzle.data.deletor.INoteDeletor
 import com.dluvian.nozzle.data.postCardInteractor.IPostCardInteractor
 import com.dluvian.nozzle.data.profileFollower.IProfileFollower
-import com.dluvian.nozzle.data.subscriber.ISubscriptionQueue
 import com.dluvian.nozzle.model.NoteId
 import com.dluvian.nozzle.model.PostWithMeta
 import com.dluvian.nozzle.model.Pubkey
@@ -20,8 +19,6 @@ data class PostCardLambdas(
     val onShowMedia: (String) -> Unit,
     val onShouldShowMedia: (String) -> Boolean,
     val onDelete: (NoteId) -> Unit,
-    val onSubscribePubkey: (Pubkey) -> Unit,
-    val onSubscribeNoteId: (NoteId) -> Unit,
 ) {
     companion object {
         fun create(
@@ -30,7 +27,6 @@ data class PostCardLambdas(
             noteDeletor: INoteDeletor,
             profileFollower: IProfileFollower,
             clickedMediaUrlCache: IClickedMediaUrlCache,
-            subscriptionQueue: ISubscriptionQueue,
         ): PostCardLambdas {
             return PostCardLambdas(
                 navLambdas = navLambdas,
@@ -56,18 +52,6 @@ data class PostCardLambdas(
                     clickedMediaUrlCache.contains(mediaUrl)
                 },
                 onDelete = { noteId -> noteDeletor.deleteNote(noteId = noteId) },
-                onSubscribePubkey = { pubkey ->
-                    subscriptionQueue.submitProfile(
-                        pubkey = pubkey,
-                        relays = null
-                    )
-                },
-                onSubscribeNoteId = { noteId ->
-                    subscriptionQueue.submitNoteId(
-                        noteId = noteId,
-                        relays = null
-                    )
-                }
             )
         }
     }
