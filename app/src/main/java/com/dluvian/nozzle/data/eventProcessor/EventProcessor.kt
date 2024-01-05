@@ -4,6 +4,7 @@ import android.util.Log
 import com.dluvian.nozzle.data.EVENT_PROCESSING_DELAY
 import com.dluvian.nozzle.data.MAX_SQL_PARAMS
 import com.dluvian.nozzle.data.cache.IIdCache
+import com.dluvian.nozzle.data.nostr.utils.KeyUtils
 import com.dluvian.nozzle.data.room.AppDatabase
 import com.dluvian.nozzle.data.room.FullPostInserter
 import com.dluvian.nozzle.data.room.entity.ContactEntity
@@ -110,6 +111,7 @@ class EventProcessor(
     }
 
     private fun isNewAndValid(event: Event): Boolean {
+        if (!KeyUtils.isValidHexKey(event.pubkey)) return false
         return (event.isPost() || event.isRepost()) && verify(event) ||
                 (event.isProfileMetadata() ||
                         event.isContactList() ||
