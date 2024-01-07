@@ -5,6 +5,7 @@ import com.dluvian.nozzle.data.WAIT_TIME
 import com.dluvian.nozzle.data.nostr.INostrService
 import com.dluvian.nozzle.data.provider.IRelayProvider
 import com.dluvian.nozzle.data.subscriber.ISubscriptionQueue
+import com.dluvian.nozzle.data.utils.addOrCreate
 import com.dluvian.nozzle.data.utils.getCurrentTimeInSeconds
 import com.dluvian.nozzle.data.utils.getMaxRelays
 import com.dluvian.nozzle.model.NoteId
@@ -174,18 +175,12 @@ class SubscriptionQueue(
             .filter { !it.isSimpleNoteFilter() && !it.isSimpleProfileFilter() } + batchedFilters
     }
 
-    // TODO: Refactor every occurrence of this pattern
-    private fun MutableMap<Relay, MutableSet<Filter>>.addOrCreate(relay: Relay, filter: Filter) {
-        val present = this.putIfAbsent(relay, mutableSetOf(filter))
-        present?.add(filter)
-    }
-
     private fun MutableMap<Relay, MutableSet<Filter>>.syncedAddOrCreate(
         relays: Collection<Relay>?,
         filter: Filter
     ) {
         synchronized(this) {
-            if (relays == null) this.addOrCreate(relay = "", filter = filter)
+            if (relays == null) this.addOrCreate(key = "", itemToAdd = filter)
             else relays.forEach { relay -> queue.addOrCreate(relay, filter) }
         }
     }
