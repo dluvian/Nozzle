@@ -29,15 +29,15 @@ class NostrService(
             Log.i(TAG, "OnOpen($relay): $msg")
         }
 
-        override fun onEvent(subscriptionId: String, event: Event, relayUrl: String?) {
+        override fun onEvent(subscriptionId: SubId, event: Event, relayUrl: Relay?) {
             eventProcessor.submit(event = event, relayUrl = relayUrl)
         }
 
-        override fun onError(relay: String, msg: String, throwable: Throwable?) {
+        override fun onError(relay: Relay, msg: String, throwable: Throwable?) {
             Log.w(TAG, "OnError($relay): $msg", throwable)
         }
 
-        override fun onEOSE(relay: String, subscriptionId: String) {
+        override fun onEOSE(relay: Relay, subscriptionId: String) {
             Log.d(TAG, "OnEOSE($relay): $subscriptionId")
             if (unsubOnEOSECache.remove(subscriptionId)) {
                 Log.d(TAG, "Unsubscribe onEOSE($relay) $subscriptionId")
@@ -45,21 +45,21 @@ class NostrService(
             }
         }
 
-        override fun onClosed(relay: String, subscriptionId: SubId, reason: String) {
+        override fun onClosed(relay: Relay, subscriptionId: SubId, reason: String) {
             Log.d(TAG, "OnClosed($relay): $subscriptionId, reason: $reason")
             unsubOnEOSECache.remove(subscriptionId)
         }
 
-        override fun onClose(relay: String, reason: String) {
+        override fun onClose(relay: Relay, reason: String) {
             Log.i(TAG, "OnClose($relay): $reason")
         }
 
-        override fun onFailure(relay: String, msg: String?, throwable: Throwable?) {
+        override fun onFailure(relay: Relay, msg: String?, throwable: Throwable?) {
             Log.w(TAG, "OnFailure($relay): $msg", throwable)
         }
 
-        override fun onOk(relay: String, id: String) {
-            Log.d(TAG, "OnOk($relay): $id")
+        override fun onOk(relay: Relay, id: String, accepted: Boolean, msg: String) {
+            Log.d(TAG, "OnOk($relay): $id, accepted=$accepted, ${msg.ifBlank { "No message" }}")
         }
     }
 

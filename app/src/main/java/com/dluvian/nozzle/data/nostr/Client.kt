@@ -46,10 +46,11 @@ class Client(private val httpClient: OkHttpClient) {
                             }
                     }
 
-                    // TODO: Check nip01, Definition changed
                     "OK" -> nostrListener?.onOk(
                         relay = relay,
-                        id = msg[1].asString.orEmpty()
+                        id = msg[1].asString.orEmpty(),
+                        accepted = msg[2].asBoolean,
+                        msg = msg[3].asString
                     )
 
                     "NOTICE" -> nostrListener?.onError(
