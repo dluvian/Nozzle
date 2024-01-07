@@ -61,6 +61,11 @@ class NostrService(
         override fun onOk(relay: Relay, id: String, accepted: Boolean, msg: String) {
             Log.d(TAG, "OnOk($relay): $id, accepted=$accepted, ${msg.ifBlank { "No message" }}")
         }
+
+        override fun onAuth(relay: Relay, challengeString: String) {
+            Log.d(TAG, "OnAuth($relay): challenge=$challengeString")
+            sendAuthentication(relay = relay, challengeString = challengeString)
+        }
     }
 
     override fun initialize(initRelays: Collection<String>) {
@@ -196,5 +201,14 @@ class NostrService(
     override fun close() {
         Log.i(TAG, "Close connections")
         client.close()
+    }
+
+    private fun sendAuthentication(relay: Relay, challengeString: String) {
+        val event = Event.createAuthEvent(
+            relay = relay,
+            challengeString = challengeString,
+            keys = keyManager.getActiveKeys(),
+        )
+        client.publishAuth(authEvent = event, relay = relay)
     }
 }

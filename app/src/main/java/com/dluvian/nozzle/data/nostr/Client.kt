@@ -69,6 +69,11 @@ class Client(private val httpClient: OkHttpClient) {
                         reason = msg[2].asString
                     )
 
+                    "AUTH" -> nostrListener?.onAuth(
+                        relay = relay,
+                        challengeString = msg[1].asString,
+                    )
+
                     else -> nostrListener?.onError(
                         relay = relay,
                         msg = "Unknown type $type. Msg was $text"
@@ -139,6 +144,19 @@ class Client(private val httpClient: OkHttpClient) {
         filteredRelays.forEach { it.value.send(request) }
     }
 
+    fun publishAuth(authEvent: Event, relay: Relay) {
+        addRelay(relay)
+        val socket = sockets.entries.find { (relayUrl, _) -> relayUrl == relay }?.value
+        if (socket == null) {
+            Log.e(TAG, "Failed to send AUTH. Socket for $relay is not registered")
+            return
+        }
+
+        val request = """["AUTH",${authEvent.toJson()}]"""
+        Log.i(TAG, "Publish AUTH to $relay: $request")
+        socket.send(request)
+    }
+
     fun addRelays(urls: Collection<String>) {
         urls.forEach { addRelay(it) }
     }
@@ -205,7 +223,7 @@ class Client(private val httpClient: OkHttpClient) {
         Log.i(TAG, "Removed socket of $removedSubCount subscriptions")
     }
 
-    private fun filterSocketsByRelays(relays: Collection<String>?): List<Map.Entry<String, WebSocket>> {
+    private fun filterSocketsByRelays(relays: Collection<String>?): List<Map.Entry<Relay, WebSocket>> {
         synchronized(sockets) {
             return sockets.entries.filter { relays?.contains(it.key) ?: true }
         }
