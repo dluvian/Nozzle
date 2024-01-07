@@ -102,6 +102,7 @@ class NozzleSubscriber(
 
     override fun subscribeToFeed(
         limit: Int,
+        hashtag: String?,
         authors: List<Pubkey>?,
         relaySelection: RelaySelection,
         until: Long,
@@ -114,6 +115,7 @@ class NozzleSubscriber(
                 subQueue.submitFeed(
                     until = until,
                     limit = limit,
+                    hashtag = hashtag,
                     authors = authors,
                     relays = relaySelection.selectedRelays
                 )
@@ -124,29 +126,13 @@ class NozzleSubscriber(
                     subQueue.submitFeed(
                         until = until,
                         limit = limit,
+                        hashtag = hashtag,
                         authors = pubkeys.toList(),
                         relays = listOf(relay)
                     )
                 }
             }
         }
-        subQueue.processNow()
-    }
-
-    override fun subscribeToHashtag(
-        limit: Int,
-        hashtag: String,
-        relays: Collection<Relay>,
-        until: Long
-    ) {
-        Log.i(TAG, "Subscribe feed posts")
-        if (hashtag.isBlank() || limit <= 0 || relays.isEmpty()) return
-        subQueue.submitHashtag(
-            until = until,
-            limit = limit,
-            hashtag = hashtag,
-            relays = relays
-        )
         subQueue.processNow()
     }
 
