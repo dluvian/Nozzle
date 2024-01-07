@@ -10,4 +10,5 @@ data class RelayEditorViewModelState(
     val hasChanges: Boolean = false,
     val isError: Boolean = false,
     val isLoading: Boolean = false,
+    val addIsEnabled: Boolean = true,
 )

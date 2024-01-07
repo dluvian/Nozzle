@@ -26,7 +26,7 @@ data class PostCardLambdas(
             postCardInteractor: IPostCardInteractor,
             noteDeletor: INoteDeletor,
             profileFollower: IProfileFollower,
-            clickedMediaUrlCache: IClickedMediaUrlCache
+            clickedMediaUrlCache: IClickedMediaUrlCache,
         ): PostCardLambdas {
             return PostCardLambdas(
                 navLambdas = navLambdas,
@@ -51,7 +51,7 @@ data class PostCardLambdas(
                 onShouldShowMedia = { mediaUrl ->
                     clickedMediaUrlCache.contains(mediaUrl)
                 },
-                onDelete = { noteId -> noteDeletor.deleteNote(noteId = noteId) }
+                onDelete = { noteId -> noteDeletor.deleteNote(noteId = noteId) },
             )
         }
     }

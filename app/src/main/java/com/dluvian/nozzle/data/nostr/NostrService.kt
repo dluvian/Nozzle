@@ -7,6 +7,7 @@ import com.dluvian.nozzle.data.manager.IKeyManager
 import com.dluvian.nozzle.data.room.helper.Nip65Relay
 import com.dluvian.nozzle.model.EventId
 import com.dluvian.nozzle.model.Relay
+import com.dluvian.nozzle.model.SubId
 import com.dluvian.nozzle.model.nostr.Event
 import com.dluvian.nozzle.model.nostr.Filter
 import com.dluvian.nozzle.model.nostr.Metadata
@@ -24,38 +25,42 @@ class NostrService(
     private val client = Client(httpClient = httpClient)
     private val unsubOnEOSECache = Collections.synchronizedSet(mutableSetOf<String>())
     private val listener = object : NostrListener {
-        override fun onOpen(msg: String) {
-            Log.i(TAG, "OnOpen: $msg")
+        override fun onOpen(relay: String, msg: String) {
+            Log.i(TAG, "OnOpen($relay): $msg")
         }
 
-        override fun onEvent(subscriptionId: String, event: Event, relayUrl: String?) {
+        override fun onEvent(subscriptionId: SubId, event: Event, relayUrl: Relay?) {
             eventProcessor.submit(event = event, relayUrl = relayUrl)
         }
 
-        override fun onError(msg: String, throwable: Throwable?) {
-            Log.w(TAG, "OnError: $msg", throwable)
+        override fun onError(relay: Relay, msg: String, throwable: Throwable?) {
+            Log.w(TAG, "OnError($relay): $msg", throwable)
         }
 
-        override fun onEOSE(subscriptionId: String) {
-            Log.d(TAG, "OnEOSE: $subscriptionId")
+        override fun onEOSE(relay: Relay, subscriptionId: String) {
+            Log.d(TAG, "OnEOSE($relay): $subscriptionId")
             if (unsubOnEOSECache.remove(subscriptionId)) {
-                Log.d(TAG, "Unsubscribe onEOSE $subscriptionId")
+                Log.d(TAG, "Unsubscribe onEOSE($relay) $subscriptionId")
                 client.unsubscribe(subscriptionId)
             }
         }
 
-        override fun onClose(reason: String) {
-            Log.i(TAG, "OnClose: $reason")
+        override fun onClosed(relay: Relay, subscriptionId: SubId, reason: String) {
+            Log.d(TAG, "OnClosed($relay): $subscriptionId, reason: $reason")
+            unsubOnEOSECache.remove(subscriptionId)
         }
 
-        override fun onFailure(msg: String?, throwable: Throwable?) {
-            Log.w(TAG, "OnFailure: $msg", throwable)
+        override fun onClose(relay: Relay, reason: String) {
+            Log.i(TAG, "OnClose($relay): $reason")
         }
 
-        override fun onOk(id: String) {
-            Log.d(TAG, "OnOk: $id")
+        override fun onFailure(relay: Relay, msg: String?, throwable: Throwable?) {
+            Log.w(TAG, "OnFailure($relay): $msg", throwable)
         }
 
+        override fun onOk(relay: Relay, id: String, accepted: Boolean, msg: String) {
+            Log.d(TAG, "OnOk($relay): $id, accepted=$accepted, ${msg.ifBlank { "No message" }}")
+        }
     }
 
     override fun initialize(initRelays: Collection<String>) {
@@ -165,16 +170,15 @@ class NostrService(
         return event
     }
 
-    override fun subscribe(
-        filters: List<Filter>,
-        unsubOnEOSE: Boolean,
-        relays: Collection<String>?,
-    ): List<String> {
-        val subscriptionIds = client.subscribe(filters = filters, relays = relays)
-        if (subscriptionIds.isEmpty()) return emptyList()
-        if (unsubOnEOSE) unsubOnEOSECache.addAll(subscriptionIds)
+    override fun subscribe(filters: List<Filter>, relay: Relay): SubId? {
+        val subId = client.subscribe(filters = filters, relay = relay)
+        if (subId == null) {
+            Log.w(TAG, "Failed to create subscription ID")
+            return null
+        }
+        unsubOnEOSECache.add(subId)
 
-        return subscriptionIds
+        return subId
     }
 
     override fun unsubscribe(subscriptionIds: Collection<String>) {
@@ -183,6 +187,10 @@ class NostrService(
         subscriptionIds.forEach {
             client.unsubscribe(it)
         }
+    }
+
+    override fun getActiveRelays(): List<Relay> {
+        return client.getAllConnectedUrls()
     }
 
     override fun close() {

@@ -8,6 +8,7 @@ import com.dluvian.nozzle.data.provider.IRelayProvider
 import com.dluvian.nozzle.data.room.dao.EventRelayDao
 import com.dluvian.nozzle.data.room.dao.Nip65Dao
 import com.dluvian.nozzle.data.subscriber.INozzleSubscriber
+import com.dluvian.nozzle.data.utils.addOrCreate
 import com.dluvian.nozzle.data.utils.getMaxRelays
 import com.dluvian.nozzle.model.Pubkey
 import com.dluvian.nozzle.model.Relay
@@ -95,10 +96,7 @@ class AutopilotProvider(
             .forEach {
                 if (!newlyProcessedPubkeys.contains(it.pubkey)) {
                     newlyProcessedPubkeys.add(it.pubkey)
-                    val current = newlyProcessedEventRelays.putIfAbsent(
-                        it.relayUrl, mutableSetOf(it.pubkey)
-                    )
-                    current?.add(it.pubkey)
+                    newlyProcessedEventRelays.addOrCreate(key = it.relayUrl, itemToAdd = it.pubkey)
                 }
             }
 

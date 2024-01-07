@@ -19,9 +19,7 @@ import com.dluvian.nozzle.data.manager.IPersonalProfileManager
 import com.dluvian.nozzle.data.manager.impl.KeyManager
 import com.dluvian.nozzle.data.manager.impl.PersonalProfileManager
 import com.dluvian.nozzle.data.nostr.INostrService
-import com.dluvian.nozzle.data.nostr.INostrSubscriber
 import com.dluvian.nozzle.data.nostr.NostrService
-import com.dluvian.nozzle.data.nostr.NostrSubscriber
 import com.dluvian.nozzle.data.nostr.nip05.INip05Resolver
 import com.dluvian.nozzle.data.nostr.nip05.Nip05Resolver
 import com.dluvian.nozzle.data.postCardInteractor.IPostCardInteractor
@@ -55,7 +53,9 @@ import com.dluvian.nozzle.data.provider.impl.ThreadProvider
 import com.dluvian.nozzle.data.room.AppDatabase
 import com.dluvian.nozzle.data.room.FullPostInserter
 import com.dluvian.nozzle.data.subscriber.INozzleSubscriber
-import com.dluvian.nozzle.data.subscriber.NozzleSubscriber
+import com.dluvian.nozzle.data.subscriber.ISubscriptionQueue
+import com.dluvian.nozzle.data.subscriber.impl.NozzleSubscriber
+import com.dluvian.nozzle.data.subscriber.impl.SubscriptionQueue
 import okhttp3.OkHttpClient
 
 class AppContainer(context: Context) {
@@ -102,7 +102,6 @@ class AppContainer(context: Context) {
         eventProcessor = eventProcessor
     )
 
-    private val nostrSubscriber: INostrSubscriber = NostrSubscriber(nostrService = nostrService)
 
     val relayProvider: IRelayProvider = RelayProvider(
         contactListProvider = contactListProvider,
@@ -111,11 +110,19 @@ class AppContainer(context: Context) {
 
     val accountProvider: IAccountProvider = AccountProvider(accountDao = roomDb.accountDao())
 
+    val annotatedContentHandler = AnnotatedContentHandler()
+
+    val subscriptionQueue: ISubscriptionQueue = SubscriptionQueue(
+        nostrService = nostrService,
+        relayProvider = relayProvider
+    )
+
     val nozzleSubscriber: INozzleSubscriber = NozzleSubscriber(
-        nostrSubscriber = nostrSubscriber,
+        subQueue = subscriptionQueue,
         relayProvider = relayProvider,
         pubkeyProvider = keyManager,
         accountProvider = accountProvider,
+        annotatedContentHandler = annotatedContentHandler,
         idCache = dbSweepExcludingCache,
         database = roomDb,
     )
@@ -154,8 +161,6 @@ class AppContainer(context: Context) {
     )
 
     val clickedMediaUrlCache: IClickedMediaUrlCache = ClickedMediaUrlCache()
-
-    val annotatedContentHandler = AnnotatedContentHandler()
 
     private val postWithMetaProvider: IPostWithMetaProvider = PostWithMetaProvider(
         pubkeyProvider = keyManager,

@@ -17,6 +17,7 @@ fun LikesRoute(
     onGoBack: () -> Unit,
 ) {
     val isRefreshing by likesViewModel.isRefreshing.collectAsState()
+    val likeCount by likesViewModel.likeCount.collectAsState()
 
     val feedFlow by likesViewModel.feed.collectAsState()
     val feed by feedFlow.collectAsState()
@@ -32,6 +33,7 @@ fun LikesRoute(
     LikesScreen(
         feed = adjustedFeed,
         numOfNewPosts = numOfNewPosts,
+        likeCount = likeCount,
         isRefreshing = isRefreshing,
         postCardLambdas = postCardLambdas,
         onRefresh = likesViewModel.onRefresh,

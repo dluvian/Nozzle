@@ -45,15 +45,15 @@ fun AnnotatedMentionedPostCard(
                         modifier = Modifier
                             .size(sizing.smallProfilePicture)
                             .clip(CircleShape),
-                        pubkey = post.mentionedPost.pubkey,
+                        pubkey = post.mentionedPost.pubkey.orEmpty(),
                         trustType = Oneself, // TODO: Find correct trust type
                         onNavigateToProfile = onNavigateToProfile,
                     )
                     Spacer(modifier = Modifier.width(spacing.medium))
                     PostCardHeader(
                         name = post.mentionedPost.name.orEmpty(),
-                        pubkey = post.mentionedPost.pubkey,
-                        createdAt = post.mentionedPost.createdAt,
+                        pubkey = post.mentionedPost.pubkey.orEmpty(),
+                        createdAt = post.mentionedPost.createdAt ?: 0L,
                         onOpenProfile = onNavigateToProfile,
                         showOptions = false,
                     )

@@ -38,6 +38,7 @@ class Event(
     }
 
     companion object {
+        val noteKinds = listOf(Kind.TEXT_NOTE, Kind.REPOST)
 
         fun fromJson(json: JsonElement): Result<Event> {
             return kotlin.runCatching { gson.fromJson(json, Event::class.java) }

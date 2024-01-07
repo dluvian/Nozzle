@@ -3,6 +3,8 @@ package com.dluvian.nozzle.ui.app.views.relayEditor
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import com.dluvian.nozzle.data.MAX_RELAYS
+import com.dluvian.nozzle.data.SHORT_WAIT_TIME
 import com.dluvian.nozzle.data.nostr.INostrService
 import com.dluvian.nozzle.data.provider.IPubkeyProvider
 import com.dluvian.nozzle.data.provider.IRelayProvider
@@ -46,7 +48,8 @@ class RelayEditorViewModel(
                     popularRelays = relayProvider.getRelaysOfContacts(),
                     hasChanges = false,
                     isError = false,
-                    isLoading = false
+                    isLoading = false,
+                    addIsEnabled = addRelayIsEnabled(relays.size)
                 )
             }
         }
@@ -56,7 +59,7 @@ class RelayEditorViewModel(
         _uiState.update { it.copy(isLoading = true) }
         viewModelScope.launch(context = Dispatchers.IO) {
             publishAndSaveInDb(nip65Relays = uiState.value.myRelays)
-            delay(1000L)
+            delay(SHORT_WAIT_TIME)
             _uiState.update { it.copy(isLoading = false) }
         }
     }
@@ -74,7 +77,8 @@ class RelayEditorViewModel(
             it.copy(
                 myRelays = relays,
                 hasChanges = relays != originalRelays,
-                isError = false
+                isError = false,
+                addIsEnabled = addRelayIsEnabled(relays.size)
             )
         }
         return@local true
@@ -87,7 +91,8 @@ class RelayEditorViewModel(
             val relays = _uiState.value.myRelays.filterIndexed { i, _ -> i != index }
             it.copy(
                 myRelays = relays,
-                hasChanges = relays != originalRelays
+                hasChanges = relays != originalRelays,
+                addIsEnabled = addRelayIsEnabled(relays.size)
             )
         }
     }
@@ -127,14 +132,22 @@ class RelayEditorViewModel(
             it.copy(
                 myRelays = myRelays,
                 popularRelays = it.popularRelays,
-                hasChanges = myRelays != originalRelays
+                hasChanges = myRelays != originalRelays,
+                addIsEnabled = addRelayIsEnabled(myRelays.size)
             )
         }
     }
 
     private suspend fun publishAndSaveInDb(nip65Relays: List<Nip65Relay>) {
         val event = nostrService.publishNip65(nip65Relays = nip65Relays)
-        _uiState.update { it.copy(myRelays = nip65Relays, hasChanges = false, isError = false) }
+        _uiState.update {
+            it.copy(
+                myRelays = nip65Relays,
+                hasChanges = false,
+                isError = false,
+                addIsEnabled = addRelayIsEnabled(nip65Relays.size)
+            )
+        }
         clearAndAddRelays(list = originalRelays, toAdd = nip65Relays)
         val entities = nip65Relays.map {
             Nip65Entity(
@@ -154,6 +167,8 @@ class RelayEditorViewModel(
             list.addAll(toAdd)
         }
     }
+
+    private fun addRelayIsEnabled(relaySize: Int) = relaySize < MAX_RELAYS
 
     companion object {
         fun provideFactory(

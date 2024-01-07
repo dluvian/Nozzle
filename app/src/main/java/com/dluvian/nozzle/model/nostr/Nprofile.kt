@@ -1,6 +1,6 @@
 package com.dluvian.nozzle.model.nostr
 
-import com.dluvian.nozzle.data.nostr.utils.KeyUtils.isValidPubkey
+import com.dluvian.nozzle.data.nostr.utils.KeyUtils.isValidHexKey
 import com.dluvian.nozzle.data.utils.UrlUtils.isWebsocketUrl
 import com.dluvian.nozzle.data.utils.UrlUtils.removeTrailingSlashes
 import com.dluvian.nozzle.data.utils.toHexString
@@ -16,7 +16,7 @@ data class Nprofile(
                 ?.value
                 ?.toHexString()
                 ?: return null
-            if (!isValidPubkey(pubkey)) return null
+            if (!isValidHexKey(pubkey)) return null
             val relays = tlvEntries.filterIsInstance<TLVRelay>()
                 .map { it.value.decodeToString().removeTrailingSlashes() }
                 .filter { it.isWebsocketUrl() }

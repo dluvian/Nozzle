@@ -2,6 +2,8 @@ package com.dluvian.nozzle.data.nostr
 
 import android.util.Log
 import com.dluvian.nozzle.data.utils.JsonUtils
+import com.dluvian.nozzle.model.Relay
+import com.dluvian.nozzle.model.SubId
 import com.dluvian.nozzle.model.nostr.Event
 import com.dluvian.nozzle.model.nostr.Filter
 import com.google.gson.JsonElement
@@ -15,17 +17,20 @@ import java.util.UUID
 
 private const val TAG = "Client"
 
+// TODO: Disconnect bad relays and remember them
+
 class Client(private val httpClient: OkHttpClient) {
-    private val sockets: MutableMap<String, WebSocket> = Collections.synchronizedMap(mutableMapOf())
-    private val subscriptions: MutableMap<String, WebSocket> =
+    private val sockets: MutableMap<Relay, WebSocket> = Collections.synchronizedMap(mutableMapOf())
+    private val subscriptions: MutableMap<SubId, WebSocket> =
         Collections.synchronizedMap(mutableMapOf())
     private var nostrListener: NostrListener? = null
     private val baseListener = object : WebSocketListener() {
         override fun onOpen(webSocket: WebSocket, response: Response) {
-            nostrListener?.onOpen(response.message)
+            nostrListener?.onOpen(relay = getRelayUrl(webSocket).orEmpty(), msg = response.message)
         }
 
         override fun onMessage(webSocket: WebSocket, text: String) {
+            val relay = getRelayUrl(webSocket).orEmpty()
             try {
                 val msg = JsonUtils.gson.fromJson(text, JsonElement::class.java).asJsonArray
                 val type = msg[0].asString
@@ -36,53 +41,78 @@ class Client(private val httpClient: OkHttpClient) {
                                 nostrListener?.onEvent(
                                     subscriptionId = msg[1].asString,
                                     event = event,
-                                    relayUrl = getRelayUrl(webSocket)
+                                    relayUrl = relay
                                 )
                             }
                     }
 
-                    "OK" -> nostrListener?.onOk(id = msg[1].asString.orEmpty())
-                    "NOTICE" -> nostrListener?.onError(msg = msg[1].asString)
-                    "EOSE" -> nostrListener?.onEOSE(subscriptionId = msg[1].asString)
-                    else -> nostrListener?.onError(msg = "Unknown type $type. Msg was $text")
+                    "OK" -> nostrListener?.onOk(
+                        relay = relay,
+                        id = msg[1].asString.orEmpty(),
+                        accepted = msg[2].asBoolean,
+                        msg = msg[3].asString
+                    )
+
+                    "NOTICE" -> nostrListener?.onError(
+                        relay = relay,
+                        msg = "onNotice: ${msg[1].asString}"
+                    )
+
+                    "EOSE" -> nostrListener?.onEOSE(
+                        relay = relay,
+                        subscriptionId = msg[1].asString
+                    )
+
+                    "CLOSED" -> nostrListener?.onClosed(
+                        relay = relay,
+                        subscriptionId = msg[1].asString,
+                        reason = msg[2].asString
+                    )
+
+                    else -> nostrListener?.onError(
+                        relay = relay,
+                        msg = "Unknown type $type. Msg was $text"
+                    )
 
                 }
             } catch (t: Throwable) {
-                nostrListener?.onError("Problem with $text", t)
-                nostrListener?.onError("Queue size ${webSocket.queueSize()}", t)
+                nostrListener?.onError(
+                    relay = relay,
+                    msg = "Problem with $text, Queue size ${webSocket.queueSize()}",
+                    throwable = t
+                )
             }
         }
 
         override fun onClosing(webSocket: WebSocket, code: Int, reason: String) {
+            val url = getRelayUrl(webSocket).orEmpty()
             removeSocket(socket = webSocket)
-            nostrListener?.onClose(reason)
+            nostrListener?.onClose(relay = url, reason = reason)
         }
 
         override fun onFailure(webSocket: WebSocket, t: Throwable, response: Response?) {
+            val url = getRelayUrl(webSocket).orEmpty()
             removeSocket(socket = webSocket)
-            nostrListener?.onFailure(response?.message, t)
+            nostrListener?.onFailure(relay = url, msg = response?.message, throwable = t)
         }
     }
 
-    fun subscribe(
-        filters: List<Filter>,
-        relays: Collection<String>? = null
-    ): List<String> {
-        if (filters.isEmpty()) return emptyList()
+    fun subscribe(filters: List<Filter>, relay: Relay): SubId? {
+        if (filters.isEmpty()) return null
 
-        val ids = mutableListOf<String>()
-        relays?.let { addRelays(relays) }
-        filterSocketsByRelays(relays = relays)
-            .forEach {
-                val subscriptionId = UUID.randomUUID().toString()
-                ids.add(subscriptionId)
-                subscriptions[subscriptionId] = it.value
-                val request = createSubscriptionRequest(subscriptionId, filters)
-                Log.d(TAG, "Subscribe in ${it.key}: $request")
-                it.value.send(request)
-            }
+        addRelays(urls = listOf(relay))
+        val socket = sockets[relay]
+        if (socket == null) {
+            Log.w(TAG, "Failed to sub ${filters.size} filters. Relay $relay is not registered")
+            return null
+        }
+        val subId = UUID.randomUUID().toString()
+        subscriptions[subId] = socket
+        val request = createSubscriptionRequest(subId, filters)
+        Log.d(TAG, "Subscribe in $relay: $request")
+        socket.send(request)
 
-        return ids
+        return subId
     }
 
     private fun createSubscriptionRequest(
@@ -111,6 +141,10 @@ class Client(private val httpClient: OkHttpClient) {
 
     fun addRelays(urls: Collection<String>) {
         urls.forEach { addRelay(it) }
+    }
+
+    fun getAllConnectedUrls(): List<Relay> {
+        return sockets.keys.toList()
     }
 
     private fun addRelay(url: String) {

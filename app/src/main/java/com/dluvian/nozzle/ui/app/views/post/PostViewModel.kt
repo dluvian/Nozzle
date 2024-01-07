@@ -122,7 +122,7 @@ class PostViewModel(
     private suspend fun getCleanMentionedPost(postIdHex: String): AnnotatedMentionedPost? {
         val mentionedPost = postDao.getMentionedPost(postId = postIdHex) ?: return null
         val annotatedContent = annotatedContentHandler.annotateContent(
-            content = mentionedPost.content,
+            content = mentionedPost.content.orEmpty(),
             mentionedNamesByPubkey = emptyMap() // TODO: Get mentioned names
         )
         val annotatedMentionedPost = AnnotatedMentionedPost(

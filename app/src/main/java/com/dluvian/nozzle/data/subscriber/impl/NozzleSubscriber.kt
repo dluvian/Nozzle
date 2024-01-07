@@ -1,19 +1,21 @@
-package com.dluvian.nozzle.data.subscriber
+package com.dluvian.nozzle.data.subscriber.impl
 
 import android.util.Log
-import com.dluvian.nozzle.data.WAIT_TIME
+import com.dluvian.nozzle.data.SHORT_WAIT_TIME
+import com.dluvian.nozzle.data.annotatedContent.IAnnotatedContentHandler
 import com.dluvian.nozzle.data.cache.IIdCache
-import com.dluvian.nozzle.data.nostr.INostrSubscriber
 import com.dluvian.nozzle.data.nostr.utils.EncodingUtils
 import com.dluvian.nozzle.data.nostr.utils.KeyUtils
-import com.dluvian.nozzle.data.nostr.utils.MentionUtils.extractNeventsAndNoteIds
-import com.dluvian.nozzle.data.nostr.utils.MentionUtils.extractNprofilesAndNpubs
+import com.dluvian.nozzle.data.nostr.utils.MentionUtils
 import com.dluvian.nozzle.data.provider.IAccountProvider
 import com.dluvian.nozzle.data.provider.IPubkeyProvider
 import com.dluvian.nozzle.data.provider.IRelayProvider
 import com.dluvian.nozzle.data.room.AppDatabase
 import com.dluvian.nozzle.data.room.entity.PostEntity
+import com.dluvian.nozzle.data.subscriber.INozzleSubscriber
+import com.dluvian.nozzle.data.subscriber.ISubscriptionQueue
 import com.dluvian.nozzle.data.utils.getMaxRelays
+import com.dluvian.nozzle.data.utils.getMaxRelaysAndAddIfTooSmall
 import com.dluvian.nozzle.data.utils.takeRandom80percent
 import com.dluvian.nozzle.model.AllRelays
 import com.dluvian.nozzle.model.FeedInfo
@@ -24,66 +26,42 @@ import com.dluvian.nozzle.model.PostWithMeta
 import com.dluvian.nozzle.model.Pubkey
 import com.dluvian.nozzle.model.Relay
 import com.dluvian.nozzle.model.RelaySelection
-import com.dluvian.nozzle.model.SubId
 import com.dluvian.nozzle.model.UserSpecific
 import com.dluvian.nozzle.model.nostr.Nevent
 import com.dluvian.nozzle.model.nostr.Nprofile
 import com.dluvian.nozzle.model.nostr.ReplyTo
 import kotlinx.coroutines.delay
-import java.util.Collections
 
 private const val TAG = "NozzleSubscriber"
 
 class NozzleSubscriber(
-    private val nostrSubscriber: INostrSubscriber,
+    private val subQueue: ISubscriptionQueue,
     private val relayProvider: IRelayProvider,
     private val pubkeyProvider: IPubkeyProvider,
     private val accountProvider: IAccountProvider,
+    private val annotatedContentHandler: IAnnotatedContentHandler,
     private val idCache: IIdCache,
     private val database: AppDatabase,
 ) : INozzleSubscriber {
-    private val personalProfileSubs = Collections.synchronizedList(mutableListOf<String>())
-    private val unknownContactsSubs = Collections.synchronizedList(mutableListOf<String>())
-    private val fullProfileSubs = Collections.synchronizedList(mutableListOf<String>())
-    private val simpleProfileSubs = Collections.synchronizedList(mutableListOf<String>())
-    private val feedPostSubs = Collections.synchronizedList(mutableListOf<String>())
-    private val feedInfoSubs = Collections.synchronizedList(mutableListOf<String>())
-    private val nip65Subs = Collections.synchronizedList(mutableListOf<String>())
-    private val postSubs = Collections.synchronizedList(mutableListOf<String>())
-    private val threadPostSubs = Collections.synchronizedList(mutableListOf<String>())
-    private val parentPostSubs = Collections.synchronizedList(mutableListOf<String>())
-    private val unknownPubkeySubs = Collections.synchronizedList(mutableListOf<String>())
-    private val inboxSubs = Collections.synchronizedList(mutableListOf<String>())
-    private val likeSubs = Collections.synchronizedList(mutableListOf<String>())
 
     override suspend fun subscribePersonalProfiles() {
         Log.i(TAG, "Subscribe personal profiles")
         val accountPubkeys = accountProvider.listAccounts().map { it.pubkey }
-        val subIds = subscribeFullProfiles(pubkeys = accountPubkeys)
-        personalProfileSubs.unsubThenAddAll(subIds)
+        submitFullProfiles(pubkeys = accountPubkeys)
     }
 
-    override suspend fun subscribeUnknownsContacts() {
+    override suspend fun subscribeUnknownContacts() {
         Log.i(TAG, "Subscribe unknown contacts")
-
         val pubkeys = database.contactDao().listContactPubkeysWithMissingProfile()
-        if (pubkeys.isEmpty()) return
-
-        val subIds = subscribeFullProfiles(pubkeys = pubkeys)
-        unknownContactsSubs.unsubThenAddAll(subIds)
+        submitFullProfiles(pubkeys = pubkeys)
     }
 
-    private suspend fun subscribeFullProfiles(pubkeys: Collection<Pubkey>): List<SubId> {
-        val pubkeysByRelay = mutableMapOf<Relay, MutableList<Pubkey>>()
-        relayProvider
-            .getWriteRelaysByPubkeys(pubkeys = pubkeys)
-            .forEach { (pubkey, relays) ->
-                relays.ifEmpty { relayProvider.getReadRelays() }.forEach { relay ->
-                    pubkeysByRelay.putIfAbsent(relay, mutableListOf(pubkey))?.add(pubkey)
-                }
-            }
+    override suspend fun subscribeUnknowns(notes: Collection<PostWithMeta>) {
+        Log.i(TAG, "Subscribe unknowns")
+        if (notes.isEmpty()) return
 
-        return nostrSubscriber.subscribeFullProfiles(pubkeysByRelay = pubkeysByRelay)
+        submitSimpleUnknowns(notes = notes)
+        submitComplexUnknowns(notes = notes)
     }
 
     override suspend fun subscribeFullProfile(profileId: String) {
@@ -91,119 +69,115 @@ class NozzleSubscriber(
         val nostrId = EncodingUtils.profileIdToNostrId(profileId = profileId)
         val hex = nostrId?.hex ?: profileId
         val recommendedRelays = nostrId?.recommendedRelays.orEmpty()
-        val relays = relayProvider.getReadRelays() +
-                relayProvider.getWriteRelaysOfPubkey(pubkey = hex) +
-                recommendedRelays
+            .ifEmpty { relayProvider.getWriteRelaysOfPubkey(pubkey = hex) }
+        val relays = getMaxRelaysAndAddIfTooSmall(
+            from = recommendedRelays,
+            prefer = getMaxRelays(from = relayProvider.getReadRelays())
 
-        val subIds = nostrSubscriber.subscribeFullProfile(pubkey = hex, relays = relays)
-        fullProfileSubs.unsubThenAddAll(subIds)
+        )
+        subQueue.submitFullProfile(pubkey = hex, relays = relays)
+        subQueue.processNow()
     }
 
     override suspend fun subscribeSimpleProfiles(pubkeys: Collection<String>) {
         Log.i(TAG, "Subscribe ${pubkeys.size} simple profiles")
         if (pubkeys.isEmpty()) return
 
-        val allSubIds = mutableListOf<String>()
-
-        val relaysByPubkey = relayProvider.getWriteRelaysByPubkeys(pubkeys = pubkeys)
-        val pubkeysWithMissingRelays = relaysByPubkey
-            .filter { (_, relays) -> relays.isEmpty() }
+        val pubkeysWithNoWriteRelays = relayProvider.getWriteRelaysByPubkeys(pubkeys = pubkeys)
+            .filter { (_, writeRelays) -> writeRelays.isEmpty() }
             .map { (pubkey, _) -> pubkey }
-        if (pubkeysWithMissingRelays.isNotEmpty()) {
-            val subIds = nostrSubscriber.subscribeNip65(pubkeys = pubkeysWithMissingRelays)
-            allSubIds.addAll(subIds)
-        }
+        subQueue.submitNip65s(pubkeys = pubkeysWithNoWriteRelays, relays = null)
+        subQueue.processNow()
 
-        delay(WAIT_TIME)
+        delay(SHORT_WAIT_TIME)
 
-        val relaysByPubkey2 = relayProvider.getWriteRelaysByPubkeys(pubkeys = pubkeys)
-        val subIds = nostrSubscriber.subscribeSimpleProfiles(
-            relaysByPubkey = relaysByPubkey2,
-            defaultRelays = relayProvider.getReadRelays()
-        )
-        allSubIds.addAll(subIds)
-        simpleProfileSubs.unsubThenAddAll(allSubIds)
+        val myReadRelays = getMaxRelays(from = relayProvider.getReadRelays())
+        relayProvider.getWriteRelaysByPubkeys(pubkeys = pubkeys)
+            .forEach { (pubkey, writeRelays) ->
+                val relays = getMaxRelaysAndAddIfTooSmall(from = writeRelays, prefer = myReadRelays)
+                subQueue.submitProfile(pubkey = pubkey, relays = relays)
+            }
+        subQueue.processNow()
     }
 
-    override fun subscribeToFeedPosts(
-        isReplies: Boolean,
-        hashtag: String?,
-        authorPubkeys: List<String>?,
+    override fun subscribeToFeed(
         limit: Int,
+        authors: List<Pubkey>?,
         relaySelection: RelaySelection,
-        until: Long
+        until: Long,
     ) {
         Log.i(TAG, "Subscribe feed posts")
-        if (authorPubkeys != null && authorPubkeys.isEmpty()) return
+        if (authors != null && authors.isEmpty() || limit <= 0) return
 
-        val subIds = when (relaySelection) {
+        when (relaySelection) {
             is AllRelays, is MultipleRelays -> {
-                nostrSubscriber.subscribeToFeedPosts(
-                    authorPubkeys = authorPubkeys,
-                    hashtag = hashtag,
-                    limit = limit,
+                subQueue.submitFeed(
                     until = until,
+                    limit = limit,
+                    authors = authors,
                     relays = relaySelection.selectedRelays
                 )
             }
 
             is UserSpecific -> {
-                if (authorPubkeys == null) {
-                    nostrSubscriber.subscribeToFeedPosts(
-                        authorPubkeys = null,
-                        hashtag = hashtag,
-                        limit = limit,
+                relaySelection.pubkeysPerRelay.forEach { (relay, pubkeys) ->
+                    subQueue.submitFeed(
                         until = until,
-                        relays = relaySelection.selectedRelays
+                        limit = limit,
+                        authors = pubkeys.toList(),
+                        relays = listOf(relay)
                     )
-                } else {
-                    relaySelection.pubkeysPerRelay.flatMap { (relay, pubkeys) ->
-                        // We ignore authorPubkeys because relaySelection should contain them
-                        // TODO: Bad design. IMPROVE
-                        if (pubkeys.isNotEmpty()) {
-                            nostrSubscriber.subscribeToFeedPosts(
-                                authorPubkeys = pubkeys.toList(),
-                                hashtag = hashtag,
-                                limit = limit,
-                                until = until,
-                                relays = listOf(relay)
-                            )
-                        } else emptyList()
-                    }
                 }
             }
         }
-        feedPostSubs.unsubThenAddAll(subIds)
+        subQueue.processNow()
+    }
+
+    override fun subscribeToHashtag(
+        limit: Int,
+        hashtag: String,
+        relays: Collection<Relay>,
+        until: Long
+    ) {
+        Log.i(TAG, "Subscribe feed posts")
+        if (hashtag.isBlank() || limit <= 0 || relays.isEmpty()) return
+        subQueue.submitHashtag(
+            until = until,
+            limit = limit,
+            hashtag = hashtag,
+            relays = relays
+        )
+        subQueue.processNow()
     }
 
     override fun subscribeToInbox(
-        relays: Collection<String>,
         limit: Int,
-        until: Long
+        relays: Collection<String>,
+        until: Long,
     ) {
         Log.i(TAG, "Subscribe inbox")
         if (relays.isEmpty() || limit <= 0) return
 
-        val subIds = nostrSubscriber.subscribePostsWithMention(
-            mentionedPubkey = pubkeyProvider.getActivePubkey(),
-            limit = limit,
+        subQueue.submitInbox(
             until = until,
+            limit = limit,
+            mentionedPubkey = pubkeyProvider.getActivePubkey(),
             relays = relays
         )
-        inboxSubs.unsubThenAddAll(subIds)
+        subQueue.processNow()
     }
 
     override fun subscribeToLikes(limit: Int, until: Long) {
         Log.i(TAG, "Subscribe likes")
         if (limit <= 0) return
 
-        val subIds = nostrSubscriber.subscribeLikes(
-            pubkey = pubkeyProvider.getActivePubkey(),
+        subQueue.submitLikes(
             limit = limit,
             until = until,
+            author = pubkeyProvider.getActivePubkey(),
             relays = relayProvider.getWriteRelays()
         )
-        likeSubs.unsubThenAddAll(subIds)
+        subQueue.processNow()
     }
 
     override suspend fun subscribeFeedInfo(posts: List<PostEntity>): FeedInfo {
@@ -213,9 +187,9 @@ class NozzleSubscriber(
         val postIds = posts.map { it.id }
         val authorPubkeys = posts.map { it.pubkey }.distinct()
         val contents = posts.map { it.content }
-        val mentionedProfiles = extractNprofilesAndNpubs(contents = contents)
+        val mentionedProfiles = MentionUtils.extractNprofilesAndNpubs(contents = contents)
         val mentionedPubkeys = mentionedProfiles.map { it.pubkey }
-        val mentionedPosts = extractNeventsAndNoteIds(contents = contents)
+        val mentionedPosts = MentionUtils.extractNeventsAndNoteIds(contents = contents)
         val mentionedPostIds = mentionedPosts.map { it.eventId }
         val replyTos = posts.mapNotNull {
             it.replyToId?.let { id ->
@@ -233,26 +207,35 @@ class NozzleSubscriber(
         val postIdsByPubkey = authorPubkeys.associateWith { pubkey ->
             posts.filter { it.pubkey == pubkey }.map { it.id }
         }
+        getNip65PubkeysToSub(pubkeys = allPubkeys, nprofiles = mentionedProfiles)
+            .forEach { (relay, pubkeys) ->
+                subQueue.submitNip65s(pubkeys = pubkeys, relays = listOf(relay))
+            }
 
-        val subIds = nostrSubscriber.subscribeFeedInfo(
-            nip65PubkeysByRelay = getNip65PubkeysToSub(
-                pubkeys = allPubkeys,
-                nprofiles = mentionedProfiles
-            ),
-            profilePubkeysByRelay = getProfilePubkeysToSub(
-                authorPubkeys = allPubkeys,
-                mentionedProfiles = mentionedProfiles
-            ),
-            contactListPubkeysByRelay = getContactListPubkeysToSub(
-                authorPubkeys = authorPubkeys,
-                mentionedProfiles = mentionedProfiles
-            ),
-            postIdsByRelay = getPostIdsToSub(replyTos = replyTos, mentionedPosts = mentionedPosts),
-            repliesByRelay = getPostIdsToSubReplies(postIdsByPubkey = postIdsByPubkey),
-            reactionPostIdsByRelay = getReactionPostIdsToSub(postIds = postIds),
-            reactorPubkey = pubkeyProvider.getActivePubkey()
-        )
-        feedInfoSubs.unsubThenAddAll(subIds)
+        getProfilePubkeysToSub(authorPubkeys = allPubkeys, mentionedProfiles = mentionedProfiles)
+            .forEach { (relay, pubkeys) ->
+                subQueue.submitProfiles(pubkeys = pubkeys, relays = listOf(relay))
+            }
+        getContactListPubkeysToSub(
+            authorPubkeys = authorPubkeys,
+            mentionedProfiles = mentionedProfiles
+        ).forEach { (relay, pubkeys) ->
+            subQueue.submitContactLists(pubkeys = pubkeys, relays = listOf(relay))
+        }
+        getPostIdsToSub(replyTos = replyTos, mentionedPosts = mentionedPosts)
+            .forEach { (relay, noteIds) ->
+                subQueue.submitNoteIds(noteIds = noteIds, relays = listOf(relay))
+            }
+        getPostIdsToSubReplies(postIdsByPubkey = postIdsByPubkey).forEach { (relay, noteIds) ->
+            subQueue.submitReplies(parentIds = noteIds, relays = listOf(relay))
+        }
+        getReactionPostIdsToSub(postIds = postIds).forEach { (relay, noteIds) ->
+            subQueue.submitLikes(
+                noteIds = noteIds,
+                author = pubkeyProvider.getActivePubkey(),
+                relays = listOf(relay)
+            )
+        }
 
         return FeedInfo(
             postIds = postIds,
@@ -262,39 +245,8 @@ class NozzleSubscriber(
         )
     }
 
-    override suspend fun subscribeUnknowns(posts: List<PostWithMeta>) {
-        if (posts.isEmpty()) return
-
-        val replyParentPubkeys = posts.mapNotNull { it.replyToPubkey }
-        val mentionedPostPubkeys = posts
-            .flatMap { it.annotatedMentionedPosts }
-            .map { it.mentionedPost.pubkey }
-        val allPubkeys = (replyParentPubkeys + mentionedPostPubkeys).distinct()
-        if (allPubkeys.isEmpty()) return
-
-        val existingPubkeys = database.profileDao().filterExistingPubkeys(pubkeys = allPubkeys)
-        val unknownPubkeys = allPubkeys.minus(existingPubkeys.toSet())
-        Log.i(TAG, "Subscribe ${unknownPubkeys.size} unknown pubkeys")
-        if (unknownPubkeys.isEmpty()) return
-
-        val nip65RelayMapping = relayProvider.getWriteRelaysByPubkeys(unknownPubkeys)
-            .map { IdAndRelays(id = it.key, relays = it.value) }
-
-        val subIds = nostrSubscriber.subscribeNip65AndProfiles(
-            nip65PubkeysByRelay = getNip65PubkeysToSub(
-                pubkeys = unknownPubkeys,
-                nprofiles = emptyList()
-            ),
-            pubkeysByRelay = relayProvider.getReadRelays()
-                .associateWith { _ -> unknownPubkeys.toMutableList() }
-                .toMutableMap()
-                .addSpecialRelayMapping(nip65RelayMapping)
-        )
-        unknownPubkeySubs.unsubThenAddAll(subIds)
-    }
-
     override suspend fun subscribeThreadPost(postId: String) {
-        parentPostSubs.unsubThenAddAll(emptyList())
+        Log.i(TAG, "Subscribe thread post")
 
         val nostrId = EncodingUtils.postIdToNostrId(postId)
         val hex = nostrId?.hex ?: postId
@@ -308,26 +260,29 @@ class NozzleSubscriber(
         val existingIds = database.postDao().filterExistingIds(postIds = postIds)
         if (existingIds.contains(hex)) return
 
-        val relays = nostrId?.recommendedRelays.orEmpty() + relayProvider.getReadRelays()
-        val subIds = nostrSubscriber.subscribePosts(postIds = postIds, relays = relays)
-
-        threadPostSubs.unsubThenAddAll(subIds)
+        val relays = getMaxRelaysAndAddIfTooSmall(
+            from = nostrId?.recommendedRelays.orEmpty(),
+            prefer = relayProvider.getReadRelays()
+        )
+        subQueue.submitNoteId(noteId = hex, relays = relays)
+        subQueue.processNow()
     }
 
-    override suspend fun subscribeParentPost(postId: String, relayHint: String?) {
-        Log.i(TAG, "Subscribe parent post $postId in $relayHint")
+    override suspend fun subscribeParentPost(noteId: NoteId, relayHint: Relay?) {
+        Log.i(TAG, "Subscribe parent post $noteId in $relayHint")
 
-        val relays = relayProvider.getReadRelays().toMutableList()
-        if (relayHint?.isNotEmpty() == true) relays.add(relayHint)
-
-        val subIds = nostrSubscriber.subscribePosts(postIds = listOf(postId), relays = relays)
-        parentPostSubs.addAll(subIds)
+        val relays = getMaxRelaysAndAddIfTooSmall(
+            from = if (relayHint.isNullOrEmpty()) listOf() else listOf(relayHint),
+            prefer = relayProvider.getReadRelays()
+        )
+        subQueue.submitNoteId(noteId = noteId, relays = relays)
+        subQueue.processNow()
     }
 
-    override suspend fun subscribeNip65(pubkeys: Set<String>) {
+    override suspend fun subscribeNip65(pubkeys: Set<Pubkey>) {
+        Log.i(TAG, "Subscribe nip65 of ${pubkeys.size} pubkeys")
         if (pubkeys.isEmpty()) return
 
-        Log.i(TAG, "Subscribe nip65 of ${pubkeys.size} pubkeys")
         val filteredPubkeys = pubkeys.minus(idCache.getNip65Authors())
         if (filteredPubkeys.isEmpty()) return
 
@@ -335,21 +290,19 @@ class NozzleSubscriber(
         val toSub = filteredPubkeys.minus(pubkeysInDb.takeRandom80percent().toSet())
         if (toSub.isEmpty()) return
 
-        val subIds = nostrSubscriber.subscribeNip65(pubkeys = toSub)
-        nip65Subs.unsubThenAddAll(subIds)
+        subQueue.submitNip65s(pubkeys = toSub.toList(), relays = null)
+        subQueue.processNow()
     }
 
-    override fun subscribeToPosts(postIds: Collection<String>) {
-        if (postIds.isEmpty()) return
+    override fun subscribeToNotes(noteIds: Collection<NoteId>) {
+        if (noteIds.isEmpty()) return
 
-        val distinctIds = postIds.distinct()
-        Log.i(TAG, "Subscribe ${distinctIds.size} posts")
+        val distinctIds = noteIds.distinct()
+        Log.i(TAG, "Subscribe ${distinctIds.size} notes")
 
-        val subIds = nostrSubscriber.subscribePosts(
-            postIds = distinctIds,
-            relays = relayProvider.getReadRelays()
-        )
-        postSubs.unsubThenAddAll(subIds)
+        val myReadRelays = getMaxRelays(from = relayProvider.getReadRelays())
+        noteIds.forEach { noteId -> subQueue.submitNoteId(noteId = noteId, relays = myReadRelays) }
+        subQueue.processNow()
     }
 
     private suspend fun getNip65PubkeysToSub(
@@ -413,7 +366,7 @@ class NozzleSubscriber(
     private suspend fun getPostIdsToSub(
         replyTos: List<ReplyTo>,
         mentionedPosts: List<Nevent>
-    ): Map<Relay, List<String>> {
+    ): Map<Relay, List<NoteId>> {
         if (replyTos.isEmpty() && mentionedPosts.isEmpty()) return emptyMap()
 
         val allPostIds = replyTos.map { it.replyTo } + mentionedPosts.map { it.eventId }
@@ -429,7 +382,9 @@ class NozzleSubscriber(
         return filtered.toMutableMap().addSpecialRelayMapping(idAndRelays = idAndRelays)
     }
 
-    private suspend fun getPostIdsToSubReplies(postIdsByPubkey: Map<Pubkey, List<NoteId>>): Map<Relay, List<NoteId>> {
+    private suspend fun getPostIdsToSubReplies(
+        postIdsByPubkey: Map<Pubkey, List<NoteId>>
+    ): Map<Relay, List<NoteId>> {
         if (postIdsByPubkey.isEmpty()) return emptyMap()
 
         val allPostIds = postIdsByPubkey.flatMap { (_, postIds) -> postIds }
@@ -444,7 +399,7 @@ class NozzleSubscriber(
             pubkeys = postIdsByPubkey.map { (pubkey, _) -> pubkey }
         )
         for ((pubkey, readRelays) in readRelaysByPubkey) {
-            getMaxRelays(from = readRelays, prefer = result.keys).forEach { relay ->
+            getMaxRelaysAndAddIfTooSmall(from = readRelays, prefer = result.keys).forEach { relay ->
                 val postIdsToAdd = postIdsByPubkey[pubkey].orEmpty().toMutableList()
                 val present = result.putIfAbsent(relay, postIdsToAdd)
                 present?.addAll(postIdsToAdd)
@@ -454,7 +409,7 @@ class NozzleSubscriber(
         return result
     }
 
-    private suspend fun getReactionPostIdsToSub(postIds: List<String>): Map<Relay, List<String>> {
+    private suspend fun getReactionPostIdsToSub(postIds: List<NoteId>): Map<Relay, List<NoteId>> {
         if (postIds.isEmpty()) return emptyMap()
 
         val alreadyLiked = database.reactionDao().filterLikedPostIds(
@@ -465,7 +420,7 @@ class NozzleSubscriber(
         if (toSub.isEmpty()) return emptyMap()
 
         Log.i(TAG, "Return ${toSub.size} postIds to sub reactions")
-        return relayProvider.getReadRelays().associateWith { _ -> toSub }
+        return getMaxRelays(relayProvider.getReadRelays()).associateWith { _ -> toSub }
     }
 
     private suspend fun getUnknownParentAuthors(
@@ -529,7 +484,9 @@ class NozzleSubscriber(
         val filtered = ids.minus(existingIds).distinct()
         if (filtered.isEmpty()) return emptyMap()
 
-        return relayProvider.getReadRelays().associateWith { _ -> filtered.toMutableList() }
+        return getMaxRelays(relayProvider.getReadRelays()).associateWith { _ ->
+            filtered.toMutableList()
+        }
     }
 
     private fun MutableMap<Relay, MutableList<String>>.addSpecialRelayMapping(
@@ -554,10 +511,90 @@ class NozzleSubscriber(
         return this
     }
 
-    private fun MutableList<String>.unsubThenAddAll(newSubIds: Collection<String>) {
-        val snapshot = this.toList()
-        this.clear()
-        this.addAll(newSubIds)
-        nostrSubscriber.unsubscribe(snapshot)
+    private suspend fun submitFullProfiles(pubkeys: Collection<Pubkey>) {
+        if (pubkeys.isEmpty()) return
+        val myReadRelays = relayProvider.getReadRelays()
+        val writeRelays = relayProvider.getWriteRelaysByPubkeys(pubkeys = pubkeys)
+        writeRelays.forEach { (pubkey, relays) ->
+            subQueue.submitFullProfile(
+                pubkey = pubkey,
+                relays = getMaxRelaysAndAddIfTooSmall(from = relays, prefer = myReadRelays)
+            )
+        }
+    }
+
+    private suspend fun submitSimpleUnknowns(notes: Collection<PostWithMeta>) {
+        if (notes.isEmpty()) return
+
+        val unknownAuthors = notes
+            .filter { it.hasUnknownAuthor }
+            .map { it.pubkey }
+        val unknownReplyParentAuthors = notes
+            .filter { it.replyToName == null && it.entity.replyRelayHint == null }
+            .mapNotNull { it.replyToPubkey }
+        val unknownAuthorsOfMentionedPost = notes
+            .flatMap { it.annotatedMentionedPosts }
+            .filter { it.mentionedPost.name == null }
+            .mapNotNull { it.mentionedPost.pubkey }
+
+        val allPubkeys = listOf(
+            unknownAuthors,
+            unknownReplyParentAuthors,
+            unknownAuthorsOfMentionedPost
+        )
+            .flatten()
+            .toSet()
+        submitFullProfiles(pubkeys = allPubkeys)
+
+        val unknownMentionedNoteIds = notes
+            .flatMap { it.annotatedMentionedPosts }
+            .filter { it.mentionedPost.content == null }
+            .map { it.mentionedPost.id }
+        subQueue.submitNoteIds(noteIds = unknownMentionedNoteIds, relays = null)
+
+        val myReadRelays = relayProvider.getReadRelays()
+        val unknownParentNotes = notes.filter {
+            it.entity.replyToId != null && it.replyToPubkey == null
+        }
+        unknownParentNotes.forEach {
+            val relays = if (it.entity.replyRelayHint.isNullOrEmpty()) {
+                null
+            } else {
+                getMaxRelaysAndAddIfTooSmall(
+                    from = listOf(it.entity.replyRelayHint),
+                    prefer = myReadRelays
+                )
+            }
+            subQueue.submitNoteId(noteId = it.entity.replyToId!!, relays = relays)
+        }
+    }
+
+    private suspend fun submitComplexUnknowns(notes: Collection<PostWithMeta>) {
+        if (notes.isEmpty()) return
+
+        val myReadRelays = relayProvider.getReadRelays()
+
+        val allAnnotations = (notes.map { it.annotatedContent } +
+                notes.flatMap { it.annotatedMentionedPosts }.map { it.annotatedContent }).toSet()
+
+        val nprofiles = allAnnotations.flatMap { annotatedContentHandler.extractNprofiles(it) }
+        val allPubkeys = nprofiles.map { it.pubkey }.toSet()
+        val existingPubkeys = database.profileDao().filterExistingPubkeys(pubkeys = allPubkeys)
+        val unknownPubkeys = allPubkeys - existingPubkeys.toSet()
+        val unknownNprofiles = nprofiles.filter { unknownPubkeys.contains(it.pubkey) }
+        unknownNprofiles.forEach {
+            val relays = getMaxRelaysAndAddIfTooSmall(from = it.relays, prefer = myReadRelays)
+            subQueue.submitFullProfile(pubkey = it.pubkey, relays = relays)
+        }
+
+        val nevents = allAnnotations.flatMap { annotatedContentHandler.extractNevents(it) }
+        val allNoteIds = nevents.map { it.eventId }.toSet()
+        val existingNoteIds = database.postDao().filterExistingIds(postIds = allNoteIds)
+        val unknownNoteIds = allNoteIds - existingNoteIds.toSet()
+        val unknownNevents = nevents.filter { unknownNoteIds.contains(it.eventId) }
+        unknownNevents.forEach {
+            val relays = getMaxRelaysAndAddIfTooSmall(from = it.relays, prefer = myReadRelays)
+            subQueue.submitNoteId(noteId = it.eventId, relays = relays)
+        }
     }
 }

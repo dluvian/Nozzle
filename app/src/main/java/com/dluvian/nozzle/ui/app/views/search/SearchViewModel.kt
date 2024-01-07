@@ -80,7 +80,7 @@ class SearchViewModel(
     val onSubscribeUnknownContacts: () -> Unit = {
         subJob?.cancel()
         subJob = viewModelScope.launch(Dispatchers.IO) {
-            nozzleSubscriber.subscribeUnknownsContacts()
+            nozzleSubscriber.subscribeUnknownContacts()
         }
     }
 
@@ -110,7 +110,6 @@ class SearchViewModel(
             setLoading(false)
         }
     }
-
 
     private fun handleSearch(searchString: String, searchType: SearchType) {
         when (searchType) {

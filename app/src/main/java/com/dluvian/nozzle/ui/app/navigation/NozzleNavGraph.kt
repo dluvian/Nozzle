@@ -63,7 +63,7 @@ fun NozzleNavGraph(
             postCardInteractor = postCardInteractor,
             noteDeletor = noteDeletor,
             profileFollower = profileFollower,
-            clickedMediaUrlCache = clickedMediaUrlCache
+            clickedMediaUrlCache = clickedMediaUrlCache,
         )
     }
 

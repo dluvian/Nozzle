@@ -3,6 +3,7 @@ package com.dluvian.nozzle.data.nostr
 import com.dluvian.nozzle.data.room.helper.Nip65Relay
 import com.dluvian.nozzle.model.EventId
 import com.dluvian.nozzle.model.Relay
+import com.dluvian.nozzle.model.SubId
 import com.dluvian.nozzle.model.nostr.Event
 import com.dluvian.nozzle.model.nostr.Filter
 import com.dluvian.nozzle.model.nostr.Metadata
@@ -41,13 +42,11 @@ interface INostrService {
 
     fun updateContactList(contactPubkeys: List<String>, relays: Collection<String>?): Event
 
-    fun subscribe(
-        filters: List<Filter>,
-        unsubOnEOSE: Boolean,
-        relays: Collection<String>?,
-    ): List<String>
+    fun subscribe(filters: List<Filter>, relay: Relay): SubId?
 
     fun unsubscribe(subscriptionIds: Collection<String>)
+
+    fun getActiveRelays(): List<Relay>
 
     fun close()
 }

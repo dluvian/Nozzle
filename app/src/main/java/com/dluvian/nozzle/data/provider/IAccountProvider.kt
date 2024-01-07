@@ -5,6 +5,5 @@ import kotlinx.coroutines.flow.StateFlow
 
 interface IAccountProvider {
     fun listAccounts(): List<AccountEntityExtended>
-
     fun getAccountsFlow(): StateFlow<List<AccountEntityExtended>>
 }
