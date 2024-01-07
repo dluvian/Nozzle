@@ -6,7 +6,6 @@ import com.dluvian.nozzle.data.nostr.INostrService
 import com.dluvian.nozzle.data.provider.IRelayProvider
 import com.dluvian.nozzle.data.subscriber.ISubscriptionQueue
 import com.dluvian.nozzle.data.utils.addOrCreate
-import com.dluvian.nozzle.data.utils.getCurrentTimeInSeconds
 import com.dluvian.nozzle.data.utils.getMaxRelays
 import com.dluvian.nozzle.model.NoteId
 import com.dluvian.nozzle.model.Pubkey
@@ -137,7 +136,7 @@ class SubscriptionQueue(
                 )
             }
         }
-        lastProcessTime.set(getCurrentTimeInSeconds())
+        lastProcessTime.set(System.currentTimeMillis())
     }
 
     private fun startProcessingJob() {
@@ -145,7 +144,7 @@ class SubscriptionQueue(
         scope.launch {
             while (true) {
                 delay(WAIT_TIME)
-                if (lastProcessTime.get() <= getCurrentTimeInSeconds() - WAIT_TIME / 1000) {
+                if (lastProcessTime.get() <= System.currentTimeMillis() - WAIT_TIME) {
                     processNow()
                 } else Log.i(TAG, "Skip job")
             }
