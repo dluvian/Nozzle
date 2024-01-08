@@ -4,8 +4,11 @@ Nozzle is a lightweight nostr client for Android.
 
 ## Installation
 
-Go to the [release page](https://github.com/dluvian/Nozzle/releases) and download the latest apk
-file or clone this repository and build it yourself.
+Install it via [Obtainium](https://github.com/ImranR98/Obtainium)
+or go to the [release page](https://github.com/dluvian/Nozzle/releases) and download the latest apk
+file.
+
+I don't plan to publish this app in the Google Play Store.
 
 ## Screenshots
 
