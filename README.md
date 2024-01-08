@@ -20,6 +20,15 @@ I don't plan to publish this app in the Google Play Store.
 - Mobile data friendly: Profile pictures are not rendered, pictures are only loaded when the user
   decides to, reactions of other people will not be fetched and the number of relay connections to
   fetch the feed is minimized.
+- Trust indicator: Each profile has a colored badge in the top-right of their identicon which
+  indicates their trust level.
+    - Green check: You follow this profile (trust him).
+    - Orange check: You don't follow this profile, but at least one of the people you follow (
+      friend) does. The green background section expands proportionally based on the percentage of
+      your friends following this profile. If 90.9% or more of your friends follow this person, the
+      background will be fully green.
+    - Grey question mark: You don't follow this profile and neither do any of your friends. Replies
+      from these profiles appear at the end of a thread.
 - Small apk size of less than 8MB
 
 ## Screenshots
