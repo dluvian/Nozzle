@@ -9,10 +9,15 @@ object UrlUtils {
     private const val MAX_URL_LENGTH = 30
 
     // Video suffixes from https://developer.android.com/guide/topics/media/platform/supported-formats#video-formats
-    val mediaSuffixes = listOf(
+    private val mediaSuffixes = listOf(
         ".jpg", ".jpeg", ".png", ".gif", ".webp", ".svg",
         ".mp4", ".webm", ".mkv", ".3gp"
     )
+
+    fun String.hasMediaSuffix(): Boolean {
+        val url = this.split("#").firstOrNull() ?: return false
+        return mediaSuffixes.any { suffix -> url.endsWith(suffix) }
+    }
 
     fun extractUrls(extractFrom: String) = urlPattern.findAll(extractFrom).toList()
 
