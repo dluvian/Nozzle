@@ -15,6 +15,7 @@ object UrlUtils {
     )
 
     fun String.hasMediaSuffix(): Boolean {
+        if (mediaSuffixes.any { suffix -> this.endsWith(suffix) }) return true
         val url = this.split("#").firstOrNull() ?: return false
         return mediaSuffixes.any { suffix -> url.endsWith(suffix) }
     }
