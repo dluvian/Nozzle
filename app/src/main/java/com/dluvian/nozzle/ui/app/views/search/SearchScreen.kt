@@ -1,6 +1,5 @@
 package com.dluvian.nozzle.ui.app.views.search
 
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -10,12 +9,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.Button
-import androidx.compose.material.ButtonDefaults
-import androidx.compose.material.Icon
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Description
 import androidx.compose.material.icons.rounded.Person
@@ -28,24 +21,22 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.TextFieldValue
-import androidx.compose.ui.unit.dp
 import com.dluvian.nozzle.R
 import com.dluvian.nozzle.model.PostWithMeta
 import com.dluvian.nozzle.model.Pubkey
 import com.dluvian.nozzle.model.SimpleProfile
 import com.dluvian.nozzle.ui.app.navigation.PostCardLambdas
 import com.dluvian.nozzle.ui.components.ChangeableTextField
+import com.dluvian.nozzle.ui.components.IconedFilterChip
 import com.dluvian.nozzle.ui.components.ReturnableTopBar
 import com.dluvian.nozzle.ui.components.SearchTopBarButton
 import com.dluvian.nozzle.ui.components.TopBarCircleProgressIndicator
 import com.dluvian.nozzle.ui.components.itemRow.ItemRow
 import com.dluvian.nozzle.ui.components.itemRow.PictureAndName
 import com.dluvian.nozzle.ui.components.postCard.PostCard
-import com.dluvian.nozzle.ui.theme.hintGray
 import com.dluvian.nozzle.ui.theme.spacing
 
 
@@ -160,41 +151,19 @@ private fun SearchBar(
 @Composable
 private fun SelectionOptions(searchType: SearchType, onChangeSearchType: (SearchType) -> Unit) {
     Row(modifier = Modifier.padding(horizontal = spacing.screenEdge)) {
-        SelectionItem(
+        IconedFilterChip(
             text = stringResource(id = R.string.people),
-            icon = Icons.Rounded.Person,
             isSelected = searchType == SearchType.PEOPLE,
-            onClick = { onChangeSearchType(SearchType.PEOPLE) }
+            onClick = { onChangeSearchType(SearchType.PEOPLE) },
+            leadingIcon = Icons.Rounded.Person
         )
         Spacer(modifier = Modifier.width(spacing.screenEdge))
-        SelectionItem(
+        IconedFilterChip(
             text = stringResource(id = R.string.notes),
-            icon = Icons.Rounded.Description,
             isSelected = searchType == SearchType.NOTES,
-            onClick = { onChangeSearchType(SearchType.NOTES) }
+            onClick = { onChangeSearchType(SearchType.NOTES) },
+            leadingIcon = Icons.Rounded.Description
         )
-    }
-}
-
-@Composable
-private fun SelectionItem(
-    text: String,
-    icon: ImageVector,
-    isSelected: Boolean,
-    onClick: () -> Unit
-) {
-    val color = if (isSelected) MaterialTheme.colors.onBackground else MaterialTheme.colors.hintGray
-    Button(
-        onClick = onClick,
-        shape = RoundedCornerShape(20.dp),
-        border = BorderStroke(1.dp, MaterialTheme.colors.onBackground),
-        colors = ButtonDefaults.outlinedButtonColors(
-            contentColor = color,
-            backgroundColor = MaterialTheme.colors.background
-        )
-    ) {
-        Icon(imageVector = icon, contentDescription = null)
-        Text(text = text, color = color)
     }
 }
 
