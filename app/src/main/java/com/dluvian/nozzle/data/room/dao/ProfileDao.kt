@@ -32,7 +32,11 @@ interface ProfileDao {
                 // SELECT numOfFollowing
                 "(SELECT COUNT(contactPubkey) FROM contact WHERE pubkey = :pubkey) AS numOfFollowing, " +
                 // SELECT numOfFollowers
-                "(SELECT COUNT(pubkey) FROM contact WHERE contactPubkey = :pubkey) AS numOfFollowers " +
+                "(SELECT COUNT(pubkey) FROM contact WHERE contactPubkey = :pubkey) AS numOfFollowers, " +
+                // SELECT followsYou
+                "(SELECT EXISTS(SELECT * FROM contact WHERE pubkey = :pubkey " +
+                "AND contactPubkey = (SELECT pubkey FROM account WHERE isActive = 1)" +
+                ")) AS followsYou " +
                 "FROM profile AS mainProfile " +
                 "WHERE mainProfile.pubkey = :pubkey"
     )
