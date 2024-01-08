@@ -20,6 +20,7 @@ I don't plan to publish this app in the Google Play Store.
 - Mobile data friendly: Profile pictures are not rendered, pictures are only loaded when the user
   decides to, reactions of other people will not be fetched and the number of relay connections to
   fetch the feed is minimized.
+- Small apk size of less than 8MB
 
 ## Screenshots
 
