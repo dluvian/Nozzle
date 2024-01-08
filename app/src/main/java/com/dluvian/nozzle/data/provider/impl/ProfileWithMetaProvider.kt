@@ -59,7 +59,6 @@ class ProfileWithMetaProvider(
             createNprofileStr(pubkey = pubkey, relays = relays)
         }
 
-
         // No debounce because of immediate user interaction response
         val trustScoreFlow = contactDao
             .getTrustScoreFlow(contactPubkey = pubkey)
@@ -101,6 +100,7 @@ class ProfileWithMetaProvider(
                 writesInRelays = nip65s.filter { it.isWrite }.map { it.url },
                 readsInRelays = nip65s.filter { it.isRead }.map { it.url },
                 isOneself = pubkeyProvider.isOneself(pubkeyVariations.pubkey), // TODO: Handle in SQL
+                followsYou = profile?.followsYou ?: false,
                 trustScore = trustScore,
             )
         }

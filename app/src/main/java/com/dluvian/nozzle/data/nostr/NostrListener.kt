@@ -18,4 +18,5 @@ interface NostrListener {
     fun onClose(relay: Relay, reason: String)
     fun onFailure(relay: Relay, msg: String?, throwable: Throwable? = null)
     fun onOk(relay: Relay, id: String, accepted: Boolean, msg: String)
+    fun onAuth(relay: Relay, challengeString: String)
 }

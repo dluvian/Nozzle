@@ -43,6 +43,7 @@ interface ISubscriptionQueue {
     fun submitFeed(
         until: Long,
         limit: Int,
+        hashtag: String?,
         authors: List<Pubkey>?,
         relays: Collection<Relay>?
     ) {
@@ -50,7 +51,7 @@ interface ISubscriptionQueue {
             until = until,
             limit = limit,
             authors = authors,
-            hashtag = null,
+            hashtag = hashtag,
             mentionedPubkey = null,
             relays = relays
         )
@@ -63,17 +64,6 @@ interface ISubscriptionQueue {
             authors = null,
             hashtag = null,
             mentionedPubkey = mentionedPubkey,
-            relays = relays
-        )
-    }
-
-    fun submitHashtag(until: Long, limit: Int, hashtag: String, relays: Collection<Relay>?) {
-        submitNotes(
-            until = until,
-            limit = limit,
-            authors = null,
-            hashtag = hashtag,
-            mentionedPubkey = null,
             relays = relays
         )
     }

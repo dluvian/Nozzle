@@ -19,15 +19,9 @@ interface INozzleSubscriber {
 
     fun subscribeToFeed(
         limit: Int,
+        hashtag: String?,
         authors: List<Pubkey>?,
         relaySelection: RelaySelection,
-        until: Long = getCurrentTimeInSeconds(),
-    )
-
-    fun subscribeToHashtag(
-        limit: Int,
-        hashtag: String,
-        relays: Collection<Relay>,
         until: Long = getCurrentTimeInSeconds(),
     )
 

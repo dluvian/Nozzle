@@ -12,6 +12,7 @@ data class ProfileWithMeta(
     val writesInRelays: List<String>,
     val readsInRelays: List<String>,
     val isOneself: Boolean,
+    val followsYou: Boolean,
     val trustScore: Float?,
 ) {
     companion object {
@@ -25,6 +26,7 @@ data class ProfileWithMeta(
             writesInRelays = emptyList(),
             readsInRelays = emptyList(),
             isOneself = false,
+            followsYou = false,
             trustScore = null,
         )
     }

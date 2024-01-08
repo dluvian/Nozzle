@@ -12,7 +12,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.material.Chip
 import androidx.compose.material.Divider
+import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
@@ -133,6 +135,7 @@ private fun ProfileData(
         ProfileStrings(
             name = profile.metadata.name.orEmpty()
                 .ifEmpty { getShortenedNpubFromPubkey(profile.pubkey) ?: profile.pubkey },
+            followsYou = profile.followsYou,
             nprofile = profile.nprofile,
             lud16 = profile.metadata.lud16
         )
@@ -258,6 +261,7 @@ private fun NumberedCategories(
 @Composable
 private fun ProfileStrings(
     name: String,
+    followsYou: Boolean,
     nprofile: String,
     lud16: String?
 ) {
@@ -266,12 +270,7 @@ private fun ProfileStrings(
         horizontalArrangement = Arrangement.SpaceBetween,
     ) {
         Column(Modifier.padding(end = spacing.medium)) {
-            Text(
-                text = name,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-                style = MaterialTheme.typography.h6,
-            )
+            NameWithFollowInfoChip(name = name, followsYou = followsYou)
             val clip = LocalClipboardManager.current
             val context = LocalContext.current
             CopyableNprofile(
@@ -297,6 +296,34 @@ private fun ProfileStrings(
                             clip = clip
                         )
                     }
+                )
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterialApi::class)
+@Composable
+private fun NameWithFollowInfoChip(name: String, followsYou: Boolean) {
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        Text(
+            modifier = Modifier.weight(weight = 1f, fill = false),
+            text = name,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+            style = MaterialTheme.typography.h6,
+        )
+        if (followsYou) {
+            Chip(
+                modifier = Modifier
+                    .height(sizing.smallItem)
+                    .padding(start = spacing.medium),
+                onClick = { },
+                enabled = false,
+            ) {
+                Text(
+                    modifier = Modifier.align(Alignment.CenterVertically),
+                    text = stringResource(id = R.string.follows_you)
                 )
             }
         }

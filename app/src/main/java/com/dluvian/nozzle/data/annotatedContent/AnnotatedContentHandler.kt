@@ -18,6 +18,7 @@ import com.dluvian.nozzle.data.utils.AnnotatedStringUtils.pushAnnotatedString
 import com.dluvian.nozzle.data.utils.AnnotatedStringUtils.pushStyledUrlAnnotation
 import com.dluvian.nozzle.data.utils.HashtagUtils
 import com.dluvian.nozzle.data.utils.UrlUtils
+import com.dluvian.nozzle.data.utils.UrlUtils.hasMediaSuffix
 import com.dluvian.nozzle.model.Pubkey
 import com.dluvian.nozzle.model.nostr.Nevent
 import com.dluvian.nozzle.model.nostr.NeventNostrId
@@ -149,7 +150,7 @@ class AnnotatedContentHandler : IAnnotatedContentHandler {
     override fun extractMediaLinks(annotatedContent: AnnotatedString): List<String> {
         return annotatedContent.getUrlAnnotations(start = 0, end = annotatedContent.length)
             .map { it.item.url }
-            .filter { url -> UrlUtils.mediaSuffixes.any { suffix -> url.endsWith(suffix) } }
+            .filter { url -> url.hasMediaSuffix() }
     }
 
     override fun extractNevents(annotatedContent: AnnotatedString): List<Nevent> {

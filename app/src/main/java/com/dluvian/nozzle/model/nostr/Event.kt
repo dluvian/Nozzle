@@ -8,6 +8,7 @@ import com.dluvian.nozzle.data.utils.SchnorrUtils.secp256k1
 import com.dluvian.nozzle.data.utils.Sha256Utils.sha256
 import com.dluvian.nozzle.data.utils.UrlUtils.removeTrailingSlashes
 import com.dluvian.nozzle.data.utils.getCurrentTimeInSeconds
+import com.dluvian.nozzle.model.Relay
 import com.google.gson.JsonElement
 import com.google.gson.annotations.SerializedName
 import fr.acinq.secp256k1.Hex
@@ -35,6 +36,7 @@ class Event(
         const val REPOST = 6
         const val REACTION = 7
         const val NIP65 = 10002
+        const val AUTH = 22242
     }
 
     companion object {
@@ -173,6 +175,22 @@ class Event(
                 kind = Kind.DELETE,
                 tags = listOf(
                     listOf("e", eventId),
+                ),
+                content = "",
+                keys = keys
+            )
+        }
+
+        fun createAuthEvent(
+            relay: Relay,
+            challengeString: String,
+            keys: Keys
+        ): Event {
+            return create(
+                kind = Kind.AUTH,
+                tags = listOf(
+                    listOf("relay", relay),
+                    listOf("challenge", challengeString),
                 ),
                 content = "",
                 keys = keys

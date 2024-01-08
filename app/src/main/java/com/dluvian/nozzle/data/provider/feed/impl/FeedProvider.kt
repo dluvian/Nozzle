@@ -41,22 +41,14 @@ class FeedProvider(
     ): ListAndNumberFlow<PostWithMeta> {
         Log.i(TAG, "Get feed")
         val authorSelectionPubkeys = listPubkeys(authorSelection = feedSettings.authorSelection)
-        // TODO: Combine subscribeToFeed and subscribeToHashtag again
-        if (feedSettings.hashtag.isNullOrBlank()) {
-            nozzleSubscriber.subscribeToFeed(
-                authors = authorSelectionPubkeys,
-                limit = 2 * limit,
-                relaySelection = feedSettings.relaySelection,
-                until = until
-            )
-        } else {
-            nozzleSubscriber.subscribeToHashtag(
-                hashtag = feedSettings.hashtag,
-                limit = 2 * limit,
-                relays = feedSettings.relaySelection.selectedRelays.orEmpty(), // TODO: Should not be empty
-                until = until
-            )
-        }
+        nozzleSubscriber.subscribeToFeed(
+            authors = authorSelectionPubkeys,
+            limit = 2 * limit,
+            relaySelection = feedSettings.relaySelection,
+            hashtag = feedSettings.hashtag,
+            until = until
+        )
+
         delay(waitForSubscription)
 
         val relays = if (feedSettings.relaySelection is UserSpecific) null
