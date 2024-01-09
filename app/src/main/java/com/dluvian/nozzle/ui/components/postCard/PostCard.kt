@@ -29,6 +29,7 @@ import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.media3.exoplayer.ExoPlayer
 import com.dluvian.nozzle.R
 import com.dluvian.nozzle.data.nostr.utils.EncodingUtils.createNeventStr
 import com.dluvian.nozzle.data.utils.copyAndToast
@@ -52,6 +53,7 @@ import com.dluvian.nozzle.ui.theme.spacing
 @Composable
 fun PostCard(
     post: PostWithMeta,
+    videoPlayer: ExoPlayer,
     postCardLambdas: PostCardLambdas,
     onPrepareReply: (PostWithMeta) -> Unit,
     modifier: Modifier = Modifier,
@@ -136,6 +138,7 @@ fun PostCard(
                 MediaDecisionCard(
                     modifier = Modifier.fillMaxWidth(),
                     mediaUrl = mediaUrl,
+                    videoPlayer = videoPlayer,
                     onShowMedia = postCardLambdas.onShowMedia,
                     onShouldShowMedia = postCardLambdas.onShouldShowMedia,
                 )

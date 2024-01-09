@@ -18,6 +18,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.res.stringResource
+import androidx.media3.exoplayer.ExoPlayer
 import com.dluvian.nozzle.R
 import com.dluvian.nozzle.model.PostThread
 import com.dluvian.nozzle.model.PostWithMeta
@@ -36,6 +37,7 @@ import com.dluvian.nozzle.ui.theme.spacing
 fun ThreadScreen(
     thread: PostThread,
     isRefreshing: Boolean,
+    videoPlayer: ExoPlayer,
     postCardLambdas: PostCardLambdas,
     onPrepareReply: (PostWithMeta) -> Unit,
     onRefreshThreadView: () -> Unit,
@@ -48,6 +50,7 @@ fun ThreadScreen(
             ThreadedPosts(
                 thread = thread,
                 isRefreshing = isRefreshing,
+                videoPlayer = videoPlayer,
                 postCardLambdas = postCardLambdas,
                 onPrepareReply = onPrepareReply,
                 onRefresh = onRefreshThreadView,
@@ -62,6 +65,7 @@ fun ThreadScreen(
 private fun ThreadedPosts(
     thread: PostThread,
     isRefreshing: Boolean,
+    videoPlayer: ExoPlayer,
     postCardLambdas: PostCardLambdas,
     onPrepareReply: (PostWithMeta) -> Unit,
     onRefresh: () -> Unit,
@@ -94,6 +98,7 @@ private fun ThreadedPosts(
                     }
                     PostCard(
                         post = post,
+                        videoPlayer = videoPlayer,
                         postCardLambdas = postCardLambdas,
                         onPrepareReply = onPrepareReply,
                         threadPosition = if (index == 0) ThreadPosition.START else ThreadPosition.MIDDLE,
@@ -109,6 +114,7 @@ private fun ThreadedPosts(
                     val focusColor = colors.primaryVariant
                     PostCard(
                         post = it,
+                        videoPlayer = videoPlayer,
                         postCardLambdas = postCardLambdas,
                         onPrepareReply = onPrepareReply,
                         modifier = Modifier.drawBehind {
@@ -129,6 +135,7 @@ private fun ThreadedPosts(
                 items(items = thread.replies, key = { it.entity.id }) { post ->
                     PostCard(
                         post = post,
+                        videoPlayer = videoPlayer,
                         postCardLambdas = postCardLambdas,
                         onPrepareReply = onPrepareReply,
                     )

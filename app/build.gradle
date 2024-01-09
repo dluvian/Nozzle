@@ -111,4 +111,8 @@ dependencies {
     // JSON
     // gson does not understand default values. Be aware of the null!
     implementation('com.google.code.gson:gson:2.10.1')
+
+    // Video player
+    implementation "androidx.media3:media3-exoplayer:1.2.0"
+    implementation "androidx.media3:media3-ui:1.2.0"
 }

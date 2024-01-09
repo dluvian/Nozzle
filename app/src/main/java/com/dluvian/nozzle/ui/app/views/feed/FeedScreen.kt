@@ -28,6 +28,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.media3.exoplayer.ExoPlayer
 import com.dluvian.nozzle.data.DB_BATCH_SIZE
 import com.dluvian.nozzle.data.utils.isScrollingUp
 import com.dluvian.nozzle.model.Everyone
@@ -54,6 +55,7 @@ fun FeedScreen(
     pubkey: String,
     feed: List<PostWithMeta>,
     numOfNewPosts: Int,
+    videoPlayer: ExoPlayer,
     postCardLambdas: PostCardLambdas,
     onRefresh: () -> Unit,
     onRefreshOnMenuDismiss: () -> Unit,
@@ -102,6 +104,7 @@ fun FeedScreen(
         ) {
             PostCardList(
                 posts = feed,
+                videoPlayer = videoPlayer,
                 isRefreshing = uiState.isRefreshing,
                 postCardLambdas = postCardLambdas,
                 onRefresh = onRefresh,

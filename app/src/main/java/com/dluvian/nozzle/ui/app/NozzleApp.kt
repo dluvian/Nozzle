@@ -16,6 +16,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.media3.exoplayer.ExoPlayer
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import com.dluvian.nozzle.AppContainer
@@ -178,6 +179,7 @@ fun NozzleApp(appContainer: AppContainer) {
             Screen(
                 drawerState = drawerState,
                 vmContainer = vmContainer,
+                videoPlayer = appContainer.videoPlayer,
                 profileFollower = appContainer.profileFollower,
                 clickedMediaUrlCache = appContainer.clickedMediaUrlCache,
                 postCardInteractor = appContainer.postCardInteractor,
@@ -194,6 +196,7 @@ fun NozzleApp(appContainer: AppContainer) {
 private fun Screen(
     drawerState: DrawerState,
     vmContainer: VMContainer,
+    videoPlayer: ExoPlayer,
     profileFollower: IProfileFollower,
     clickedMediaUrlCache: IClickedMediaUrlCache,
     postCardInteractor: IPostCardInteractor,
@@ -206,6 +209,7 @@ private fun Screen(
         Drawer(
             drawerState = drawerState,
             vmContainer = vmContainer,
+            videoPlayer = videoPlayer,
             profileFollower = profileFollower,
             clickedMediaUrlCache = clickedMediaUrlCache,
             postCardInteractor = postCardInteractor,
@@ -218,6 +222,7 @@ private fun Screen(
         NozzleContent(
             drawerState = drawerState,
             vmContainer = vmContainer,
+            videoPlayer = videoPlayer,
             profileFollower = profileFollower,
             clickedMediaUrlCache = clickedMediaUrlCache,
             postCardInteractor = postCardInteractor,
@@ -233,6 +238,7 @@ private fun Screen(
 private fun Drawer(
     drawerState: DrawerState,
     vmContainer: VMContainer,
+    videoPlayer: ExoPlayer,
     profileFollower: IProfileFollower,
     clickedMediaUrlCache: IClickedMediaUrlCache,
     postCardInteractor: IPostCardInteractor,
@@ -257,6 +263,7 @@ private fun Drawer(
         NozzleContent(
             vmContainer = vmContainer,
             navActions = navActions,
+            videoPlayer = videoPlayer,
             profileFollower = profileFollower,
             clickedMediaUrlCache = clickedMediaUrlCache,
             postCardInteractor = postCardInteractor,
@@ -272,6 +279,7 @@ private fun Drawer(
 private fun NozzleContent(
     drawerState: DrawerState,
     vmContainer: VMContainer,
+    videoPlayer: ExoPlayer,
     profileFollower: IProfileFollower,
     clickedMediaUrlCache: IClickedMediaUrlCache,
     postCardInteractor: IPostCardInteractor,
@@ -288,6 +296,7 @@ private fun NozzleContent(
         NozzleNavGraph(
             vmContainer = vmContainer,
             navActions = navActions,
+            videoPlayer = videoPlayer,
             profileFollower = profileFollower,
             clickedMediaUrlCache = clickedMediaUrlCache,
             postCardInteractor = postCardInteractor,

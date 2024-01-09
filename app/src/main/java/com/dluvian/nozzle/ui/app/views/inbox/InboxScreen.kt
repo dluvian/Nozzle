@@ -7,6 +7,7 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.media3.exoplayer.ExoPlayer
 import com.dluvian.nozzle.R
 import com.dluvian.nozzle.data.DB_BATCH_SIZE
 import com.dluvian.nozzle.data.utils.isScrollingUp
@@ -23,6 +24,7 @@ fun InboxScreen(
     uiState: InboxViewModelState,
     feed: List<PostWithMeta>,
     numOfNewPosts: Int,
+    videoPlayer: ExoPlayer,
     postCardLambdas: PostCardLambdas,
     onRefresh: () -> Unit,
     onLoadMore: () -> Unit,
@@ -51,6 +53,7 @@ fun InboxScreen(
         Column(modifier = Modifier.fillMaxSize()) {
             PostCardList(
                 posts = feed,
+                videoPlayer = videoPlayer,
                 isRefreshing = uiState.isRefreshing,
                 postCardLambdas = postCardLambdas,
                 onRefresh = onRefresh,

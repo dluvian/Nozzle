@@ -4,6 +4,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.media3.exoplayer.ExoPlayer
 import com.dluvian.nozzle.data.profileFollower.IProfileFollower
 import com.dluvian.nozzle.model.PostWithMeta
 import com.dluvian.nozzle.ui.app.navigation.PostCardLambdas
@@ -11,6 +12,7 @@ import com.dluvian.nozzle.ui.app.navigation.PostCardLambdas
 @Composable
 fun HashtagRoute(
     hashtagViewModel: HashtagViewModel,
+    videoPlayer: ExoPlayer,
     profileFollower: IProfileFollower,
     postCardLambdas: PostCardLambdas,
     onPrepareReply: (PostWithMeta) -> Unit,
@@ -33,6 +35,7 @@ fun HashtagRoute(
         uiState = uiState,
         feed = adjustedFeed,
         numOfNewPosts = numOfNewPosts,
+        videoPlayer = videoPlayer,
         postCardLambdas = postCardLambdas,
         onRefresh = hashtagViewModel.onRefresh,
         onLoadMore = hashtagViewModel.onLoadMore,

@@ -7,6 +7,7 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.media3.exoplayer.ExoPlayer
 import com.dluvian.nozzle.data.DB_BATCH_SIZE
 import com.dluvian.nozzle.model.PostWithMeta
 import com.dluvian.nozzle.ui.app.navigation.PostCardLambdas
@@ -15,6 +16,7 @@ import com.dluvian.nozzle.ui.components.PullRefreshBox
 @Composable
 fun PostCardList(
     posts: List<PostWithMeta>,
+    videoPlayer: ExoPlayer,
     isRefreshing: Boolean,
     postCardLambdas: PostCardLambdas,
     onRefresh: () -> Unit,
@@ -29,6 +31,7 @@ fun PostCardList(
             itemsIndexed(items = posts, key = { _, item -> item.entity.id }) { index, post ->
                 PostCard(
                     post = post,
+                    videoPlayer = videoPlayer,
                     postCardLambdas = postCardLambdas,
                     onPrepareReply = onPrepareReply,
                 )
