@@ -1,6 +1,5 @@
 package com.dluvian.nozzle.ui.components.postCard.molecules
 
-import android.util.Log
 import androidx.annotation.OptIn
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.aspectRatio
@@ -115,7 +114,6 @@ private fun LoadedVideo(videoUrl: String, videoPlayer: ExoPlayer) {
     })
     DisposableEffect(Unit) {
         onDispose {
-            Log.i("LOLOL", "Release")
             exoPlayer.release()
         }
     }

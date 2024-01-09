@@ -159,13 +159,10 @@ class PostWithMetaProvider(
                     content = post.content,
                     mentionedNamesByPubkey = mentionedNamesAndPosts.mentionedNamesByPubkey
                 )
-                val finalPost = if (post.name.isNullOrEmpty() && !post.pubkey.isNullOrEmpty()) {
-                    post.copy(name = getShortenedNpubFromPubkey(post.pubkey))
-                } else post
 
                 AnnotatedMentionedPost(
                     annotatedContent = annotated,
-                    mentionedPost = finalPost
+                    mentionedPost = post
                 )
             }
     }

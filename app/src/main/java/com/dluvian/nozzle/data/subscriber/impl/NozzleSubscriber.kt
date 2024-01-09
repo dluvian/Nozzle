@@ -516,13 +516,12 @@ class NozzleSubscriber(
             .filter { it.hasUnknownAuthor }
             .map { it.pubkey }
         val unknownReplyParentAuthors = notes
-            .filter { it.replyToName == null && it.entity.replyRelayHint == null }
+            .filter { it.replyToName.isNullOrEmpty() && it.entity.replyRelayHint == null }
             .mapNotNull { it.replyToPubkey }
         val unknownAuthorsOfMentionedPost = notes
             .flatMap { it.annotatedMentionedPosts }
-            .filter { it.mentionedPost.name == null }
+            .filter { it.mentionedPost.name.isNullOrEmpty() }
             .mapNotNull { it.mentionedPost.pubkey }
-
         val allPubkeys = listOf(
             unknownAuthors,
             unknownReplyParentAuthors,

@@ -25,7 +25,6 @@ object UrlUtils {
         return videoSuffixes.any { suffix -> url.endsWith(suffix) }
     }
 
-
     fun extractUrls(extractFrom: String) = urlPattern.findAll(extractFrom).toList()
 
     fun shortenUrl(url: String): String {
