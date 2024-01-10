@@ -14,6 +14,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import com.dluvian.nozzle.data.nostr.utils.ShortenedNameUtils
 import com.dluvian.nozzle.model.AnnotatedMentionedPost
 import com.dluvian.nozzle.model.Oneself
 import com.dluvian.nozzle.ui.components.postCard.atoms.BorderedCard
@@ -51,7 +52,10 @@ fun AnnotatedMentionedPostCard(
                     )
                     Spacer(modifier = Modifier.width(spacing.medium))
                     PostCardHeader(
-                        name = post.mentionedPost.name.orEmpty(),
+                        name = if (post.mentionedPost.name.isNullOrEmpty())
+                            ShortenedNameUtils.getShortenedNpubFromPubkey(post.mentionedPost.pubkey)
+                                .orEmpty()
+                        else post.mentionedPost.name,
                         pubkey = post.mentionedPost.pubkey.orEmpty(),
                         createdAt = post.mentionedPost.createdAt ?: 0L,
                         onOpenProfile = onNavigateToProfile,

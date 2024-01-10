@@ -48,7 +48,7 @@ fun MediaDecisionCard(
             LoadedMedia(
                 modifier = Modifier.fillMaxWidth(),
                 subModifier = subModifier,
-                mediaUrl = mediaUrl
+                mediaUrl = mediaUrl,
             )
         }
     }
@@ -68,8 +68,13 @@ private fun ShowMediaCard(onClick: () -> Unit, modifier: Modifier = Modifier) {
 private fun LoadedMedia(
     mediaUrl: String,
     modifier: Modifier = Modifier,
-    subModifier: Modifier = Modifier
+    subModifier: Modifier = Modifier,
 ) {
+    LoadedImage(modifier = modifier, subModifier = subModifier, mediaUrl = mediaUrl)
+}
+
+@Composable
+private fun LoadedImage(modifier: Modifier, subModifier: Modifier, mediaUrl: String) {
     SubcomposeAsyncImage(
         modifier = modifier.clickable { /* Prevents opening post card */ },
         model = ImageRequest.Builder(LocalContext.current)

@@ -45,8 +45,8 @@ fun HashtagScreen(
                 posts = feed,
                 isRefreshing = uiState.isRefreshing,
                 postCardLambdas = postCardLambdas,
-                onRefresh = onRefresh,
-                onPrepareReply = onPrepareReply, // TODO: Delete dis
+                onRefresh = onRefresh, // TODO: Delete dis
+                onPrepareReply = onPrepareReply,
                 onLoadMore = onLoadMore,
                 lazyListState = lazyListState
             )
