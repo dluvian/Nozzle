@@ -6,7 +6,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
-import androidx.media3.exoplayer.ExoPlayer
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -48,7 +47,6 @@ private const val TAG = "NozzleNavGraph"
 fun NozzleNavGraph(
     vmContainer: VMContainer,
     navActions: NozzleNavActions,
-    videoPlayer: ExoPlayer,
     profileFollower: IProfileFollower,
     clickedMediaUrlCache: IClickedMediaUrlCache,
     postCardInteractor: IPostCardInteractor,
@@ -77,7 +75,6 @@ fun NozzleNavGraph(
         composable(route = NozzleRoute.FEED) {
             FeedRoute(
                 feedViewModel = vmContainer.feedViewModel,
-                videoPlayer = videoPlayer,
                 profileFollower = profileFollower,
                 postCardLambdas = postCardLambdas,
                 onPrepareReply = vmContainer.replyViewModel.onPrepareReply,
@@ -94,7 +91,6 @@ fun NozzleNavGraph(
             )
             ProfileRoute(
                 profileViewModel = vmContainer.profileViewModel,
-                videoPlayer = videoPlayer,
                 profileFollower = profileFollower,
                 postCardLambdas = postCardLambdas,
                 onOpenFollowerList = navActions.navigateToFollowerList,
@@ -134,7 +130,6 @@ fun NozzleNavGraph(
         composable(route = NozzleRoute.INBOX) {
             InboxRoute(
                 inboxViewModel = vmContainer.inboxViewModel,
-                videoPlayer = videoPlayer,
                 profileFollower = profileFollower,
                 postCardLambdas = postCardLambdas,
                 onPrepareReply = vmContainer.replyViewModel.onPrepareReply,
@@ -144,7 +139,6 @@ fun NozzleNavGraph(
         composable(route = NozzleRoute.LIKES) {
             LikesRoute(
                 likesViewModel = vmContainer.likesViewModel,
-                videoPlayer = videoPlayer,
                 profileFollower = profileFollower,
                 postCardLambdas = postCardLambdas,
                 onPrepareReply = vmContainer.replyViewModel.onPrepareReply,
@@ -154,7 +148,6 @@ fun NozzleNavGraph(
         composable(route = NozzleRoute.SEARCH) {
             SearchRoute(
                 searchViewModel = vmContainer.searchViewModel,
-                videoPlayer = videoPlayer,
                 postCardLambdas = postCardLambdas,
                 onPrepareReply = vmContainer.replyViewModel.onPrepareReply,
                 onGoBack = navActions.popStack,
@@ -187,7 +180,6 @@ fun NozzleNavGraph(
             )
             ThreadRoute(
                 threadViewModel = vmContainer.threadViewModel,
-                videoPlayer = videoPlayer,
                 profileFollower = profileFollower,
                 postCardLambdas = postCardLambdas,
                 onPrepareReply = vmContainer.replyViewModel.onPrepareReply,
@@ -226,7 +218,6 @@ fun NozzleNavGraph(
                 vmContainer.hashtagViewModel.onOpenHashtag(hashtag)
                 HashtagRoute(
                     hashtagViewModel = vmContainer.hashtagViewModel,
-                    videoPlayer = videoPlayer,
                     profileFollower = profileFollower,
                     postCardLambdas = postCardLambdas,
                     onPrepareReply = vmContainer.replyViewModel.onPrepareReply,

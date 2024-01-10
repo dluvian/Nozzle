@@ -28,7 +28,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.media3.exoplayer.ExoPlayer
 import com.dluvian.nozzle.R
 import com.dluvian.nozzle.data.DB_BATCH_SIZE
 import com.dluvian.nozzle.data.nostr.utils.ShortenedNameUtils.getShortenedNpubFromPubkey
@@ -61,7 +60,6 @@ fun ProfileScreen(
     isFollowedByMe: Boolean,
     feed: List<PostWithMeta>,
     numOfNewPosts: Int,
-    videoPlayer: ExoPlayer,
     postCardLambdas: PostCardLambdas,
     onPrepareReply: (PostWithMeta) -> Unit,
     onOpenFollowerList: (String) -> Unit,
@@ -101,7 +99,6 @@ fun ProfileScreen(
         Divider()
         PostCardList(
             posts = feed,
-            videoPlayer = videoPlayer,
             isRefreshing = isRefreshing,
             postCardLambdas = postCardLambdas,
             onRefresh = onRefresh,

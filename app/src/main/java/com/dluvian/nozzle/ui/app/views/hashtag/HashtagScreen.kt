@@ -6,7 +6,6 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.media3.exoplayer.ExoPlayer
 import com.dluvian.nozzle.data.DB_BATCH_SIZE
 import com.dluvian.nozzle.data.utils.isScrollingUp
 import com.dluvian.nozzle.model.PostWithMeta
@@ -22,7 +21,6 @@ fun HashtagScreen(
     uiState: HashtagViewModelState,
     feed: List<PostWithMeta>,
     numOfNewPosts: Int,
-    videoPlayer: ExoPlayer,
     postCardLambdas: PostCardLambdas,
     onRefresh: () -> Unit,
     onLoadMore: () -> Unit,
@@ -45,7 +43,6 @@ fun HashtagScreen(
         Column(modifier = Modifier.fillMaxSize()) {
             PostCardList(
                 posts = feed,
-                videoPlayer = videoPlayer,
                 isRefreshing = uiState.isRefreshing,
                 postCardLambdas = postCardLambdas,
                 onRefresh = onRefresh, // TODO: Delete dis

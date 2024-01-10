@@ -4,7 +4,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
-import androidx.media3.exoplayer.ExoPlayer
 import com.dluvian.nozzle.data.profileFollower.IProfileFollower
 import com.dluvian.nozzle.model.PostWithMeta
 import com.dluvian.nozzle.ui.app.navigation.PostCardLambdas
@@ -13,7 +12,6 @@ import com.dluvian.nozzle.ui.app.navigation.PostCardLambdas
 @Composable
 fun FeedRoute(
     feedViewModel: FeedViewModel,
-    videoPlayer: ExoPlayer,
     profileFollower: IProfileFollower,
     postCardLambdas: PostCardLambdas,
     onPrepareReply: (PostWithMeta) -> Unit,
@@ -39,7 +37,6 @@ fun FeedRoute(
         pubkey = pubkey,
         feed = adjustedFeed,
         numOfNewPosts = numOfNewPosts,
-        videoPlayer = videoPlayer,
         postCardLambdas = postCardLambdas,
         onRefresh = feedViewModel.onRefresh,
         onRefreshOnMenuDismiss = feedViewModel.onRefreshOnMenuDismiss,

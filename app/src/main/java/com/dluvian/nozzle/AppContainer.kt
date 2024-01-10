@@ -1,7 +1,6 @@
 package com.dluvian.nozzle
 
 import android.content.Context
-import androidx.media3.exoplayer.ExoPlayer
 import androidx.room.Room
 import com.dluvian.nozzle.data.SWEEP_THRESHOLD
 import com.dluvian.nozzle.data.annotatedContent.AnnotatedContentHandler
@@ -226,6 +225,4 @@ class AppContainer(context: Context) {
         simpleProfileProvider = simpleProfileProvider,
         relayProvider = relayProvider
     )
-
-    val videoPlayer = ExoPlayer.Builder(context).build()
 }

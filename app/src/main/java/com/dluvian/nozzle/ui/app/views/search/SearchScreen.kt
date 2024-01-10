@@ -24,7 +24,6 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.TextFieldValue
-import androidx.media3.exoplayer.ExoPlayer
 import com.dluvian.nozzle.R
 import com.dluvian.nozzle.model.PostWithMeta
 import com.dluvian.nozzle.model.Pubkey
@@ -47,7 +46,6 @@ fun SearchScreen(
     postCardLambdas: PostCardLambdas,
     profileSearchResult: List<SimpleProfile>,
     postSearchResult: List<PostWithMeta>,
-    videoPlayer: ExoPlayer,
     onManualSearch: (String) -> Unit,
     onTypeSearch: (String) -> Unit,
     onChangeSearchType: (SearchType) -> Unit,
@@ -102,7 +100,6 @@ fun SearchScreen(
                             content = {
                                 PostCard(
                                     post = it,
-                                    videoPlayer = videoPlayer,
                                     postCardLambdas = postCardLambdas,
                                     onPrepareReply = onPrepareReply,
                                 )

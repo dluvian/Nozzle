@@ -4,7 +4,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
-import androidx.media3.exoplayer.ExoPlayer
 import com.dluvian.nozzle.data.profileFollower.IProfileFollower
 import com.dluvian.nozzle.model.PostThread
 import com.dluvian.nozzle.model.PostWithMeta
@@ -13,7 +12,6 @@ import com.dluvian.nozzle.ui.app.navigation.PostCardLambdas
 @Composable
 fun ThreadRoute(
     threadViewModel: ThreadViewModel,
-    videoPlayer: ExoPlayer,
     profileFollower: IProfileFollower,
     postCardLambdas: PostCardLambdas,
     onPrepareReply: (PostWithMeta) -> Unit,
@@ -38,7 +36,6 @@ fun ThreadRoute(
     ThreadScreen(
         thread = adjustedThread,
         isRefreshing = isRefreshing,
-        videoPlayer = videoPlayer,
         postCardLambdas = postCardLambdas,
         onPrepareReply = onPrepareReply,
         onRefreshThreadView = threadViewModel.onRefreshThreadView,
