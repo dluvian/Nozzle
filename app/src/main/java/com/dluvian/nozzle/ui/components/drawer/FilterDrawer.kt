@@ -10,6 +10,7 @@ import androidx.compose.material.Divider
 import androidx.compose.material.Icon
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material3.Button
 import androidx.compose.material3.DrawerState
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalDrawerSheet
@@ -32,6 +33,7 @@ import com.dluvian.nozzle.ui.theme.spacing
 fun FilterDrawer(
     drawerState: DrawerState,
     filterCategories: List<FilterCategory>,
+    onClose: () -> Unit,
     content: @Composable () -> Unit,
 ) {
     CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl) {
@@ -78,6 +80,11 @@ fun FilterDrawer(
                                 }
                                 Divider()
                                 Spacer(modifier = Modifier.height(spacing.screenEdge))
+                            }
+                            item {
+                                Button(modifier = Modifier.fillMaxWidth(), onClick = onClose) {
+                                    Text(text = "Apply and close")
+                                }
                             }
                         }
                     }

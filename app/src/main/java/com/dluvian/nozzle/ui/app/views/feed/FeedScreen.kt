@@ -112,6 +112,10 @@ fun FeedScreen(
                     onAdd = {}
                 ),
             ),
+            onClose = {
+                onRefresh()
+                scope.launch { drawerState.close() }
+            }
         ) {
             FeedContent(
                 feed = feed,
