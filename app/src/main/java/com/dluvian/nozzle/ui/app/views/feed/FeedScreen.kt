@@ -12,7 +12,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.FloatingActionButton
 import androidx.compose.material.Icon
 import androidx.compose.material.MaterialTheme.typography
@@ -20,15 +19,15 @@ import androidx.compose.material.Scaffold
 import androidx.compose.material.Text
 import androidx.compose.material.TopAppBar
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.SettingsSuggest
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.DrawerValue
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
@@ -49,7 +48,6 @@ import com.dluvian.nozzle.ui.components.hint.NoPostsHint
 import com.dluvian.nozzle.ui.components.media.ProfilePicture
 import com.dluvian.nozzle.ui.components.postCard.PostCardList
 import com.dluvian.nozzle.ui.theme.sizing
-import com.dluvian.nozzle.ui.theme.spacing
 import kotlinx.coroutines.launch
 
 @Composable
@@ -182,30 +180,30 @@ private fun FeedTopBar(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            ProfilePicture(
-                modifier = Modifier
-                    .weight(weight = 0.15f, fill = false)
-                    .padding(start = spacing.large)
-                    .size(sizing.smallProfilePicture)
-                    .clip(CircleShape)
-                    .clickable(onClick = onPictureClick),
-                pubkey = pubkey,
-                trustType = Oneself
-            )
+            IconButton(
+                modifier = Modifier.weight(weight = 0.15f, fill = false),
+                onClick = onPictureClick
+            ) {
+                ProfilePicture(
+                    modifier = Modifier.size(sizing.smallProfilePicture),
+                    pubkey = pubkey,
+                    trustType = Oneself
+                )
+            }
             Headline(
                 modifier = Modifier.weight(0.7f),
                 headline = stringResource(id = R.string.Feed),
                 onScrollToTop = onScrollToTop,
             )
-            Icon(
-                modifier = Modifier
-                    .weight(weight = 0.15f, fill = false)
-                    .padding(end = spacing.large)
-                    .clip(CircleShape)
-                    .clickable(onClick = onFilterDrawer),
-                imageVector = Icons.Default.SettingsSuggest,
-                contentDescription = stringResource(id = R.string.feed_settings),
-            )
+            IconButton(
+                modifier = Modifier.weight(weight = 0.15f, fill = false),
+                onClick = onFilterDrawer
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Settings,
+                    contentDescription = stringResource(id = R.string.feed_settings),
+                )
+            }
         }
     }
 }
