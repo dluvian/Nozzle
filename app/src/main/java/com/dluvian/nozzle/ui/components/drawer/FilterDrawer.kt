@@ -50,36 +50,7 @@ fun FilterDrawer(
                             horizontalAlignment = Alignment.Start
                         ) {
                             items(filterCategories) { category ->
-                                Text(
-                                    text = category.name,
-                                    style = MaterialTheme.typography.titleMedium
-                                )
-                                category.filters.forEach { filter ->
-                                    when (filter) {
-                                        is CheckBoxFilterValue -> NamedCheckbox(
-                                            isChecked = filter.isChecked,
-                                            name = filter.name,
-                                            onClick = filter.onClick
-                                        )
-
-                                        is SwitchFilterValue -> NamedSwitch(
-                                            isChecked = filter.isChecked,
-                                            name = filter.name,
-                                            onClick = filter.onClick
-                                        )
-                                    }
-                                }
-                                category.onAdd?.let { onAdd ->
-                                    TextButton(onClick = onAdd) {
-                                        Icon(
-                                            imageVector = Icons.Default.Add,
-                                            contentDescription = stringResource(id = R.string.add_relay_set)
-                                        )
-                                        Text(text = stringResource(id = R.string.add_relay_set))
-                                    }
-                                }
-                                Divider()
-                                Spacer(modifier = Modifier.height(spacing.screenEdge))
+                                Category(category = category)
                             }
                             item {
                                 Button(modifier = Modifier.fillMaxWidth(), onClick = onClose) {
@@ -95,5 +66,46 @@ fun FilterDrawer(
                 content()
             }
         }
+    }
+}
+
+@Composable
+private fun Category(category: FilterCategory) {
+    Text(
+        text = category.name,
+        style = MaterialTheme.typography.titleMedium
+    )
+    category.filters.forEach { filter ->
+        NamedCheckBoxOrSwitch(filter = filter)
+    }
+    category.onAdd?.let { onAdd ->
+        TextButton(onClick = onAdd) {
+            Icon(
+                imageVector = Icons.Default.Add,
+                contentDescription = stringResource(id = R.string.add_relay_set)
+            )
+            Text(text = stringResource(id = R.string.add_relay_set))
+        }
+    }
+    Divider()
+    Spacer(modifier = Modifier.height(spacing.screenEdge))
+}
+
+@Composable
+private fun NamedCheckBoxOrSwitch(filter: TypedFilterValue) {
+    when (filter) {
+        is CheckBoxFilterValue -> NamedCheckbox(
+            isChecked = filter.isChecked,
+            name = filter.name,
+            isEnabled = filter.isEnabled,
+            onClick = filter.onClick
+        )
+
+        is SwitchFilterValue -> NamedSwitch(
+            isChecked = filter.isChecked,
+            name = filter.name,
+            isEnabled = filter.isEnabled,
+            onClick = filter.onClick
+        )
     }
 }

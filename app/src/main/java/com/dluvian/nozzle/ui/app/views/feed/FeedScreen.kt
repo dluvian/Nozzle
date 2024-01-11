@@ -94,9 +94,9 @@ fun FeedScreen(
                 FilterCategory(
                     name = "People",
                     filters = listOf(
-                        SwitchFilterValue(name = "Global", isChecked = false, onClick = {}),
                         SwitchFilterValue(name = "Friends", isChecked = true, onClick = {}),
                         SwitchFilterValue(name = "Friend circle", isChecked = false, onClick = {}),
+                        SwitchFilterValue(name = "Global", isChecked = false, onClick = {}),
                     )
                 ),
                 FilterCategory(

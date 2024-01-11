@@ -5,7 +5,7 @@ import androidx.compose.runtime.Immutable
 sealed interface TypedFilterValue {
     val name: String
     val isChecked: Boolean
-    val values: List<String>?
+    val isEnabled: Boolean
     val onClick: () -> Unit
 }
 
@@ -13,7 +13,7 @@ sealed interface TypedFilterValue {
 data class CheckBoxFilterValue(
     override val name: String,
     override val isChecked: Boolean,
-    override val values: List<String>? = null,
+    override val isEnabled: Boolean = true,
     override val onClick: () -> Unit
 ) : TypedFilterValue
 
@@ -22,6 +22,6 @@ data class CheckBoxFilterValue(
 data class SwitchFilterValue(
     override val name: String,
     override val isChecked: Boolean,
-    override val values: List<String>? = null,
+    override val isEnabled: Boolean = true,
     override val onClick: () -> Unit
 ) : TypedFilterValue
