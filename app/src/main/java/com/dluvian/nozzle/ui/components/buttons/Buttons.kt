@@ -1,4 +1,4 @@
-package com.dluvian.nozzle.ui.components
+package com.dluvian.nozzle.ui.components.buttons
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
@@ -29,6 +29,7 @@ import com.dluvian.nozzle.data.utils.UrlUtils.removeWebsocketPrefix
 import com.dluvian.nozzle.model.RelayActive
 import com.dluvian.nozzle.ui.components.dropdown.CheckboxDropdownMenuItem
 import com.dluvian.nozzle.ui.components.dropdown.RelaysDropdownMenu
+import com.dluvian.nozzle.ui.components.icons.RelayIcon
 import com.dluvian.nozzle.ui.theme.spacing
 
 @Composable

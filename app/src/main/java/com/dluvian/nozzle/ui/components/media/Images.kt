@@ -9,12 +9,11 @@ import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material.Icon
-import androidx.compose.material.MaterialTheme.colors
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Help
 import androidx.compose.material.icons.filled.Verified
 import androidx.compose.material.icons.filled.VerifiedUser
+import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -111,11 +110,9 @@ private fun PictureIndicatorBase(
     modifier: Modifier = Modifier
 ) {
     Row(modifier = modifier, horizontalArrangement = Arrangement.End) {
-        val bgColor = colors.background
         Box(
             modifier = Modifier
                 .clip(CircleShape)
-                .background(color = bgColor)
                 .fillMaxWidth(0.42f)
                 .aspectRatio(1.0f),
             contentAlignment = Alignment.Center
@@ -140,7 +137,7 @@ private fun PictureIndicatorBase(
                     }
                     .drawBehind {
                         drawCircle(
-                            color = bgColor,
+                            color = Color.White,
                             radius = size.minDimension * 0.33f
                         )
                     },

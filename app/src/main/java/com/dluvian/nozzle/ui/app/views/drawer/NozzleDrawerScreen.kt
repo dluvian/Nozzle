@@ -46,10 +46,10 @@ import com.dluvian.nozzle.R
 import com.dluvian.nozzle.model.Account
 import com.dluvian.nozzle.model.Oneself
 import com.dluvian.nozzle.ui.app.navigation.NozzleNavActions
-import com.dluvian.nozzle.ui.components.AddIcon
-import com.dluvian.nozzle.ui.components.CheckIcon
-import com.dluvian.nozzle.ui.components.ExpandIcon
 import com.dluvian.nozzle.ui.components.dropdown.SimpleDropdownMenuItem
+import com.dluvian.nozzle.ui.components.icons.AddIcon
+import com.dluvian.nozzle.ui.components.icons.CheckIcon
+import com.dluvian.nozzle.ui.components.icons.ExpandIcon
 import com.dluvian.nozzle.ui.components.media.ProfilePicture
 import com.dluvian.nozzle.ui.theme.sizing
 import com.dluvian.nozzle.ui.theme.spacing

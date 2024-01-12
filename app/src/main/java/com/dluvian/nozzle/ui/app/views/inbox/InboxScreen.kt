@@ -12,9 +12,9 @@ import com.dluvian.nozzle.data.DB_BATCH_SIZE
 import com.dluvian.nozzle.data.utils.isScrollingUp
 import com.dluvian.nozzle.model.PostWithMeta
 import com.dluvian.nozzle.ui.app.navigation.PostCardLambdas
-import com.dluvian.nozzle.ui.components.ReturnableTopBar
-import com.dluvian.nozzle.ui.components.ShowNewPostsButton
-import com.dluvian.nozzle.ui.components.ShowRelaysButton
+import com.dluvian.nozzle.ui.components.bars.ReturnableTopBar
+import com.dluvian.nozzle.ui.components.buttons.ShowNewPostsButton
+import com.dluvian.nozzle.ui.components.buttons.ShowRelaysButton
 import com.dluvian.nozzle.ui.components.hint.NoPostsHint
 import com.dluvian.nozzle.ui.components.postCard.PostCardList
 

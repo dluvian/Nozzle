@@ -1,7 +1,5 @@
 package com.dluvian.nozzle.ui.theme
 
-import androidx.compose.material.Colors
-import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 
 val Purple200 = Color(0xFFBB86FC)
@@ -32,7 +30,3 @@ val ProfilePictureApricot = Color(0xFFffd8b1)
 val ProfilePictureBeige = Color(0xFFffd8b1)
 val ProfilePictureMint = Color(0xFFaaffc3)
 val ProfilePictureLavender = Color(0xFFdcbeff)
-
-val Colors.hintGray: Color
-    @Composable
-    get() = if (isLight) Color.LightGray else Color.DarkGray

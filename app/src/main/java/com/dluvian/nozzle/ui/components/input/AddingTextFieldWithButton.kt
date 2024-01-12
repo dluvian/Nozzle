@@ -1,4 +1,4 @@
-package com.dluvian.nozzle.ui.components
+package com.dluvian.nozzle.ui.components.input
 
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -7,9 +7,9 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material.Button
-import androidx.compose.material.OutlinedTextField
-import androidx.compose.material.Text
+import androidx.compose.material3.Button
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -33,7 +33,7 @@ fun AddingTextFieldWithButton(
 ) {
     var text by remember { mutableStateOf(TextFieldValue("")) }
     Row(modifier = modifier) {
-        OutlinedTextField(
+        TextField(
             modifier = Modifier
                 .weight(1f)
                 .fillMaxSize(),

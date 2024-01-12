@@ -26,10 +26,10 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.TextFieldValue
 import com.dluvian.nozzle.R
 import com.dluvian.nozzle.model.nostr.Metadata
-import com.dluvian.nozzle.ui.components.ChangeableTextField
-import com.dluvian.nozzle.ui.components.ExpandIcon
-import com.dluvian.nozzle.ui.components.ReturnableTopBar
-import com.dluvian.nozzle.ui.components.SaveIcon
+import com.dluvian.nozzle.ui.components.bars.ReturnableTopBar
+import com.dluvian.nozzle.ui.components.icons.ExpandIcon
+import com.dluvian.nozzle.ui.components.icons.SaveIcon
+import com.dluvian.nozzle.ui.components.input.ChangeableTextField
 import com.dluvian.nozzle.ui.theme.spacing
 
 @Composable

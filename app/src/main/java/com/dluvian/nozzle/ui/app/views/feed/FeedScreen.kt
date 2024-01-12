@@ -12,17 +12,18 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.material.FloatingActionButton
-import androidx.compose.material.Icon
-import androidx.compose.material.MaterialTheme.typography
-import androidx.compose.material.Scaffold
-import androidx.compose.material.Text
-import androidx.compose.material.TopAppBar
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.DrawerState
 import androidx.compose.material3.DrawerValue
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme.typography
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
@@ -38,14 +39,14 @@ import com.dluvian.nozzle.data.DB_BATCH_SIZE
 import com.dluvian.nozzle.data.utils.isScrollingUp
 import com.dluvian.nozzle.model.Oneself
 import com.dluvian.nozzle.model.PostWithMeta
+import com.dluvian.nozzle.model.drawerFilter.CheckBoxFilterValue
+import com.dluvian.nozzle.model.drawerFilter.FilterCategory
+import com.dluvian.nozzle.model.drawerFilter.SwitchFilterValue
 import com.dluvian.nozzle.ui.app.navigation.PostCardLambdas
-import com.dluvian.nozzle.ui.components.AddIcon
-import com.dluvian.nozzle.ui.components.ShowNewPostsButton
-import com.dluvian.nozzle.ui.components.drawer.CheckBoxFilterValue
-import com.dluvian.nozzle.ui.components.drawer.FilterCategory
+import com.dluvian.nozzle.ui.components.buttons.ShowNewPostsButton
 import com.dluvian.nozzle.ui.components.drawer.FilterDrawer
-import com.dluvian.nozzle.ui.components.drawer.SwitchFilterValue
 import com.dluvian.nozzle.ui.components.hint.NoPostsHint
+import com.dluvian.nozzle.ui.components.icons.AddIcon
 import com.dluvian.nozzle.ui.components.media.ProfilePicture
 import com.dluvian.nozzle.ui.components.postCard.PostCardList
 import com.dluvian.nozzle.ui.theme.sizing
@@ -213,6 +214,7 @@ private fun FeedContent(
     if (feed.isEmpty()) NoPostsHint()
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun FeedTopBar(
     pubkey: String,
@@ -220,7 +222,12 @@ private fun FeedTopBar(
     onPictureClick: () -> Unit,
     onScrollToTop: () -> Unit
 ) {
-    TopAppBar {
+    TopAppBar(title = {
+        Text(
+            modifier = Modifier.clickable(onClick = onScrollToTop),
+            text = stringResource(id = R.string.Feed)
+        )
+    }) {
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,

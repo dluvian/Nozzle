@@ -6,9 +6,9 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material.Divider
 import androidx.compose.material3.Button
 import androidx.compose.material3.DrawerState
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalDrawerSheet
 import androidx.compose.material3.ModalNavigationDrawer
@@ -21,6 +21,10 @@ import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.LayoutDirection
 import com.dluvian.nozzle.R
+import com.dluvian.nozzle.model.drawerFilter.CheckBoxFilterValue
+import com.dluvian.nozzle.model.drawerFilter.FilterCategory
+import com.dluvian.nozzle.model.drawerFilter.SwitchFilterValue
+import com.dluvian.nozzle.model.drawerFilter.TypedFilterValue
 import com.dluvian.nozzle.ui.components.namedItem.NamedCheckbox
 import com.dluvian.nozzle.ui.components.namedItem.NamedSwitch
 import com.dluvian.nozzle.ui.theme.spacing
@@ -74,7 +78,7 @@ private fun Category(category: FilterCategory) {
     category.filters.forEach { filter ->
         NamedCheckBoxOrSwitch(filter = filter)
     }
-    Divider()
+    HorizontalDivider()
     Spacer(modifier = Modifier.height(spacing.screenEdge))
 }
 

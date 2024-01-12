@@ -1,4 +1,4 @@
-package com.dluvian.nozzle.ui.components.drawer
+package com.dluvian.nozzle.model.drawerFilter
 
 import androidx.compose.runtime.Immutable
 

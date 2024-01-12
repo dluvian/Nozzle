@@ -13,8 +13,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.TextFieldValue
 import com.dluvian.nozzle.R
 import com.dluvian.nozzle.model.Pubkey
-import com.dluvian.nozzle.ui.components.ContentCreationTopBar
-import com.dluvian.nozzle.ui.components.InputBox
+import com.dluvian.nozzle.ui.components.bars.ContentCreationTopBar
+import com.dluvian.nozzle.ui.components.input.InputBox
 import com.dluvian.nozzle.ui.components.text.ReplyingTo
 import com.dluvian.nozzle.ui.theme.spacing
 

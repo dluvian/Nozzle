@@ -29,11 +29,11 @@ import com.dluvian.nozzle.model.PostWithMeta
 import com.dluvian.nozzle.model.Pubkey
 import com.dluvian.nozzle.model.SimpleProfile
 import com.dluvian.nozzle.ui.app.navigation.PostCardLambdas
-import com.dluvian.nozzle.ui.components.ChangeableTextField
-import com.dluvian.nozzle.ui.components.IconedFilterChip
-import com.dluvian.nozzle.ui.components.ReturnableTopBar
-import com.dluvian.nozzle.ui.components.SearchTopBarButton
-import com.dluvian.nozzle.ui.components.TopBarCircleProgressIndicator
+import com.dluvian.nozzle.ui.components.bars.ReturnableTopBar
+import com.dluvian.nozzle.ui.components.buttons.SearchTopBarButton
+import com.dluvian.nozzle.ui.components.chips.IconedFilterChip
+import com.dluvian.nozzle.ui.components.indicators.TopBarCircleProgressIndicator
+import com.dluvian.nozzle.ui.components.input.ChangeableTextField
 import com.dluvian.nozzle.ui.components.itemRow.ItemRow
 import com.dluvian.nozzle.ui.components.itemRow.PictureAndName
 import com.dluvian.nozzle.ui.components.postCard.PostCard

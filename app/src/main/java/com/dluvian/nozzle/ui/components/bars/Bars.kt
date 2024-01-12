@@ -1,4 +1,4 @@
-package com.dluvian.nozzle.ui.components
+package com.dluvian.nozzle.ui.components.bars
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
@@ -13,6 +13,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import com.dluvian.nozzle.model.RelayActive
+import com.dluvian.nozzle.ui.components.buttons.ChooseRelayButton
+import com.dluvian.nozzle.ui.components.buttons.CloseButton
+import com.dluvian.nozzle.ui.components.buttons.GoBackButton
+import com.dluvian.nozzle.ui.components.buttons.SendTopBarButton
 import com.dluvian.nozzle.ui.theme.spacing
 
 @Composable

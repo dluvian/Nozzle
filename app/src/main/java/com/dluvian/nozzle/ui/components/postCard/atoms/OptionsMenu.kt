@@ -1,6 +1,6 @@
 package com.dluvian.nozzle.ui.components.postCard.atoms
 
-import androidx.compose.material.DropdownMenu
+import androidx.compose.material3.DropdownMenu
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
 import com.dluvian.nozzle.R

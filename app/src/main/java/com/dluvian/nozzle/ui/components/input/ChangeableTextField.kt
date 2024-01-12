@@ -1,11 +1,9 @@
-package com.dluvian.nozzle.ui.components
+package com.dluvian.nozzle.ui.components.input
 
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material.Text
-import androidx.compose.material.TextField
-import androidx.compose.material.TextFieldColors
-import androidx.compose.material.TextFieldDefaults
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
@@ -31,7 +29,6 @@ fun ChangeableTextField(
     errorLabel: String? = null,
     placeholder: String? = null,
     isPassword: Boolean = false,
-    colors: TextFieldColors = TextFieldDefaults.textFieldColors(),
     onImeAction: (() -> Unit)? = null,
     trailingIcon: @Composable() (() -> Unit)? = null,
 ) {
@@ -71,6 +68,5 @@ fun ChangeableTextField(
             VisualTransformation.None
         },
         trailingIcon = trailingIcon,
-        colors = colors,
     )
 }

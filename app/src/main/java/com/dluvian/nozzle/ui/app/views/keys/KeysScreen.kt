@@ -22,9 +22,9 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.input.VisualTransformation
 import com.dluvian.nozzle.R
 import com.dluvian.nozzle.data.utils.copyAndToast
-import com.dluvian.nozzle.ui.components.CopyIcon
-import com.dluvian.nozzle.ui.components.ReturnableTopBar
-import com.dluvian.nozzle.ui.components.VisibilityIcon
+import com.dluvian.nozzle.ui.components.bars.ReturnableTopBar
+import com.dluvian.nozzle.ui.components.icons.CopyIcon
+import com.dluvian.nozzle.ui.components.icons.VisibilityIcon
 import com.dluvian.nozzle.ui.theme.spacing
 
 @Composable

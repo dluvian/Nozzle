@@ -1,13 +1,11 @@
-package com.dluvian.nozzle.ui.components
+package com.dluvian.nozzle.ui.components.chips
 
-import androidx.compose.material.ExperimentalMaterialApi
-import androidx.compose.material.FilterChip
 import androidx.compose.material.Icon
-import androidx.compose.material.Text
+import androidx.compose.material3.FilterChip
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.vector.ImageVector
 
-@OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun IconedFilterChip(
     text: String,

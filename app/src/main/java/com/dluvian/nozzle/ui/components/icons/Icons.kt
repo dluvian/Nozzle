@@ -1,13 +1,8 @@
-package com.dluvian.nozzle.ui.components
+package com.dluvian.nozzle.ui.components.icons
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.Icon
-import androidx.compose.material.LocalContentAlpha
-import androidx.compose.material.LocalContentColor
-import androidx.compose.material.MaterialTheme.colors
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.CellTower
@@ -27,6 +22,8 @@ import androidx.compose.material.icons.outlined.Chat
 import androidx.compose.material.icons.rounded.Check
 import androidx.compose.material.icons.rounded.OfflineBolt
 import androidx.compose.material.icons.rounded.Search
+import androidx.compose.material3.Icon
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -34,24 +31,13 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import com.dluvian.nozzle.R
 import com.dluvian.nozzle.ui.theme.sizing
-import com.dluvian.nozzle.ui.theme.spacing
 
-@Composable
-fun CopyIcon(onCopy: () -> Unit) {
-    CopyIcon(
-        modifier = Modifier
-            .size(sizing.smallItem)
-            .clip(RoundedCornerShape(spacing.medium))
-            .clickable(onClick = onCopy),
-        description = stringResource(id = R.string.copy_content),
-    )
-}
 
 @Composable
 fun CopyIcon(
     modifier: Modifier = Modifier,
     description: String = stringResource(id = R.string.copy_content),
-    tint: Color = LocalContentColor.current.copy(alpha = LocalContentAlpha.current)
+    tint: Color = LocalContentColor.current.copy(alpha = LocalContentColor.current.alpha)
 ) {
     Icon(
         modifier = modifier,
@@ -65,13 +51,11 @@ fun CopyIcon(
 fun LightningIcon(
     modifier: Modifier = Modifier,
     description: String = stringResource(id = R.string.lightning_address),
-    tint: Color = LocalContentColor.current.copy(alpha = LocalContentAlpha.current)
 ) {
     Icon(
         modifier = modifier,
         imageVector = Icons.Rounded.OfflineBolt,
         contentDescription = description,
-        tint = tint,
     )
 }
 
@@ -79,13 +63,11 @@ fun LightningIcon(
 fun SearchIcon(
     modifier: Modifier = Modifier,
     description: String? = null,
-    tint: Color = colors.onBackground,
 ) {
     Icon(
         modifier = modifier,
         imageVector = Icons.Rounded.Search,
         contentDescription = description,
-        tint = tint
     )
 }
 
@@ -93,13 +75,11 @@ fun SearchIcon(
 fun ReplyIcon(
     modifier: Modifier = Modifier,
     description: String? = stringResource(id = R.string.reply),
-    tint: Color = colors.onBackground,
 ) {
     Icon(
         modifier = modifier,
         imageVector = Icons.Outlined.Chat,
         contentDescription = description,
-        tint = tint
     )
 }
 
@@ -121,7 +101,7 @@ fun LikeIcon(
     modifier: Modifier = Modifier,
     description: String? = stringResource(id = R.string.like),
     activeTint: Color = Color.Red,
-    inactiveTint: Color = colors.onBackground,
+    inactiveTint: Color = Color.White,
 ) {
     Icon(
         modifier = modifier,

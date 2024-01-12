@@ -10,7 +10,6 @@ import androidx.compose.ui.Modifier
 import com.dluvian.nozzle.data.DB_BATCH_SIZE
 import com.dluvian.nozzle.model.PostWithMeta
 import com.dluvian.nozzle.ui.app.navigation.PostCardLambdas
-import com.dluvian.nozzle.ui.components.PullRefreshBox
 
 @Composable
 fun PostCardList(
@@ -22,18 +21,16 @@ fun PostCardList(
     onLoadMore: () -> Unit,
     lazyListState: LazyListState = rememberLazyListState(),
 ) {
-    PullRefreshBox(isRefreshing = isRefreshing, onRefresh = onRefresh) {
-        LazyColumn(
-            modifier = Modifier.fillMaxSize(), state = lazyListState
-        ) {
-            itemsIndexed(items = posts, key = { _, item -> item.entity.id }) { index, post ->
-                PostCard(
-                    post = post,
-                    postCardLambdas = postCardLambdas,
-                    onPrepareReply = onPrepareReply,
-                )
-                if (index == posts.size - 3 && posts.size >= DB_BATCH_SIZE / 2) onLoadMore()
-            }
+    LazyColumn(
+        modifier = Modifier.fillMaxSize(), state = lazyListState
+    ) {
+        itemsIndexed(items = posts, key = { _, item -> item.entity.id }) { index, post ->
+            PostCard(
+                post = post,
+                postCardLambdas = postCardLambdas,
+                onPrepareReply = onPrepareReply,
+            )
+            if (index == posts.size - 3 && posts.size >= DB_BATCH_SIZE / 2) onLoadMore()
         }
     }
 }
