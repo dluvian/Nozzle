@@ -8,6 +8,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import com.dluvian.nozzle.R
+import com.dluvian.nozzle.data.utils.UrlUtils.removeWebsocketPrefix
 import com.dluvian.nozzle.model.RelayActive
 import com.dluvian.nozzle.ui.theme.spacing
 
@@ -50,8 +51,7 @@ fun RelaysDropdownMenu(
         menuItems.forEachIndexed { index, item ->
             CheckboxDropdownMenuItem(
                 isChecked = item.isActive,
-                text = item.relayUrl.removePrefix("wss://"),
-                count = if (isAutopilotUI) item.count else null,
+                text = item.relay.removeWebsocketPrefix(),
                 contentPadding = PaddingValues(start = spacing.medium, end = spacing.xl),
                 enabled = !isAutopilotUI,
                 onToggle = { onClickIndex(index) }

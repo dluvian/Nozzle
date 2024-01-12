@@ -26,10 +26,10 @@ import com.dluvian.nozzle.data.utils.UrlUtils.removeWebsocketPrefix
 import com.dluvian.nozzle.ui.components.AddIcon
 import com.dluvian.nozzle.ui.components.AddingTextFieldWithButton
 import com.dluvian.nozzle.ui.components.DeleteIcon
-import com.dluvian.nozzle.ui.components.NamedCheckbox
 import com.dluvian.nozzle.ui.components.ReturnableTopBar
 import com.dluvian.nozzle.ui.components.SaveIcon
 import com.dluvian.nozzle.ui.components.TopBarCircleProgressIndicator
+import com.dluvian.nozzle.ui.components.namedItem.NamedCheckbox
 import com.dluvian.nozzle.ui.components.text.HeaderText
 import com.dluvian.nozzle.ui.theme.spacing
 
@@ -174,7 +174,6 @@ private fun MyRelayRow(
                 isChecked = relay.isRead,
                 name = stringResource(id = R.string.read),
                 isEnabled = relay.isWrite || !relay.isRead,
-                textColor = DarkGray,
                 onClick = onToggleRead
             )
             Spacer(modifier = Modifier.width(spacing.xxl))
@@ -183,7 +182,6 @@ private fun MyRelayRow(
                 isChecked = relay.isWrite,
                 name = stringResource(id = R.string.write),
                 isEnabled = relay.isRead || !relay.isWrite,
-                textColor = DarkGray,
                 onClick = onToggleWrite
             )
             Spacer(modifier = Modifier.width(spacing.xl))

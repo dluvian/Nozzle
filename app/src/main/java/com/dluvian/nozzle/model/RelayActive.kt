@@ -1,7 +1,6 @@
 package com.dluvian.nozzle.model
 
 data class RelayActive(
-    val relayUrl: String,
+    val relay: Relay,
     val isActive: Boolean,
-    val count: Int = 0
 )

@@ -7,7 +7,6 @@ import com.dluvian.nozzle.model.NoteId
 import com.dluvian.nozzle.model.PostWithMeta
 import com.dluvian.nozzle.model.Pubkey
 import com.dluvian.nozzle.model.Relay
-import com.dluvian.nozzle.model.RelaySelection
 
 interface INozzleSubscriber {
 
@@ -18,10 +17,9 @@ interface INozzleSubscriber {
     suspend fun subscribeUnknowns(notes: Collection<PostWithMeta>)
 
     fun subscribeToFeed(
-        limit: Int,
+        pubkeysByRelay: Map<Relay, Set<Pubkey>?>,
         hashtag: String?,
-        authors: List<Pubkey>?,
-        relaySelection: RelaySelection,
+        limit: Int,
         until: Long = getCurrentTimeInSeconds(),
     )
 

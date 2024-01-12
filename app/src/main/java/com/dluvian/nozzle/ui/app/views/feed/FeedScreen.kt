@@ -4,129 +4,220 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.FloatingActionButton
+import androidx.compose.material.Icon
 import androidx.compose.material.MaterialTheme.typography
 import androidx.compose.material.Scaffold
 import androidx.compose.material.Text
 import androidx.compose.material.TopAppBar
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material3.DrawerState
+import androidx.compose.material3.DrawerValue
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import com.dluvian.nozzle.R
 import com.dluvian.nozzle.data.DB_BATCH_SIZE
 import com.dluvian.nozzle.data.utils.isScrollingUp
-import com.dluvian.nozzle.model.Everyone
-import com.dluvian.nozzle.model.FeedSettings
 import com.dluvian.nozzle.model.Oneself
 import com.dluvian.nozzle.model.PostWithMeta
-import com.dluvian.nozzle.model.RelayActive
-import com.dluvian.nozzle.model.UserSpecific
 import com.dluvian.nozzle.ui.app.navigation.PostCardLambdas
 import com.dluvian.nozzle.ui.components.AddIcon
-import com.dluvian.nozzle.ui.components.ChooseRelayButton
-import com.dluvian.nozzle.ui.components.FeedSettingsButton
 import com.dluvian.nozzle.ui.components.ShowNewPostsButton
+import com.dluvian.nozzle.ui.components.drawer.CheckBoxFilterValue
+import com.dluvian.nozzle.ui.components.drawer.FilterCategory
+import com.dluvian.nozzle.ui.components.drawer.FilterDrawer
+import com.dluvian.nozzle.ui.components.drawer.SwitchFilterValue
 import com.dluvian.nozzle.ui.components.hint.NoPostsHint
 import com.dluvian.nozzle.ui.components.media.ProfilePicture
 import com.dluvian.nozzle.ui.components.postCard.PostCardList
 import com.dluvian.nozzle.ui.theme.sizing
-import com.dluvian.nozzle.ui.theme.spacing
 import kotlinx.coroutines.launch
 
 @Composable
 fun FeedScreen(
     uiState: FeedViewModelState,
+    filterLambdas: FeedFilterLambdas,
     pubkey: String,
     feed: List<PostWithMeta>,
     numOfNewPosts: Int,
     postCardLambdas: PostCardLambdas,
     onRefresh: () -> Unit,
-    onRefreshOnMenuDismiss: () -> Unit,
     onPrepareReply: (PostWithMeta) -> Unit,
-    onToggleContactsOnly: () -> Unit,
-    onTogglePosts: () -> Unit,
-    onToggleReplies: () -> Unit,
-    onToggleRelayIndex: (Int) -> Unit,
-    onToggleAutopilot: () -> Unit,
     onLoadMore: () -> Unit,
     onOpenDrawer: () -> Unit,
     onNavigateToPost: () -> Unit,
 ) {
+    val drawerState = rememberDrawerState(DrawerValue.Closed)
     val lazyListState = rememberLazyListState()
     val scope = rememberCoroutineScope()
     Scaffold(
         topBar = {
             FeedTopBar(
                 pubkey = pubkey,
-                feedSettings = uiState.feedSettings,
-                relayStatuses = uiState.relayStatuses,
-                isRefreshing = uiState.isRefreshing,
-                onRefreshOnMenuDismiss = onRefreshOnMenuDismiss,
-                onToggleContactsOnly = onToggleContactsOnly,
-                onTogglePosts = onTogglePosts,
-                onToggleReplies = onToggleReplies,
+                onFilterDrawer = {
+                    scope.launch { drawerState.apply { if (isOpen) close() else open() } }
+                },
                 onPictureClick = onOpenDrawer,
-                onToggleRelayIndex = onToggleRelayIndex,
-                onToggleAutopilot = onToggleAutopilot,
                 onScrollToTop = { scope.launch { lazyListState.animateScrollToItem(0) } }
             )
         },
         floatingActionButton = { FeedFab(onNavigateToPost = onNavigateToPost) },
     ) {
-        ShowNewPostsButton(
-            isVisible = !uiState.isRefreshing && numOfNewPosts > 0
-                    && (feed.size < DB_BATCH_SIZE || lazyListState.isScrollingUp()),
-            numOfNewPosts = numOfNewPosts,
-            lazyListState = lazyListState,
-            onRefresh = onRefresh
-        )
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(it)
+        FeedFilterDrawer(
+            drawerState = drawerState,
+            uiState = uiState,
+            filterLambdas = filterLambdas,
+            onApplyAndClose = {
+                onRefresh()
+                scope.launch { drawerState.close() }
+            }
         ) {
-            PostCardList(
-                posts = feed,
-                isRefreshing = uiState.isRefreshing,
+            FeedContent(
+                feed = feed,
+                uiState = uiState,
+                numOfNewPosts = numOfNewPosts,
+                paddingValues = it,
+                lazyListState = lazyListState,
                 postCardLambdas = postCardLambdas,
                 onRefresh = onRefresh,
                 onPrepareReply = onPrepareReply,
-                onLoadMore = onLoadMore,
-                lazyListState = lazyListState,
+                onLoadMore = onLoadMore
             )
         }
-        if (feed.isEmpty()) NoPostsHint()
     }
+}
+
+@Composable
+private fun FeedFilterDrawer(
+    drawerState: DrawerState,
+    uiState: FeedViewModelState,
+    filterLambdas: FeedFilterLambdas,
+    onApplyAndClose: () -> Unit,
+    content: @Composable () -> Unit,
+) {
+    FilterDrawer(
+        drawerState = drawerState,
+        filterCategories = listOf(
+            FilterCategory(
+                name = stringResource(id = R.string.type),
+                filters = listOf(
+                    CheckBoxFilterValue(
+                        name = stringResource(id = R.string.posts),
+                        isChecked = uiState.isPosts,
+                        onClick = filterLambdas.onTogglePosts
+                    ),
+                    CheckBoxFilterValue(
+                        name = stringResource(id = R.string.replies),
+                        isChecked = uiState.isReplies,
+                        onClick = filterLambdas.onToggleReplies
+                    ),
+                )
+            ),
+            FilterCategory(
+                name = stringResource(id = R.string.people),
+                filters = listOf(
+                    SwitchFilterValue(
+                        name = stringResource(id = R.string.friends),
+                        isChecked = uiState.isFriends,
+                        isEnabled = !uiState.isFriends,
+                        onClick = filterLambdas.onToggleFriends
+                    ),
+                    SwitchFilterValue(
+                        name = stringResource(id = R.string.friend_circle),
+                        isChecked = uiState.isFriendCircle,
+                        isEnabled = !uiState.isFriendCircle,
+                        onClick = filterLambdas.onToggleFriendCircle
+                    ),
+                    SwitchFilterValue(
+                        name = stringResource(id = R.string.global),
+                        isChecked = uiState.isGlobal,
+                        isEnabled = !uiState.isGlobal,
+                        onClick = filterLambdas.onToggleGlobal
+                    ),
+                )
+            ),
+            FilterCategory(
+                name = stringResource(id = R.string.relays),
+                filters = listOf(
+                    SwitchFilterValue(
+                        name = stringResource(id = R.string.autopilot),
+                        isChecked = uiState.isAutopilot,
+                        onClick = filterLambdas.onToggleAutopilot
+                    ),
+                    SwitchFilterValue(
+                        name = stringResource(id = R.string.my_read_relays),
+                        isChecked = uiState.isReadRelays,
+                        onClick = filterLambdas.onToggleReadRelays
+                    ),
+                ),
+            ),
+        ),
+        onClose = onApplyAndClose
+    ) {
+        content()
+    }
+}
+
+@Composable
+private fun FeedContent(
+    feed: List<PostWithMeta>,
+    uiState: FeedViewModelState,
+    numOfNewPosts: Int,
+    paddingValues: PaddingValues,
+    lazyListState: LazyListState,
+    postCardLambdas: PostCardLambdas,
+    onRefresh: () -> Unit,
+    onPrepareReply: (PostWithMeta) -> Unit,
+    onLoadMore: () -> Unit,
+) {
+    ShowNewPostsButton(
+        isVisible = !uiState.isRefreshing && numOfNewPosts > 0
+                && (feed.size < DB_BATCH_SIZE || lazyListState.isScrollingUp()),
+        numOfNewPosts = numOfNewPosts,
+        lazyListState = lazyListState,
+        onRefresh = onRefresh
+    )
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(paddingValues)
+    ) {
+        PostCardList(
+            posts = feed,
+            isRefreshing = uiState.isRefreshing,
+            postCardLambdas = postCardLambdas,
+            onRefresh = onRefresh,
+            onPrepareReply = onPrepareReply,
+            onLoadMore = onLoadMore,
+            lazyListState = lazyListState,
+        )
+    }
+    if (feed.isEmpty()) NoPostsHint()
 }
 
 @Composable
 private fun FeedTopBar(
     pubkey: String,
-    feedSettings: FeedSettings,
-    relayStatuses: List<RelayActive>,
-    isRefreshing: Boolean,
-    onRefreshOnMenuDismiss: () -> Unit,
-    onToggleContactsOnly: () -> Unit,
-    onTogglePosts: () -> Unit,
-    onToggleReplies: () -> Unit,
+    onFilterDrawer: () -> Unit,
     onPictureClick: () -> Unit,
-    onToggleRelayIndex: (Int) -> Unit,
-    onToggleAutopilot: () -> Unit,
     onScrollToTop: () -> Unit
 ) {
     TopAppBar {
@@ -135,42 +226,29 @@ private fun FeedTopBar(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Row(modifier = Modifier.weight(0.15f)) {
-                Spacer(modifier = Modifier.width(spacing.large))
+            IconButton(
+                modifier = Modifier.weight(weight = 0.15f, fill = false),
+                onClick = onPictureClick
+            ) {
                 ProfilePicture(
-                    modifier = Modifier
-                        .size(sizing.smallProfilePicture)
-                        .clip(CircleShape)
-                        .clickable(onClick = onPictureClick),
+                    modifier = Modifier.size(sizing.smallProfilePicture),
                     pubkey = pubkey,
                     trustType = Oneself
                 )
             }
             Headline(
                 modifier = Modifier.weight(0.7f),
-                headline = stringResource(id = com.dluvian.nozzle.R.string.Feed),
+                headline = stringResource(id = R.string.Feed),
                 onScrollToTop = onScrollToTop,
             )
-            Row(horizontalArrangement = Arrangement.End, modifier = Modifier.weight(0.15f)) {
-                ChooseRelayButton(
-                    relays = relayStatuses,
-                    isOpenable = !isRefreshing,
-                    onClickIndex = onToggleRelayIndex,
-                    onRefreshOnMenuDismiss = onRefreshOnMenuDismiss,
-                    isAutopilot = feedSettings.relaySelection is UserSpecific,
-                    autopilotEnabled = feedSettings.authorSelection !is Everyone,
-                    onToggleAutopilot = onToggleAutopilot,
+            IconButton(
+                modifier = Modifier.weight(weight = 0.15f, fill = false),
+                onClick = onFilterDrawer
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Settings,
+                    contentDescription = stringResource(id = R.string.feed_settings),
                 )
-                Spacer(modifier = Modifier.width(spacing.large))
-                FeedSettingsButton(
-                    feedSettings = feedSettings,
-                    isOpenable = !isRefreshing,
-                    onRefreshOnMenuDismiss = onRefreshOnMenuDismiss,
-                    onToggleContactsOnly = onToggleContactsOnly,
-                    onTogglePosts = onTogglePosts,
-                    onToggleReplies = onToggleReplies,
-                )
-                Spacer(modifier = Modifier.width(spacing.medium))
             }
         }
     }

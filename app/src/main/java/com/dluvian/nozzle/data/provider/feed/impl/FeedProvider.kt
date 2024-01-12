@@ -1,9 +1,8 @@
 package com.dluvian.nozzle.data.provider.feed.impl
 
 import android.util.Log
-import com.dluvian.nozzle.data.provider.IContactListProvider
+import com.dluvian.nozzle.data.feedFilterResolver.IFeedFilterResolver
 import com.dluvian.nozzle.data.provider.IPostWithMetaProvider
-import com.dluvian.nozzle.data.provider.IPubkeyProvider
 import com.dluvian.nozzle.data.provider.feed.IFeedProvider
 import com.dluvian.nozzle.data.provider.feed.IInboxFeedProvider
 import com.dluvian.nozzle.data.provider.feed.ILikeFeedProvider
@@ -11,14 +10,10 @@ import com.dluvian.nozzle.data.room.dao.PostDao
 import com.dluvian.nozzle.data.room.dao.ReactionDao
 import com.dluvian.nozzle.data.room.entity.PostEntity
 import com.dluvian.nozzle.data.subscriber.INozzleSubscriber
-import com.dluvian.nozzle.model.AuthorSelection
-import com.dluvian.nozzle.model.Contacts
-import com.dluvian.nozzle.model.Everyone
-import com.dluvian.nozzle.model.FeedSettings
 import com.dluvian.nozzle.model.ListAndNumberFlow
 import com.dluvian.nozzle.model.PostWithMeta
-import com.dluvian.nozzle.model.SingleAuthor
-import com.dluvian.nozzle.model.UserSpecific
+import com.dluvian.nozzle.model.feedFilter.FeedFilter
+import com.dluvian.nozzle.model.feedFilter.SingularPerson
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 
@@ -27,38 +22,36 @@ private const val TAG = "FeedProvider"
 class FeedProvider(
     private val postWithMetaProvider: IPostWithMetaProvider,
     private val nozzleSubscriber: INozzleSubscriber,
-    private val contactListProvider: IContactListProvider,
-    private val pubkeyProvider: IPubkeyProvider,
+    private val feedFilterResolver: IFeedFilterResolver,
     private val postDao: PostDao,
     private val reactionDao: ReactionDao,
 ) : IFeedProvider, IInboxFeedProvider, ILikeFeedProvider {
 
     override suspend fun getFeedFlow(
-        feedSettings: FeedSettings,
+        feedFilter: FeedFilter,
         limit: Int,
         until: Long,
         waitForSubscription: Long,
     ): ListAndNumberFlow<PostWithMeta> {
-        Log.i(TAG, "Get feed")
-        val authorSelectionPubkeys = listPubkeys(authorSelection = feedSettings.authorSelection)
+        Log.i(TAG, "Get feed, hashtag=${feedFilter.hashtag}")
+        val pubkeysByRelay = feedFilterResolver.getPubkeysByRelay(feedFilter = feedFilter)
         nozzleSubscriber.subscribeToFeed(
-            authors = authorSelectionPubkeys,
+            pubkeysByRelay = pubkeysByRelay,
+            hashtag = feedFilter.hashtag,
             limit = 2 * limit,
-            relaySelection = feedSettings.relaySelection,
-            hashtag = feedSettings.hashtag,
             until = until
         )
 
         delay(waitForSubscription)
 
-        val relays = if (feedSettings.relaySelection is UserSpecific) null
-        else feedSettings.relaySelection.selectedRelays
+        val relays = if (feedFilter.authorFilter is SingularPerson) null else pubkeysByRelay.keys
+        val authorPubkeys = feedFilterResolver.getPubkeys(authorFilter = feedFilter.authorFilter)
 
         val posts = postDao.getMainFeedBasePosts(
-            isPosts = feedSettings.isPosts,
-            isReplies = feedSettings.isReplies,
-            hashtag = feedSettings.hashtag,
-            authorPubkeys = authorSelectionPubkeys,
+            isPosts = feedFilter.isPosts,
+            isReplies = feedFilter.isReplies,
+            hashtag = feedFilter.hashtag,
+            authorPubkeys = authorPubkeys,
             relays = relays,
             until = until,
             limit = limit,
@@ -67,14 +60,13 @@ class FeedProvider(
         // Params like in getMainFeedBasePosts(..)
         val numOfNewPostsFlow = postDao.getNumOfNewMainFeedPostsFlow(
             oldPostIds = posts.map { it.id },
-            isPosts = feedSettings.isPosts,
-            isReplies = feedSettings.isReplies,
-            hashtag = feedSettings.hashtag,
-            authorPubkeys = authorSelectionPubkeys,
+            isPosts = feedFilter.isPosts,
+            isReplies = feedFilter.isReplies,
+            hashtag = feedFilter.hashtag,
+            authorPubkeys = authorPubkeys,
             relays = relays,
             limit = limit,
         )
-
 
         return getResult(posts = posts, numOfNewPostsFlow = numOfNewPostsFlow)
     }
@@ -147,13 +139,5 @@ class FeedProvider(
             listFlow = postWithMetaProvider.getPostsWithMetaFlow(feedInfo = feedInfo),
             numFlow = numOfNewPostsFlow
         )
-    }
-
-    private fun listPubkeys(authorSelection: AuthorSelection): List<String>? {
-        return when (authorSelection) {
-            is Everyone -> null
-            is Contacts -> contactListProvider.listPersonalContactPubkeysOrDefault() + pubkeyProvider.getActivePubkey()
-            is SingleAuthor -> listOf(authorSelection.pubkey)
-        }
     }
 }

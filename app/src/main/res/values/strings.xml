@@ -69,7 +69,6 @@
     <string name="time_abbr_week">w</string>
     <string name="time_abbr_month">M</string>
     <string name="time_abbr_year">y</string>
-
     <string name="in_relay">in</string>
     <string name="and">and</string>
     <string name="relays">Relays</string>
@@ -78,11 +77,7 @@
     <string name="lightning_address">Lightning address</string>
     <string name="enter_lud16">e.g. user@domain.com</string>
     <string name="feed_settings">Feed settings</string>
-    <string name="contacts_only">Contacts only</string>
-    <string name="posts">Posts</string>
-    <string name="replies">Replies</string>
     <string name="Feed">Feed</string>
-    <string name="autopilot">Autopilot</string>
     <string name="quote">Quote post</string>
     <string name="click_to_show_media">Click to show media</string>
     <string name="loaded_media">Loaded media</string>
@@ -112,8 +107,6 @@
     <string name="more">More</string>
     <string name="click_to_load_more">Click to load more</string>
     <string name="open">Open</string>
-    <string name="notes">Notes</string>
-    <string name="people">People</string>
     <string name="seen_in">Seen in</string>
     <string name="writes_in">Writes in</string>
     <string name="reads_in">Reads in</string>
@@ -121,6 +114,16 @@
     <string name="attempt_to_delete_reaction">Attempt to delete reaction</string>
     <string name="new_posts">new posts</string>
     <string name="follows_you">Follows you</string>
+    <string name="type">Type</string>
+    <string name="friends">Friends</string>
+    <string name="posts">Posts</string>
+    <string name="replies">Replies</string>
+    <string name="friend_circle">Friend circle</string>
+    <string name="global">Global</string>
+    <string name="notes">Notes</string>
+    <string name="people">People</string>
+    <string name="autopilot">Autopilot</string>
+    <string name="my_read_relays">My read relays</string>
     <plurals name="other_relays">
         <item quantity="one">other</item>
         <item quantity="other">others</item>

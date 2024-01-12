@@ -14,6 +14,8 @@ import com.dluvian.nozzle.data.deletor.INoteDeletor
 import com.dluvian.nozzle.data.deletor.NoteDeletor
 import com.dluvian.nozzle.data.eventProcessor.EventProcessor
 import com.dluvian.nozzle.data.eventProcessor.IEventProcessor
+import com.dluvian.nozzle.data.feedFilterResolver.FeedFilterResolver
+import com.dluvian.nozzle.data.feedFilterResolver.IFeedFilterResolver
 import com.dluvian.nozzle.data.manager.IKeyManager
 import com.dluvian.nozzle.data.manager.IPersonalProfileManager
 import com.dluvian.nozzle.data.manager.impl.KeyManager
@@ -27,7 +29,6 @@ import com.dluvian.nozzle.data.postCardInteractor.PostCardInteractor
 import com.dluvian.nozzle.data.postPreparer.IPostPreparer
 import com.dluvian.nozzle.data.postPreparer.PostPreparer
 import com.dluvian.nozzle.data.preferences.IDarkModePreferences
-import com.dluvian.nozzle.data.preferences.IFeedSettingsPreferences
 import com.dluvian.nozzle.data.preferences.NozzlePreferences
 import com.dluvian.nozzle.data.profileFollower.IProfileFollower
 import com.dluvian.nozzle.data.profileFollower.ProfileFollower
@@ -73,8 +74,6 @@ class AppContainer(context: Context) {
 
     private val nozzlePreferences = NozzlePreferences(context = context)
 
-    val feedSettingsPreferences: IFeedSettingsPreferences = nozzlePreferences
-
     val darkModePreferences: IDarkModePreferences = nozzlePreferences
 
     val dbSweepExcludingCache: IIdCache = IdCache()
@@ -112,7 +111,7 @@ class AppContainer(context: Context) {
 
     val annotatedContentHandler = AnnotatedContentHandler()
 
-    val subscriptionQueue: ISubscriptionQueue = SubscriptionQueue(
+    private val subscriptionQueue: ISubscriptionQueue = SubscriptionQueue(
         nostrService = nostrService,
         relayProvider = relayProvider
     )
@@ -173,11 +172,16 @@ class AppContainer(context: Context) {
         profileDao = roomDb.profileDao()
     )
 
+    private val feedFilterResolver: IFeedFilterResolver = FeedFilterResolver(
+        autopilotProvider = autopilotProvider,
+        relayProvider = relayProvider,
+        contactListProvider = contactListProvider
+    )
+
     val feedProvider = FeedProvider(
         postWithMetaProvider = postWithMetaProvider,
         nozzleSubscriber = nozzleSubscriber,
-        contactListProvider = contactListProvider,
-        pubkeyProvider = keyManager,
+        feedFilterResolver = feedFilterResolver,
         postDao = roomDb.postDao(),
         reactionDao = roomDb.reactionDao(),
     )

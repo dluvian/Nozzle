@@ -92,9 +92,6 @@ fun NozzleApp(appContainer: AppContainer) {
                     factory = FeedViewModel.provideFactory(
                         pubkeyProvider = appContainer.keyManager,
                         feedProvider = appContainer.feedProvider,
-                        relayProvider = appContainer.relayProvider,
-                        autopilotProvider = appContainer.autopilotProvider,
-                        feedSettingsPreferences = appContainer.feedSettingsPreferences,
                     )
                 ),
                 inboxViewModel = viewModel(
@@ -147,7 +144,6 @@ fun NozzleApp(appContainer: AppContainer) {
                 hashtagViewModel = viewModel(
                     factory = HashtagViewModel.provideFactory(
                         feedProvider = appContainer.feedProvider,
-                        relayProvider = appContainer.relayProvider,
                     )
                 ),
                 relayEditorViewModel = viewModel(

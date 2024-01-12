@@ -13,7 +13,6 @@ import com.dluvian.nozzle.data.room.FullPostInserter
 import com.dluvian.nozzle.data.utils.addLimitedRelayStatuses
 import com.dluvian.nozzle.data.utils.listRelayStatuses
 import com.dluvian.nozzle.data.utils.toggleRelay
-import com.dluvian.nozzle.model.AllRelays
 import com.dluvian.nozzle.model.PostWithMeta
 import com.dluvian.nozzle.model.Pubkey
 import com.dluvian.nozzle.model.nostr.Event
@@ -53,10 +52,7 @@ class ReplyViewModel(
         viewModelScope.launch(context = Dispatchers.IO) {
             _uiState.update {
                 recipientPubkey = post.pubkey
-                val relays = listRelayStatuses(
-                    allRelayUrls = relayProvider.getWriteRelays(),
-                    relaySelection = AllRelays
-                )
+                val relays = listRelayStatuses(allRelays = relayProvider.getWriteRelays())
                 it.copy(
                     searchSuggestions = emptyList(),
                     recipientName = post.name.ifEmpty {
@@ -125,7 +121,7 @@ class ReplyViewModel(
         )
         val selectedRelays = state.relaySelection
             .filter { it.isActive }
-            .map { it.relayUrl }
+            .map { it.relay }
         val post = postPreparer.getCleanPostWithTagsAndMentions(input)
         return nostrService.sendReply(
             replyTo = replyTo,
@@ -142,10 +138,7 @@ class ReplyViewModel(
             it.copy(
                 searchSuggestions = emptyList(),
                 recipientName = "",
-                relaySelection = listRelayStatuses(
-                    allRelayUrls = relayProvider.getWriteRelays(),
-                    relaySelection = AllRelays,
-                ),
+                relaySelection = listRelayStatuses(allRelays = relayProvider.getWriteRelays()),
             )
         }
     }

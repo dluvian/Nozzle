@@ -17,12 +17,13 @@ import com.dluvian.nozzle.data.provider.feed.IFeedProvider
 import com.dluvian.nozzle.data.utils.getCurrentTimeInSeconds
 import com.dluvian.nozzle.data.utils.getMaxRelaysAndAddIfTooSmall
 import com.dluvian.nozzle.model.CreatedAt
-import com.dluvian.nozzle.model.FeedSettings
-import com.dluvian.nozzle.model.MultipleRelays
 import com.dluvian.nozzle.model.PostWithMeta
 import com.dluvian.nozzle.model.ProfileWithMeta
 import com.dluvian.nozzle.model.Pubkey
-import com.dluvian.nozzle.model.SingleAuthor
+import com.dluvian.nozzle.model.Relay
+import com.dluvian.nozzle.model.feedFilter.FeedFilter
+import com.dluvian.nozzle.model.feedFilter.MultipleRelays
+import com.dluvian.nozzle.model.feedFilter.SingularPerson
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -66,7 +67,7 @@ class ProfileViewModel(
         onSetRefreshing = { bool -> _isRefreshing.update { bool } },
         onGetPage = { lastCreatedAt, waitForSubscription ->
             feedProvider.getFeedFlow(
-                feedSettings = getCurrentFeedSettings(
+                feedFilter = getFeedFilter(
                     pubkey = profilePubkey,
                     relays = getRelays(profilePubkey)
                 ),
@@ -137,13 +138,13 @@ class ProfileViewModel(
             )
     }
 
-    private fun getCurrentFeedSettings(pubkey: String, relays: List<String>): FeedSettings {
-        return FeedSettings(
+    private fun getFeedFilter(pubkey: Pubkey, relays: List<Relay>): FeedFilter {
+        return FeedFilter(
             isPosts = true,
             isReplies = true,
             hashtag = null,
-            authorSelection = SingleAuthor(pubkey = pubkey),
-            relaySelection = MultipleRelays(relays = relays)
+            authorFilter = SingularPerson(pubkey = pubkey),
+            relayFilter = MultipleRelays(relays = relays)
         )
     }
 
