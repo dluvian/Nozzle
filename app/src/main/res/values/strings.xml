@@ -124,6 +124,7 @@
     <string name="people">People</string>
     <string name="autopilot">Autopilot</string>
     <string name="my_read_relays">My read relays</string>
+    <string name="apply_and_close">Apply and close</string>
     <plurals name="other_relays">
         <item quantity="one">other</item>
         <item quantity="other">others</item>

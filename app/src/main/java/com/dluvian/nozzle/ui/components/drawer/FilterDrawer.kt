@@ -18,7 +18,9 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.LayoutDirection
+import com.dluvian.nozzle.R
 import com.dluvian.nozzle.ui.components.namedItem.NamedCheckbox
 import com.dluvian.nozzle.ui.components.namedItem.NamedSwitch
 import com.dluvian.nozzle.ui.theme.spacing
@@ -48,7 +50,7 @@ fun FilterDrawer(
                             }
                             item {
                                 Button(modifier = Modifier.fillMaxWidth(), onClick = onClose) {
-                                    Text(text = "Apply and close")
+                                    Text(text = stringResource(id = R.string.apply_and_close))
                                 }
                             }
                         }
