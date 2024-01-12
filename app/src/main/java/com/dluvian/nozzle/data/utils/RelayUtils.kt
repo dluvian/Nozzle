@@ -1,12 +1,8 @@
 package com.dluvian.nozzle.data.utils
 
 import com.dluvian.nozzle.data.MAX_RELAYS
-import com.dluvian.nozzle.model.AllRelays
-import com.dluvian.nozzle.model.MultipleRelays
 import com.dluvian.nozzle.model.Relay
 import com.dluvian.nozzle.model.RelayActive
-import com.dluvian.nozzle.model.RelaySelection
-import com.dluvian.nozzle.model.UserSpecific
 
 fun toggleRelay(relays: List<RelayActive>, index: Int): List<RelayActive> {
     return relays.mapIndexed { i, relay ->
@@ -19,10 +15,10 @@ fun addLimitedRelayStatuses(
     relaysUrlsToAdd: List<String>
 ): List<RelayActive> {
     val result = list.toMutableList()
-    val present = list.map { it.relayUrl }.toSet()
+    val present = list.map { it.relay }.toSet()
     getMaxRelays(from = relaysUrlsToAdd, prefer = present).forEach {
         if (!present.contains(it)) {
-            result.add(RelayActive(relayUrl = it, isActive = true))
+            result.add(RelayActive(relay = it, isActive = true))
         }
     }
 
@@ -46,19 +42,13 @@ fun getMaxRelaysAndAddIfTooSmall(
 }
 
 fun listRelayStatuses(
-    allRelayUrls: List<String>,
-    relaySelection: RelaySelection
+    allRelays: List<Relay>,
+    activeRelays: List<Relay>? = null // null == all active
 ): List<RelayActive> {
-    return allRelayUrls.distinct().map {
-        var count = 0
-        val isActive = when (relaySelection) {
-            is AllRelays -> true
-            is MultipleRelays -> relaySelection.selectedRelays?.contains(it) ?: false
-            is UserSpecific -> {
-                count = relaySelection.pubkeysPerRelay[it].orEmpty().size
-                relaySelection.selectedRelays?.contains(it) ?: false
-            }
-        }
-        RelayActive(relayUrl = it, isActive = isActive, count = count)
+    return allRelays.distinct().map { relay ->
+        RelayActive(
+            relay = relay,
+            isActive = activeRelays == null || activeRelays.contains(relay)
+        )
     }
 }

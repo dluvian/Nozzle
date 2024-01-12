@@ -34,6 +34,7 @@ fun FeedRoute(
 
     FeedScreen(
         uiState = uiState,
+        filterLambdas = feedViewModel.filterLambdas,
         pubkey = pubkey,
         feed = adjustedFeed,
         numOfNewPosts = numOfNewPosts,

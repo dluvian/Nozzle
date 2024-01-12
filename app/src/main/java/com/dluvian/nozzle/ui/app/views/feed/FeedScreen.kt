@@ -20,6 +20,7 @@ import androidx.compose.material.Text
 import androidx.compose.material.TopAppBar
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material3.DrawerState
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.rememberDrawerState
@@ -53,6 +54,7 @@ import kotlinx.coroutines.launch
 @Composable
 fun FeedScreen(
     uiState: FeedViewModelState,
+    filterLambdas: FeedFilterLambdas,
     pubkey: String,
     feed: List<PostWithMeta>,
     numOfNewPosts: Int,
@@ -79,38 +81,11 @@ fun FeedScreen(
         },
         floatingActionButton = { FeedFab(onNavigateToPost = onNavigateToPost) },
     ) {
-        FilterDrawer(
+        FeedFilterDrawer(
             drawerState = drawerState,
-            filterCategories = listOf(
-                FilterCategory(
-                    name = "Type",
-                    filters = listOf(
-                        CheckBoxFilterValue(name = "Posts", isChecked = false, onClick = {}),
-                        CheckBoxFilterValue(name = "Replies", isChecked = true, onClick = {}),
-                    )
-                ),
-                FilterCategory(
-                    name = "People",
-                    filters = listOf(
-                        SwitchFilterValue(name = "Friends", isChecked = true, onClick = {}),
-                        SwitchFilterValue(name = "Friend circle", isChecked = false, onClick = {}),
-                        SwitchFilterValue(name = "Global", isChecked = false, onClick = {}),
-                    )
-                ),
-                FilterCategory(
-                    name = "Relays",
-                    filters = listOf(
-                        SwitchFilterValue(name = "Autopilot", isChecked = false, onClick = {}),
-                        SwitchFilterValue(name = "My read relays", isChecked = true, onClick = {}),
-                        SwitchFilterValue(
-                            name = "Custom relay set",
-                            isChecked = false,
-                            onClick = {}),
-                    ),
-                    onAdd = {}
-                ),
-            ),
-            onClose = {
+            uiState = uiState,
+            filterLambdas = filterLambdas,
+            onApplyAndClose = {
                 onRefresh()
                 scope.launch { drawerState.close() }
             }
@@ -127,6 +102,79 @@ fun FeedScreen(
                 onLoadMore = onLoadMore
             )
         }
+    }
+}
+
+@Composable
+private fun FeedFilterDrawer(
+    drawerState: DrawerState,
+    uiState: FeedViewModelState,
+    filterLambdas: FeedFilterLambdas,
+    onApplyAndClose: () -> Unit,
+    content: @Composable () -> Unit,
+) {
+    FilterDrawer(
+        drawerState = drawerState,
+        filterCategories = listOf(
+            FilterCategory(
+                name = stringResource(id = R.string.type),
+                filters = listOf(
+                    CheckBoxFilterValue(
+                        name = stringResource(id = R.string.posts),
+                        isChecked = uiState.isPosts,
+                        isEnabled = uiState.isReplies || !uiState.isPosts,
+                        onClick = filterLambdas.onTogglePosts
+                    ),
+                    CheckBoxFilterValue(
+                        name = stringResource(id = R.string.replies),
+                        isChecked = uiState.isReplies,
+                        isEnabled = uiState.isPosts || !uiState.isReplies,
+                        onClick = filterLambdas.onToggleReplies
+                    ),
+                )
+            ),
+            FilterCategory(
+                name = stringResource(id = R.string.people),
+                filters = listOf(
+                    SwitchFilterValue(
+                        name = stringResource(id = R.string.friends),
+                        isChecked = uiState.isFriends,
+                        isEnabled = !uiState.isFriends,
+                        onClick = filterLambdas.onToggleFriends
+                    ),
+                    SwitchFilterValue(
+                        name = stringResource(id = R.string.friend_circle),
+                        isChecked = uiState.isFriendCircle,
+                        isEnabled = !uiState.isFriendCircle,
+                        onClick = filterLambdas.onToggleFriendCircle
+                    ),
+                    SwitchFilterValue(
+                        name = stringResource(id = R.string.global),
+                        isChecked = uiState.isGlobal,
+                        isEnabled = !uiState.isGlobal,
+                        onClick = filterLambdas.onToggleGlobal
+                    ),
+                )
+            ),
+            FilterCategory(
+                name = stringResource(id = R.string.relays),
+                filters = listOf(
+                    SwitchFilterValue(
+                        name = stringResource(id = R.string.autopilot),
+                        isChecked = uiState.isAutopilot,
+                        onClick = filterLambdas.onToggleAutopilot
+                    ),
+                    SwitchFilterValue(
+                        name = stringResource(id = R.string.my_read_relays),
+                        isChecked = uiState.isReadRelays,
+                        onClick = filterLambdas.onToggleReadRelays
+                    ),
+                ),
+            ),
+        ),
+        onClose = onApplyAndClose
+    ) {
+        content()
     }
 }
 

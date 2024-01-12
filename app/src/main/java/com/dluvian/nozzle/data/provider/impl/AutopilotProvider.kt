@@ -12,6 +12,8 @@ import com.dluvian.nozzle.data.utils.addOrCreate
 import com.dluvian.nozzle.data.utils.getMaxRelays
 import com.dluvian.nozzle.model.Pubkey
 import com.dluvian.nozzle.model.Relay
+import com.dluvian.nozzle.model.feedFilter.AuthorFilter
+import com.dluvian.nozzle.model.feedFilter.FriendCircle
 
 private const val TAG = "AutopilotProvider"
 
@@ -22,15 +24,17 @@ class AutopilotProvider(
     private val eventRelayDao: EventRelayDao,
     private val nozzleSubscriber: INozzleSubscriber,
 ) : IAutopilotProvider {
-
     // TODO: Dismiss relays you have trouble to connecting
     // java.net.ProtocolException: Expected HTTP 101 response but was '502 Bad Gateway'
     // javax.net.ssl.SSLPeerUnverifiedException: Hostname relay.nostr.vision not verified:
 
-    override suspend fun getAutopilotRelays(): Map<Relay, Set<Pubkey>> {
-        val pubkeys = contactListProvider.listPersonalContactPubkeysOrDefault().toSet()
+    override suspend fun getAutopilotRelays(authorFilter: AuthorFilter): Map<Relay, Set<Pubkey>> {
+        val pubkeys = if (authorFilter is FriendCircle) {
+            contactListProvider.listFriendCirclePubkeysOrDefault()
+        } else {
+            contactListProvider.listPersonalContactPubkeysOrDefault().toSet()
+        }
         Log.i(TAG, "Get autopilot relays of ${pubkeys.size} pubkeys")
-        if (pubkeys.isEmpty()) return emptyMap()
 
         nozzleSubscriber.subscribeNip65(pubkeys = pubkeys)
 
@@ -56,7 +60,7 @@ class AutopilotProvider(
             Log.i(TAG, "Failed to identify relays for $unprocessedCount of ${pubkeys.size} pubkeys")
         }
 
-        return mergeResult(result)
+        return mergeResult(toMerge = result)
     }
 
     private suspend fun processNip65(

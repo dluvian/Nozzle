@@ -262,4 +262,18 @@ interface ContactDao {
                 "AND contactPubkey NOT IN (SELECT pubkey FROM profile)"
     )
     suspend fun listContactPubkeysWithMissingProfile(): List<Pubkey>
+
+
+    @Query(
+        "SELECT DISTINCT contactPubkey " +
+                "FROM contact " +
+                "WHERE pubkey IN (" +
+                "SELECT contactPubkey FROM contact WHERE pubkey = (" +
+                "SELECT pubkey FROM account WHERE isActive = 1" +
+                ")) " +
+                "GROUP BY contactPubkey " +
+                "ORDER BY COUNT(contactPubkey) DESC " +
+                "LIMIT :limit"
+    )
+    fun listFriendsOfFriendsFlow(limit: Int): Flow<List<String>>
 }

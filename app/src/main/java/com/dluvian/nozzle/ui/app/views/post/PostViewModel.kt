@@ -17,7 +17,6 @@ import com.dluvian.nozzle.data.room.dao.PostDao
 import com.dluvian.nozzle.data.utils.addLimitedRelayStatuses
 import com.dluvian.nozzle.data.utils.listRelayStatuses
 import com.dluvian.nozzle.data.utils.toggleRelay
-import com.dluvian.nozzle.model.AllRelays
 import com.dluvian.nozzle.model.AnnotatedMentionedPost
 import com.dluvian.nozzle.model.Pubkey
 import com.dluvian.nozzle.model.nostr.Event
@@ -149,7 +148,7 @@ class PostViewModel(
         val post = postPreparer.getCleanPostWithTagsAndMentions(content = content + quote)
         val selectedRelays = state.relayStatuses
             .filter { it.isActive }
-            .map { it.relayUrl }
+            .map { it.relay }
         return nostrService.sendPost(
             content = post.content,
             mentions = post.mentions,
@@ -169,8 +168,7 @@ class PostViewModel(
     }
 
     private fun getRelayStatuses() = listRelayStatuses(
-        allRelayUrls = relayProvider.getWriteRelays(),
-        relaySelection = AllRelays
+        allRelays = relayProvider.getWriteRelays()
     )
 
     private fun getNewLineQuoteUri(postIdToQuote: String?, relays: Collection<String>): String {

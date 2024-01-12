@@ -26,3 +26,6 @@ const val Z_INDEX_UNDER_PULL_REFRESH = PULL_REFRESH_Z_INDEX - 1f
 
 // TODO: Figure out the real max value to not exceed SQL's max query length
 const val MAX_SQL_PARAMS = 250
+
+// Max num of friends of friends
+const val FRIEND_CIRCLE_LIMIT = 500

@@ -17,16 +17,12 @@ import com.dluvian.nozzle.data.subscriber.ISubscriptionQueue
 import com.dluvian.nozzle.data.utils.getMaxRelays
 import com.dluvian.nozzle.data.utils.getMaxRelaysAndAddIfTooSmall
 import com.dluvian.nozzle.data.utils.takeRandom80percent
-import com.dluvian.nozzle.model.AllRelays
 import com.dluvian.nozzle.model.FeedInfo
 import com.dluvian.nozzle.model.IdAndRelays
-import com.dluvian.nozzle.model.MultipleRelays
 import com.dluvian.nozzle.model.NoteId
 import com.dluvian.nozzle.model.PostWithMeta
 import com.dluvian.nozzle.model.Pubkey
 import com.dluvian.nozzle.model.Relay
-import com.dluvian.nozzle.model.RelaySelection
-import com.dluvian.nozzle.model.UserSpecific
 import com.dluvian.nozzle.model.nostr.Nevent
 import com.dluvian.nozzle.model.nostr.Nprofile
 import com.dluvian.nozzle.model.nostr.ReplyTo
@@ -101,37 +97,20 @@ class NozzleSubscriber(
     }
 
     override fun subscribeToFeed(
-        limit: Int,
+        pubkeysByRelay: Map<Relay, Set<Pubkey>?>,
         hashtag: String?,
-        authors: List<Pubkey>?,
-        relaySelection: RelaySelection,
+        limit: Int,
         until: Long,
     ) {
         Log.i(TAG, "Subscribe feed posts")
-        if (authors != null && authors.isEmpty() || limit <= 0) return
-
-        when (relaySelection) {
-            is AllRelays, is MultipleRelays -> {
-                subQueue.submitFeed(
-                    until = until,
-                    limit = limit,
-                    hashtag = hashtag,
-                    authors = authors,
-                    relays = relaySelection.selectedRelays
-                )
-            }
-
-            is UserSpecific -> {
-                relaySelection.pubkeysPerRelay.forEach { (relay, pubkeys) ->
-                    subQueue.submitFeed(
-                        until = until,
-                        limit = limit,
-                        hashtag = hashtag,
-                        authors = pubkeys.toList(),
-                        relays = listOf(relay)
-                    )
-                }
-            }
+        pubkeysByRelay.forEach { (relay, pubkeys) ->
+            subQueue.submitFeed(
+                until = until,
+                limit = limit,
+                hashtag = hashtag,
+                authors = pubkeys?.toList(),
+                relays = listOf(relay)
+            )
         }
         subQueue.processNow()
     }
