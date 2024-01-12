@@ -122,13 +122,11 @@ private fun FeedFilterDrawer(
                     CheckBoxFilterValue(
                         name = stringResource(id = R.string.posts),
                         isChecked = uiState.isPosts,
-                        isEnabled = uiState.isReplies || !uiState.isPosts,
                         onClick = filterLambdas.onTogglePosts
                     ),
                     CheckBoxFilterValue(
                         name = stringResource(id = R.string.replies),
                         isChecked = uiState.isReplies,
-                        isEnabled = uiState.isPosts || !uiState.isReplies,
                         onClick = filterLambdas.onToggleReplies
                     ),
                 )

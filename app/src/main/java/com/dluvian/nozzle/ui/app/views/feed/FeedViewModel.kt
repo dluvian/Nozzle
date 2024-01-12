@@ -33,8 +33,12 @@ class FeedViewModel(
     val uiState = _uiState.stateIn(viewModelScope, SharingStarted.Eagerly, _uiState.value)
 
     val filterLambdas = FeedFilterLambdas(
-        onTogglePosts = { _uiState.update { it.copy(isPosts = !it.isPosts) } },
-        onToggleReplies = { _uiState.update { it.copy(isReplies = !it.isReplies) } },
+        onTogglePosts = {
+            _uiState.update { it.copy(isPosts = !it.isPosts, isReplies = true) }
+        },
+        onToggleReplies = {
+            _uiState.update { it.copy(isReplies = !it.isReplies, isPosts = true) }
+        },
         onToggleFriends = {
             _uiState.update {
                 val oldValue = it.isFriends
