@@ -26,10 +26,10 @@ import com.dluvian.nozzle.data.utils.UrlUtils.removeWebsocketPrefix
 import com.dluvian.nozzle.ui.components.AddIcon
 import com.dluvian.nozzle.ui.components.AddingTextFieldWithButton
 import com.dluvian.nozzle.ui.components.DeleteIcon
-import com.dluvian.nozzle.ui.components.NamedCheckbox
 import com.dluvian.nozzle.ui.components.ReturnableTopBar
 import com.dluvian.nozzle.ui.components.SaveIcon
 import com.dluvian.nozzle.ui.components.TopBarCircleProgressIndicator
+import com.dluvian.nozzle.ui.components.namedItem.NamedCheckbox
 import com.dluvian.nozzle.ui.components.text.HeaderText
 import com.dluvian.nozzle.ui.theme.spacing
 

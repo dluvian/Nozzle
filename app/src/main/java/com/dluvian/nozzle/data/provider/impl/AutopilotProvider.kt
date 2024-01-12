@@ -14,6 +14,9 @@ import com.dluvian.nozzle.model.Pubkey
 import com.dluvian.nozzle.model.Relay
 import com.dluvian.nozzle.model.feedFilter.AuthorFilter
 import com.dluvian.nozzle.model.feedFilter.FriendCircle
+import com.dluvian.nozzle.model.feedFilter.Friends
+import com.dluvian.nozzle.model.feedFilter.Global
+import com.dluvian.nozzle.model.feedFilter.SingularPerson
 
 private const val TAG = "AutopilotProvider"
 
@@ -29,12 +32,17 @@ class AutopilotProvider(
     // javax.net.ssl.SSLPeerUnverifiedException: Hostname relay.nostr.vision not verified:
 
     override suspend fun getAutopilotRelays(authorFilter: AuthorFilter): Map<Relay, Set<Pubkey>> {
-        val pubkeys = if (authorFilter is FriendCircle) {
-            contactListProvider.listFriendCirclePubkeysOrDefault()
-        } else {
-            contactListProvider.listPersonalContactPubkeysOrDefault().toSet()
+        val pubkeys = when (authorFilter) {
+            is FriendCircle -> contactListProvider.listFriendCirclePubkeysOrDefault()
+            is Friends -> contactListProvider.listPersonalContactPubkeysOrDefault().toSet()
+            is SingularPerson -> setOf(authorFilter.pubkey)
+            is Global -> {
+                Log.e(TAG, "Can't find autopilot relays for GLOBAL")
+                emptySet()
+            }
         }
         Log.i(TAG, "Get autopilot relays of ${pubkeys.size} pubkeys")
+        if (pubkeys.isEmpty()) return emptyMap()
 
         nozzleSubscriber.subscribeNip65(pubkeys = pubkeys)
 

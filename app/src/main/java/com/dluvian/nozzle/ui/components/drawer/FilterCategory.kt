@@ -6,5 +6,4 @@ import androidx.compose.runtime.Immutable
 data class FilterCategory(
     val name: String,
     val filters: List<TypedFilterValue>,
-    val onAdd: (() -> Unit)? = null
 )
