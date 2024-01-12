@@ -5,6 +5,7 @@ import androidx.room.Insert
 import androidx.room.MapInfo
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import androidx.room.RewriteQueriesToDropUnusedColumns
 import androidx.room.Transaction
 import com.dluvian.nozzle.data.nostr.utils.EncodingUtils
 import com.dluvian.nozzle.data.room.entity.HashtagEntity
@@ -454,6 +455,7 @@ interface PostDao {
                 "LEFT JOIN profile ON post.pubkey = profile.pubkey " +
                 "WHERE id IN (:postIds) "
     )
+    @RewriteQueriesToDropUnusedColumns
     fun getMentionedPostsByIdFlow(postIds: Collection<String>): Flow<Map<String, MentionedPost>>
 
     @Query(
@@ -462,6 +464,7 @@ interface PostDao {
                 "LEFT JOIN profile ON post.pubkey = profile.pubkey " +
                 "WHERE id = :postId"
     )
+    @RewriteQueriesToDropUnusedColumns
     suspend fun getMentionedPost(postId: String): MentionedPost?
 
     @Query(

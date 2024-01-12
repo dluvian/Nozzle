@@ -72,7 +72,6 @@
     <string name="lightning_address">闪电地址</string>
     <string name="enter_lud16">比如：user@domain.com</string>
     <string name="feed_settings">订阅设置</string>
-    <string name="contacts_only">仅限好友</string>
     <string name="posts">帖子</string>
     <string name="replies">回复</string>
     <string name="Feed">主页</string>
