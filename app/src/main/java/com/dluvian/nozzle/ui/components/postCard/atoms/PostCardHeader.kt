@@ -1,4 +1,4 @@
-package com.dluvian.nozzle.ui.components.postCard.molecules
+package com.dluvian.nozzle.ui.components.postCard.atoms
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import com.dluvian.nozzle.ui.components.postCard.atoms.OptionsButton
 import com.dluvian.nozzle.ui.components.text.Bullet
 import com.dluvian.nozzle.ui.components.text.RelativeTime
 import com.dluvian.nozzle.ui.components.text.Username

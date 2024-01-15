@@ -26,8 +26,8 @@ import com.dluvian.nozzle.ui.app.navigation.PostCardLambdas
 import com.dluvian.nozzle.ui.components.bars.ReturnableTopBar
 import com.dluvian.nozzle.ui.components.hint.NoPostsHint
 import com.dluvian.nozzle.ui.components.postCard.PostCard
-import com.dluvian.nozzle.ui.components.postCard.atoms.ClickToLoadMore
-import com.dluvian.nozzle.ui.components.postCard.atoms.PostNotFound
+import com.dluvian.nozzle.ui.components.postCard.atoms.cards.ClickToLoadMoreCard
+import com.dluvian.nozzle.ui.components.postCard.atoms.cards.PostNotFound
 import com.dluvian.nozzle.ui.theme.spacing
 
 
@@ -87,7 +87,7 @@ private fun ThreadedPosts(
                     key = { _, item -> item.entity.id }) { index, post ->
                     if (index == 0) {
                         if (post.replyToPubkey != null) {
-                            ClickToLoadMore(onClick = onRefresh)
+                            ClickToLoadMoreCard(onClick = onRefresh)
                         } else if (post.entity.replyToId != null) {
                             onFindPrevious()
                             PostNotFound()
@@ -102,7 +102,7 @@ private fun ThreadedPosts(
                 }
                 item {
                     if (thread.previous.isEmpty() && it.replyToPubkey != null) {
-                        ClickToLoadMore(onClick = onRefresh)
+                        ClickToLoadMoreCard(onClick = onRefresh)
                     } else if (thread.previous.isEmpty() && it.entity.replyToId != null) {
                         onFindPrevious()
                         PostNotFound()
