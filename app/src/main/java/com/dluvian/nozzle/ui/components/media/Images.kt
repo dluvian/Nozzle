@@ -10,7 +10,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Help
+import androidx.compose.material.icons.automirrored.filled.Help
 import androidx.compose.material.icons.filled.Verified
 import androidx.compose.material.icons.filled.VerifiedUser
 import androidx.compose.material3.Icon
@@ -96,7 +96,7 @@ private fun PictureIndicator(
         is Unknown -> PictureIndicatorBase(
             modifier = modifier,
             color = Color.Gray,
-            imageVector = Icons.Filled.Help,
+            imageVector = Icons.AutoMirrored.Filled.Help,
             trustScore = null
         )
     }

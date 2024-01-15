@@ -45,7 +45,8 @@ fun LikesScreen(
         }
         ReturnableTopBar(
             text = fullTitle,
-            onGoBack = onGoBack
+            onGoBack = onGoBack,
+            actions = {}
         )
         Column(modifier = Modifier.fillMaxSize()) {
             PostCardList(

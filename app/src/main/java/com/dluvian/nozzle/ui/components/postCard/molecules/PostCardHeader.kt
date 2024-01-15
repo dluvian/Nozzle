@@ -33,7 +33,11 @@ fun PostCardHeader(
         verticalAlignment = Alignment.CenterVertically
     ) {
         Row(modifier = Modifier.fillMaxWidth(0.9f)) {
-            Username(username = name, pubkey = pubkey, onOpenProfile = onOpenProfile)
+            Username(username = name, onOpenProfile =
+            if (onOpenProfile != null) {
+                { onOpenProfile(pubkey) }
+            } else null
+            )
             if (createdAt > 0) {
                 Spacer(modifier = Modifier.width(spacing.medium))
                 Bullet()

@@ -1,15 +1,14 @@
 package com.dluvian.nozzle.ui.components.bars
 
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.width
-import androidx.compose.material.MaterialTheme.typography
-import androidx.compose.material.Text
-import androidx.compose.material.TopAppBar
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.MaterialTheme.typography
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import com.dluvian.nozzle.model.RelayActive
@@ -29,7 +28,7 @@ fun ContentCreationTopBar(
 ) {
     ClosableTopBar(
         onClose = onClose,
-        trailingIcon = {
+        actions = {
             Row {
                 ChooseRelayButton(
                     relays = relayStatuses,
@@ -51,51 +50,40 @@ fun ContentCreationTopBar(
 fun ReturnableTopBar(
     text: String,
     onGoBack: () -> Unit,
-    trailingIcon: @Composable (() -> Unit)? = null
+    actions: @Composable RowScope.() -> Unit
 ) {
     BaseTopBar(
         text = text,
-        leadingIcon = { GoBackButton(onGoBack = onGoBack) },
-        trailingIcon = trailingIcon
+        navigationButton = { GoBackButton(onGoBack = onGoBack) },
+        actions = actions
     )
 }
 
 @Composable
-private fun ClosableTopBar(onClose: () -> Unit, trailingIcon: @Composable (() -> Unit)? = null) {
+private fun ClosableTopBar(onClose: () -> Unit, actions: @Composable RowScope.() -> Unit) {
     BaseTopBar(
-        leadingIcon = { CloseButton(onGoBack = onClose) },
-        trailingIcon = trailingIcon
+        navigationButton = { CloseButton(onGoBack = onClose) },
+        actions = actions
     )
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun BaseTopBar(
-    text: String? = null,
-    leadingIcon: @Composable (() -> Unit)? = null,
-    trailingIcon: @Composable (() -> Unit)? = null,
+    text: String = "",
+    navigationButton: @Composable () -> Unit,
+    actions: @Composable RowScope.() -> Unit,
 ) {
-    TopAppBar {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                if (leadingIcon != null) {
-                    leadingIcon()
-                }
-                if (text != null) {
-                    Spacer(modifier = Modifier.width(spacing.large))
-                    Text(
-                        text = text,
-                        style = typography.h6,
-                        color = Color.White,
-                    )
-                }
-            }
-            if (trailingIcon != null) {
-                trailingIcon()
-            }
-        }
-    }
+    TopAppBar(
+        title = {
+            Text(
+                text = text,
+                style = typography.headlineMedium,
+                color = Color.White,
+            )
+        },
+        navigationIcon = navigationButton,
+        actions = actions
+
+    )
 }

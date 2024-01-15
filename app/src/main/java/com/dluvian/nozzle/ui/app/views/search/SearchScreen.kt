@@ -60,7 +60,7 @@ fun SearchScreen(
         ReturnableTopBar(
             text = stringResource(id = R.string.search),
             onGoBack = onGoBack,
-            trailingIcon = {
+            actions = {
                 if (uiState.isLoading) TopBarCircleProgressIndicator()
                 else SearchTopBarButton(
                     hasChanges = input.value.text.isNotBlank(),

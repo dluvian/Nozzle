@@ -7,8 +7,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.material.Text
-import androidx.compose.material.TextField
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -23,7 +23,7 @@ import androidx.compose.ui.text.input.VisualTransformation
 import com.dluvian.nozzle.R
 import com.dluvian.nozzle.data.utils.copyAndToast
 import com.dluvian.nozzle.ui.components.bars.ReturnableTopBar
-import com.dluvian.nozzle.ui.components.icons.CopyIcon
+import com.dluvian.nozzle.ui.components.buttonIcons.CopyButtonIcon
 import com.dluvian.nozzle.ui.components.icons.VisibilityIcon
 import com.dluvian.nozzle.ui.theme.spacing
 
@@ -35,7 +35,8 @@ fun KeysScreen(
     Column {
         ReturnableTopBar(
             text = stringResource(id = R.string.keys),
-            onGoBack = onGoBack
+            onGoBack = onGoBack,
+            actions = {}
         )
         Column(modifier = Modifier.padding(spacing.screenEdge)) {
             Npub(npub = uiState.npub)
@@ -61,7 +62,7 @@ private fun Npub(npub: String) {
         enabled = false,
         onValueChange = { /* Always disabled*/ },
         trailingIcon = {
-            CopyIcon(onCopy = {
+            CopyButtonIcon(onCopy = {
                 copyAndToast(
                     text = npub,
                     toast = context.getString(R.string.copied_public_key),
@@ -107,7 +108,7 @@ private fun NsecTrailingIcons(nsec: String, isVisible: Boolean, onToggleVisibili
             onToggle = onToggleVisibility
         )
         Spacer(modifier = Modifier.width(spacing.medium))
-        CopyIcon(onCopy = {
+        CopyButtonIcon(onCopy = {
             copyAndToast(
                 text = nsec,
                 toast = context.getString(R.string.copied_private_key),

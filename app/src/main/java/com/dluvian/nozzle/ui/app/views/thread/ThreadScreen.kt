@@ -8,8 +8,8 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.material.Divider
-import androidx.compose.material.MaterialTheme.colors
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
@@ -23,7 +23,6 @@ import com.dluvian.nozzle.model.PostThread
 import com.dluvian.nozzle.model.PostWithMeta
 import com.dluvian.nozzle.model.ThreadPosition
 import com.dluvian.nozzle.ui.app.navigation.PostCardLambdas
-import com.dluvian.nozzle.ui.components.PullRefreshBox
 import com.dluvian.nozzle.ui.components.bars.ReturnableTopBar
 import com.dluvian.nozzle.ui.components.hint.NoPostsHint
 import com.dluvian.nozzle.ui.components.postCard.PostCard
@@ -43,7 +42,10 @@ fun ThreadScreen(
     onGoBack: () -> Unit,
 ) {
     Column {
-        ReturnableTopBar(text = stringResource(id = R.string.thread), onGoBack = onGoBack)
+        ReturnableTopBar(
+            text = stringResource(id = R.string.thread),
+            onGoBack = onGoBack,
+            actions = {})
         Column(modifier = Modifier.fillMaxSize()) {
             ThreadedPosts(
                 thread = thread,
@@ -75,7 +77,6 @@ private fun ThreadedPosts(
         lazyListState.scrollToItem(thread.previous.size)
         alreadyScrolled.value = true
     }
-    PullRefreshBox(isRefreshing = isRefreshing, onRefresh = onRefresh) {
         LazyColumn(
             modifier = Modifier.fillMaxSize(),
             state = lazyListState
@@ -106,7 +107,7 @@ private fun ThreadedPosts(
                         onFindPrevious()
                         PostNotFound()
                     }
-                    val focusColor = colors.primaryVariant
+                    val focusColor = MaterialTheme.colorScheme.onPrimaryContainer
                     PostCard(
                         post = it,
                         postCardLambdas = postCardLambdas,
@@ -122,9 +123,9 @@ private fun ThreadedPosts(
                         isCurrent = true,
                         threadPosition = thread.getCurrentThreadPosition(),
                     )
-                    Divider()
+                    HorizontalDivider()
                     Spacer(modifier = Modifier.height(spacing.tiny))
-                    Divider()
+                    HorizontalDivider()
                 }
                 items(items = thread.replies, key = { it.entity.id }) { post ->
                     PostCard(
@@ -134,6 +135,5 @@ private fun ThreadedPosts(
                     )
                 }
             }
-        }
     }
 }

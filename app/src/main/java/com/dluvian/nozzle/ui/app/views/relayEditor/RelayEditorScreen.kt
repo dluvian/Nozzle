@@ -11,7 +11,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.material3.Divider
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
@@ -48,7 +48,7 @@ fun RelayEditorScreen(
         ReturnableTopBar(
             text = stringResource(id = R.string.relays),
             onGoBack = onGoBack,
-            trailingIcon = {
+            actions = {
                 if (uiState.hasChanges && !uiState.isLoading) SaveIcon(onSave = onSaveRelays)
                 if (uiState.isLoading) TopBarCircleProgressIndicator()
             })
@@ -103,7 +103,7 @@ private fun ScreenContent(
                 onToggleWrite = { onToggleWrite(index) }
             )
             if (index != myRelays.size - 1) {
-                Divider()
+                HorizontalDivider()
             }
         }
         item { Spacer(modifier = Modifier.height(spacing.xxl)) }
@@ -117,7 +117,7 @@ private fun ScreenContent(
                     isAddable = addIsEnabled && myRelays.none { it.url == relay },
                     onUseRelay = { onUsePopularRelay(index) })
                 if (index != popularRelays.size - 1) {
-                    Divider()
+                    HorizontalDivider()
                 }
             }
         }

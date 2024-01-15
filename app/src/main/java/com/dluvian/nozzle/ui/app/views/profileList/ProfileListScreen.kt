@@ -55,7 +55,7 @@ fun ProfileListScreen(
         ReturnableTopBar(
             text = title,
             onGoBack = onGoBack,
-            trailingIcon = { if (isRefreshing) TopBarCircleProgressIndicator() }
+            actions = { if (isRefreshing) TopBarCircleProgressIndicator() }
         )
         LazyColumn(modifier = Modifier.fillMaxSize()) {
             itemsIndexed(profiles) { i, profile ->

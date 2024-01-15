@@ -12,11 +12,10 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.material.Chip
-import androidx.compose.material.Divider
-import androidx.compose.material.ExperimentalMaterialApi
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Text
+import androidx.compose.material3.AssistChip
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -96,7 +95,7 @@ fun ProfileScreen(
             onOpenFollowedByList = { onOpenFollowedByList(profile.pubkey) }
         )
         Spacer(Modifier.height(spacing.xl))
-        Divider()
+        HorizontalDivider()
         PostCardList(
             posts = feed,
             isRefreshing = isRefreshing,
@@ -302,7 +301,6 @@ private fun ProfileStrings(
     }
 }
 
-@OptIn(ExperimentalMaterialApi::class)
 @Composable
 private fun NameWithFollowInfoChip(name: String, followsYou: Boolean) {
     Row(verticalAlignment = Alignment.CenterVertically) {
@@ -311,21 +309,22 @@ private fun NameWithFollowInfoChip(name: String, followsYou: Boolean) {
             text = name,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
-            style = MaterialTheme.typography.h6,
+            style = MaterialTheme.typography.bodyLarge,
         )
         if (followsYou) {
-            Chip(
+            AssistChip(
                 modifier = Modifier
                     .height(sizing.smallItem)
                     .padding(start = spacing.medium),
                 onClick = { },
                 enabled = false,
-            ) {
-                Text(
-                    modifier = Modifier.align(Alignment.CenterVertically),
-                    text = stringResource(id = R.string.follows_you)
-                )
-            }
+                label = {
+                    Text(
+                        modifier = Modifier.align(Alignment.CenterVertically),
+                        text = stringResource(id = R.string.follows_you)
+                    )
+                }
+            )
         }
     }
 }
@@ -346,7 +345,7 @@ private fun Lud16(lud16: String, onCopyLud16: () -> Unit) {
         text = lud16,
         onClick = onCopyLud16,
         leadingIcon = {
-            LightningIcon(modifier = Modifier.size(sizing.smallItem), tint = Color.LightGray)
+            LightningIcon(modifier = Modifier.size(sizing.smallItem))
         },
     )
 }
@@ -368,7 +367,6 @@ private fun ProfileStringRow(
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
             color = Color.LightGray,
-            style = MaterialTheme.typography.body2,
         )
     }
 }

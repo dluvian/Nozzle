@@ -37,7 +37,7 @@ fun HashtagScreen(
     )
     Column {
         val title = remember(uiState.hashtag) { "#${uiState.hashtag}" }
-        ReturnableTopBar(text = title, onGoBack = onGoBack)
+        ReturnableTopBar(text = title, onGoBack = onGoBack, actions = {})
         Column(modifier = Modifier.fillMaxSize()) {
             PostCardList(
                 posts = feed,

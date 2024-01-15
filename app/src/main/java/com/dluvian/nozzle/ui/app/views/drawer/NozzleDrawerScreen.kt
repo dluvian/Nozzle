@@ -16,14 +16,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material.DropdownMenu
-import androidx.compose.material.Icon
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.MaterialTheme.colors
-import androidx.compose.material.Surface
-import androidx.compose.material.Switch
-import androidx.compose.material.Text
-import androidx.compose.material.TextButton
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DarkMode
 import androidx.compose.material.icons.rounded.CellTower
@@ -32,6 +24,13 @@ import androidx.compose.material.icons.rounded.Inbox
 import androidx.compose.material.icons.rounded.Key
 import androidx.compose.material.icons.rounded.Newspaper
 import androidx.compose.material.icons.rounded.Search
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Switch
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -131,7 +130,7 @@ private fun TopRow(
         modifier = modifier
             .fillMaxWidth()
             .padding(vertical = spacing.tiny),
-        color = colors.surface,
+        color = MaterialTheme.colorScheme.surface,
         shape = MaterialTheme.shapes.small
     ) {
         val isExpanded = remember { mutableStateOf(false) }
@@ -245,10 +244,6 @@ private fun PictureAndName(account: Account, isTop: Boolean, modifier: Modifier 
             text = account.name,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
-            style = if (isTop) MaterialTheme.typography.h6.let {
-                it.copy(fontSize = it.fontSize.times(1.1f))
-            } else MaterialTheme.typography.h6,
-            color = colors.onSurface
         )
     }
 }
@@ -354,7 +349,7 @@ private fun VersionText() {
     ) {
         Text(
             text = stringResource(id = R.string.nozzle_version),
-            style = MaterialTheme.typography.caption,
+            style = MaterialTheme.typography.bodySmall,
         )
     }
 }
@@ -366,14 +361,13 @@ private fun DrawerRow(
     action: () -> Unit,
     modifier: Modifier = Modifier,
     iconModifier: Modifier = Modifier,
-    iconTint: Color = colors.primary,
+    iconTint: Color = MaterialTheme.colorScheme.primary,
     trailingContent: @Composable () -> Unit = {},
 ) {
     Surface(
         modifier = modifier
             .fillMaxWidth()
             .padding(vertical = spacing.tiny),
-        color = colors.surface,
         shape = MaterialTheme.shapes.small
     ) {
         TextButton(
@@ -399,8 +393,6 @@ private fun DrawerRow(
                         text = label,
                         maxLines = 3,
                         overflow = TextOverflow.Ellipsis,
-                        style = MaterialTheme.typography.h6,
-                        color = colors.onSurface
                     )
                 }
                 trailingContent()

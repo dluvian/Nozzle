@@ -41,7 +41,7 @@ fun InboxScreen(
         ReturnableTopBar(
             text = stringResource(id = R.string.inbox),
             onGoBack = onGoBack,
-            trailingIcon = {
+            actions = {
                 // Wrapped in Row or else dialog will be aligned to the left
                 // TODO: Check if Row-wrap is still necessary
                 Row {

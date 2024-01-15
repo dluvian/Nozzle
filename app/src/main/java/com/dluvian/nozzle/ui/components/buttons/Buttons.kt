@@ -5,22 +5,23 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.Button
-import androidx.compose.material.ButtonDefaults
-import androidx.compose.material.DropdownMenu
-import androidx.compose.material.Icon
-import androidx.compose.material.MaterialTheme.colors
-import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.filled.Send
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -38,7 +39,7 @@ fun GoBackButton(onGoBack: () -> Unit) {
         modifier = Modifier
             .clip(CircleShape)
             .clickable { onGoBack() },
-        imageVector = Icons.Default.ArrowBack,
+        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
         contentDescription = stringResource(id = R.string.return_back),
     )
 }
@@ -60,7 +61,7 @@ fun SendTopBarButton(
     onGoBack: () -> Unit,
 ) {
     TopBarButton(
-        imageVector = Icons.Default.Send,
+        imageVector = Icons.AutoMirrored.Filled.Send,
         hasChanges = true, // TODO: Refactor so this won't be needed
         description = stringResource(id = R.string.send),
         onClick = onSend,
@@ -165,11 +166,7 @@ fun EditProfileButton(onNavToEditProfile: () -> Unit) {
     Button(
         onClick = { onNavToEditProfile() },
         shape = RoundedCornerShape(20.dp),
-        border = BorderStroke(1.dp, colors.onBackground),
-        colors = ButtonDefaults.outlinedButtonColors(
-            contentColor = colors.onBackground,
-            backgroundColor = colors.background
-        )
+        border = BorderStroke(1.dp, Color.Black),
     ) {
         Text(text = stringResource(id = R.string.edit))
     }
@@ -184,18 +181,13 @@ fun FollowButton(
     Button(
         onClick = if (isFollowed) onUnfollow else onFollow,
         shape = RoundedCornerShape(20.dp),
-        border = BorderStroke(1.dp, colors.onBackground),
-        colors = if (isFollowed) {
-            ButtonDefaults.outlinedButtonColors(
-                contentColor = colors.onBackground,
-                backgroundColor = colors.background
-            )
-        } else {
-            ButtonDefaults.outlinedButtonColors(
-                contentColor = colors.background,
-                backgroundColor = colors.onBackground
-            )
-        }
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.onBackground),
+        colors =
+        ButtonDefaults.outlinedButtonColors(
+            contentColor = if (isFollowed) MaterialTheme.colorScheme.onBackground else MaterialTheme.colorScheme.background,
+            containerColor = if (isFollowed) MaterialTheme.colorScheme.background else MaterialTheme.colorScheme.onBackground
+        )
+
     ) {
         if (isFollowed) Text(text = stringResource(id = R.string.following))
         else Text(text = stringResource(id = R.string.follow))
