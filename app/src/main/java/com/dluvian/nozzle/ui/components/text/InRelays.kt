@@ -10,14 +10,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.withStyle
 import com.dluvian.nozzle.R
 import com.dluvian.nozzle.data.utils.UrlUtils.removeWebsocketPrefix
 import com.dluvian.nozzle.ui.components.dialog.RelaysDialog
+import com.dluvian.nozzle.ui.theme.BoldHintGrayStyle
+import com.dluvian.nozzle.ui.theme.HintGrayStyle
 import com.dluvian.nozzle.ui.theme.Shapes
 
 @Composable
@@ -29,10 +29,7 @@ fun InRelays(relays: List<String>) {
     if (relays.isNotEmpty()) {
         Row(modifier = Modifier
             .clip(Shapes.small)
-            .let {
-                if (relays.size > 1) it.clickable { openDialog.value = true }
-                else it
-            }) {
+            .clickable { openDialog.value = true }) {
             InRelay(
                 modifier = Modifier.weight(weight = 0.65f, fill = false), relay = relays.first()
             )
@@ -54,9 +51,11 @@ private fun InRelay(
     Text(
         modifier = modifier,
         text = buildAnnotatedString {
-            append(stringResource(id = R.string.in_relay))
-            append(" ")
-            withStyle(style = SpanStyle(fontWeight = FontWeight.Bold)) {
+            withStyle(HintGrayStyle) {
+                append(stringResource(id = R.string.in_relay))
+                append(" ")
+            }
+            withStyle(style = BoldHintGrayStyle) {
                 append(relay.removeWebsocketPrefix())
             }
         },
@@ -72,12 +71,12 @@ private fun AndOthers(
 ) {
     Text(
         modifier = modifier, text = buildAnnotatedString {
-            withStyle(style = SpanStyle()) {
+            withStyle(style = HintGrayStyle) {
                 append(" ")
                 append(stringResource(id = R.string.and))
                 append(" ")
             }
-            withStyle(style = SpanStyle(fontWeight = FontWeight.Bold)) {
+            withStyle(style = BoldHintGrayStyle) {
                 append(otherRelaysCount.toString())
                 append(" ")
                 append(pluralStringResource(id = R.plurals.other_relays, otherRelaysCount))

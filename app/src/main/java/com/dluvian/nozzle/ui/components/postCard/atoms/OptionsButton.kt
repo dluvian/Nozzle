@@ -6,7 +6,9 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import com.dluvian.nozzle.ui.components.icons.MoreIcon
+import androidx.compose.ui.res.stringResource
+import com.dluvian.nozzle.R
+import com.dluvian.nozzle.ui.components.iconButtons.HorizShowMoreIconButton
 
 @Composable
 fun OptionsButton(
@@ -28,6 +30,9 @@ fun OptionsButton(
             onUnfollow = onUnfollow,
             onDelete = onDelete
         )
-        MoreIcon(onClick = { showMenu.value = !showMenu.value })
+        HorizShowMoreIconButton(
+            onShowMore = { showMenu.value = !showMenu.value },
+            description = stringResource(id = R.string.show_options)
+        )
     }
 }

@@ -23,8 +23,8 @@ import androidx.compose.ui.text.input.VisualTransformation
 import com.dluvian.nozzle.R
 import com.dluvian.nozzle.data.utils.copyAndToast
 import com.dluvian.nozzle.ui.components.bars.ReturnableTopBar
-import com.dluvian.nozzle.ui.components.buttonIcons.CopyButtonIcon
-import com.dluvian.nozzle.ui.components.icons.VisibilityIcon
+import com.dluvian.nozzle.ui.components.iconButtons.CopyIconButton
+import com.dluvian.nozzle.ui.components.iconButtons.toggle.VisibilityToggleIconButton
 import com.dluvian.nozzle.ui.theme.spacing
 
 @Composable
@@ -62,14 +62,17 @@ private fun Npub(npub: String) {
         enabled = false,
         onValueChange = { /* Always disabled*/ },
         trailingIcon = {
-            CopyButtonIcon(onCopy = {
-                copyAndToast(
-                    text = npub,
-                    toast = context.getString(R.string.copied_public_key),
-                    context = context,
-                    clip = clip
-                )
-            })
+            CopyIconButton(
+                onCopy = {
+                    copyAndToast(
+                        text = npub,
+                        toast = context.getString(R.string.copied_public_key),
+                        context = context,
+                        clip = clip
+                    )
+                },
+                description = stringResource(id = R.string.copy_public_key)
+            )
         }
     )
 }
@@ -103,18 +106,21 @@ private fun NsecTrailingIcons(nsec: String, isVisible: Boolean, onToggleVisibili
     val clip = LocalClipboardManager.current
     val context = LocalContext.current
     Row {
-        VisibilityIcon(
+        VisibilityToggleIconButton(
             isVisible = isVisible,
-            onToggle = onToggleVisibility
+            onToggleVisibility = onToggleVisibility
         )
         Spacer(modifier = Modifier.width(spacing.medium))
-        CopyButtonIcon(onCopy = {
-            copyAndToast(
-                text = nsec,
-                toast = context.getString(R.string.copied_private_key),
-                context = context,
-                clip = clip
-            )
-        })
+        CopyIconButton(
+            onCopy = {
+                copyAndToast(
+                    text = nsec,
+                    toast = context.getString(R.string.copied_private_key),
+                    context = context,
+                    clip = clip
+                )
+            },
+            description = stringResource(id = R.string.copied_private_key)
+        )
     }
 }

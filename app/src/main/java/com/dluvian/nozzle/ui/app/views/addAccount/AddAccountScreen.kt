@@ -26,7 +26,7 @@ import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
 import com.dluvian.nozzle.R
 import com.dluvian.nozzle.ui.components.bars.ReturnableTopBar
-import com.dluvian.nozzle.ui.components.icons.VisibilityIcon
+import com.dluvian.nozzle.ui.components.iconButtons.toggle.VisibilityToggleIconButton
 import com.dluvian.nozzle.ui.components.input.ChangeableTextField
 import com.dluvian.nozzle.ui.theme.spacing
 
@@ -84,9 +84,9 @@ private fun ScreenContent(
                     maxLines = 4,
                     isError = isInvalid,
                     trailingIcon = {
-                        VisibilityIcon(
+                        VisibilityToggleIconButton(
                             isVisible = isVisible.value,
-                            onToggle = { isVisible.value = !isVisible.value }
+                            onToggleVisibility = { isVisible.value = !isVisible.value }
                         )
                     }
                 )

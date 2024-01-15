@@ -24,13 +24,12 @@ import com.dluvian.nozzle.data.room.helper.Nip65Relay
 import com.dluvian.nozzle.data.utils.UrlUtils.WEBSOCKET_PREFIX
 import com.dluvian.nozzle.data.utils.UrlUtils.removeWebsocketPrefix
 import com.dluvian.nozzle.ui.components.bars.ReturnableTopBar
-import com.dluvian.nozzle.ui.components.icons.AddIcon
-import com.dluvian.nozzle.ui.components.icons.DeleteIcon
-import com.dluvian.nozzle.ui.components.icons.SaveIcon
+import com.dluvian.nozzle.ui.components.iconButtons.AddIconButton
+import com.dluvian.nozzle.ui.components.iconButtons.DeleteIconButton
+import com.dluvian.nozzle.ui.components.iconButtons.SaveIconButton
 import com.dluvian.nozzle.ui.components.indicators.TopBarCircleProgressIndicator
 import com.dluvian.nozzle.ui.components.input.AddingTextFieldWithButton
 import com.dluvian.nozzle.ui.components.namedItem.NamedCheckbox
-import com.dluvian.nozzle.ui.components.text.HeaderText
 import com.dluvian.nozzle.ui.theme.spacing
 
 @Composable
@@ -49,7 +48,11 @@ fun RelayEditorScreen(
             text = stringResource(id = R.string.relays),
             onGoBack = onGoBack,
             actions = {
-                if (uiState.hasChanges && !uiState.isLoading) SaveIcon(onSave = onSaveRelays)
+                if (uiState.hasChanges && !uiState.isLoading)
+                    SaveIconButton(
+                        onSave = onSaveRelays,
+                        description = stringResource(id = R.string.save_relay_list)
+                    )
                 if (uiState.isLoading) TopBarCircleProgressIndicator()
             })
         val myRelays = remember(uiState.myRelays) {
@@ -127,7 +130,7 @@ private fun ScreenContent(
 @Composable
 private fun SpacedHeaderText(text: String) {
     Column {
-        HeaderText(text = text)
+        Text(text = text)
         Spacer(modifier = Modifier.height(spacing.medium))
     }
 }
@@ -155,7 +158,10 @@ private fun AddRelay(
 @Composable
 private fun PopularRelayRow(relay: String, isAddable: Boolean, onUseRelay: () -> Unit) {
     RelayRow(relay = relay) {
-        if (isAddable) AddIcon(onAdd = onUseRelay)
+        if (isAddable) AddIconButton(
+            onAdd = onUseRelay,
+            description = stringResource(id = R.string.add_relay)
+        )
     }
 }
 
@@ -186,7 +192,10 @@ private fun MyRelayRow(
             )
             Spacer(modifier = Modifier.width(spacing.xl))
 
-            if (isDeletable) DeleteIcon(onDelete = onDeleteRelay)
+            if (isDeletable) DeleteIconButton(
+                onDelete = onDeleteRelay,
+                description = stringResource(id = R.string.delete_relay)
+            )
         }
     }
 }

@@ -13,9 +13,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import com.dluvian.nozzle.model.RelayActive
 import com.dluvian.nozzle.ui.components.buttons.ChooseRelayButton
-import com.dluvian.nozzle.ui.components.buttons.CloseButton
-import com.dluvian.nozzle.ui.components.buttons.GoBackButton
 import com.dluvian.nozzle.ui.components.buttons.SendTopBarButton
+import com.dluvian.nozzle.ui.components.iconButtons.CloseIconButton
+import com.dluvian.nozzle.ui.components.iconButtons.GoBackIconButton
 import com.dluvian.nozzle.ui.theme.spacing
 
 @Composable
@@ -54,7 +54,7 @@ fun ReturnableTopBar(
 ) {
     BaseTopBar(
         text = text,
-        navigationButton = { GoBackButton(onGoBack = onGoBack) },
+        navigationButton = { GoBackIconButton(onGoBack = onGoBack) },
         actions = actions
     )
 }
@@ -62,7 +62,7 @@ fun ReturnableTopBar(
 @Composable
 private fun ClosableTopBar(onClose: () -> Unit, actions: @Composable RowScope.() -> Unit) {
     BaseTopBar(
-        navigationButton = { CloseButton(onGoBack = onClose) },
+        navigationButton = { CloseIconButton(onClose = onClose) },
         actions = actions
     )
 }

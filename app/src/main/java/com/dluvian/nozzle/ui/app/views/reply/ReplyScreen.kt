@@ -3,7 +3,6 @@ package com.dluvian.nozzle.ui.app.views.reply
 import android.widget.Toast
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -16,7 +15,6 @@ import com.dluvian.nozzle.model.Pubkey
 import com.dluvian.nozzle.ui.components.bars.ContentCreationTopBar
 import com.dluvian.nozzle.ui.components.input.InputBox
 import com.dluvian.nozzle.ui.components.text.ReplyingTo
-import com.dluvian.nozzle.ui.theme.spacing
 
 
 @Composable
@@ -48,7 +46,6 @@ fun ReplyScreen(
             onClose = onGoBack
         )
         ReplyingTo(
-            modifier = Modifier.padding(top = spacing.medium, start = spacing.screenEdge),
             name = uiState.recipientName,
             replyRelayHint = null
         )

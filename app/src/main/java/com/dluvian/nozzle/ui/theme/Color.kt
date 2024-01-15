@@ -1,5 +1,7 @@
 package com.dluvian.nozzle.ui.theme
 
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 
 val HyperlinkBlue = Color(0xFF007AFF)
@@ -25,3 +27,7 @@ val ProfilePictureApricot = Color(0xFFffd8b1)
 val ProfilePictureBeige = Color(0xFFffd8b1)
 val ProfilePictureMint = Color(0xFFaaffc3)
 val ProfilePictureLavender = Color(0xFFdcbeff)
+
+val HintGray: Color
+    @Composable
+    get() = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f)

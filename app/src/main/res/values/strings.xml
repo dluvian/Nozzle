@@ -125,6 +125,16 @@
     <string name="autopilot">Autopilot</string>
     <string name="my_read_relays">My read relays</string>
     <string name="apply_and_close">Apply and close</string>
+    <string name="create_note">create_note</string>
+    <string name="remove_like">Remove like</string>
+    <string name="turn_visibility_on">Turn visibility on</string>
+    <string name="turn_visibility_off">Turn visibility off</string>
+    <string name="save_profile">Save profile</string>
+    <string name="copy_public_key">Copy public key</string>
+    <string name="save_relay_list">Save relay list</string>
+    <string name="delete_relay">Delete relay</string>
+    <string name="show_relays">Show relays</string>
+    <string name="show_options">Show options</string>
     <plurals name="other_relays">
         <item quantity="one">other</item>
         <item quantity="other">others</item>

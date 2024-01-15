@@ -46,9 +46,9 @@ import com.dluvian.nozzle.model.Account
 import com.dluvian.nozzle.model.Oneself
 import com.dluvian.nozzle.ui.app.navigation.NozzleNavActions
 import com.dluvian.nozzle.ui.components.dropdown.SimpleDropdownMenuItem
+import com.dluvian.nozzle.ui.components.iconButtons.toggle.ExpandToggleIconButton
 import com.dluvian.nozzle.ui.components.icons.AddIcon
 import com.dluvian.nozzle.ui.components.icons.CheckIcon
-import com.dluvian.nozzle.ui.components.icons.ExpandIcon
 import com.dluvian.nozzle.ui.components.media.ProfilePicture
 import com.dluvian.nozzle.ui.theme.sizing
 import com.dluvian.nozzle.ui.theme.spacing
@@ -167,11 +167,7 @@ private fun ActiveAccount(
             verticalAlignment = Alignment.CenterVertically
         ) {
             PictureAndName(modifier = Modifier.weight(1f), account = account, isTop = true)
-            ExpandIcon(
-                modifier = Modifier.padding(spacing.small),
-                isExpanded = isExpanded,
-                onToggle = onToggleExpand
-            )
+            ExpandToggleIconButton(isExpanded = isExpanded, onToggle = onToggleExpand)
         }
     }
 }

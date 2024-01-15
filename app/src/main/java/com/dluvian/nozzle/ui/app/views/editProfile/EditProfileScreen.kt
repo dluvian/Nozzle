@@ -1,9 +1,7 @@
 package com.dluvian.nozzle.ui.app.views.editProfile
 
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -14,7 +12,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
@@ -27,9 +24,9 @@ import androidx.compose.ui.text.input.TextFieldValue
 import com.dluvian.nozzle.R
 import com.dluvian.nozzle.model.nostr.Metadata
 import com.dluvian.nozzle.ui.components.bars.ReturnableTopBar
-import com.dluvian.nozzle.ui.components.icons.ExpandIcon
-import com.dluvian.nozzle.ui.components.icons.SaveIcon
+import com.dluvian.nozzle.ui.components.iconButtons.SaveIconButton
 import com.dluvian.nozzle.ui.components.input.ChangeableTextField
+import com.dluvian.nozzle.ui.components.textButtons.ExpandToggleTextButton
 import com.dluvian.nozzle.ui.theme.spacing
 
 @Composable
@@ -74,7 +71,7 @@ fun EditProfileScreen(
             onGoBack = onGoBack,
             actions = {
                 if (hasChanges) {
-                    SaveIcon(
+                    SaveIconButton(
                         onSave = {
                             onUpsertProfile(
                                 Metadata(
@@ -87,6 +84,7 @@ fun EditProfileScreen(
                             )
                             onGoBack()
                         },
+                        description = stringResource(id = R.string.save_profile)
                     )
                 }
             }
@@ -102,7 +100,6 @@ fun EditProfileScreen(
             Username(username = nameInput)
             Spacer(modifier = Modifier.height(spacing.xxl))
             About(about = aboutInput)
-
             Advanced(pictureInput = pictureInput, nip05Input = nip05Input, lud16Input = lud16Input)
         }
     }
@@ -115,29 +112,18 @@ private fun Advanced(
     lud16Input: MutableState<TextFieldValue>
 ) {
     val isExpanded = remember { mutableStateOf(false) }
-    Column {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.Center
-        ) {
-            TextButton(
-                modifier = Modifier.padding(vertical = spacing.medium),
-                onClick = { isExpanded.value = !isExpanded.value }
-            ) {
-                Text(text = stringResource(id = R.string.advanced))
-                ExpandIcon(isExpanded = isExpanded.value)
-            }
-        }
-        AnimatedVisibility(visible = isExpanded.value) {
-            Column {
-                ProfilePictureUrl(pictureUrl = pictureInput)
-                Spacer(modifier = Modifier.height(spacing.xxl))
-
-                Nip05(nip05 = nip05Input)
-                Spacer(modifier = Modifier.height(spacing.xxl))
-
-                Lud16(lud16 = lud16Input)
-            }
+    ExpandToggleTextButton(
+        modifier = Modifier.padding(vertical = spacing.medium),
+        text = stringResource(id = R.string.advanced), isExpanded = isExpanded.value,
+        onToggle = { isExpanded.value = !isExpanded.value },
+    )
+    AnimatedVisibility(visible = isExpanded.value) {
+        Column {
+            ProfilePictureUrl(pictureUrl = pictureInput)
+            Spacer(modifier = Modifier.height(spacing.xxl))
+            Nip05(nip05 = nip05Input)
+            Spacer(modifier = Modifier.height(spacing.xxl))
+            Lud16(lud16 = lud16Input)
         }
     }
 }

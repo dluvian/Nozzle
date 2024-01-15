@@ -5,7 +5,5 @@ import androidx.compose.runtime.Composable
 
 @Composable
 fun Bullet() {
-    Text(
-        text = "\u2022",
-    )
+    Text(text = "\u2022")
 }

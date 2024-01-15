@@ -16,7 +16,6 @@
     <string name="no_posts_found">未发现帖子</string>
     <string name="public_key">公钥</string>
     <string name="return_back">返回</string>
-    <string name="copy_content">复制</string>
     <string name="toggle_visibility">调整可见性</string>
     <string name="paste_private_key">粘贴私钥</string>
     <string name="update_key_pair">更新钥匙对</string>
@@ -69,7 +68,6 @@
     <string name="relays">转发器</string>
     <string name="choose_relays">选择转发器</string>
     <string name="no_relays_available">没有可用转发器</string>
-    <string name="lightning_address">闪电地址</string>
     <string name="enter_lud16">比如：user@domain.com</string>
     <string name="feed_settings">订阅设置</string>
     <string name="posts">帖子</string>

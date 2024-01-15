@@ -6,9 +6,7 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.Send
-import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -30,30 +28,9 @@ import com.dluvian.nozzle.data.utils.UrlUtils.removeWebsocketPrefix
 import com.dluvian.nozzle.model.RelayActive
 import com.dluvian.nozzle.ui.components.dropdown.CheckboxDropdownMenuItem
 import com.dluvian.nozzle.ui.components.dropdown.RelaysDropdownMenu
-import com.dluvian.nozzle.ui.components.icons.RelayIcon
+import com.dluvian.nozzle.ui.components.iconButtons.RelayIconButton
 import com.dluvian.nozzle.ui.theme.spacing
 
-@Composable
-fun GoBackButton(onGoBack: () -> Unit) {
-    Icon(
-        modifier = Modifier
-            .clip(CircleShape)
-            .clickable { onGoBack() },
-        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-        contentDescription = stringResource(id = R.string.return_back),
-    )
-}
-
-@Composable
-fun CloseButton(onGoBack: () -> Unit) {
-    Icon(
-        modifier = Modifier
-            .clip(CircleShape)
-            .clickable { onGoBack() },
-        imageVector = Icons.Default.Close,
-        contentDescription = stringResource(id = R.string.close),
-    )
-}
 
 @Composable
 fun SendTopBarButton(
@@ -90,7 +67,10 @@ fun ShowRelaysButton(relays: List<String>) {
             )
         }
     }
-    RelayIcon(onClick = { showMenu.value = true })
+    RelayIconButton(
+        onClick = { showMenu.value = true },
+        description = stringResource(id = R.string.show_relays)
+    )
 }
 
 @Composable
@@ -116,7 +96,10 @@ fun ChooseRelayButton(
         autopilotEnabled = autopilotEnabled,
         onToggleAutopilot = onToggleAutopilot
     )
-    RelayIcon(onClick = { if (isOpenable) showMenu.value = true })
+    RelayIconButton(
+        onClick = { if (isOpenable) showMenu.value = true },
+        description = stringResource(id = R.string.show_relays)
+    )
 }
 
 @Composable

@@ -37,7 +37,7 @@ import com.dluvian.nozzle.model.ThreadPosition
 import com.dluvian.nozzle.model.TrustType
 import com.dluvian.nozzle.ui.app.navigation.PostCardLambdas
 import com.dluvian.nozzle.ui.components.dropdown.SimpleDropdownMenuItem
-import com.dluvian.nozzle.ui.components.icons.LikeIcon
+import com.dluvian.nozzle.ui.components.iconButtons.toggle.LikeToggleIconButton
 import com.dluvian.nozzle.ui.components.icons.QuoteIcon
 import com.dluvian.nozzle.ui.components.icons.ReplyIcon
 import com.dluvian.nozzle.ui.components.postCard.atoms.PostCardContentBase
@@ -322,21 +322,18 @@ private fun LikeAction(
         horizontalArrangement = Arrangement.End,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        LikeIcon(
+        LikeToggleIconButton(
             modifier = Modifier
                 .size(sizing.smallItem)
-                .clip(RoundedCornerShape(spacing.medium))
-                .clickable(
-                    enabled = true,
-                    onClick = {
-                        if (isLiked.value) showDeletePopup.value = true
-                        else {
-                            isLiked.value = true
-                            onLike()
-                        }
-                    },
-                ),
+                .clip(RoundedCornerShape(spacing.medium)),
             isLiked = isLiked.value,
+            onToggleLike = {
+                if (isLiked.value) showDeletePopup.value = true
+                else {
+                    isLiked.value = true
+                    onLike()
+                }
+            }
         )
         DeleteLikePopup(
             isOpen = showDeletePopup.value,
