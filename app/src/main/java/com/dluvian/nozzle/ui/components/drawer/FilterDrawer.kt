@@ -25,8 +25,8 @@ import com.dluvian.nozzle.model.drawerFilter.CheckBoxFilterValue
 import com.dluvian.nozzle.model.drawerFilter.FilterCategory
 import com.dluvian.nozzle.model.drawerFilter.SwitchFilterValue
 import com.dluvian.nozzle.model.drawerFilter.TypedFilterValue
-import com.dluvian.nozzle.ui.components.namedItem.NamedCheckbox
-import com.dluvian.nozzle.ui.components.namedItem.NamedSwitch
+import com.dluvian.nozzle.ui.components.interactors.NamedCheckbox
+import com.dluvian.nozzle.ui.components.interactors.NamedSwitch
 import com.dluvian.nozzle.ui.theme.spacing
 
 @Composable

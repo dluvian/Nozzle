@@ -33,9 +33,9 @@ fun PostScreen(
     }
     Column(modifier = Modifier.fillMaxSize()) {
         ContentCreationTopBar(
-            relayStatuses = uiState.relayStatuses,
+            relays = uiState.relayStatuses,
             isSendable = isSendable,
-            onToggleRelaySelection = onToggleRelaySelection,
+            onToggleRelay = onToggleRelaySelection,
             onSend = {
                 onSend(input.value.text)
                 Toast.makeText(

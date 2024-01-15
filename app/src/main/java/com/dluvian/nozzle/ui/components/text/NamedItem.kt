@@ -1,4 +1,4 @@
-package com.dluvian.nozzle.ui.components.namedItem
+package com.dluvian.nozzle.ui.components.text
 
 import androidx.compose.foundation.layout.Row
 import androidx.compose.material3.Text

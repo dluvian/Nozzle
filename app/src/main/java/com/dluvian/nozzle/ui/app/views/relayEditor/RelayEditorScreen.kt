@@ -29,7 +29,7 @@ import com.dluvian.nozzle.ui.components.iconButtons.DeleteIconButton
 import com.dluvian.nozzle.ui.components.iconButtons.SaveIconButton
 import com.dluvian.nozzle.ui.components.indicators.TopBarCircleProgressIndicator
 import com.dluvian.nozzle.ui.components.input.AddingTextFieldWithButton
-import com.dluvian.nozzle.ui.components.namedItem.NamedCheckbox
+import com.dluvian.nozzle.ui.components.interactors.NamedCheckbox
 import com.dluvian.nozzle.ui.theme.spacing
 
 @Composable

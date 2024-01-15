@@ -1,7 +1,8 @@
-package com.dluvian.nozzle.ui.components.namedItem
+package com.dluvian.nozzle.ui.components.interactors
 
 import androidx.compose.material3.Checkbox
 import androidx.compose.runtime.Composable
+import com.dluvian.nozzle.ui.components.text.NamedItem
 
 @Composable
 fun NamedCheckbox(
