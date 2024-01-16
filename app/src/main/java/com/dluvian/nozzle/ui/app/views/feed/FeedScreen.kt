@@ -55,6 +55,7 @@ fun FeedScreen(
         floatingActionButton = { CreateNoteFab(onCreateNote = onNavigateToPost) },
     ) {
         FeedFilterDrawer(
+            modifier = Modifier.padding(it),
             drawerState = drawerState,
             uiState = uiState,
             filterLambdas = filterLambdas,

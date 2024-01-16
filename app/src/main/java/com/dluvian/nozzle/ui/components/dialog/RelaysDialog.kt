@@ -66,7 +66,7 @@ private fun DialogSection(header: String, relays: List<String>) {
 }
 
 @Composable
-private fun RelayList(relays: List<String>) {
+private fun RelayList(relays: List<Relay>) {
     Column {
         for (relay in relays) {
             Text(

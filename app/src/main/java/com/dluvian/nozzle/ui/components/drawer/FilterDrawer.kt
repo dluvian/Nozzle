@@ -23,10 +23,10 @@ import androidx.compose.ui.unit.LayoutDirection
 import com.dluvian.nozzle.R
 import com.dluvian.nozzle.model.drawerFilter.CheckBoxFilterValue
 import com.dluvian.nozzle.model.drawerFilter.FilterCategory
-import com.dluvian.nozzle.model.drawerFilter.SwitchFilterValue
+import com.dluvian.nozzle.model.drawerFilter.RadioFilterValue
 import com.dluvian.nozzle.model.drawerFilter.TypedFilterValue
 import com.dluvian.nozzle.ui.components.interactors.NamedCheckbox
-import com.dluvian.nozzle.ui.components.interactors.NamedSwitch
+import com.dluvian.nozzle.ui.components.interactors.NamedRadio
 import com.dluvian.nozzle.ui.theme.spacing
 
 @Composable
@@ -34,14 +34,15 @@ fun FilterDrawer(
     drawerState: DrawerState,
     filterCategories: List<FilterCategory>,
     onClose: () -> Unit,
-    content: @Composable () -> Unit,
+    modifier: Modifier = Modifier,
+    content: @Composable () -> Unit = {},
 ) {
     CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl) {
         ModalNavigationDrawer(
             drawerState = drawerState,
             gesturesEnabled = false,
             drawerContent = {
-                ModalDrawerSheet {
+                ModalDrawerSheet(modifier = modifier) {
                     CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr) {
                         LazyColumn(
                             modifier = Modifier
@@ -76,24 +77,24 @@ private fun Category(category: FilterCategory) {
         style = MaterialTheme.typography.titleMedium
     )
     category.filters.forEach { filter ->
-        NamedCheckBoxOrSwitch(filter = filter)
+        NamedCheckBoxOrRadio(filter = filter)
     }
     HorizontalDivider()
     Spacer(modifier = Modifier.height(spacing.screenEdge))
 }
 
 @Composable
-private fun NamedCheckBoxOrSwitch(filter: TypedFilterValue) {
+private fun NamedCheckBoxOrRadio(filter: TypedFilterValue) {
     when (filter) {
         is CheckBoxFilterValue -> NamedCheckbox(
-            isChecked = filter.isChecked,
+            isChecked = filter.isSelected,
             name = filter.name,
             isEnabled = filter.isEnabled,
             onClick = filter.onClick
         )
 
-        is SwitchFilterValue -> NamedSwitch(
-            isChecked = filter.isChecked,
+        is RadioFilterValue -> NamedRadio(
+            isSelected = filter.isSelected,
             name = filter.name,
             isEnabled = filter.isEnabled,
             onClick = filter.onClick

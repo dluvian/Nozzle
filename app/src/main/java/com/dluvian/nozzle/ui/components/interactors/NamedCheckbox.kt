@@ -14,8 +14,8 @@ fun NamedCheckbox(
     NamedItem(
         item = {
             Checkbox(
-                enabled = isEnabled,
                 checked = isChecked,
+                enabled = isEnabled,
                 onCheckedChange = { onClick() },
             )
         },

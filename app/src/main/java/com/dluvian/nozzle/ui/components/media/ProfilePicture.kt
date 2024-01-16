@@ -112,7 +112,6 @@ private fun PictureIndicatorBase(
     Row(modifier = modifier, horizontalArrangement = Arrangement.End) {
         Box(
             modifier = Modifier
-                .clip(CircleShape)
                 .fillMaxWidth(0.5f)
                 .aspectRatio(1.0f),
             contentAlignment = Alignment.Center
@@ -122,6 +121,7 @@ private fun PictureIndicatorBase(
                     .clip(CircleShape)
                     .fillMaxWidth(0.85f)
                     .aspectRatio(1.0f)
+                    .align(Alignment.TopEnd)
                     .let {
                         if (trustScore != null) {
                             it.drawBehind {
@@ -144,7 +144,7 @@ private fun PictureIndicatorBase(
             ) {
                 Icon(
                     modifier = Modifier
-                        .fillMaxWidth(0.95f)
+                        .fillMaxWidth(0.90f)
                         .aspectRatio(1.0f),
                     imageVector = imageVector,
                     contentDescription = null,

@@ -1,29 +1,25 @@
 package com.dluvian.nozzle.ui.components.postCard.atoms
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.stringResource
 import com.dluvian.nozzle.R
 import com.dluvian.nozzle.data.nostr.utils.EncodingUtils
 import com.dluvian.nozzle.model.PostWithMeta
 import com.dluvian.nozzle.ui.components.dropdown.SimpleDropdownMenuItem
+import com.dluvian.nozzle.ui.components.iconButtons.QuoteIconButton
+import com.dluvian.nozzle.ui.components.iconButtons.ReplyIconButton
 import com.dluvian.nozzle.ui.components.iconButtons.toggle.LikeToggleIconButton
-import com.dluvian.nozzle.ui.theme.QuoteIcon
-import com.dluvian.nozzle.ui.theme.ReplyIcon
 import com.dluvian.nozzle.ui.theme.sizing
 import com.dluvian.nozzle.ui.theme.spacing
 
@@ -79,17 +75,15 @@ private fun ReplyAction(
     modifier: Modifier = Modifier
 ) {
     Row(modifier = modifier, verticalAlignment = Alignment.CenterVertically) {
-        Icon(
-            modifier = Modifier
-                .size(sizing.smallItem)
-                .clip(RoundedCornerShape(spacing.medium))
-                .clickable {
-                    onPrepareReply(postToReplyTo)
-                    onNavigateToReply()
-                },
-            imageVector = ReplyIcon,
-            contentDescription = stringResource(id = R.string.reply)
+        ReplyIconButton(
+            modifier = Modifier.size(sizing.smallItem),
+            onReply = {
+                onPrepareReply(postToReplyTo)
+                onNavigateToReply()
+            },
+            description = stringResource(id = R.string.reply)
         )
+
         if (numOfReplies > 0) {
             Spacer(Modifier.width(spacing.medium))
             Text(text = numOfReplies.toString())
@@ -107,13 +101,10 @@ private fun QuoteAction(
         horizontalArrangement = Arrangement.Center,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Icon(
-            modifier = Modifier
-                .size(sizing.smallItem)
-                .clip(RoundedCornerShape(spacing.medium))
-                .clickable(onClick = onNavigateToQuote),
-            imageVector = QuoteIcon,
-            contentDescription = stringResource(R.string.quote)
+        QuoteIconButton(
+            modifier = Modifier.size(sizing.smallItem),
+            onQuote = onNavigateToQuote,
+            description = stringResource(R.string.quote)
         )
     }
 }
@@ -133,9 +124,7 @@ private fun LikeAction(
         verticalAlignment = Alignment.CenterVertically
     ) {
         LikeToggleIconButton(
-            modifier = Modifier
-                .size(sizing.smallItem)
-                .clip(RoundedCornerShape(spacing.medium)),
+            modifier = Modifier.size(sizing.smallItem),
             isLiked = isLiked.value,
             onToggleLike = {
                 if (isLiked.value) showDeletePopup.value = true

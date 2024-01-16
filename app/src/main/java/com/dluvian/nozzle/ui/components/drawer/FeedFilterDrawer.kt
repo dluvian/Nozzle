@@ -2,11 +2,12 @@ package com.dluvian.nozzle.ui.components.drawer
 
 import androidx.compose.material3.DrawerState
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import com.dluvian.nozzle.R
 import com.dluvian.nozzle.model.drawerFilter.CheckBoxFilterValue
 import com.dluvian.nozzle.model.drawerFilter.FilterCategory
-import com.dluvian.nozzle.model.drawerFilter.SwitchFilterValue
+import com.dluvian.nozzle.model.drawerFilter.RadioFilterValue
 import com.dluvian.nozzle.ui.app.views.feed.FeedFilterLambdas
 import com.dluvian.nozzle.ui.app.views.feed.FeedViewModelState
 
@@ -16,9 +17,11 @@ fun FeedFilterDrawer(
     uiState: FeedViewModelState,
     filterLambdas: FeedFilterLambdas,
     onApplyAndClose: () -> Unit,
-    content: @Composable () -> Unit,
+    modifier: Modifier = Modifier,
+    content: @Composable () -> Unit = {},
 ) {
     FilterDrawer(
+        modifier = modifier,
         drawerState = drawerState,
         filterCategories = listOf(
             FilterCategory(
@@ -26,12 +29,12 @@ fun FeedFilterDrawer(
                 filters = listOf(
                     CheckBoxFilterValue(
                         name = stringResource(id = R.string.posts),
-                        isChecked = uiState.isPosts,
+                        isSelected = uiState.isPosts,
                         onClick = filterLambdas.onTogglePosts
                     ),
                     CheckBoxFilterValue(
                         name = stringResource(id = R.string.replies),
-                        isChecked = uiState.isReplies,
+                        isSelected = uiState.isReplies,
                         onClick = filterLambdas.onToggleReplies
                     ),
                 )
@@ -39,22 +42,19 @@ fun FeedFilterDrawer(
             FilterCategory(
                 name = stringResource(id = R.string.people),
                 filters = listOf(
-                    SwitchFilterValue(
+                    RadioFilterValue(
                         name = stringResource(id = R.string.friends),
-                        isChecked = uiState.isFriends,
-                        isEnabled = !uiState.isFriends,
+                        isSelected = uiState.isFriends,
                         onClick = filterLambdas.onToggleFriends
                     ),
-                    SwitchFilterValue(
+                    RadioFilterValue(
                         name = stringResource(id = R.string.friend_circle),
-                        isChecked = uiState.isFriendCircle,
-                        isEnabled = !uiState.isFriendCircle,
+                        isSelected = uiState.isFriendCircle,
                         onClick = filterLambdas.onToggleFriendCircle
                     ),
-                    SwitchFilterValue(
+                    RadioFilterValue(
                         name = stringResource(id = R.string.global),
-                        isChecked = uiState.isGlobal,
-                        isEnabled = !uiState.isGlobal,
+                        isSelected = uiState.isGlobal,
                         onClick = filterLambdas.onToggleGlobal
                     ),
                 )
@@ -62,14 +62,14 @@ fun FeedFilterDrawer(
             FilterCategory(
                 name = stringResource(id = R.string.relays),
                 filters = listOf(
-                    SwitchFilterValue(
+                    RadioFilterValue(
                         name = stringResource(id = R.string.autopilot),
-                        isChecked = uiState.isAutopilot,
+                        isSelected = uiState.isAutopilot,
                         onClick = filterLambdas.onToggleAutopilot
                     ),
-                    SwitchFilterValue(
+                    RadioFilterValue(
                         name = stringResource(id = R.string.my_read_relays),
-                        isChecked = uiState.isReadRelays,
+                        isSelected = uiState.isReadRelays,
                         onClick = filterLambdas.onToggleReadRelays
                     ),
                 ),
