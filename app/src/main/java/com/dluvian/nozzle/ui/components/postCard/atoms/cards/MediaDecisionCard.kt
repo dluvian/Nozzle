@@ -4,6 +4,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
@@ -15,8 +16,8 @@ import androidx.compose.ui.res.stringResource
 import coil.compose.SubcomposeAsyncImage
 import coil.request.ImageRequest
 import com.dluvian.nozzle.R
-import com.dluvian.nozzle.ui.components.icons.FailedIcon
 import com.dluvian.nozzle.ui.components.postCard.atoms.CenteredBox
+import com.dluvian.nozzle.ui.theme.FailedIcon
 
 @Composable
 fun MediaDecisionCard(
@@ -86,7 +87,7 @@ private fun LoadedImage(modifier: Modifier, subModifier: Modifier, mediaUrl: Str
         },
         error = {
             CenteredBox(modifier = subModifier) {
-                FailedIcon()
+                Icon(imageVector = FailedIcon, contentDescription = null)
             }
         },
         contentScale = ContentScale.FillWidth,

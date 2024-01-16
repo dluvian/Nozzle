@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -42,12 +43,12 @@ import com.dluvian.nozzle.ui.components.buttons.FollowButton
 import com.dluvian.nozzle.ui.components.buttons.ShowNewPostsButton
 import com.dluvian.nozzle.ui.components.dialog.RelaysDialog
 import com.dluvian.nozzle.ui.components.hint.NoPostsHint
-import com.dluvian.nozzle.ui.components.icons.CopyIcon
-import com.dluvian.nozzle.ui.components.icons.LightningIcon
 import com.dluvian.nozzle.ui.components.media.ProfilePicture
 import com.dluvian.nozzle.ui.components.postCard.PostCardList
 import com.dluvian.nozzle.ui.components.text.AnnotatedText
 import com.dluvian.nozzle.ui.components.text.NumberedCategory
+import com.dluvian.nozzle.ui.theme.CopyIcon
+import com.dluvian.nozzle.ui.theme.LightningIcon
 import com.dluvian.nozzle.ui.theme.sizing
 import com.dluvian.nozzle.ui.theme.spacing
 
@@ -334,7 +335,10 @@ private fun CopyableNprofile(nprofile: String, onCopyNprofile: () -> Unit) {
     ProfileStringRow(text = nprofile,
         onClick = onCopyNprofile,
         leadingIcon = {
-            CopyIcon(modifier = Modifier.size(sizing.smallItem), tint = Color.LightGray)
+            Icon(
+                imageVector = CopyIcon,
+                contentDescription = stringResource(id = R.string.copy_profile_id)
+            )
         }
     )
 }
@@ -345,7 +349,10 @@ private fun Lud16(lud16: String, onCopyLud16: () -> Unit) {
         text = lud16,
         onClick = onCopyLud16,
         leadingIcon = {
-            LightningIcon(modifier = Modifier.size(sizing.smallItem))
+            Icon(
+                imageVector = LightningIcon,
+                contentDescription = stringResource(id = R.string.lightning_address)
+            )
         },
     )
 }

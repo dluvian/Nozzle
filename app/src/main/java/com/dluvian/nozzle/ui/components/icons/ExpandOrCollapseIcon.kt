@@ -1,13 +1,14 @@
-package com.dluvian.nozzle.ui.components.icons.toggle
+package com.dluvian.nozzle.ui.components.icons
 
+import androidx.compose.material3.Icon
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import com.dluvian.nozzle.R
-import com.dluvian.nozzle.ui.components.icons.CollapseIcon
-import com.dluvian.nozzle.ui.components.icons.ExpandIcon
+import com.dluvian.nozzle.ui.theme.CollapseIcon
+import com.dluvian.nozzle.ui.theme.ExpandIcon
 
 @Composable
 fun ExpandOrCollapseIcon(
@@ -16,16 +17,18 @@ fun ExpandOrCollapseIcon(
     tint: Color = LocalContentColor.current,
 ) {
     if (isExpanded) {
-        CollapseIcon(
+        Icon(
             modifier = modifier,
+            imageVector = CollapseIcon,
             tint = tint,
-            description = stringResource(R.string.collapse)
+            contentDescription = stringResource(R.string.collapse)
         )
     } else {
-        ExpandIcon(
+        Icon(
             modifier = modifier,
+            imageVector = ExpandIcon,
             tint = tint,
-            description = stringResource(R.string.expand)
+            contentDescription = stringResource(R.string.expand)
         )
     }
 }

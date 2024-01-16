@@ -1,10 +1,11 @@
 package com.dluvian.nozzle.ui.components.iconButtons
 
+import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
 import com.dluvian.nozzle.R
-import com.dluvian.nozzle.ui.components.icons.ReturnIcon
+import com.dluvian.nozzle.ui.theme.ReturnIcon
 
 @Composable
 fun GoBackIconButton(
@@ -12,6 +13,6 @@ fun GoBackIconButton(
     description: String = stringResource(id = R.string.return_back)
 ) {
     IconButton(onClick = onGoBack) {
-        ReturnIcon(description = description)
+        Icon(imageVector = ReturnIcon, contentDescription = description)
     }
 }

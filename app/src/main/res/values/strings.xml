@@ -135,6 +135,8 @@
     <string name="delete_relay">Delete relay</string>
     <string name="show_relays">Show relays</string>
     <string name="show_options">Show options</string>
+    <string name="selected_account">Selected account</string>
+    <string name="copy_profile_id">Copy profile ID</string>
     <plurals name="other_relays">
         <item quantity="one">other</item>
         <item quantity="other">others</item>

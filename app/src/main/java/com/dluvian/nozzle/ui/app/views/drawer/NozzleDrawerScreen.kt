@@ -47,9 +47,9 @@ import com.dluvian.nozzle.model.Oneself
 import com.dluvian.nozzle.ui.app.navigation.NozzleNavActions
 import com.dluvian.nozzle.ui.components.dropdown.SimpleDropdownMenuItem
 import com.dluvian.nozzle.ui.components.iconButtons.toggle.ExpandToggleIconButton
-import com.dluvian.nozzle.ui.components.icons.AddIcon
-import com.dluvian.nozzle.ui.components.icons.CheckIcon
 import com.dluvian.nozzle.ui.components.media.ProfilePicture
+import com.dluvian.nozzle.ui.theme.AddIcon
+import com.dluvian.nozzle.ui.theme.CheckIcon
 import com.dluvian.nozzle.ui.theme.sizing
 import com.dluvian.nozzle.ui.theme.spacing
 
@@ -219,7 +219,7 @@ private fun AccountRow(
             verticalAlignment = Alignment.CenterVertically
         ) {
             PictureAndName(modifier = Modifier.weight(1f), account = account, isTop = false)
-            if (account.isActive) CheckIcon()
+            if (account.isActive) Icon(imageVector = CheckIcon, contentDescription = null)
         }
     }
 }
@@ -252,7 +252,10 @@ private fun AddAccountRow(onAddAccount: () -> Unit) {
             horizontalArrangement = Arrangement.Start,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            AddIcon()
+            Icon(
+                imageVector = AddIcon,
+                contentDescription = stringResource(id = R.string.add_account)
+            )
             Text(text = stringResource(id = R.string.add))
         }
     }

@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
@@ -21,8 +22,8 @@ import com.dluvian.nozzle.data.nostr.utils.EncodingUtils
 import com.dluvian.nozzle.model.PostWithMeta
 import com.dluvian.nozzle.ui.components.dropdown.SimpleDropdownMenuItem
 import com.dluvian.nozzle.ui.components.iconButtons.toggle.LikeToggleIconButton
-import com.dluvian.nozzle.ui.components.icons.QuoteIcon
-import com.dluvian.nozzle.ui.components.icons.ReplyIcon
+import com.dluvian.nozzle.ui.theme.QuoteIcon
+import com.dluvian.nozzle.ui.theme.ReplyIcon
 import com.dluvian.nozzle.ui.theme.sizing
 import com.dluvian.nozzle.ui.theme.spacing
 
@@ -78,13 +79,17 @@ private fun ReplyAction(
     modifier: Modifier = Modifier
 ) {
     Row(modifier = modifier, verticalAlignment = Alignment.CenterVertically) {
-        ReplyIcon(modifier = Modifier
-            .size(sizing.smallItem)
-            .clip(RoundedCornerShape(spacing.medium))
-            .clickable {
-                onPrepareReply(postToReplyTo)
-                onNavigateToReply()
-            })
+        Icon(
+            modifier = Modifier
+                .size(sizing.smallItem)
+                .clip(RoundedCornerShape(spacing.medium))
+                .clickable {
+                    onPrepareReply(postToReplyTo)
+                    onNavigateToReply()
+                },
+            imageVector = ReplyIcon,
+            contentDescription = stringResource(id = R.string.reply)
+        )
         if (numOfReplies > 0) {
             Spacer(Modifier.width(spacing.medium))
             Text(text = numOfReplies.toString())
@@ -102,11 +107,13 @@ private fun QuoteAction(
         horizontalArrangement = Arrangement.Center,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        QuoteIcon(
+        Icon(
             modifier = Modifier
                 .size(sizing.smallItem)
                 .clip(RoundedCornerShape(spacing.medium))
-                .clickable(onClick = onNavigateToQuote)
+                .clickable(onClick = onNavigateToQuote),
+            imageVector = QuoteIcon,
+            contentDescription = stringResource(R.string.quote)
         )
     }
 }
