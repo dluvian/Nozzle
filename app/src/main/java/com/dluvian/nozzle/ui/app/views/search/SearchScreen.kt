@@ -30,13 +30,13 @@ import com.dluvian.nozzle.model.Pubkey
 import com.dluvian.nozzle.model.SimpleProfile
 import com.dluvian.nozzle.ui.app.navigation.PostCardLambdas
 import com.dluvian.nozzle.ui.components.bars.ReturnableTopBar
-import com.dluvian.nozzle.ui.components.buttons.SearchTopBarButton
 import com.dluvian.nozzle.ui.components.chips.IconedFilterChip
+import com.dluvian.nozzle.ui.components.iconButtons.SearchIconButton
 import com.dluvian.nozzle.ui.components.indicators.TopBarCircleProgressIndicator
 import com.dluvian.nozzle.ui.components.input.ChangeableTextField
-import com.dluvian.nozzle.ui.components.itemRow.ItemRow
-import com.dluvian.nozzle.ui.components.itemRow.PictureAndName
 import com.dluvian.nozzle.ui.components.postCard.PostCard
+import com.dluvian.nozzle.ui.components.rows.ItemRow
+import com.dluvian.nozzle.ui.components.rows.PictureAndName
 import com.dluvian.nozzle.ui.theme.spacing
 
 
@@ -62,10 +62,12 @@ fun SearchScreen(
             onGoBack = onGoBack,
             actions = {
                 if (uiState.isLoading) TopBarCircleProgressIndicator()
-                else SearchTopBarButton(
-                    hasChanges = input.value.text.isNotBlank(),
-                    onSearch = { onManualSearch(input.value.text) },
-                )
+                else if (input.value.text.isNotBlank()) {
+                    SearchIconButton(
+                        onSearch = { onManualSearch(input.value.text) },
+                        description = stringResource(id = R.string.search)
+                    )
+                }
             }
         )
         SearchBar(

@@ -1,32 +1,27 @@
 package com.dluvian.nozzle.ui.components.bars
 
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.width
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
-import com.dluvian.nozzle.model.RelayActive
-import com.dluvian.nozzle.ui.components.buttons.ChooseRelayButton
-import com.dluvian.nozzle.ui.components.buttons.SendTopBarButton
-import com.dluvian.nozzle.ui.theme.spacing
+import androidx.compose.ui.res.stringResource
+import com.dluvian.nozzle.R
+import com.dluvian.nozzle.ui.components.iconButtons.RelayIconButton
+import com.dluvian.nozzle.ui.components.iconButtons.SendIconButton
 
 @Composable
 fun ContentCreationTopBar(
     isSendable: Boolean,
-    relays: List<RelayActive>,
-    onToggleRelay: (Int) -> Unit,
+    onShowRelays: () -> Unit,
     onSend: () -> Unit,
     onClose: () -> Unit
 ) {
     ClosableTopBar(text = "", onClose = onClose) {
-        ChooseRelayButton(
-            relays = relays,
-            onClickIndex = onToggleRelay,
+        RelayIconButton(
+            onClick = onShowRelays,
+            description = stringResource(id = R.string.show_relays)
         )
-        Spacer(modifier = Modifier.width(spacing.large))
         if (isSendable) {
-            SendTopBarButton(
+            SendIconButton(
                 onSend = onSend,
-                onGoBack = onClose,
+                description = stringResource(id = R.string.send)
             )
         }
     }

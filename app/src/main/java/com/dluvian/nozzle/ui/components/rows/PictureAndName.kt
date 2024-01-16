@@ -1,4 +1,4 @@
-package com.dluvian.nozzle.ui.components.itemRow
+package com.dluvian.nozzle.ui.components.rows
 
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.size

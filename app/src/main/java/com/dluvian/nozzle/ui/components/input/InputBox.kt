@@ -26,10 +26,10 @@ import com.dluvian.nozzle.model.AnnotatedMentionedPost
 import com.dluvian.nozzle.model.Oneself
 import com.dluvian.nozzle.model.Pubkey
 import com.dluvian.nozzle.model.SimpleProfile
-import com.dluvian.nozzle.ui.components.itemRow.ItemRow
-import com.dluvian.nozzle.ui.components.itemRow.PictureAndName
 import com.dluvian.nozzle.ui.components.media.ProfilePicture
 import com.dluvian.nozzle.ui.components.postCard.AnnotatedMentionedPostCard
+import com.dluvian.nozzle.ui.components.rows.ItemRow
+import com.dluvian.nozzle.ui.components.rows.PictureAndName
 import com.dluvian.nozzle.ui.theme.sizing
 import com.dluvian.nozzle.ui.theme.spacing
 

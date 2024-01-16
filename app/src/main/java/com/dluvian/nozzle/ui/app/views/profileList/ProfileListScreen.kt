@@ -20,8 +20,8 @@ import com.dluvian.nozzle.ui.components.bars.ReturnableTopBar
 import com.dluvian.nozzle.ui.components.buttons.FollowButton
 import com.dluvian.nozzle.ui.components.hint.EmptyListHint
 import com.dluvian.nozzle.ui.components.indicators.TopBarCircleProgressIndicator
-import com.dluvian.nozzle.ui.components.itemRow.ItemRow
-import com.dluvian.nozzle.ui.components.itemRow.PictureAndName
+import com.dluvian.nozzle.ui.components.rows.ItemRow
+import com.dluvian.nozzle.ui.components.rows.PictureAndName
 import com.dluvian.nozzle.ui.theme.spacing
 
 @Composable
