@@ -21,6 +21,10 @@ data class Sizing(
      */
     val mediumItem: Dp = 24.dp,
     /**
+     * 48 dp
+     */
+    val largeItem: Dp = 48.dp,
+    /**
      * 32 dp
      */
     val smallProfilePicture: Dp = 32.dp,

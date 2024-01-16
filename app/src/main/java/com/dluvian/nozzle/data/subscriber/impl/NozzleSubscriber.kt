@@ -521,15 +521,14 @@ class NozzleSubscriber(
             it.entity.replyToId != null && it.replyToPubkey == null
         }
         unknownParentNotes.forEach {
-            val relays = if (it.entity.replyRelayHint.isNullOrEmpty()) {
-                null
-            } else {
-                getMaxRelaysAndAddIfTooSmall(
-                    from = listOf(it.entity.replyRelayHint),
-                    prefer = myReadRelays
-                )
+            val relays = if (it.entity.replyRelayHint.isNullOrEmpty()) null
+            else getMaxRelaysAndAddIfTooSmall(
+                from = listOf(it.entity.replyRelayHint),
+                prefer = myReadRelays
+            )
+            it.entity.replyToId?.let { replyToId ->
+                subQueue.submitNoteId(noteId = replyToId, relays = relays)
             }
-            subQueue.submitNoteId(noteId = it.entity.replyToId!!, relays = relays)
         }
     }
 
