@@ -7,6 +7,7 @@ import com.dluvian.nozzle.data.room.dao.Nip65Dao
 import com.dluvian.nozzle.data.room.helper.Nip65Relay
 import com.dluvian.nozzle.data.utils.SHORT_DEBOUNCE
 import com.dluvian.nozzle.data.utils.firstThenDistinctDebounce
+import com.dluvian.nozzle.data.utils.getMaxRelays
 import com.dluvian.nozzle.model.Pubkey
 import com.dluvian.nozzle.model.Relay
 import kotlinx.coroutines.CoroutineScope
@@ -25,11 +26,12 @@ class RelayProvider(
         .firstThenDistinctDebounce(SHORT_DEBOUNCE)
         .stateIn(scope, SharingStarted.Eagerly, emptyList())
 
-    override fun getReadRelays(): List<Relay> {
-        return personalNip65State.value
+    override fun getReadRelays(limit: Boolean): List<Relay> {
+        val relays = personalNip65State.value
             .filter { it.isRead }
             .map { it.url }
             .ifEmpty { getDefaultRelays() }
+        return if (limit) getMaxRelays(from = relays) else relays
     }
 
     override fun getWriteRelays(): List<Relay> {

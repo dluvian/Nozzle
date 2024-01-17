@@ -41,32 +41,27 @@ class FeedViewModel(
         },
         onToggleFriends = {
             _uiState.update {
-                val oldValue = it.isFriends
-                it.copy(isFriends = !oldValue, isFriendCircle = oldValue, isGlobal = oldValue)
+                it.copy(isFriends = true, isFriendCircle = false, isGlobal = false)
             }
         },
         onToggleFriendCircle = {
             _uiState.update {
-                val oldValue = it.isFriendCircle
-                it.copy(isFriendCircle = !oldValue, isFriends = oldValue, isGlobal = oldValue)
+                it.copy(isFriends = false, isFriendCircle = true, isGlobal = false)
             }
         },
         onToggleGlobal = {
             _uiState.update {
-                val oldValue = it.isGlobal
-                it.copy(isGlobal = !oldValue, isFriends = oldValue, isFriendCircle = oldValue)
+                it.copy(isFriends = false, isFriendCircle = false, isGlobal = true)
             }
         },
         onToggleAutopilot = {
             _uiState.update {
-                val oldValue = it.isAutopilot
-                it.copy(isAutopilot = !oldValue, isReadRelays = oldValue)
+                it.copy(isAutopilot = true, isReadRelays = false)
             }
         },
         onToggleReadRelays = {
             _uiState.update {
-                val oldValue = it.isReadRelays
-                it.copy(isReadRelays = !oldValue, isAutopilot = oldValue)
+                it.copy(isAutopilot = false, isReadRelays = true)
             }
         },
     )

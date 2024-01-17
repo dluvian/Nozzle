@@ -24,7 +24,7 @@ class FeedFilterResolver(
         val pubkeys = getPubkeys(authorFilter = feedFilter.authorFilter)
         return when (feedFilter.relayFilter) {
             is Autopilot -> autopilotProvider.getAutopilotRelays(authorFilter = feedFilter.authorFilter)
-            is ReadRelays -> relayProvider.getReadRelays().associateWith { pubkeys }
+            is ReadRelays -> relayProvider.getReadRelays(limit = true).associateWith { pubkeys }
             is MultipleRelays -> feedFilter.relayFilter.relays.associateWith { pubkeys }
         }
     }

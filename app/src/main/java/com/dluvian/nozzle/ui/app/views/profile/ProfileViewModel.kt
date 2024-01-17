@@ -150,7 +150,10 @@ class ProfileViewModel(
 
     private suspend fun getRelays(pubkey: String): List<String> {
         val relays = recommendedRelays + relayProvider.getWriteRelaysOfPubkey(pubkey)
-        return getMaxRelaysAndAddIfTooSmall(from = relays, prefer = relayProvider.getReadRelays())
+        return getMaxRelaysAndAddIfTooSmall(
+            from = relays,
+            prefer = relayProvider.getReadRelays(limit = false)
+        )
     }
 
     companion object {
