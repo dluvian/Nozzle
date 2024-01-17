@@ -21,7 +21,7 @@ fun BaseTopBar(
         title = {
             Text(
                 text = text,
-                style = MaterialTheme.typography.headlineMedium,
+                style = MaterialTheme.typography.headlineSmall,
                 color = MaterialTheme.colorScheme.onSurface,
             )
         },

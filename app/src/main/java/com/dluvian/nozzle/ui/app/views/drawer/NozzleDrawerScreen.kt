@@ -240,6 +240,8 @@ private fun PictureAndName(account: Account, isTop: Boolean, modifier: Modifier 
             text = account.name,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
+            style = if (isTop) MaterialTheme.typography.headlineSmall
+            else MaterialTheme.typography.bodyMedium,
         )
     }
 }

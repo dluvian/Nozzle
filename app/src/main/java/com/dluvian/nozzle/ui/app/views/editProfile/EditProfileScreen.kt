@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
@@ -51,26 +52,12 @@ fun EditProfileScreen(
         mutableStateOf(TextFieldValue(metadataState.lud16.orEmpty()))
     }
 
-    val hasChanges = remember(
-        nameInput.value.text,
-        aboutInput.value.text,
-        pictureInput.value.text,
-        nip05Input.value.text,
-        lud16Input.value.text,
-    ) {
-        nameInput.value.text != metadataState.name.orEmpty()
-                || aboutInput.value.text != metadataState.about.orEmpty()
-                || pictureInput.value.text != metadataState.picture.orEmpty()
-                || nip05Input.value.text != metadataState.nip05.orEmpty()
-                || lud16Input.value.text != metadataState.lud16.orEmpty()
-    }
-
-    Column {
-        ReturnableTopBar(
-            text = stringResource(id = R.string.edit_profile),
-            onGoBack = onGoBack,
-            actions = {
-                if (hasChanges) {
+    Scaffold(
+        topBar = {
+            ReturnableTopBar(
+                text = stringResource(id = R.string.edit_profile),
+                onGoBack = onGoBack,
+                actions = {
                     SaveIconButton(
                         onSave = {
                             onUpsertProfile(
@@ -87,11 +74,13 @@ fun EditProfileScreen(
                         description = stringResource(id = R.string.save_profile)
                     )
                 }
-            }
-        )
+            )
+        }
+    ) {
         Column(
             modifier = Modifier
-                .padding(spacing.screenEdge)
+                .padding(it)
+                .padding(horizontal = spacing.screenEdge)
                 .fillMaxSize()
                 .navigationBarsPadding()
                 .imePadding()
@@ -113,7 +102,9 @@ private fun Advanced(
 ) {
     val isExpanded = remember { mutableStateOf(false) }
     ExpandToggleTextButton(
-        modifier = Modifier.padding(vertical = spacing.medium),
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = spacing.medium),
         text = stringResource(id = R.string.advanced), isExpanded = isExpanded.value,
         onToggle = { isExpanded.value = !isExpanded.value },
     )

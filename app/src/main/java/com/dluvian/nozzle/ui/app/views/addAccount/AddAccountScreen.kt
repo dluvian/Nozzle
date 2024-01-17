@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -37,19 +38,26 @@ fun AddAccountScreen(
     onLogin: (String) -> Unit,
     onGoBack: () -> Unit
 ) {
-    Column {
-        ReturnableTopBar(
-            text = stringResource(id = R.string.add_account),
-            onGoBack = onGoBack,
-            actions = {}
-        )
+    Scaffold(
+        topBar = {
+            ReturnableTopBar(
+                text = stringResource(id = R.string.add_account),
+                onGoBack = onGoBack,
+                actions = {}
+            )
+        }
+    ) {
         ScreenContent(
+            modifier = Modifier
+                .padding(it)
+                .fillMaxSize(),
             value = uiState.value,
             isInvalid = uiState.isInvalid,
             onGenerateNew = onGenerateNew,
             onLogin = onLogin,
         )
     }
+
 }
 
 @Composable
@@ -58,6 +66,7 @@ private fun ScreenContent(
     isInvalid: Boolean,
     onGenerateNew: () -> Unit,
     onLogin: (String) -> Unit,
+    modifier: Modifier = Modifier,
 ) {
     val isVisible = remember { mutableStateOf(false) }
     val focusRequester = remember { FocusRequester() }
@@ -66,7 +75,7 @@ private fun ScreenContent(
         mutableStateOf(TextFieldValue(text = value, selection = TextRange(value.length)))
     }
 
-    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+    Box(modifier = modifier, contentAlignment = Alignment.Center) {
         Card(
             modifier = Modifier.fillMaxWidth(0.8f),
             shape = CardDefaults.elevatedShape
