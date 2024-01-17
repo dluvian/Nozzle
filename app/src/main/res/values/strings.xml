@@ -28,6 +28,7 @@
     <string name="copied_profile_id">Copied profile ID</string>
     <string name="copied_public_key">Copied public key</string>
     <string name="copied_private_key">Copied private key</string>
+    <string name="copy_private_key">Copy private key</string>
     <string name="copied_note_id">Copied note ID</string>
     <string name="copied_content">Copied content</string>
     <string name="copied_lightning_address">Copied lightning address</string>

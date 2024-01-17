@@ -5,8 +5,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.lazy.LazyListState
-import androidx.compose.material3.Button
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
@@ -32,12 +30,13 @@ fun ShowNewPostsButton(
     ) {
         val scope = rememberCoroutineScope()
         AnimatedVisibility(visible = isVisible) {
-            Button(onClick = {
-                onRefresh()
-                scope.launch { lazyListState.animateScrollToItem(0) }
-            }) {
-                Text("$numOfNewPosts ${stringResource(id = R.string.new_posts)}")
-            }
+            BaseButton(
+                text = "$numOfNewPosts ${stringResource(id = R.string.new_posts)}",
+                onClick = {
+                    onRefresh()
+                    scope.launch { lazyListState.animateScrollToItem(0) }
+                }
+            )
         }
     }
 }

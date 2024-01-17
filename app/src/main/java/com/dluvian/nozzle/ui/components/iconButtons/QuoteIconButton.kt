@@ -1,7 +1,5 @@
 package com.dluvian.nozzle.ui.components.iconButtons
 
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import com.dluvian.nozzle.ui.theme.QuoteIcon
@@ -12,7 +10,10 @@ fun QuoteIconButton(
     description: String,
     modifier: Modifier = Modifier
 ) {
-    IconButton(modifier = modifier, onClick = onQuote) {
-        Icon(imageVector = QuoteIcon, contentDescription = description)
-    }
+    BaseIconButton(
+        modifier = modifier,
+        imageVector = QuoteIcon,
+        description = description,
+        onClick = onQuote
+    )
 }

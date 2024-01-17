@@ -6,7 +6,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.Button
 import androidx.compose.material3.DrawerState
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
@@ -25,6 +24,7 @@ import com.dluvian.nozzle.model.drawerFilter.CheckBoxFilterValue
 import com.dluvian.nozzle.model.drawerFilter.FilterCategory
 import com.dluvian.nozzle.model.drawerFilter.RadioFilterValue
 import com.dluvian.nozzle.model.drawerFilter.TypedFilterValue
+import com.dluvian.nozzle.ui.components.buttons.BaseButton
 import com.dluvian.nozzle.ui.components.interactors.NamedCheckbox
 import com.dluvian.nozzle.ui.components.interactors.NamedRadio
 import com.dluvian.nozzle.ui.theme.spacing
@@ -33,14 +33,14 @@ import com.dluvian.nozzle.ui.theme.spacing
 fun FilterDrawer(
     drawerState: DrawerState,
     filterCategories: List<FilterCategory>,
-    onClose: () -> Unit,
+    onApplyAndClose: () -> Unit,
     modifier: Modifier = Modifier,
     content: @Composable () -> Unit = {},
 ) {
     CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl) {
         ModalNavigationDrawer(
             drawerState = drawerState,
-            gesturesEnabled = false,
+            gesturesEnabled = drawerState.isOpen,
             drawerContent = {
                 ModalDrawerSheet(modifier = modifier) {
                     CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr) {
@@ -54,9 +54,11 @@ fun FilterDrawer(
                                 Category(category = category)
                             }
                             item {
-                                Button(modifier = Modifier.fillMaxWidth(), onClick = onClose) {
-                                    Text(text = stringResource(id = R.string.apply_and_close))
-                                }
+                                BaseButton(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    text = stringResource(id = R.string.apply_and_close),
+                                    onClick = onApplyAndClose
+                                )
                             }
                         }
                     }

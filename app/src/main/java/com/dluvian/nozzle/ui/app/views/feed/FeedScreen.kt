@@ -45,7 +45,7 @@ fun FeedScreen(
         topBar = {
             FeedTopBar(
                 pubkey = pubkey,
-                onOpenFilterDrawer = {
+                onToggleFilterDrawer = {
                     scope.launch { drawerState.apply { if (isOpen) close() else open() } }
                 },
                 onPictureClick = onOpenDrawer,

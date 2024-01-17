@@ -120,7 +120,7 @@ private fun NsecTrailingIcons(nsec: String, isVisible: Boolean, onToggleVisibili
                     clip = clip
                 )
             },
-            description = stringResource(id = R.string.copied_private_key)
+            description = stringResource(id = R.string.copy_private_key)
         )
     }
 }

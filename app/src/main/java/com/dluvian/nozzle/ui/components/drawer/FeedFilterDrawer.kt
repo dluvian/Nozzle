@@ -75,7 +75,7 @@ fun FeedFilterDrawer(
                 ),
             ),
         ),
-        onClose = onApplyAndClose
+        onApplyAndClose = onApplyAndClose
     ) {
         content()
     }

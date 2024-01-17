@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
@@ -21,6 +20,7 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.TextFieldValue
 import com.dluvian.nozzle.R
+import com.dluvian.nozzle.ui.components.buttons.BaseButton
 import com.dluvian.nozzle.ui.theme.spacing
 
 @Composable
@@ -51,16 +51,15 @@ fun AddingTextFieldWithButton(
             keyboardActions = KeyboardActions(onDone = { onAdd(text.text) }),
         )
         Spacer(modifier = Modifier.width(spacing.large))
-        Button(
+        BaseButton(
             modifier = Modifier.fillMaxHeight(),
-            enabled = isEnabled,
+            text = stringResource(id = R.string.add),
+            isEnabled = isEnabled,
             onClick = {
                 val success = onAdd(text.text)
                 if (success) text = TextFieldValue("")
             }
-        ) {
-            Text(text = stringResource(id = R.string.add))
-        }
+        )
     }
 
 }
