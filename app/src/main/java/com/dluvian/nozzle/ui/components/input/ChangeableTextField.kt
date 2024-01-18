@@ -33,6 +33,7 @@ fun ChangeableTextField(
     placeholder: String? = null,
     isPassword: Boolean = false,
     onImeAction: (() -> Unit)? = null,
+    isSingleLine: Boolean = false,
     trailingIcon: @Composable() (() -> Unit)? = null,
 ) {
     val focusManager = LocalFocusManager.current
@@ -41,6 +42,7 @@ fun ChangeableTextField(
         value = input.value,
         isError = isError,
         maxLines = maxLines,
+        singleLine = isSingleLine,
         placeholder = if (placeholder != null) {
             { Text(text = placeholder) }
         } else {
