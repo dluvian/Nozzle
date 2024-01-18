@@ -8,8 +8,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import com.dluvian.nozzle.data.DB_BATCH_SIZE
-import com.dluvian.nozzle.data.utils.isScrollingUp
 import com.dluvian.nozzle.model.PostWithMeta
 import com.dluvian.nozzle.ui.app.navigation.PostCardLambdas
 import com.dluvian.nozzle.ui.components.bars.ReturnableTopBar
@@ -40,9 +38,9 @@ fun HashtagScreen(
     ) {
         val lazyListState = rememberLazyListState()
         ShowNewPostsButton(
-            isVisible = !uiState.isRefreshing && numOfNewPosts > 0
-                    && (feed.size < DB_BATCH_SIZE || lazyListState.isScrollingUp()),
             numOfNewPosts = numOfNewPosts,
+            isRefreshing = uiState.isRefreshing,
+            feedSize = feed.size,
             lazyListState = lazyListState,
             onRefresh = onRefresh
         )

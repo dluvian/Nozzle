@@ -12,8 +12,6 @@ import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
-import com.dluvian.nozzle.data.DB_BATCH_SIZE
-import com.dluvian.nozzle.data.utils.isScrollingUp
 import com.dluvian.nozzle.model.PostWithMeta
 import com.dluvian.nozzle.ui.app.navigation.PostCardLambdas
 import com.dluvian.nozzle.ui.components.bars.FeedTopBar
@@ -92,9 +90,9 @@ private fun FeedContent(
     onLoadMore: () -> Unit,
 ) {
     ShowNewPostsButton(
-        isVisible = !uiState.isRefreshing && numOfNewPosts > 0
-                && (feed.size < DB_BATCH_SIZE || lazyListState.isScrollingUp()),
         numOfNewPosts = numOfNewPosts,
+        isRefreshing = uiState.isRefreshing,
+        feedSize = feed.size,
         lazyListState = lazyListState,
         onRefresh = onRefresh
     )

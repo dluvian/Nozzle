@@ -2,14 +2,14 @@ package com.dluvian.nozzle.ui.app.views.likes
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import com.dluvian.nozzle.R
-import com.dluvian.nozzle.data.DB_BATCH_SIZE
-import com.dluvian.nozzle.data.utils.isScrollingUp
 import com.dluvian.nozzle.model.PostWithMeta
 import com.dluvian.nozzle.ui.app.navigation.PostCardLambdas
 import com.dluvian.nozzle.ui.components.bars.ReturnableTopBar
@@ -29,26 +29,33 @@ fun LikesScreen(
     onPrepareReply: (PostWithMeta) -> Unit,
     onGoBack: () -> Unit,
 ) {
-    val lazyListState = rememberLazyListState()
-    ShowNewPostsButton(
-        isVisible = !isRefreshing && numOfNewPosts > 0
-                && (feed.size < DB_BATCH_SIZE || lazyListState.isScrollingUp()),
-        numOfNewPosts = numOfNewPosts,
-        lazyListState = lazyListState,
-        onRefresh = onRefresh
-    )
-    Column {
-        val baseTitle = stringResource(id = R.string.likes)
-        val fullTitle = remember(likeCount) {
-            val countStr = if (likeCount > 0) " ($likeCount)" else ""
-            "$baseTitle$countStr"
+    Scaffold(
+        topBar = {
+            val baseTitle = stringResource(id = R.string.likes)
+            val fullTitle = remember(likeCount) {
+                val countStr = if (likeCount > 0) " ($likeCount)" else ""
+                "$baseTitle$countStr"
+            }
+            ReturnableTopBar(
+                text = fullTitle,
+                onGoBack = onGoBack,
+                actions = {} // TODO: FilterDrawer like in FeedScreen
+            )
         }
-        ReturnableTopBar(
-            text = fullTitle,
-            onGoBack = onGoBack,
-            actions = {}
+    ) {
+        val lazyListState = rememberLazyListState()
+        ShowNewPostsButton(
+            numOfNewPosts = numOfNewPosts,
+            isRefreshing = isRefreshing,
+            feedSize = feed.size,
+            lazyListState = lazyListState,
+            onRefresh = onRefresh
         )
-        Column(modifier = Modifier.fillMaxSize()) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(it)
+        ) {
             PostCardList(
                 posts = feed,
                 isRefreshing = isRefreshing,
@@ -59,6 +66,6 @@ fun LikesScreen(
                 lazyListState = lazyListState
             )
         }
+        NoPostsHint(feed = feed, isRefreshing = isRefreshing)
     }
-    NoPostsHint(feed = feed, isRefreshing = isRefreshing)
 }

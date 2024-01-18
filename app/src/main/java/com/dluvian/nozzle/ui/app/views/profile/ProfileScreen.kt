@@ -29,10 +29,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.style.TextOverflow
 import com.dluvian.nozzle.R
-import com.dluvian.nozzle.data.DB_BATCH_SIZE
 import com.dluvian.nozzle.data.nostr.utils.ShortenedNameUtils.getShortenedNpubFromPubkey
 import com.dluvian.nozzle.data.utils.copyAndToast
-import com.dluvian.nozzle.data.utils.isScrollingUp
 import com.dluvian.nozzle.model.PostWithMeta
 import com.dluvian.nozzle.model.ProfileWithMeta
 import com.dluvian.nozzle.model.Pubkey
@@ -70,9 +68,9 @@ fun ProfileScreen(
 ) {
     val lazyListState = rememberLazyListState()
     ShowNewPostsButton(
-        isVisible = !isRefreshing && numOfNewPosts > 0
-                && (feed.size < DB_BATCH_SIZE || lazyListState.isScrollingUp()),
         numOfNewPosts = numOfNewPosts,
+        isRefreshing = isRefreshing,
+        feedSize = feed.size,
         lazyListState = lazyListState,
         onRefresh = onRefresh
     )

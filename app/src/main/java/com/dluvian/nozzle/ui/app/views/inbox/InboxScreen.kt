@@ -13,8 +13,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import com.dluvian.nozzle.R
-import com.dluvian.nozzle.data.DB_BATCH_SIZE
-import com.dluvian.nozzle.data.utils.isScrollingUp
 import com.dluvian.nozzle.model.PostWithMeta
 import com.dluvian.nozzle.model.RelayActive
 import com.dluvian.nozzle.ui.app.navigation.PostCardLambdas
@@ -69,9 +67,9 @@ fun InboxScreen(
             }
             val lazyListState = rememberLazyListState()
             ShowNewPostsButton(
-                isVisible = !uiState.isRefreshing && numOfNewPosts > 0
-                        && (feed.size < DB_BATCH_SIZE || lazyListState.isScrollingUp()),
                 numOfNewPosts = numOfNewPosts,
+                isRefreshing = uiState.isRefreshing,
+                feedSize = feed.size,
                 lazyListState = lazyListState,
                 onRefresh = onRefresh
             )
