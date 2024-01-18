@@ -57,7 +57,7 @@ fun ThreadScreen(
             )
         }
     }
-    if (thread.current == null) NoPostsHint()
+    if (thread.current == null) NoPostsHint(feed = null, isRefreshing = isRefreshing)
 }
 
 @Composable

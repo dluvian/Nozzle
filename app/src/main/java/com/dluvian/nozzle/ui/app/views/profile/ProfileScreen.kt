@@ -107,7 +107,7 @@ fun ProfileScreen(
             lazyListState = lazyListState
         )
     }
-    if (feed.isEmpty()) NoPostsHint()
+    NoPostsHint(feed = feed, isRefreshing = isRefreshing)
 }
 
 @Composable

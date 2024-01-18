@@ -5,6 +5,8 @@ import androidx.compose.ui.res.stringResource
 import com.dluvian.nozzle.R
 
 @Composable
-fun NoPostsHint() {
-    BaseHint(text = stringResource(id = R.string.no_posts_found))
+fun NoPostsHint(feed: Collection<Any>?, isRefreshing: Boolean) {
+    if (feed.isNullOrEmpty() && !isRefreshing) {
+        BaseHint(text = stringResource(id = R.string.no_posts_found))
+    }
 }

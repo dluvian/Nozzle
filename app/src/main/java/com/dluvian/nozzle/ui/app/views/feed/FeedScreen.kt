@@ -113,5 +113,5 @@ private fun FeedContent(
             lazyListState = lazyListState,
         )
     }
-    if (feed.isEmpty() && !uiState.isRefreshing) NoPostsHint()
+    NoPostsHint(feed = feed, isRefreshing = uiState.isRefreshing)
 }

@@ -61,5 +61,5 @@ fun InboxScreen(
             )
         }
     }
-    if (feed.isEmpty()) NoPostsHint()
+    NoPostsHint(feed = feed, isRefreshing = uiState.isRefreshing)
 }
