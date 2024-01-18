@@ -1,6 +1,5 @@
 package com.dluvian.nozzle.ui.app.views.hashtag
 
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -39,31 +38,29 @@ fun HashtagScreen(
             )
         }
     ) {
-        Box(
+        val lazyListState = rememberLazyListState()
+        ShowNewPostsButton(
+            isVisible = !uiState.isRefreshing && numOfNewPosts > 0
+                    && (feed.size < DB_BATCH_SIZE || lazyListState.isScrollingUp()),
+            numOfNewPosts = numOfNewPosts,
+            lazyListState = lazyListState,
+            onRefresh = onRefresh
+        )
+        Column(
             modifier = Modifier
-                .padding(it)
                 .fillMaxSize()
+                .padding(it)
         ) {
-            val lazyListState = rememberLazyListState()
-            ShowNewPostsButton(
-                isVisible = !uiState.isRefreshing && numOfNewPosts > 0
-                        && (feed.size < DB_BATCH_SIZE || lazyListState.isScrollingUp()),
-                numOfNewPosts = numOfNewPosts,
-                lazyListState = lazyListState,
-                onRefresh = onRefresh
+            PostCardList(
+                posts = feed,
+                isRefreshing = uiState.isRefreshing,
+                postCardLambdas = postCardLambdas,
+                onRefresh = onRefresh,
+                onPrepareReply = onPrepareReply,
+                onLoadMore = onLoadMore,
+                lazyListState = lazyListState
             )
-            Column(modifier = Modifier.fillMaxSize()) {
-                PostCardList(
-                    posts = feed,
-                    isRefreshing = uiState.isRefreshing,
-                    postCardLambdas = postCardLambdas,
-                    onRefresh = onRefresh,
-                    onPrepareReply = onPrepareReply,
-                    onLoadMore = onLoadMore,
-                    lazyListState = lazyListState
-                )
-            }
-            NoPostsHint(feed = feed, isRefreshing = uiState.isRefreshing)
         }
+        NoPostsHint(feed = feed, isRefreshing = uiState.isRefreshing)
     }
 }
