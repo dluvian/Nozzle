@@ -6,13 +6,13 @@ import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import com.dluvian.nozzle.data.utils.UrlUtils.removeWebsocketPrefix
-import com.dluvian.nozzle.model.RelayActive
+import com.dluvian.nozzle.model.RelaySelection
 import com.dluvian.nozzle.ui.components.text.NamedItem
 
 @Composable
 fun RelayDropdown(
     showMenu: Boolean,
-    relays: List<RelayActive>,
+    relays: List<RelaySelection>,
     isEnabled: Boolean,
     onDismiss: () -> Unit,
     onToggleIndex: (Int) -> Unit,

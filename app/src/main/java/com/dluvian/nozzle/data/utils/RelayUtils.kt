@@ -2,23 +2,23 @@ package com.dluvian.nozzle.data.utils
 
 import com.dluvian.nozzle.data.MAX_RELAYS
 import com.dluvian.nozzle.model.Relay
-import com.dluvian.nozzle.model.RelayActive
+import com.dluvian.nozzle.model.RelaySelection
 
-fun toggleRelay(relays: List<RelayActive>, index: Int): List<RelayActive> {
+fun toggleRelay(relays: List<RelaySelection>, index: Int): List<RelaySelection> {
     return relays.mapIndexed { i, relay ->
         if (index == i) relay.copy(isActive = !relay.isActive) else relay
     }
 }
 
 fun addLimitedRelayStatuses(
-    list: List<RelayActive>,
+    list: List<RelaySelection>,
     relaysUrlsToAdd: List<String>
-): List<RelayActive> {
+): List<RelaySelection> {
     val result = list.toMutableList()
     val present = list.map { it.relay }.toSet()
     getMaxRelays(from = relaysUrlsToAdd, prefer = present).forEach {
         if (!present.contains(it)) {
-            result.add(RelayActive(relay = it, isActive = true))
+            result.add(RelaySelection(relay = it, isActive = true))
         }
     }
 
@@ -41,14 +41,14 @@ fun getMaxRelaysAndAddIfTooSmall(
     else (result + prefer.shuffled()).distinct().take(MAX_RELAYS)
 }
 
-fun listRelayStatuses(
+fun listRelaySelection(
     allRelays: List<Relay>,
-    activeRelays: List<Relay>? = null // null == all active
-): List<RelayActive> {
+    selectedRelays: List<Relay>? = null // null == all selected
+): List<RelaySelection> {
     return allRelays.distinct().map { relay ->
-        RelayActive(
+        RelaySelection(
             relay = relay,
-            isActive = activeRelays == null || activeRelays.contains(relay)
+            isActive = selectedRelays == null || selectedRelays.contains(relay)
         )
     }
 }

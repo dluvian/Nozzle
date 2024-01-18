@@ -15,7 +15,7 @@ import com.dluvian.nozzle.data.provider.IRelayProvider
 import com.dluvian.nozzle.data.room.FullPostInserter
 import com.dluvian.nozzle.data.room.dao.PostDao
 import com.dluvian.nozzle.data.utils.addLimitedRelayStatuses
-import com.dluvian.nozzle.data.utils.listRelayStatuses
+import com.dluvian.nozzle.data.utils.listRelaySelection
 import com.dluvian.nozzle.data.utils.toggleRelay
 import com.dluvian.nozzle.model.AnnotatedMentionedPost
 import com.dluvian.nozzle.model.Pubkey
@@ -69,9 +69,9 @@ class PostViewModel(
     }
 
     val onToggleRelaySelection: (Int) -> Unit = { index ->
-        val toggled = toggleRelay(relays = uiState.value.relayStatuses, index = index)
+        val toggled = toggleRelay(relays = uiState.value.relaySelection, index = index)
         if (toggled.any { it.isActive }) {
-            _uiState.update { it.copy(relayStatuses = toggled) }
+            _uiState.update { it.copy(relaySelection = toggled) }
         }
     }
 
@@ -89,10 +89,10 @@ class PostViewModel(
         _uiState.update { it.copy(searchSuggestions = emptyList()) }
         viewModelScope.launch(Dispatchers.IO) {
             val relaySelection = addLimitedRelayStatuses(
-                list = uiState.value.relayStatuses,
+                list = uiState.value.relaySelection,
                 relaysUrlsToAdd = relayProvider.getReadRelaysOfPubkey(pubkey = pubkey)
             )
-            _uiState.update { it.copy(relayStatuses = relaySelection) }
+            _uiState.update { it.copy(relaySelection = relaySelection) }
         }
     }
 
@@ -111,7 +111,7 @@ class PostViewModel(
     ) {
         _uiState.update {
             it.copy(
-                relayStatuses = getRelayStatuses(),
+                relaySelection = getRelaySelection(),
                 postToQuote = postToQuote,
                 quoteRelays = relays
             )
@@ -146,7 +146,7 @@ class PostViewModel(
             relays = state.quoteRelays
         )
         val post = postPreparer.getCleanPostWithTagsAndMentions(content = content + quote)
-        val selectedRelays = state.relayStatuses
+        val selectedRelays = state.relaySelection
             .filter { it.isActive }
             .map { it.relay }
         return nostrService.sendPost(
@@ -160,14 +160,14 @@ class PostViewModel(
     private fun resetUI() {
         _uiState.update {
             it.copy(
-                relayStatuses = getRelayStatuses(),
+                relaySelection = getRelaySelection(),
                 postToQuote = null,
                 quoteRelays = emptyList(),
             )
         }
     }
 
-    private fun getRelayStatuses() = listRelayStatuses(
+    private fun getRelaySelection() = listRelaySelection(
         allRelays = relayProvider.getWriteRelays()
     )
 

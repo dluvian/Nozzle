@@ -37,7 +37,7 @@ import com.dluvian.nozzle.ui.theme.spacing
 @Composable
 fun InputBox(
     input: MutableState<TextFieldValue>,
-    pubkey: String,
+    pubkey: Pubkey,
     placeholder: String,
     searchSuggestions: List<SimpleProfile>,
     onSearch: (String) -> Unit,

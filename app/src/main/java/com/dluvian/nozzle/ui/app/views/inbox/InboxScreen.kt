@@ -14,7 +14,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import com.dluvian.nozzle.R
 import com.dluvian.nozzle.model.PostWithMeta
-import com.dluvian.nozzle.model.RelayActive
+import com.dluvian.nozzle.model.RelaySelection
 import com.dluvian.nozzle.ui.app.navigation.PostCardLambdas
 import com.dluvian.nozzle.ui.components.bars.ReturnableTopBar
 import com.dluvian.nozzle.ui.components.buttons.ShowNewPostsButton
@@ -58,7 +58,12 @@ fun InboxScreen(
                 RelayDropdown(
                     showMenu = showRelayMenu.value,
                     relays = remember(uiState.relays) {
-                        uiState.relays.map { relay -> RelayActive(relay = relay, isActive = true) }
+                        uiState.relays.map { relay ->
+                            RelaySelection(
+                                relay = relay,
+                                isActive = true
+                            )
+                        }
                     },
                     isEnabled = false,
                     onDismiss = { showRelayMenu.value = false },

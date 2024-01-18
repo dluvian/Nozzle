@@ -1,6 +1,6 @@
 package com.dluvian.nozzle.model
 
-data class RelayActive(
+data class RelaySelection(
     val relay: Relay,
     val isActive: Boolean,
 )
