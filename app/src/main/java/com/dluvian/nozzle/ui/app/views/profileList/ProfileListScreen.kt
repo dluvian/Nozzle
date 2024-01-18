@@ -1,11 +1,13 @@
 package com.dluvian.nozzle.ui.app.views.profileList
 
-import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
@@ -37,27 +39,38 @@ fun ProfileListScreen(
     onNavigateToProfile: (Pubkey) -> Unit,
     onGoBack: () -> Unit
 ) {
-    val followerListStr = stringResource(id = R.string.following)
-    val followedByStr = stringResource(id = R.string.followers)
-    val title = remember(type) {
-        when (type) {
-            ProfileListType.FOLLOWER_LIST -> followerListStr
-            ProfileListType.FOLLOWED_BY_LIST -> followedByStr
+    Scaffold(
+        topBar = {
+            val followerListStr = stringResource(id = R.string.following)
+            val followedByStr = stringResource(id = R.string.followers)
+            val title = remember(type) {
+                when (type) {
+                    ProfileListType.FOLLOWER_LIST -> followerListStr
+                    ProfileListType.FOLLOWED_BY_LIST -> followedByStr
+                }
+            }
+            ReturnableTopBar(
+                text = title,
+                onGoBack = onGoBack,
+                actions = {
+                    if (isRefreshing) {
+                        TopBarCircleProgressIndicator()
+                        Spacer(modifier = Modifier.width(spacing.screenEdge))
+                    }
+                }
+            )
         }
-    }
+    ) {
+        val subscribeToUnknowns = remember(profiles.size) { mutableStateOf(false) }
+        LaunchedEffect(key1 = subscribeToUnknowns) {
+            if (subscribeToUnknowns.value) onSubscribeToUnknowns(pubkey)
+        }
 
-    val subscribeToUnknowns = remember(profiles.size) { mutableStateOf(false) }
-    LaunchedEffect(key1 = subscribeToUnknowns) {
-        if (subscribeToUnknowns.value) onSubscribeToUnknowns(pubkey)
-    }
-
-    Column {
-        ReturnableTopBar(
-            text = title,
-            onGoBack = onGoBack,
-            actions = { if (isRefreshing) TopBarCircleProgressIndicator() }
-        )
-        LazyColumn(modifier = Modifier.fillMaxSize()) {
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(it)
+        ) {
             itemsIndexed(profiles) { i, profile ->
                 if (profile.name.isEmpty()) subscribeToUnknowns.value = true
                 ProfileRow(
@@ -69,8 +82,8 @@ fun ProfileListScreen(
                 if (i == profiles.size - 3 && profiles.size >= MAX_LIST_LENGTH) onLoadMore()
             }
         }
+        if (profiles.isEmpty()) EmptyListHint()
     }
-    if (profiles.isEmpty()) EmptyListHint()
 }
 
 @Composable
