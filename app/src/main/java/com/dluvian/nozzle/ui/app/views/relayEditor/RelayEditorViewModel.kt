@@ -46,7 +46,6 @@ class RelayEditorViewModel(
                 RelayEditorViewModelState(
                     myRelays = relays,
                     popularRelays = relayProvider.getRelaysOfContacts(),
-                    hasChanges = false,
                     isError = false,
                     isLoading = false,
                     addIsEnabled = addRelayIsEnabled(relays.size)
@@ -76,7 +75,6 @@ class RelayEditorViewModel(
         _uiState.update {
             it.copy(
                 myRelays = relays,
-                hasChanges = relays != originalRelays,
                 isError = false,
                 addIsEnabled = addRelayIsEnabled(relays.size)
             )
@@ -91,7 +89,6 @@ class RelayEditorViewModel(
             val relays = _uiState.value.myRelays.filterIndexed { i, _ -> i != index }
             it.copy(
                 myRelays = relays,
-                hasChanges = relays != originalRelays,
                 addIsEnabled = addRelayIsEnabled(relays.size)
             )
         }
@@ -102,10 +99,7 @@ class RelayEditorViewModel(
             val relays = it.myRelays.mapIndexed { i, nip65 ->
                 if (i == index) nip65.copy(isWrite = !nip65.isWrite) else nip65
             }
-            it.copy(
-                myRelays = relays,
-                hasChanges = relays != originalRelays
-            )
+            it.copy(myRelays = relays)
         }
     }
 
@@ -114,10 +108,7 @@ class RelayEditorViewModel(
             val relays = it.myRelays.mapIndexed { i, nip65 ->
                 if (i == index) nip65.copy(isRead = !nip65.isRead) else nip65
             }
-            it.copy(
-                myRelays = relays,
-                hasChanges = relays != originalRelays
-            )
+            it.copy(myRelays = relays)
         }
     }
 
@@ -132,7 +123,6 @@ class RelayEditorViewModel(
             it.copy(
                 myRelays = myRelays,
                 popularRelays = it.popularRelays,
-                hasChanges = myRelays != originalRelays,
                 addIsEnabled = addRelayIsEnabled(myRelays.size)
             )
         }
@@ -143,7 +133,6 @@ class RelayEditorViewModel(
         _uiState.update {
             it.copy(
                 myRelays = nip65Relays,
-                hasChanges = false,
                 isError = false,
                 addIsEnabled = addRelayIsEnabled(nip65Relays.size)
             )

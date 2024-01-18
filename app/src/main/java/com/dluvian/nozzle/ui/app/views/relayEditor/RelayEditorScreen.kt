@@ -1,20 +1,28 @@
 package com.dluvian.nozzle.ui.app.views.relayEditor
 
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.MarqueeSpacing
+import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color.Companion.DarkGray
 import androidx.compose.ui.res.stringResource
@@ -30,6 +38,7 @@ import com.dluvian.nozzle.ui.components.iconButtons.SaveIconButton
 import com.dluvian.nozzle.ui.components.indicators.TopBarCircleProgressIndicator
 import com.dluvian.nozzle.ui.components.input.AddingTextFieldWithButton
 import com.dluvian.nozzle.ui.components.interactors.NamedCheckbox
+import com.dluvian.nozzle.ui.theme.sizing
 import com.dluvian.nozzle.ui.theme.spacing
 
 @Composable
@@ -43,18 +52,24 @@ fun RelayEditorScreen(
     onUsePopularRelay: (Int) -> Unit,
     onGoBack: () -> Unit,
 ) {
-    Column {
-        ReturnableTopBar(
-            text = stringResource(id = R.string.relays),
-            onGoBack = onGoBack,
-            actions = {
-                if (uiState.hasChanges && !uiState.isLoading)
-                    SaveIconButton(
-                        onSave = onSaveRelays,
-                        description = stringResource(id = R.string.save_relay_list)
-                    )
-                if (uiState.isLoading) TopBarCircleProgressIndicator()
-            })
+    Scaffold(
+        topBar = {
+            ReturnableTopBar(
+                text = stringResource(id = R.string.relays),
+                onGoBack = onGoBack,
+                actions = {
+                    if (!uiState.isLoading)
+                        SaveIconButton(
+                            onSave = onSaveRelays,
+                            description = stringResource(id = R.string.save_relay_list)
+                        )
+                    if (uiState.isLoading) {
+                        TopBarCircleProgressIndicator()
+                        Spacer(modifier = Modifier.width(spacing.screenEdge))
+                    }
+                })
+        }
+    ) {
         val myRelays = remember(uiState.myRelays) {
             uiState.myRelays.map { relay -> relay.copy(url = relay.url.removeWebsocketPrefix()) }
         }
@@ -66,6 +81,7 @@ fun RelayEditorScreen(
             popularRelays = popularRelays,
             addIsEnabled = uiState.addIsEnabled,
             isError = uiState.isError,
+            paddingValues = it,
             onAddRelay = onAddRelay,
             onDeleteRelay = onDeleteRelay,
             onToggleRead = onToggleRead,
@@ -81,6 +97,7 @@ private fun ScreenContent(
     popularRelays: List<String>,
     addIsEnabled: Boolean,
     isError: Boolean,
+    paddingValues: PaddingValues,
     onAddRelay: (String) -> Boolean,
     onDeleteRelay: (Int) -> Unit,
     onToggleRead: (Int) -> Unit,
@@ -89,12 +106,15 @@ private fun ScreenContent(
 ) {
     LazyColumn(
         modifier = Modifier
-            .padding(spacing.screenEdge)
             .fillMaxSize()
+            .padding(paddingValues)
+            .padding(horizontal = spacing.screenEdge)
     )
     {
-        item { AddRelay(isError = isError, isEnabled = addIsEnabled, onAddRelay = onAddRelay) }
-        item { Spacer(modifier = Modifier.height(spacing.xxl)) }
+        if (addIsEnabled) item {
+            AddRelay(isError = isError, onAddRelay = onAddRelay)
+            Spacer(modifier = Modifier.height(spacing.xxl))
+        }
 
         item { SpacedHeaderText(text = stringResource(id = R.string.my_relays)) }
         itemsIndexed(items = myRelays) { index, relay ->
@@ -130,7 +150,7 @@ private fun ScreenContent(
 @Composable
 private fun SpacedHeaderText(text: String) {
     Column {
-        Text(text = text)
+        Text(text = text, style = MaterialTheme.typography.titleLarge)
         Spacer(modifier = Modifier.height(spacing.medium))
     }
 }
@@ -138,7 +158,6 @@ private fun SpacedHeaderText(text: String) {
 @Composable
 private fun AddRelay(
     isError: Boolean,
-    isEnabled: Boolean,
     onAddRelay: (String) -> Boolean,
 ) {
     Column {
@@ -147,7 +166,6 @@ private fun AddRelay(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(IntrinsicSize.Max),
-            isEnabled = isEnabled,
             isError = isError,
             placeholder = WEBSOCKET_PREFIX,
             onAdd = onAddRelay
@@ -159,6 +177,7 @@ private fun AddRelay(
 private fun PopularRelayRow(relay: String, isAddable: Boolean, onUseRelay: () -> Unit) {
     RelayRow(relay = relay) {
         if (isAddable) AddIconButton(
+            modifier = Modifier.size(sizing.mediumItem),
             onAdd = onUseRelay,
             description = stringResource(id = R.string.add_relay)
         )
@@ -174,7 +193,7 @@ private fun MyRelayRow(
     onToggleWrite: () -> Unit
 ) {
     RelayRow(relay = relay.url) {
-        Row {
+        Row(verticalAlignment = Alignment.CenterVertically) {
             Spacer(modifier = Modifier.width(spacing.large))
             NamedCheckbox(
                 isChecked = relay.isRead,
@@ -200,15 +219,22 @@ private fun MyRelayRow(
     }
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun RelayRow(relay: String, trailingContent: @Composable (() -> Unit)) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .padding(vertical = spacing.large),
+        verticalAlignment = Alignment.CenterVertically
     ) {
         Text(
-            modifier = Modifier.weight(1f),
+            modifier = Modifier
+                .weight(1f)
+                .basicMarquee(
+                    iterations = Int.MAX_VALUE,
+                    spacing = MarqueeSpacing.fractionOfContainer(1f / 4f)
+                ),
             text = relay,
             color = DarkGray,
             maxLines = 1,

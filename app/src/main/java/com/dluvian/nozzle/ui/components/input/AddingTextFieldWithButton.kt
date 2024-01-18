@@ -27,7 +27,6 @@ import com.dluvian.nozzle.ui.theme.spacing
 fun AddingTextFieldWithButton(
     modifier: Modifier = Modifier,
     placeholder: String,
-    isEnabled: Boolean,
     isError: Boolean,
     onAdd: (String) -> Boolean
 ) {
@@ -38,7 +37,6 @@ fun AddingTextFieldWithButton(
                 .weight(1f)
                 .fillMaxSize(),
             value = text,
-            enabled = isEnabled,
             isError = isError,
             maxLines = 1,
             placeholder = { Text(text = placeholder) },
@@ -54,7 +52,6 @@ fun AddingTextFieldWithButton(
         BaseButton(
             modifier = Modifier.fillMaxHeight(),
             text = stringResource(id = R.string.add),
-            isEnabled = isEnabled,
             onClick = {
                 val success = onAdd(text.text)
                 if (success) text = TextFieldValue("")
