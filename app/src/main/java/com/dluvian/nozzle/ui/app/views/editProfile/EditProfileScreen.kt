@@ -121,58 +121,68 @@ private fun Advanced(
 
 @Composable
 private fun Username(username: MutableState<TextFieldValue>) {
-    Text(text = stringResource(id = R.string.username), fontWeight = FontWeight.Bold)
-    ChangeableTextField(
-        modifier = Modifier.fillMaxWidth(),
-        input = username,
-        placeholder = stringResource(id = R.string.enter_your_username),
+    EditableField(
+        text = stringResource(id = R.string.username),
+        mutableInput = username,
+        placeholder = stringResource(id = R.string.enter_your_username)
     )
 }
 
 @Composable
 private fun About(about: MutableState<TextFieldValue>) {
-    Text(text = stringResource(id = R.string.about_you), fontWeight = FontWeight.Bold)
-    ChangeableTextField(
-        modifier = Modifier.fillMaxWidth(),
-        input = about,
-        maxLines = 3,
+    EditableField(
+        text = stringResource(id = R.string.about_you),
+        mutableInput = about,
         placeholder = stringResource(id = R.string.describe_yourself),
+        maxLines = 3
     )
 }
 
 @Composable
 private fun ProfilePictureUrl(pictureUrl: MutableState<TextFieldValue>) {
-    Text(text = stringResource(id = R.string.profile_picture_url), fontWeight = FontWeight.Bold)
-    ChangeableTextField(
-        modifier = Modifier.fillMaxWidth(),
-        input = pictureUrl,
-        maxLines = 3,
+    EditableField(
+        text = stringResource(id = R.string.profile_picture_url),
+        mutableInput = pictureUrl,
         placeholder = stringResource(id = R.string.enter_a_picture_url),
-        errorLabel = stringResource(id = R.string.invalid_url),
+        maxLines = 3,
         keyboardType = KeyboardType.Uri,
     )
 }
 
 @Composable
 private fun Nip05(nip05: MutableState<TextFieldValue>) {
-    Text(text = stringResource(id = R.string.nip05), fontWeight = FontWeight.Bold)
-    ChangeableTextField(
-        modifier = Modifier.fillMaxWidth(),
-        input = nip05,
-        maxLines = 3,
+    EditableField(
+        text = stringResource(id = R.string.nip05),
+        mutableInput = nip05,
         placeholder = stringResource(id = R.string.enter_nip05),
-        keyboardType = KeyboardType.Uri,
+        keyboardType = KeyboardType.Email,
     )
 }
 
 @Composable
 private fun Lud16(lud16: MutableState<TextFieldValue>) {
-    Text(text = stringResource(id = R.string.lightning_address), fontWeight = FontWeight.Bold)
+    EditableField(
+        text = stringResource(id = R.string.lightning_address),
+        mutableInput = lud16,
+        placeholder = stringResource(id = R.string.enter_lud16),
+        keyboardType = KeyboardType.Email,
+    )
+}
+
+@Composable
+private fun EditableField(
+    text: String,
+    mutableInput: MutableState<TextFieldValue>,
+    placeholder: String,
+    maxLines: Int = 1,
+    keyboardType: KeyboardType = KeyboardType.Text
+) {
+    Text(text = text, fontWeight = FontWeight.Bold)
     ChangeableTextField(
         modifier = Modifier.fillMaxWidth(),
-        input = lud16,
-        maxLines = 3,
-        placeholder = stringResource(id = R.string.enter_lud16),
-        keyboardType = KeyboardType.Uri,
+        input = mutableInput,
+        placeholder = placeholder,
+        maxLines = maxLines,
+        keyboardType = keyboardType
     )
 }
