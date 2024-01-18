@@ -4,11 +4,13 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
@@ -23,6 +25,7 @@ fun ChangeableTextField(
     onChangeInput: ((String) -> Unit)? = null,
     maxLines: Int = 1,
     isError: Boolean = false,
+    isTransparent: Boolean = false,
     keyboardType: KeyboardType = KeyboardType.Text,
     keyboardImeAction: ImeAction = ImeAction.Done,
     label: String? = null,
@@ -68,5 +71,14 @@ fun ChangeableTextField(
             VisualTransformation.None
         },
         trailingIcon = trailingIcon,
+        colors = if (isTransparent) TextFieldDefaults.colors(
+            focusedContainerColor = Color.Transparent,
+            unfocusedContainerColor = Color.Transparent,
+            disabledContainerColor = Color.Transparent,
+            focusedIndicatorColor = Color.Transparent,
+            unfocusedIndicatorColor = Color.Transparent,
+            disabledIndicatorColor = Color.Transparent
+
+        ) else TextFieldDefaults.colors()
     )
 }

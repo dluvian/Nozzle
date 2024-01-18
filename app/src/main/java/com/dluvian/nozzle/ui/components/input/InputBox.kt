@@ -60,7 +60,6 @@ fun InputBox(
     Column(modifier = Modifier.fillMaxSize(), Arrangement.SpaceBetween) {
         Column(modifier = Modifier.weight(0.6f, fill = false)) {
             BaseInputBox(
-                modifier = Modifier,
                 input = input,
                 pubkey = pubkey,
                 placeholder = placeholder,
@@ -116,14 +115,13 @@ private fun BaseInputBox(
     input: MutableState<TextFieldValue>,
     pubkey: String,
     placeholder: String,
-    modifier: Modifier = Modifier,
 ) {
     val focusRequester = remember { FocusRequester() }
-    Column(modifier = modifier) {
         Row(modifier = Modifier.fillMaxWidth()) {
             ProfilePicture(
                 modifier = Modifier
                     .padding(start = spacing.screenEdge, top = spacing.large)
+                    .padding(top = spacing.small)
                     .size(sizing.profilePicture),
                 pubkey = pubkey,
                 trustType = Oneself
@@ -137,9 +135,9 @@ private fun BaseInputBox(
                 maxLines = Int.MAX_VALUE,
                 keyboardImeAction = ImeAction.Default,
                 placeholder = placeholder,
+                isTransparent = true
             )
         }
-    }
     LaunchedEffect(Unit) {
         focusRequester.requestFocus()
     }
