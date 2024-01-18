@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
@@ -18,12 +17,12 @@ import com.dluvian.nozzle.R
 import com.dluvian.nozzle.data.MAX_LIST_LENGTH
 import com.dluvian.nozzle.model.Pubkey
 import com.dluvian.nozzle.model.SimpleProfile
-import com.dluvian.nozzle.ui.components.bars.ReturnableTopBar
 import com.dluvian.nozzle.ui.components.buttons.FollowButton
 import com.dluvian.nozzle.ui.components.hint.EmptyListHint
 import com.dluvian.nozzle.ui.components.indicators.TopBarCircleProgressIndicator
 import com.dluvian.nozzle.ui.components.rows.ItemRow
 import com.dluvian.nozzle.ui.components.rows.PictureAndName
+import com.dluvian.nozzle.ui.components.scaffolds.ReturnableScaffold
 import com.dluvian.nozzle.ui.theme.spacing
 
 @Composable
@@ -39,26 +38,15 @@ fun ProfileListScreen(
     onNavigateToProfile: (Pubkey) -> Unit,
     onGoBack: () -> Unit
 ) {
-    Scaffold(
-        topBar = {
-            val followerListStr = stringResource(id = R.string.following)
-            val followedByStr = stringResource(id = R.string.followers)
-            val title = remember(type) {
-                when (type) {
-                    ProfileListType.FOLLOWER_LIST -> followerListStr
-                    ProfileListType.FOLLOWED_BY_LIST -> followedByStr
-                }
+
+    ReturnableScaffold(
+        topBarText = getTitle(type = type),
+        onGoBack = onGoBack,
+        actions = {
+            if (isRefreshing) {
+                TopBarCircleProgressIndicator()
+                Spacer(modifier = Modifier.width(spacing.screenEdge))
             }
-            ReturnableTopBar(
-                text = title,
-                onGoBack = onGoBack,
-                actions = {
-                    if (isRefreshing) {
-                        TopBarCircleProgressIndicator()
-                        Spacer(modifier = Modifier.width(spacing.screenEdge))
-                    }
-                }
-            )
         }
     ) {
         val subscribeToUnknowns = remember(profiles.size) { mutableStateOf(false) }
@@ -66,11 +54,7 @@ fun ProfileListScreen(
             if (subscribeToUnknowns.value) onSubscribeToUnknowns(pubkey)
         }
 
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(it)
-        ) {
+        LazyColumn(modifier = Modifier.fillMaxSize()) {
             itemsIndexed(profiles) { i, profile ->
                 if (profile.name.isEmpty()) subscribeToUnknowns.value = true
                 ProfileRow(
@@ -83,6 +67,18 @@ fun ProfileListScreen(
             }
         }
         if (profiles.isEmpty()) EmptyListHint()
+    }
+}
+
+@Composable
+private fun getTitle(type: ProfileListType): String {
+    val followerListStr = stringResource(id = R.string.following)
+    val followedByStr = stringResource(id = R.string.followers)
+    return remember(type) {
+        when (type) {
+            ProfileListType.FOLLOWER_LIST -> followerListStr
+            ProfileListType.FOLLOWED_BY_LIST -> followedByStr
+        }
     }
 }
 

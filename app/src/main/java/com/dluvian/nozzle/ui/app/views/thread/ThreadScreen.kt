@@ -1,17 +1,14 @@
 package com.dluvian.nozzle.ui.app.views.thread
 
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
@@ -25,12 +22,12 @@ import com.dluvian.nozzle.model.PostThread
 import com.dluvian.nozzle.model.PostWithMeta
 import com.dluvian.nozzle.model.ThreadPosition
 import com.dluvian.nozzle.ui.app.navigation.PostCardLambdas
-import com.dluvian.nozzle.ui.components.bars.ReturnableTopBar
 import com.dluvian.nozzle.ui.components.hint.NoPostsHint
 import com.dluvian.nozzle.ui.components.postCard.PostCard
 import com.dluvian.nozzle.ui.components.postCard.atoms.cards.ClickToLoadMoreCard
 import com.dluvian.nozzle.ui.components.postCard.atoms.cards.PostNotFound
 import com.dluvian.nozzle.ui.components.pullRefresh.PullRefreshBox
+import com.dluvian.nozzle.ui.components.scaffolds.ReturnableScaffold
 import com.dluvian.nozzle.ui.theme.spacing
 
 
@@ -44,29 +41,19 @@ fun ThreadScreen(
     onFindPrevious: () -> Unit,
     onGoBack: () -> Unit,
 ) {
-    Scaffold(
-        topBar = {
-            ReturnableTopBar(
-                text = stringResource(id = R.string.thread),
-                onGoBack = onGoBack,
-                actions = {}
-            )
-        }
+    ReturnableScaffold(
+        topBarText = stringResource(id = R.string.thread),
+        onGoBack = onGoBack,
     ) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(it)
-        ) {
-            ThreadedPosts(
-                thread = thread,
-                isRefreshing = isRefreshing,
-                postCardLambdas = postCardLambdas,
-                onPrepareReply = onPrepareReply,
-                onRefresh = onRefreshThreadView,
-                onFindPrevious = onFindPrevious,
-            )
-        }
+        ThreadedPosts(
+            thread = thread,
+            isRefreshing = isRefreshing,
+            postCardLambdas = postCardLambdas,
+            onPrepareReply = onPrepareReply,
+            onRefresh = onRefreshThreadView,
+            onFindPrevious = onFindPrevious,
+        )
+
         if (thread.current == null) NoPostsHint(feed = null, isRefreshing = isRefreshing)
     }
 }

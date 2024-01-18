@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
@@ -24,9 +23,9 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.input.VisualTransformation
 import com.dluvian.nozzle.R
 import com.dluvian.nozzle.data.utils.copyAndToast
-import com.dluvian.nozzle.ui.components.bars.ReturnableTopBar
 import com.dluvian.nozzle.ui.components.iconButtons.CopyIconButton
 import com.dluvian.nozzle.ui.components.iconButtons.toggle.VisibilityToggleIconButton
+import com.dluvian.nozzle.ui.components.scaffolds.ReturnableScaffold
 import com.dluvian.nozzle.ui.theme.spacing
 
 @Composable
@@ -34,19 +33,13 @@ fun KeysScreen(
     uiState: KeysViewModelState,
     onGoBack: () -> Unit,
 ) {
-    Scaffold(
-        topBar = {
-            ReturnableTopBar(
-                text = stringResource(id = R.string.keys),
-                onGoBack = onGoBack,
-                actions = {}
-            )
-        }
+    ReturnableScaffold(
+        topBarText = stringResource(id = R.string.keys),
+        onGoBack = onGoBack,
     ) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(it)
                 .padding(spacing.screenEdge)
         ) {
             Npub(npub = uiState.npub)

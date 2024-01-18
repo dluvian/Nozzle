@@ -11,7 +11,6 @@ import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
@@ -24,9 +23,9 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.TextFieldValue
 import com.dluvian.nozzle.R
 import com.dluvian.nozzle.model.nostr.Metadata
-import com.dluvian.nozzle.ui.components.bars.ReturnableTopBar
 import com.dluvian.nozzle.ui.components.iconButtons.SaveIconButton
 import com.dluvian.nozzle.ui.components.input.ChangeableTextField
+import com.dluvian.nozzle.ui.components.scaffolds.ReturnableScaffold
 import com.dluvian.nozzle.ui.components.textButtons.ExpandToggleTextButton
 import com.dluvian.nozzle.ui.theme.spacing
 
@@ -52,34 +51,29 @@ fun EditProfileScreen(
         mutableStateOf(TextFieldValue(metadataState.lud16.orEmpty()))
     }
 
-    Scaffold(
-        topBar = {
-            ReturnableTopBar(
-                text = stringResource(id = R.string.edit_profile),
-                onGoBack = onGoBack,
-                actions = {
-                    SaveIconButton(
-                        onSave = {
-                            onUpsertProfile(
-                                Metadata(
-                                    name = nameInput.value.text,
-                                    about = aboutInput.value.text,
-                                    picture = pictureInput.value.text,
-                                    nip05 = nip05Input.value.text,
-                                    lud16 = lud16Input.value.text
-                                )
-                            )
-                            onGoBack()
-                        },
-                        description = stringResource(id = R.string.save_profile)
+    ReturnableScaffold(
+        topBarText = stringResource(id = R.string.edit_profile),
+        onGoBack = onGoBack,
+        actions = {
+            SaveIconButton(
+                onSave = {
+                    onUpsertProfile(
+                        Metadata(
+                            name = nameInput.value.text,
+                            about = aboutInput.value.text,
+                            picture = pictureInput.value.text,
+                            nip05 = nip05Input.value.text,
+                            lud16 = lud16Input.value.text
+                        )
                     )
-                }
+                    onGoBack()
+                },
+                description = stringResource(id = R.string.save_profile)
             )
         }
     ) {
         Column(
             modifier = Modifier
-                .padding(it)
                 .padding(horizontal = spacing.screenEdge)
                 .fillMaxSize()
                 .navigationBarsPadding()

@@ -5,7 +5,6 @@ import androidx.compose.foundation.MarqueeSpacing
 import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -18,7 +17,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
@@ -31,13 +29,13 @@ import com.dluvian.nozzle.R
 import com.dluvian.nozzle.data.room.helper.Nip65Relay
 import com.dluvian.nozzle.data.utils.UrlUtils.WEBSOCKET_PREFIX
 import com.dluvian.nozzle.data.utils.UrlUtils.removeWebsocketPrefix
-import com.dluvian.nozzle.ui.components.bars.ReturnableTopBar
 import com.dluvian.nozzle.ui.components.iconButtons.AddIconButton
 import com.dluvian.nozzle.ui.components.iconButtons.DeleteIconButton
 import com.dluvian.nozzle.ui.components.iconButtons.SaveIconButton
 import com.dluvian.nozzle.ui.components.indicators.TopBarCircleProgressIndicator
 import com.dluvian.nozzle.ui.components.input.AddingTextFieldWithButton
 import com.dluvian.nozzle.ui.components.interactors.NamedCheckbox
+import com.dluvian.nozzle.ui.components.scaffolds.ReturnableScaffold
 import com.dluvian.nozzle.ui.theme.sizing
 import com.dluvian.nozzle.ui.theme.spacing
 
@@ -52,22 +50,19 @@ fun RelayEditorScreen(
     onUsePopularRelay: (Int) -> Unit,
     onGoBack: () -> Unit,
 ) {
-    Scaffold(
-        topBar = {
-            ReturnableTopBar(
-                text = stringResource(id = R.string.relays),
-                onGoBack = onGoBack,
-                actions = {
-                    if (!uiState.isLoading)
-                        SaveIconButton(
-                            onSave = onSaveRelays,
-                            description = stringResource(id = R.string.save_relay_list)
-                        )
-                    if (uiState.isLoading) {
-                        TopBarCircleProgressIndicator()
-                        Spacer(modifier = Modifier.width(spacing.screenEdge))
-                    }
-                })
+    ReturnableScaffold(
+        topBarText = stringResource(id = R.string.relays),
+        onGoBack = onGoBack,
+        actions = {
+            if (!uiState.isLoading)
+                SaveIconButton(
+                    onSave = onSaveRelays,
+                    description = stringResource(id = R.string.save_relay_list)
+                )
+            if (uiState.isLoading) {
+                TopBarCircleProgressIndicator()
+                Spacer(modifier = Modifier.width(spacing.screenEdge))
+            }
         }
     ) {
         val myRelays = remember(uiState.myRelays) {
@@ -81,7 +76,6 @@ fun RelayEditorScreen(
             popularRelays = popularRelays,
             addIsEnabled = uiState.addIsEnabled,
             isError = uiState.isError,
-            paddingValues = it,
             onAddRelay = onAddRelay,
             onDeleteRelay = onDeleteRelay,
             onToggleRead = onToggleRead,
@@ -97,7 +91,6 @@ private fun ScreenContent(
     popularRelays: List<String>,
     addIsEnabled: Boolean,
     isError: Boolean,
-    paddingValues: PaddingValues,
     onAddRelay: (String) -> Boolean,
     onDeleteRelay: (Int) -> Unit,
     onToggleRead: (Int) -> Unit,
@@ -107,7 +100,6 @@ private fun ScreenContent(
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
-            .padding(paddingValues)
             .padding(horizontal = spacing.screenEdge)
     )
     {
