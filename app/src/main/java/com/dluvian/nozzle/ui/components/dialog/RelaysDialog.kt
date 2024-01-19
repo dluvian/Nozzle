@@ -25,9 +25,6 @@ fun RelaysDialog(
 ) {
     NozzleDialog(onCloseDialog = onCloseDialog) {
         LazyColumn {
-            item {
-                DialogSection(header = stringResource(id = R.string.seen_in), relays = seenInRelays)
-            }
             writesInRelays?.let {
                 item {
                     DialogSection(
@@ -43,6 +40,9 @@ fun RelaysDialog(
                         relays = readsInRelays
                     )
                 }
+            }
+            item {
+                DialogSection(header = stringResource(id = R.string.seen_in), relays = seenInRelays)
             }
         }
     }
