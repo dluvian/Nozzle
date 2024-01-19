@@ -36,8 +36,8 @@ I don't plan to publish this app in the Google Play Store.
 <p>
 <img src="screenshots/feed.png" width="24%" height="24%" />
 <img src="screenshots/feed_filter.png" width="24%" height="24%" />
-<img src="screenshots/friend_profile.png.png" width="24%" height="24%" />
-<img src="screenshots/feed_dark.png.png" width="24%" height="24%" />
+<img src="screenshots/friend_profile.png" width="24%" height="24%" />
+<img src="screenshots/feed_dark.png" width="24%" height="24%" />
 </p>
 
 ## Contributing
