@@ -1,6 +1,6 @@
 package com.dluvian.nozzle.ui.components.text
 
-import androidx.compose.material.Text
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -18,21 +18,22 @@ fun ReplyingTo(name: String, replyRelayHint: String?, modifier: Modifier = Modif
     Text(
         modifier = modifier,
         text = buildAnnotatedString {
-            withStyle(style = HintGrayStyle) {
+            withStyle(HintGrayStyle) {
                 if (name.isNotEmpty()) append(stringResource(id = R.string.replying_to))
                 else append(stringResource(id = R.string.replying))
             }
             if (name.isNotEmpty()) {
-                withStyle(style = BoldHintGrayStyle) {
+                withStyle(BoldHintGrayStyle) {
                     append(" ")
                     append(name)
                 }
             }
+
             replyRelayHint?.let { relayHint ->
-                withStyle(style = HintGrayStyle) {
+                withStyle(HintGrayStyle) {
                     append(" @ ")
                 }
-                withStyle(style = BoldHintGrayStyle) {
+                withStyle(BoldHintGrayStyle) {
                     append(relayHint.removeWebsocketPrefix().removeTrailingSlashes())
                 }
             }

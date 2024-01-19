@@ -9,9 +9,10 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.material.Card
-import androidx.compose.material.Text
-import androidx.compose.material.TextButton
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
@@ -24,9 +25,9 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
 import com.dluvian.nozzle.R
-import com.dluvian.nozzle.ui.components.ChangeableTextField
-import com.dluvian.nozzle.ui.components.ReturnableTopBar
-import com.dluvian.nozzle.ui.components.VisibilityIcon
+import com.dluvian.nozzle.ui.components.iconButtons.toggle.VisibilityToggleIconButton
+import com.dluvian.nozzle.ui.components.input.ChangeableTextField
+import com.dluvian.nozzle.ui.components.scaffolds.ReturnableScaffold
 import com.dluvian.nozzle.ui.theme.spacing
 
 @Composable
@@ -36,11 +37,10 @@ fun AddAccountScreen(
     onLogin: (String) -> Unit,
     onGoBack: () -> Unit
 ) {
-    Column {
-        ReturnableTopBar(
-            text = stringResource(id = R.string.add_account),
-            onGoBack = onGoBack
-        )
+    ReturnableScaffold(
+        topBarText = stringResource(id = R.string.add_account),
+        onGoBack = onGoBack,
+    ) {
         ScreenContent(
             value = uiState.value,
             isInvalid = uiState.isInvalid,
@@ -67,7 +67,7 @@ private fun ScreenContent(
     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
         Card(
             modifier = Modifier.fillMaxWidth(0.8f),
-            elevation = spacing.small
+            shape = CardDefaults.elevatedShape
         ) {
             Column {
                 ChangeableTextField(
@@ -82,9 +82,9 @@ private fun ScreenContent(
                     maxLines = 4,
                     isError = isInvalid,
                     trailingIcon = {
-                        VisibilityIcon(
+                        VisibilityToggleIconButton(
                             isVisible = isVisible.value,
-                            onToggle = { isVisible.value = !isVisible.value }
+                            onToggleVisibility = { isVisible.value = !isVisible.value }
                         )
                     }
                 )

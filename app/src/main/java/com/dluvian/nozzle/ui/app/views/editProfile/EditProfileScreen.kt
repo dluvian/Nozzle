@@ -1,9 +1,7 @@
 package com.dluvian.nozzle.ui.app.views.editProfile
 
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -13,8 +11,7 @@ import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.Text
-import androidx.compose.material.TextButton
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
@@ -26,10 +23,10 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.TextFieldValue
 import com.dluvian.nozzle.R
 import com.dluvian.nozzle.model.nostr.Metadata
-import com.dluvian.nozzle.ui.components.ChangeableTextField
-import com.dluvian.nozzle.ui.components.ExpandIcon
-import com.dluvian.nozzle.ui.components.ReturnableTopBar
-import com.dluvian.nozzle.ui.components.SaveIcon
+import com.dluvian.nozzle.ui.components.iconButtons.SaveIconButton
+import com.dluvian.nozzle.ui.components.input.ChangeableTextField
+import com.dluvian.nozzle.ui.components.scaffolds.ReturnableScaffold
+import com.dluvian.nozzle.ui.components.textButtons.ExpandToggleTextButton
 import com.dluvian.nozzle.ui.theme.spacing
 
 @Composable
@@ -54,46 +51,30 @@ fun EditProfileScreen(
         mutableStateOf(TextFieldValue(metadataState.lud16.orEmpty()))
     }
 
-    val hasChanges = remember(
-        nameInput.value.text,
-        aboutInput.value.text,
-        pictureInput.value.text,
-        nip05Input.value.text,
-        lud16Input.value.text,
-    ) {
-        nameInput.value.text != metadataState.name.orEmpty()
-                || aboutInput.value.text != metadataState.about.orEmpty()
-                || pictureInput.value.text != metadataState.picture.orEmpty()
-                || nip05Input.value.text != metadataState.nip05.orEmpty()
-                || lud16Input.value.text != metadataState.lud16.orEmpty()
-    }
-
-    Column {
-        ReturnableTopBar(
-            text = stringResource(id = R.string.edit_profile),
-            onGoBack = onGoBack,
-            trailingIcon = {
-                if (hasChanges) {
-                    SaveIcon(
-                        onSave = {
-                            onUpsertProfile(
-                                Metadata(
-                                    name = nameInput.value.text,
-                                    about = aboutInput.value.text,
-                                    picture = pictureInput.value.text,
-                                    nip05 = nip05Input.value.text,
-                                    lud16 = lud16Input.value.text
-                                )
-                            )
-                            onGoBack()
-                        },
+    ReturnableScaffold(
+        topBarText = stringResource(id = R.string.edit_profile),
+        onGoBack = onGoBack,
+        actions = {
+            SaveIconButton(
+                onSave = {
+                    onUpsertProfile(
+                        Metadata(
+                            name = nameInput.value.text,
+                            about = aboutInput.value.text,
+                            picture = pictureInput.value.text,
+                            nip05 = nip05Input.value.text,
+                            lud16 = lud16Input.value.text
+                        )
                     )
-                }
-            }
-        )
+                    onGoBack()
+                },
+                description = stringResource(id = R.string.save_profile)
+            )
+        }
+    ) {
         Column(
             modifier = Modifier
-                .padding(spacing.screenEdge)
+                .padding(horizontal = spacing.screenEdge)
                 .fillMaxSize()
                 .navigationBarsPadding()
                 .imePadding()
@@ -102,7 +83,6 @@ fun EditProfileScreen(
             Username(username = nameInput)
             Spacer(modifier = Modifier.height(spacing.xxl))
             About(about = aboutInput)
-
             Advanced(pictureInput = pictureInput, nip05Input = nip05Input, lud16Input = lud16Input)
         }
     }
@@ -115,87 +95,88 @@ private fun Advanced(
     lud16Input: MutableState<TextFieldValue>
 ) {
     val isExpanded = remember { mutableStateOf(false) }
-    Column {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.Center
-        ) {
-            TextButton(
-                modifier = Modifier.padding(vertical = spacing.medium),
-                onClick = { isExpanded.value = !isExpanded.value }
-            ) {
-                Text(text = stringResource(id = R.string.advanced))
-                ExpandIcon(isExpanded = isExpanded.value)
-            }
-        }
-        AnimatedVisibility(visible = isExpanded.value) {
-            Column {
-                ProfilePictureUrl(pictureUrl = pictureInput)
-                Spacer(modifier = Modifier.height(spacing.xxl))
-
-                Nip05(nip05 = nip05Input)
-                Spacer(modifier = Modifier.height(spacing.xxl))
-
-                Lud16(lud16 = lud16Input)
-            }
+    ExpandToggleTextButton(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = spacing.medium),
+        text = stringResource(id = R.string.advanced), isExpanded = isExpanded.value,
+        onToggle = { isExpanded.value = !isExpanded.value },
+    )
+    AnimatedVisibility(visible = isExpanded.value) {
+        Column {
+            ProfilePictureUrl(pictureUrl = pictureInput)
+            Spacer(modifier = Modifier.height(spacing.xxl))
+            Nip05(nip05 = nip05Input)
+            Spacer(modifier = Modifier.height(spacing.xxl))
+            Lud16(lud16 = lud16Input)
         }
     }
 }
 
 @Composable
 private fun Username(username: MutableState<TextFieldValue>) {
-    Text(text = stringResource(id = R.string.username), fontWeight = FontWeight.Bold)
-    ChangeableTextField(
-        modifier = Modifier.fillMaxWidth(),
-        input = username,
-        placeholder = stringResource(id = R.string.enter_your_username),
+    EditableField(
+        text = stringResource(id = R.string.username),
+        mutableInput = username,
+        placeholder = stringResource(id = R.string.enter_your_username)
     )
 }
 
 @Composable
 private fun About(about: MutableState<TextFieldValue>) {
-    Text(text = stringResource(id = R.string.about_you), fontWeight = FontWeight.Bold)
-    ChangeableTextField(
-        modifier = Modifier.fillMaxWidth(),
-        input = about,
-        maxLines = 3,
+    EditableField(
+        text = stringResource(id = R.string.about_you),
+        mutableInput = about,
         placeholder = stringResource(id = R.string.describe_yourself),
+        maxLines = 3
     )
 }
 
 @Composable
 private fun ProfilePictureUrl(pictureUrl: MutableState<TextFieldValue>) {
-    Text(text = stringResource(id = R.string.profile_picture_url), fontWeight = FontWeight.Bold)
-    ChangeableTextField(
-        modifier = Modifier.fillMaxWidth(),
-        input = pictureUrl,
-        maxLines = 3,
+    EditableField(
+        text = stringResource(id = R.string.profile_picture_url),
+        mutableInput = pictureUrl,
         placeholder = stringResource(id = R.string.enter_a_picture_url),
-        errorLabel = stringResource(id = R.string.invalid_url),
+        maxLines = 3,
         keyboardType = KeyboardType.Uri,
     )
 }
 
 @Composable
 private fun Nip05(nip05: MutableState<TextFieldValue>) {
-    Text(text = stringResource(id = R.string.nip05), fontWeight = FontWeight.Bold)
-    ChangeableTextField(
-        modifier = Modifier.fillMaxWidth(),
-        input = nip05,
-        maxLines = 3,
+    EditableField(
+        text = stringResource(id = R.string.nip05),
+        mutableInput = nip05,
         placeholder = stringResource(id = R.string.enter_nip05),
-        keyboardType = KeyboardType.Uri,
+        keyboardType = KeyboardType.Email,
     )
 }
 
 @Composable
 private fun Lud16(lud16: MutableState<TextFieldValue>) {
-    Text(text = stringResource(id = R.string.lightning_address), fontWeight = FontWeight.Bold)
+    EditableField(
+        text = stringResource(id = R.string.lightning_address),
+        mutableInput = lud16,
+        placeholder = stringResource(id = R.string.enter_lud16),
+        keyboardType = KeyboardType.Email,
+    )
+}
+
+@Composable
+private fun EditableField(
+    text: String,
+    mutableInput: MutableState<TextFieldValue>,
+    placeholder: String,
+    maxLines: Int = 1,
+    keyboardType: KeyboardType = KeyboardType.Text
+) {
+    Text(text = text, fontWeight = FontWeight.Bold)
     ChangeableTextField(
         modifier = Modifier.fillMaxWidth(),
-        input = lud16,
-        maxLines = 3,
-        placeholder = stringResource(id = R.string.enter_lud16),
-        keyboardType = KeyboardType.Uri,
+        input = mutableInput,
+        placeholder = placeholder,
+        maxLines = maxLines,
+        keyboardType = keyboardType
     )
 }

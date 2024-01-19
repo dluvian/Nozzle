@@ -62,16 +62,18 @@ interface PostDao {
                 limit = limit
             )
         } else {
-            if (authorPubkeys!!.isEmpty() || relays!!.isEmpty()) emptyList()
-            else internalGetMainFeedBasePosts(
-                isPosts = isPosts,
-                isReplies = isReplies,
-                hashtag = hashtag,
-                authorPubkeys = authorPubkeys,
-                relays = relays,
-                until = until,
-                limit = limit
-            )
+            if (authorPubkeys?.isEmpty() == true || relays?.isEmpty() == true) emptyList()
+            else if (authorPubkeys != null && relays != null)
+                internalGetMainFeedBasePosts(
+                    isPosts = isPosts,
+                    isReplies = isReplies,
+                    hashtag = hashtag,
+                    authorPubkeys = authorPubkeys,
+                    relays = relays,
+                    until = until,
+                    limit = limit
+                )
+            else emptyList()
         }
     }
 
@@ -188,16 +190,18 @@ interface PostDao {
                 limit = limit
             )
         } else {
-            if (authorPubkeys!!.isEmpty() || relays!!.isEmpty()) flowOf(0)
-            else internalGetNumOfNewMainFeedPostsFlow(
-                oldPostIds = oldPostIds,
-                isPosts = isPosts,
-                isReplies = isReplies,
-                hashtag = hashtag,
-                authorPubkeys = authorPubkeys,
-                relays = relays,
-                limit = limit
-            )
+            if (authorPubkeys?.isEmpty() == true || relays?.isEmpty() == true) flowOf(0)
+            else if (authorPubkeys != null && relays != null)
+                internalGetNumOfNewMainFeedPostsFlow(
+                    oldPostIds = oldPostIds,
+                    isPosts = isPosts,
+                    isReplies = isReplies,
+                    hashtag = hashtag,
+                    authorPubkeys = authorPubkeys,
+                    relays = relays,
+                    limit = limit
+                )
+            else flowOf(0)
         }
     }
 

@@ -11,7 +11,7 @@ data class Sizing(
     /**
      * 3 dp
      */
-    val smallProgressIndicator: Dp = 3.dp,
+    val smallProgressIndicatorStroke: Dp = 3.dp,
     /**
      * 16 dp
      */
@@ -20,6 +20,10 @@ data class Sizing(
      * 24 dp
      */
     val mediumItem: Dp = 24.dp,
+    /**
+     * 48 dp
+     */
+    val largeItem: Dp = 48.dp,
     /**
      * 32 dp
      */

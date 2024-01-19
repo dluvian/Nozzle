@@ -1,16 +1,11 @@
 package com.dluvian.nozzle.ui.theme
 
-import androidx.compose.material.Colors
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 
-val Purple200 = Color(0xFFBB86FC)
-val Purple500 = Color(0xFF6200EE)
-val Purple700 = Color(0xFF3700B3)
-val Orange700 = Color(0xFFF57C00)
-val Orange500 = Color(0xFFFF9800)
-
 val HyperlinkBlue = Color(0xFF007AFF)
+val Orange500 = Color(0xFFFF9800)
 
 // Colors from https://sashamaps.net/docs/resources/20-colors/
 val ProfilePictureMaroon = Color(0xFF800000)
@@ -33,6 +28,6 @@ val ProfilePictureBeige = Color(0xFFffd8b1)
 val ProfilePictureMint = Color(0xFFaaffc3)
 val ProfilePictureLavender = Color(0xFFdcbeff)
 
-val Colors.hintGray: Color
+val HintGray: Color
     @Composable
-    get() = if (isLight) Color.LightGray else Color.DarkGray
+    get() = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f)

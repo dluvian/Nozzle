@@ -6,9 +6,8 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material.Divider
-import androidx.compose.material3.Button
 import androidx.compose.material3.DrawerState
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalDrawerSheet
 import androidx.compose.material3.ModalNavigationDrawer
@@ -21,23 +20,29 @@ import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.LayoutDirection
 import com.dluvian.nozzle.R
-import com.dluvian.nozzle.ui.components.namedItem.NamedCheckbox
-import com.dluvian.nozzle.ui.components.namedItem.NamedSwitch
+import com.dluvian.nozzle.model.drawerFilter.CheckBoxFilterValue
+import com.dluvian.nozzle.model.drawerFilter.FilterCategory
+import com.dluvian.nozzle.model.drawerFilter.RadioFilterValue
+import com.dluvian.nozzle.model.drawerFilter.TypedFilterValue
+import com.dluvian.nozzle.ui.components.buttons.BaseButton
+import com.dluvian.nozzle.ui.components.interactors.NamedCheckbox
+import com.dluvian.nozzle.ui.components.interactors.NamedRadio
 import com.dluvian.nozzle.ui.theme.spacing
 
 @Composable
 fun FilterDrawer(
     drawerState: DrawerState,
     filterCategories: List<FilterCategory>,
-    onClose: () -> Unit,
-    content: @Composable () -> Unit,
+    onApplyAndClose: () -> Unit,
+    modifier: Modifier = Modifier,
+    content: @Composable () -> Unit = {},
 ) {
     CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl) {
         ModalNavigationDrawer(
             drawerState = drawerState,
-            gesturesEnabled = false,
+            gesturesEnabled = drawerState.isOpen,
             drawerContent = {
-                ModalDrawerSheet {
+                ModalDrawerSheet(modifier = modifier) {
                     CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr) {
                         LazyColumn(
                             modifier = Modifier
@@ -49,9 +54,11 @@ fun FilterDrawer(
                                 Category(category = category)
                             }
                             item {
-                                Button(modifier = Modifier.fillMaxWidth(), onClick = onClose) {
-                                    Text(text = stringResource(id = R.string.apply_and_close))
-                                }
+                                BaseButton(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    text = stringResource(id = R.string.apply_and_close),
+                                    onClick = onApplyAndClose
+                                )
                             }
                         }
                     }
@@ -72,24 +79,24 @@ private fun Category(category: FilterCategory) {
         style = MaterialTheme.typography.titleMedium
     )
     category.filters.forEach { filter ->
-        NamedCheckBoxOrSwitch(filter = filter)
+        NamedCheckBoxOrRadio(filter = filter)
     }
-    Divider()
+    HorizontalDivider()
     Spacer(modifier = Modifier.height(spacing.screenEdge))
 }
 
 @Composable
-private fun NamedCheckBoxOrSwitch(filter: TypedFilterValue) {
+private fun NamedCheckBoxOrRadio(filter: TypedFilterValue) {
     when (filter) {
         is CheckBoxFilterValue -> NamedCheckbox(
-            isChecked = filter.isChecked,
+            isChecked = filter.isSelected,
             name = filter.name,
             isEnabled = filter.isEnabled,
             onClick = filter.onClick
         )
 
-        is SwitchFilterValue -> NamedSwitch(
-            isChecked = filter.isChecked,
+        is RadioFilterValue -> NamedRadio(
+            isSelected = filter.isSelected,
             name = filter.name,
             isEnabled = filter.isEnabled,
             onClick = filter.onClick

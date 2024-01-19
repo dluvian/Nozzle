@@ -4,11 +4,12 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.statusBarsPadding
-import androidx.compose.material.DrawerState
-import androidx.compose.material.DrawerValue
-import androidx.compose.material.ModalDrawer
-import androidx.compose.material.Surface
-import androidx.compose.material.rememberDrawerState
+import androidx.compose.material3.DrawerState
+import androidx.compose.material3.DrawerValue
+import androidx.compose.material3.ModalDrawerSheet
+import androidx.compose.material3.ModalNavigationDrawer
+import androidx.compose.material3.Surface
+import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -237,17 +238,20 @@ private fun Drawer(
     navController: NavHostController,
     scope: CoroutineScope,
 ) {
-    ModalDrawer(
+    ModalNavigationDrawer(
         drawerState = drawerState,
         drawerContent = {
-            NozzleDrawerRoute(
-                nozzleDrawerViewModel = vmContainer.drawerViewModel,
-                navActions = navActions,
-                closeDrawer = { scope.launch { drawerState.close() } },
-                modifier = Modifier
-                    .statusBarsPadding()
-                    .navigationBarsPadding()
-            )
+            // TODO: Test Dismissable and PermanentDrawerSheet
+            ModalDrawerSheet {
+                NozzleDrawerRoute(
+                    nozzleDrawerViewModel = vmContainer.drawerViewModel,
+                    navActions = navActions,
+                    closeDrawer = { scope.launch { drawerState.close() } },
+                    modifier = Modifier
+                        .statusBarsPadding()
+                        .navigationBarsPadding()
+                )
+            }
         },
     ) {
         NozzleContent(

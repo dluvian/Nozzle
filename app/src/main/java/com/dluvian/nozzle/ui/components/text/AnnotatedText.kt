@@ -1,16 +1,15 @@
 package com.dluvian.nozzle.ui.components.text
 
 import androidx.compose.foundation.text.ClickableText
-import androidx.compose.material.MaterialTheme
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.ExperimentalTextApi
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.style.TextOverflow
-import com.dluvian.nozzle.ui.theme.Typography
 
 @OptIn(ExperimentalTextApi::class)
 @Composable
@@ -22,8 +21,8 @@ fun AnnotatedText(
     overflow: TextOverflow = TextOverflow.Ellipsis
 ) {
     val uriHandler = LocalUriHandler.current
-    val textColor = MaterialTheme.colors.onSurface
-    val annotatedString = remember(text) { useDefaultTextStyle(text = text, textColor = textColor) }
+    val style = MaterialTheme.typography.bodyLarge.copy(color = MaterialTheme.colorScheme.onSurface)
+    val annotatedString = remember(text) { useDefaultTextStyle(text = text, style = style) }
     ClickableText(
         text = annotatedString,
         maxLines = maxLines ?: 1024,
@@ -40,9 +39,9 @@ fun AnnotatedText(
     )
 }
 
-private fun useDefaultTextStyle(text: AnnotatedString, textColor: Color): AnnotatedString {
+private fun useDefaultTextStyle(text: AnnotatedString, style: TextStyle): AnnotatedString {
     return buildAnnotatedString {
-        val index = pushStyle(Typography.body1.toSpanStyle().copy(color = textColor))
+        val index = pushStyle(style.toSpanStyle())
         append(text)
         pop(index)
     }

@@ -17,10 +17,10 @@ import androidx.compose.ui.draw.clip
 import com.dluvian.nozzle.data.nostr.utils.ShortenedNameUtils
 import com.dluvian.nozzle.model.AnnotatedMentionedPost
 import com.dluvian.nozzle.model.Oneself
-import com.dluvian.nozzle.ui.components.postCard.atoms.BorderedCard
 import com.dluvian.nozzle.ui.components.postCard.atoms.PostCardContentBase
+import com.dluvian.nozzle.ui.components.postCard.atoms.PostCardHeader
 import com.dluvian.nozzle.ui.components.postCard.atoms.PostCardProfilePicture
-import com.dluvian.nozzle.ui.components.postCard.molecules.PostCardHeader
+import com.dluvian.nozzle.ui.components.postCard.atoms.cards.BorderedCard
 import com.dluvian.nozzle.ui.theme.sizing
 import com.dluvian.nozzle.ui.theme.spacing
 

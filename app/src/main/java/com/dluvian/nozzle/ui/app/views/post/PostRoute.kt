@@ -14,7 +14,7 @@ fun PostRoute(
 
     PostScreen(
         uiState = uiState,
-        pubkeyState = pubkeyState,
+        pubkey = pubkeyState,
         onToggleRelaySelection = postViewModel.onToggleRelaySelection,
         onSend = { content -> postViewModel.onSend(content, uiState) },
         onSearch = postViewModel.onSearch,

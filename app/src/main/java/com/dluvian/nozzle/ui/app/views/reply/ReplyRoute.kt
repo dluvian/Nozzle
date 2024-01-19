@@ -14,7 +14,7 @@ fun ReplyRoute(
 
     ReplyScreen(
         uiState = uiState,
-        pubkeyState = pubkeyState,
+        pubkey = pubkeyState,
         onToggleRelaySelection = replyViewModel.onToggleRelaySelection,
         onSend = replyViewModel.onSend,
         onSearch = replyViewModel.onSearch,

@@ -125,7 +125,7 @@ class SubscriptionQueue(
         currentQueue.forEach { (relay, filters) ->
             val relays = if (relay.isEmpty()) {
                 val rndRelays = getMaxRelays(from = nostrService.getActiveRelays()).toSet()
-                rndRelays + getMaxRelays(from = relayProvider.getReadRelays())
+                rndRelays + relayProvider.getReadRelays(limit = true)
             } else listOf(relay)
 
             val batchedFilters = batchFilters(filters = filters)

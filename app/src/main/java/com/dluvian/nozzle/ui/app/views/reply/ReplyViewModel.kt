@@ -11,7 +11,7 @@ import com.dluvian.nozzle.data.provider.IPubkeyProvider
 import com.dluvian.nozzle.data.provider.IRelayProvider
 import com.dluvian.nozzle.data.room.FullPostInserter
 import com.dluvian.nozzle.data.utils.addLimitedRelayStatuses
-import com.dluvian.nozzle.data.utils.listRelayStatuses
+import com.dluvian.nozzle.data.utils.listRelaySelection
 import com.dluvian.nozzle.data.utils.toggleRelay
 import com.dluvian.nozzle.model.PostWithMeta
 import com.dluvian.nozzle.model.Pubkey
@@ -52,7 +52,7 @@ class ReplyViewModel(
         viewModelScope.launch(context = Dispatchers.IO) {
             _uiState.update {
                 recipientPubkey = post.pubkey
-                val relays = listRelayStatuses(allRelays = relayProvider.getWriteRelays())
+                val relays = listRelaySelection(allRelays = relayProvider.getWriteRelays())
                 it.copy(
                     searchSuggestions = emptyList(),
                     recipientName = post.name.ifEmpty {
@@ -138,7 +138,7 @@ class ReplyViewModel(
             it.copy(
                 searchSuggestions = emptyList(),
                 recipientName = "",
-                relaySelection = listRelayStatuses(allRelays = relayProvider.getWriteRelays()),
+                relaySelection = listRelaySelection(allRelays = relayProvider.getWriteRelays()),
             )
         }
     }

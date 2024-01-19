@@ -1,7 +1,7 @@
 package com.dluvian.nozzle.ui.app.navigation
 
 import android.util.Log
-import androidx.compose.material.DrawerState
+import androidx.compose.material3.DrawerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope

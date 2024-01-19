@@ -6,49 +6,52 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.material.Chip
-import androidx.compose.material.Divider
-import androidx.compose.material.ExperimentalMaterialApi
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Text
+import androidx.compose.material3.AssistChip
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.style.TextOverflow
 import com.dluvian.nozzle.R
-import com.dluvian.nozzle.data.DB_BATCH_SIZE
 import com.dluvian.nozzle.data.nostr.utils.ShortenedNameUtils.getShortenedNpubFromPubkey
 import com.dluvian.nozzle.data.utils.copyAndToast
-import com.dluvian.nozzle.data.utils.isScrollingUp
 import com.dluvian.nozzle.model.PostWithMeta
 import com.dluvian.nozzle.model.ProfileWithMeta
 import com.dluvian.nozzle.model.Pubkey
 import com.dluvian.nozzle.model.TrustType
 import com.dluvian.nozzle.ui.app.navigation.PostCardLambdas
-import com.dluvian.nozzle.ui.components.CopyIcon
-import com.dluvian.nozzle.ui.components.EditProfileButton
-import com.dluvian.nozzle.ui.components.FollowButton
-import com.dluvian.nozzle.ui.components.LightningIcon
-import com.dluvian.nozzle.ui.components.ShowNewPostsButton
+import com.dluvian.nozzle.ui.components.buttons.EditProfileButton
+import com.dluvian.nozzle.ui.components.buttons.FollowButton
+import com.dluvian.nozzle.ui.components.buttons.ShowNewPostsButton
 import com.dluvian.nozzle.ui.components.dialog.RelaysDialog
+import com.dluvian.nozzle.ui.components.fabs.CreateNoteFab
 import com.dluvian.nozzle.ui.components.hint.NoPostsHint
 import com.dluvian.nozzle.ui.components.media.ProfilePicture
 import com.dluvian.nozzle.ui.components.postCard.PostCardList
 import com.dluvian.nozzle.ui.components.text.AnnotatedText
+import com.dluvian.nozzle.ui.components.text.NamedItem
 import com.dluvian.nozzle.ui.components.text.NumberedCategory
+import com.dluvian.nozzle.ui.theme.CopyIcon
+import com.dluvian.nozzle.ui.theme.HintGray
+import com.dluvian.nozzle.ui.theme.LightningIcon
 import com.dluvian.nozzle.ui.theme.sizing
 import com.dluvian.nozzle.ui.theme.spacing
 
@@ -68,46 +71,59 @@ fun ProfileScreen(
     onLoadMore: () -> Unit,
     onNavigateToEditProfile: () -> Unit,
 ) {
-    val lazyListState = rememberLazyListState()
-    ShowNewPostsButton(
-        isVisible = !isRefreshing && numOfNewPosts > 0
-                && (feed.size < DB_BATCH_SIZE || lazyListState.isScrollingUp()),
-        numOfNewPosts = numOfNewPosts,
-        lazyListState = lazyListState,
-        onRefresh = onRefresh
-    )
-    Column {
-        ProfileData(
-            profile = profile,
-            isFollowedByMe = isFollowedByMe,
-            onFollow = postCardLambdas.onFollow,
-            onUnfollow = postCardLambdas.onUnfollow,
-            onNavToEditProfile = onNavigateToEditProfile,
-            onNavigateToId = postCardLambdas.navLambdas.onNavigateToId,
-        )
-        Spacer(Modifier.height(spacing.medium))
-        NumberedCategories(
-            numOfFollowing = profile.numOfFollowing,
-            numOfFollowers = profile.numOfFollowers,
-            seenInRelays = profile.seenInRelays,
-            writesInRelays = profile.writesInRelays,
-            readsInRelays = profile.readsInRelays,
-            onOpenFollowerList = { onOpenFollowerList(profile.pubkey) },
-            onOpenFollowedByList = { onOpenFollowedByList(profile.pubkey) }
-        )
-        Spacer(Modifier.height(spacing.xl))
-        Divider()
-        PostCardList(
-            posts = feed,
+    Scaffold(
+        topBar = {
+            ProfileData(
+                profile = profile,
+                isFollowedByMe = isFollowedByMe,
+                onFollow = postCardLambdas.onFollow,
+                onUnfollow = postCardLambdas.onUnfollow,
+                onNavToEditProfile = onNavigateToEditProfile,
+                onNavigateToId = postCardLambdas.navLambdas.onNavigateToId,
+            )
+        },
+        floatingActionButton = {
+            CreateNoteFab(onCreateNote = postCardLambdas.navLambdas.onNavigateToPost)
+        },
+
+        ) {
+        val lazyListState = rememberLazyListState()
+        ShowNewPostsButton(
+            numOfNewPosts = numOfNewPosts,
             isRefreshing = isRefreshing,
-            postCardLambdas = postCardLambdas,
-            onRefresh = onRefresh,
-            onPrepareReply = onPrepareReply,
-            onLoadMore = onLoadMore,
-            lazyListState = lazyListState
+            feedSize = feed.size,
+            lazyListState = lazyListState,
+            onRefresh = onRefresh
         )
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(it)
+        ) {
+            Spacer(Modifier.height(spacing.medium))
+            NumberedCategories(
+                numOfFollowing = profile.numOfFollowing,
+                numOfFollowers = profile.numOfFollowers,
+                seenInRelays = profile.seenInRelays,
+                writesInRelays = profile.writesInRelays,
+                readsInRelays = profile.readsInRelays,
+                onOpenFollowerList = { onOpenFollowerList(profile.pubkey) },
+                onOpenFollowedByList = { onOpenFollowedByList(profile.pubkey) }
+            )
+            Spacer(Modifier.height(spacing.xl))
+            HorizontalDivider()
+            PostCardList(
+                posts = feed,
+                isRefreshing = isRefreshing,
+                postCardLambdas = postCardLambdas,
+                onRefresh = onRefresh,
+                onPrepareReply = onPrepareReply,
+                onLoadMore = onLoadMore,
+                lazyListState = lazyListState
+            )
+        }
+        NoPostsHint(feed = feed, isRefreshing = isRefreshing)
     }
-    if (feed.isEmpty()) NoPostsHint()
 }
 
 @Composable
@@ -271,6 +287,7 @@ private fun ProfileStrings(
     ) {
         Column(Modifier.padding(end = spacing.medium)) {
             NameWithFollowInfoChip(name = name, followsYou = followsYou)
+            Spacer(modifier = Modifier.height(spacing.small))
             val clip = LocalClipboardManager.current
             val context = LocalContext.current
             CopyableNprofile(
@@ -302,7 +319,6 @@ private fun ProfileStrings(
     }
 }
 
-@OptIn(ExperimentalMaterialApi::class)
 @Composable
 private fun NameWithFollowInfoChip(name: String, followsYou: Boolean) {
     Row(verticalAlignment = Alignment.CenterVertically) {
@@ -311,64 +327,65 @@ private fun NameWithFollowInfoChip(name: String, followsYou: Boolean) {
             text = name,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
-            style = MaterialTheme.typography.h6,
+            style = MaterialTheme.typography.headlineSmall,
         )
         if (followsYou) {
-            Chip(
+            AssistChip(
                 modifier = Modifier
-                    .height(sizing.smallItem)
+                    .height(sizing.mediumItem)
                     .padding(start = spacing.medium),
                 onClick = { },
                 enabled = false,
-            ) {
-                Text(
-                    modifier = Modifier.align(Alignment.CenterVertically),
-                    text = stringResource(id = R.string.follows_you)
-                )
-            }
+                label = {
+                    Text(
+                        modifier = Modifier.align(Alignment.CenterVertically),
+                        text = stringResource(id = R.string.follows_you)
+                    )
+                },
+            )
         }
     }
 }
 
 @Composable
 private fun CopyableNprofile(nprofile: String, onCopyNprofile: () -> Unit) {
-    ProfileStringRow(text = nprofile,
+    ProfileStringRow(
+        imageVector = CopyIcon,
+        description = stringResource(id = R.string.copy_profile_id),
+        text = nprofile,
         onClick = onCopyNprofile,
-        leadingIcon = {
-            CopyIcon(modifier = Modifier.size(sizing.smallItem), tint = Color.LightGray)
-        }
     )
 }
 
 @Composable
 private fun Lud16(lud16: String, onCopyLud16: () -> Unit) {
     ProfileStringRow(
+        imageVector = LightningIcon,
+        description = stringResource(id = R.string.copy_lightning_address),
         text = lud16,
         onClick = onCopyLud16,
-        leadingIcon = {
-            LightningIcon(modifier = Modifier.size(sizing.smallItem), tint = Color.LightGray)
-        },
     )
 }
 
 @Composable
 private fun ProfileStringRow(
+    imageVector: ImageVector,
+    description: String,
     text: String,
     onClick: () -> Unit,
-    leadingIcon: @Composable () -> Unit,
 ) {
-    Row(
+    NamedItem(
         modifier = Modifier.clickable(onClick = onClick),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        leadingIcon()
-        Spacer(modifier = Modifier.width(spacing.small))
-        Text(
-            text = text,
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis,
-            color = Color.LightGray,
-            style = MaterialTheme.typography.body2,
-        )
-    }
+        item = {
+            Icon(
+                modifier = Modifier.size(sizing.smallItem),
+                imageVector = imageVector,
+                contentDescription = description,
+                tint = HintGray
+            )
+            Spacer(modifier = Modifier.width(spacing.small))
+        },
+        name = text,
+        color = HintGray,
+    )
 }

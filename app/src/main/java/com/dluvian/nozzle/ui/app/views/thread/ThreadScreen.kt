@@ -1,6 +1,5 @@
 package com.dluvian.nozzle.ui.app.views.thread
 
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
@@ -8,8 +7,8 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.material.Divider
-import androidx.compose.material.MaterialTheme.colors
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
@@ -23,12 +22,12 @@ import com.dluvian.nozzle.model.PostThread
 import com.dluvian.nozzle.model.PostWithMeta
 import com.dluvian.nozzle.model.ThreadPosition
 import com.dluvian.nozzle.ui.app.navigation.PostCardLambdas
-import com.dluvian.nozzle.ui.components.PullRefreshBox
-import com.dluvian.nozzle.ui.components.ReturnableTopBar
 import com.dluvian.nozzle.ui.components.hint.NoPostsHint
 import com.dluvian.nozzle.ui.components.postCard.PostCard
-import com.dluvian.nozzle.ui.components.postCard.atoms.ClickToLoadMore
-import com.dluvian.nozzle.ui.components.postCard.atoms.PostNotFound
+import com.dluvian.nozzle.ui.components.postCard.atoms.cards.ClickToLoadMoreCard
+import com.dluvian.nozzle.ui.components.postCard.atoms.cards.PostNotFound
+import com.dluvian.nozzle.ui.components.pullRefresh.PullRefreshBox
+import com.dluvian.nozzle.ui.components.scaffolds.ReturnableScaffold
 import com.dluvian.nozzle.ui.theme.spacing
 
 
@@ -42,20 +41,21 @@ fun ThreadScreen(
     onFindPrevious: () -> Unit,
     onGoBack: () -> Unit,
 ) {
-    Column {
-        ReturnableTopBar(text = stringResource(id = R.string.thread), onGoBack = onGoBack)
-        Column(modifier = Modifier.fillMaxSize()) {
-            ThreadedPosts(
-                thread = thread,
-                isRefreshing = isRefreshing,
-                postCardLambdas = postCardLambdas,
-                onPrepareReply = onPrepareReply,
-                onRefresh = onRefreshThreadView,
-                onFindPrevious = onFindPrevious,
-            )
-        }
+    ReturnableScaffold(
+        topBarText = stringResource(id = R.string.thread),
+        onGoBack = onGoBack,
+    ) {
+        ThreadedPosts(
+            thread = thread,
+            isRefreshing = isRefreshing,
+            postCardLambdas = postCardLambdas,
+            onPrepareReply = onPrepareReply,
+            onRefresh = onRefreshThreadView,
+            onFindPrevious = onFindPrevious,
+        )
+
+        if (thread.current == null) NoPostsHint(feed = null, isRefreshing = isRefreshing)
     }
-    if (thread.current == null) NoPostsHint()
 }
 
 @Composable
@@ -86,7 +86,7 @@ private fun ThreadedPosts(
                     key = { _, item -> item.entity.id }) { index, post ->
                     if (index == 0) {
                         if (post.replyToPubkey != null) {
-                            ClickToLoadMore(onClick = onRefresh)
+                            ClickToLoadMoreCard(onClick = onRefresh)
                         } else if (post.entity.replyToId != null) {
                             onFindPrevious()
                             PostNotFound()
@@ -101,12 +101,12 @@ private fun ThreadedPosts(
                 }
                 item {
                     if (thread.previous.isEmpty() && it.replyToPubkey != null) {
-                        ClickToLoadMore(onClick = onRefresh)
+                        ClickToLoadMoreCard(onClick = onRefresh)
                     } else if (thread.previous.isEmpty() && it.entity.replyToId != null) {
                         onFindPrevious()
                         PostNotFound()
                     }
-                    val focusColor = colors.primaryVariant
+                    val focusColor = MaterialTheme.colorScheme.onPrimaryContainer
                     PostCard(
                         post = it,
                         postCardLambdas = postCardLambdas,
@@ -122,9 +122,9 @@ private fun ThreadedPosts(
                         isCurrent = true,
                         threadPosition = thread.getCurrentThreadPosition(),
                     )
-                    Divider()
+                    HorizontalDivider()
                     Spacer(modifier = Modifier.height(spacing.tiny))
-                    Divider()
+                    HorizontalDivider()
                 }
                 items(items = thread.replies, key = { it.entity.id }) { post ->
                     PostCard(

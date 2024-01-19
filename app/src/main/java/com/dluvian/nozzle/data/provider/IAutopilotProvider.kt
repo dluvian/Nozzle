@@ -6,5 +6,5 @@ import com.dluvian.nozzle.model.feedFilter.AuthorFilter
 import com.dluvian.nozzle.model.feedFilter.Friends
 
 interface IAutopilotProvider {
-    suspend fun getAutopilotRelays(authorFilter: AuthorFilter = Friends): Map<Relay, Set<Pubkey>>
+    suspend fun getAutopilotRelays(authorFilter: AuthorFilter = Friends): Map<Relay, Set<Pubkey>?>
 }

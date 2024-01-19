@@ -28,6 +28,7 @@
     <string name="copied_profile_id">Copied profile ID</string>
     <string name="copied_public_key">Copied public key</string>
     <string name="copied_private_key">Copied private key</string>
+    <string name="copy_private_key">Copy private key</string>
     <string name="copied_note_id">Copied note ID</string>
     <string name="copied_content">Copied content</string>
     <string name="copied_lightning_address">Copied lightning address</string>
@@ -125,6 +126,20 @@
     <string name="autopilot">Autopilot</string>
     <string name="my_read_relays">My read relays</string>
     <string name="apply_and_close">Apply and close</string>
+    <string name="create_note">create_note</string>
+    <string name="remove_like">Remove like</string>
+    <string name="turn_visibility_on">Turn visibility on</string>
+    <string name="turn_visibility_off">Turn visibility off</string>
+    <string name="save_profile">Save profile</string>
+    <string name="copy_public_key">Copy public key</string>
+    <string name="save_relay_list">Save relay list</string>
+    <string name="delete_relay">Delete relay</string>
+    <string name="show_relays">Show relays</string>
+    <string name="show_options">Show options</string>
+    <string name="selected_account">Selected account</string>
+    <string name="copy_profile_id">Copy profile ID</string>
+    <string name="copy_lightning_address">Copy lightning address</string>
+
     <plurals name="other_relays">
         <item quantity="one">other</item>
         <item quantity="other">others</item>

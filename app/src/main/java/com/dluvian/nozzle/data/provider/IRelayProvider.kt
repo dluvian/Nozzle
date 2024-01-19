@@ -6,7 +6,7 @@ import com.dluvian.nozzle.model.Relay
 
 
 interface IRelayProvider {
-    fun getReadRelays(): List<Relay>
+    fun getReadRelays(limit: Boolean): List<Relay>
     fun getWriteRelays(): List<Relay>
     fun getNip65Relays(): List<Nip65Relay>
     suspend fun getReadRelaysOfPubkey(pubkey: String): List<Relay>

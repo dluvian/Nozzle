@@ -12,6 +12,7 @@ import com.dluvian.nozzle.data.room.entity.PostEntity
 import com.dluvian.nozzle.data.subscriber.INozzleSubscriber
 import com.dluvian.nozzle.model.ListAndNumberFlow
 import com.dluvian.nozzle.model.PostWithMeta
+import com.dluvian.nozzle.model.feedFilter.Autopilot
 import com.dluvian.nozzle.model.feedFilter.FeedFilter
 import com.dluvian.nozzle.model.feedFilter.SingularPerson
 import kotlinx.coroutines.delay
@@ -44,7 +45,9 @@ class FeedProvider(
 
         delay(waitForSubscription)
 
-        val relays = if (feedFilter.authorFilter is SingularPerson) null else pubkeysByRelay.keys
+        val relaysAreIrrelevant = feedFilter.relayFilter is Autopilot ||
+                feedFilter.authorFilter is SingularPerson
+        val relays = if (relaysAreIrrelevant) null else pubkeysByRelay.keys
         val authorPubkeys = feedFilterResolver.getPubkeys(authorFilter = feedFilter.authorFilter)
 
         val posts = postDao.getMainFeedBasePosts(

@@ -1,9 +1,10 @@
 package com.dluvian.nozzle.ui.app.views.profileList
 
-import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.runtime.Composable
@@ -16,12 +17,12 @@ import com.dluvian.nozzle.R
 import com.dluvian.nozzle.data.MAX_LIST_LENGTH
 import com.dluvian.nozzle.model.Pubkey
 import com.dluvian.nozzle.model.SimpleProfile
-import com.dluvian.nozzle.ui.components.FollowButton
-import com.dluvian.nozzle.ui.components.ReturnableTopBar
-import com.dluvian.nozzle.ui.components.TopBarCircleProgressIndicator
+import com.dluvian.nozzle.ui.components.buttons.FollowButton
 import com.dluvian.nozzle.ui.components.hint.EmptyListHint
-import com.dluvian.nozzle.ui.components.itemRow.ItemRow
-import com.dluvian.nozzle.ui.components.itemRow.PictureAndName
+import com.dluvian.nozzle.ui.components.indicators.TopBarCircleProgressIndicator
+import com.dluvian.nozzle.ui.components.rows.ItemRow
+import com.dluvian.nozzle.ui.components.rows.PictureAndName
+import com.dluvian.nozzle.ui.components.scaffolds.ReturnableScaffold
 import com.dluvian.nozzle.ui.theme.spacing
 
 @Composable
@@ -37,26 +38,22 @@ fun ProfileListScreen(
     onNavigateToProfile: (Pubkey) -> Unit,
     onGoBack: () -> Unit
 ) {
-    val followerListStr = stringResource(id = R.string.following)
-    val followedByStr = stringResource(id = R.string.followers)
-    val title = remember(type) {
-        when (type) {
-            ProfileListType.FOLLOWER_LIST -> followerListStr
-            ProfileListType.FOLLOWED_BY_LIST -> followedByStr
+
+    ReturnableScaffold(
+        topBarText = getTitle(type = type),
+        onGoBack = onGoBack,
+        actions = {
+            if (isRefreshing) {
+                TopBarCircleProgressIndicator()
+                Spacer(modifier = Modifier.width(spacing.screenEdge))
+            }
         }
-    }
+    ) {
+        val subscribeToUnknowns = remember(profiles.size) { mutableStateOf(false) }
+        LaunchedEffect(key1 = subscribeToUnknowns) {
+            if (subscribeToUnknowns.value) onSubscribeToUnknowns(pubkey)
+        }
 
-    val subscribeToUnknowns = remember(profiles.size) { mutableStateOf(false) }
-    LaunchedEffect(key1 = subscribeToUnknowns) {
-        if (subscribeToUnknowns.value) onSubscribeToUnknowns(pubkey)
-    }
-
-    Column {
-        ReturnableTopBar(
-            text = title,
-            onGoBack = onGoBack,
-            trailingIcon = { if (isRefreshing) TopBarCircleProgressIndicator() }
-        )
         LazyColumn(modifier = Modifier.fillMaxSize()) {
             itemsIndexed(profiles) { i, profile ->
                 if (profile.name.isEmpty()) subscribeToUnknowns.value = true
@@ -69,8 +66,20 @@ fun ProfileListScreen(
                 if (i == profiles.size - 3 && profiles.size >= MAX_LIST_LENGTH) onLoadMore()
             }
         }
+        if (profiles.isEmpty()) EmptyListHint()
     }
-    if (profiles.isEmpty()) EmptyListHint()
+}
+
+@Composable
+private fun getTitle(type: ProfileListType): String {
+    val followerListStr = stringResource(id = R.string.following)
+    val followedByStr = stringResource(id = R.string.followers)
+    return remember(type) {
+        when (type) {
+            ProfileListType.FOLLOWER_LIST -> followerListStr
+            ProfileListType.FOLLOWED_BY_LIST -> followedByStr
+        }
+    }
 }
 
 @Composable

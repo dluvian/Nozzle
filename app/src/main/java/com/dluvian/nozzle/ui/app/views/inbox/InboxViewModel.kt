@@ -52,7 +52,7 @@ class InboxViewModel(
     val onLoadMore: () -> Unit = { paginator.loadMore() }
 
     private fun updateScreen(useInitialValue: Boolean) {
-        _uiState.update { it.copy(relays = relayProvider.getReadRelays()) }
+        _uiState.update { it.copy(relays = relayProvider.getReadRelays(limit = true)) }
         paginator.refresh(waitForSubscription = true, useInitialValue = useInitialValue)
     }
 

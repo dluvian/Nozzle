@@ -3,12 +3,13 @@ package com.dluvian.nozzle.ui.app.views.keys
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.material.Text
-import androidx.compose.material.TextField
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -22,9 +23,9 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.input.VisualTransformation
 import com.dluvian.nozzle.R
 import com.dluvian.nozzle.data.utils.copyAndToast
-import com.dluvian.nozzle.ui.components.CopyIcon
-import com.dluvian.nozzle.ui.components.ReturnableTopBar
-import com.dluvian.nozzle.ui.components.VisibilityIcon
+import com.dluvian.nozzle.ui.components.iconButtons.CopyIconButton
+import com.dluvian.nozzle.ui.components.iconButtons.toggle.VisibilityToggleIconButton
+import com.dluvian.nozzle.ui.components.scaffolds.ReturnableScaffold
 import com.dluvian.nozzle.ui.theme.spacing
 
 @Composable
@@ -32,12 +33,15 @@ fun KeysScreen(
     uiState: KeysViewModelState,
     onGoBack: () -> Unit,
 ) {
-    Column {
-        ReturnableTopBar(
-            text = stringResource(id = R.string.keys),
-            onGoBack = onGoBack
-        )
-        Column(modifier = Modifier.padding(spacing.screenEdge)) {
+    ReturnableScaffold(
+        topBarText = stringResource(id = R.string.keys),
+        onGoBack = onGoBack,
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(spacing.screenEdge)
+        ) {
             Npub(npub = uiState.npub)
             Spacer(modifier = Modifier.height(spacing.xxl))
             Nsec(nsec = uiState.nsec)
@@ -61,14 +65,17 @@ private fun Npub(npub: String) {
         enabled = false,
         onValueChange = { /* Always disabled*/ },
         trailingIcon = {
-            CopyIcon(onCopy = {
-                copyAndToast(
-                    text = npub,
-                    toast = context.getString(R.string.copied_public_key),
-                    context = context,
-                    clip = clip
-                )
-            })
+            CopyIconButton(
+                onCopy = {
+                    copyAndToast(
+                        text = npub,
+                        toast = context.getString(R.string.copied_public_key),
+                        context = context,
+                        clip = clip
+                    )
+                },
+                description = stringResource(id = R.string.copy_public_key)
+            )
         }
     )
 }
@@ -102,18 +109,21 @@ private fun NsecTrailingIcons(nsec: String, isVisible: Boolean, onToggleVisibili
     val clip = LocalClipboardManager.current
     val context = LocalContext.current
     Row {
-        VisibilityIcon(
+        VisibilityToggleIconButton(
             isVisible = isVisible,
-            onToggle = onToggleVisibility
+            onToggleVisibility = onToggleVisibility
         )
         Spacer(modifier = Modifier.width(spacing.medium))
-        CopyIcon(onCopy = {
-            copyAndToast(
-                text = nsec,
-                toast = context.getString(R.string.copied_private_key),
-                context = context,
-                clip = clip
-            )
-        })
+        CopyIconButton(
+            onCopy = {
+                copyAndToast(
+                    text = nsec,
+                    toast = context.getString(R.string.copied_private_key),
+                    context = context,
+                    clip = clip
+                )
+            },
+            description = stringResource(id = R.string.copy_private_key)
+        )
     }
 }

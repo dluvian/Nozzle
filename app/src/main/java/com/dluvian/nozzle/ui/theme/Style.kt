@@ -1,6 +1,6 @@
 package com.dluvian.nozzle.ui.theme
 
-import androidx.compose.material.MaterialTheme
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -14,8 +14,8 @@ val BoldStyle = SpanStyle(fontWeight = FontWeight.Bold)
 
 val HintGrayStyle: SpanStyle
     @Composable
-    get() = SpanStyle(color = MaterialTheme.colors.hintGray)
+    get() = MaterialTheme.typography.bodyMedium.copy(color = HintGray).toSpanStyle()
 
 val BoldHintGrayStyle: SpanStyle
     @Composable
-    get() = SpanStyle(fontWeight = FontWeight.Bold, color = MaterialTheme.colors.hintGray)
+    get() = HintGrayStyle.copy(fontWeight = FontWeight.Bold)

@@ -9,7 +9,6 @@ import com.dluvian.nozzle.data.room.dao.EventRelayDao
 import com.dluvian.nozzle.data.room.dao.Nip65Dao
 import com.dluvian.nozzle.data.subscriber.INozzleSubscriber
 import com.dluvian.nozzle.data.utils.addOrCreate
-import com.dluvian.nozzle.data.utils.getMaxRelays
 import com.dluvian.nozzle.model.Pubkey
 import com.dluvian.nozzle.model.Relay
 import com.dluvian.nozzle.model.feedFilter.AuthorFilter
@@ -31,14 +30,13 @@ class AutopilotProvider(
     // java.net.ProtocolException: Expected HTTP 101 response but was '502 Bad Gateway'
     // javax.net.ssl.SSLPeerUnverifiedException: Hostname relay.nostr.vision not verified:
 
-    override suspend fun getAutopilotRelays(authorFilter: AuthorFilter): Map<Relay, Set<Pubkey>> {
+    override suspend fun getAutopilotRelays(authorFilter: AuthorFilter): Map<Relay, Set<Pubkey>?> {
         val pubkeys = when (authorFilter) {
             is FriendCircle -> contactListProvider.listFriendCirclePubkeysOrDefault()
             is Friends -> contactListProvider.listPersonalContactPubkeysOrDefault().toSet()
             is SingularPerson -> setOf(authorFilter.pubkey)
             is Global -> {
-                Log.e(TAG, "Can't find autopilot relays for GLOBAL")
-                emptySet()
+                return relayProvider.getReadRelays(limit = true).associateWith { null }
             }
         }
         Log.i(TAG, "Get autopilot relays of ${pubkeys.size} pubkeys")
@@ -143,7 +141,7 @@ class AutopilotProvider(
     ): MutableList<Pair<Relay, Set<String>>> {
         if (pubkeys.isEmpty()) return mutableListOf()
 
-        val readRelays = getMaxRelays(from = relayProvider.getReadRelays())
+        val readRelays = relayProvider.getReadRelays(limit = true)
         val chunkSize = pubkeys.size / readRelays.size + 1
         val chunkedPubkeys = pubkeys.shuffled().chunked(chunkSize) { it.toSet() }
 
