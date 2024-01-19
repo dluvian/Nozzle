@@ -40,29 +40,19 @@ class FeedViewModel(
             _uiState.update { it.copy(isReplies = !it.isReplies, isPosts = true) }
         },
         onToggleFriends = {
-            _uiState.update {
-                it.copy(isFriends = true, isFriendCircle = false, isGlobal = false)
-            }
+            _uiState.update { it.copy(isFriends = true, isFriendCircle = false, isGlobal = false) }
         },
         onToggleFriendCircle = {
-            _uiState.update {
-                it.copy(isFriends = false, isFriendCircle = true, isGlobal = false)
-            }
+            _uiState.update { it.copy(isFriends = false, isFriendCircle = true, isGlobal = false) }
         },
         onToggleGlobal = {
-            _uiState.update {
-                it.copy(isFriends = false, isFriendCircle = false, isGlobal = true)
-            }
+            _uiState.update { it.copy(isFriends = false, isFriendCircle = false, isGlobal = true) }
         },
         onToggleAutopilot = {
-            _uiState.update {
-                it.copy(isAutopilot = true, isReadRelays = false)
-            }
+            _uiState.update { it.copy(isAutopilot = true, isReadRelays = false) }
         },
         onToggleReadRelays = {
-            _uiState.update {
-                it.copy(isAutopilot = false, isReadRelays = true)
-            }
+            _uiState.update { it.copy(isAutopilot = false, isReadRelays = true) }
         },
     )
 

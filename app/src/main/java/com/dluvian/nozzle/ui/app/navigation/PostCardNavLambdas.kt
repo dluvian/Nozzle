@@ -6,4 +6,5 @@ data class PostCardNavLambdas(
     val onNavigateToReply: () -> Unit,
     val onNavigateToQuote: (String) -> Unit,
     val onNavigateToId: (String) -> Unit,
+    val onNavigateToPost: () -> Unit,
 )

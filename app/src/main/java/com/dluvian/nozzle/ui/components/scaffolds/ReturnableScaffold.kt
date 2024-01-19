@@ -14,6 +14,7 @@ import com.dluvian.nozzle.ui.components.bars.ReturnableTopBar
 fun ReturnableScaffold(
     topBarText: String,
     onGoBack: () -> Unit,
+    fab: @Composable () -> Unit = {},
     actions: @Composable RowScope.() -> Unit = {},
     content: @Composable BoxScope.() -> Unit,
 ) {
@@ -24,7 +25,8 @@ fun ReturnableScaffold(
                 onGoBack = onGoBack,
                 actions = actions
             )
-        }
+        },
+        floatingActionButton = fab
     ) {
         Box(modifier = Modifier
             .fillMaxSize()

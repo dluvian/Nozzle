@@ -42,6 +42,7 @@ import com.dluvian.nozzle.ui.components.buttons.EditProfileButton
 import com.dluvian.nozzle.ui.components.buttons.FollowButton
 import com.dluvian.nozzle.ui.components.buttons.ShowNewPostsButton
 import com.dluvian.nozzle.ui.components.dialog.RelaysDialog
+import com.dluvian.nozzle.ui.components.fabs.CreateNoteFab
 import com.dluvian.nozzle.ui.components.hint.NoPostsHint
 import com.dluvian.nozzle.ui.components.media.ProfilePicture
 import com.dluvian.nozzle.ui.components.postCard.PostCardList
@@ -80,8 +81,12 @@ fun ProfileScreen(
                 onNavToEditProfile = onNavigateToEditProfile,
                 onNavigateToId = postCardLambdas.navLambdas.onNavigateToId,
             )
-        }
-    ) {
+        },
+        floatingActionButton = {
+            CreateNoteFab(onCreateNote = postCardLambdas.navLambdas.onNavigateToPost)
+        },
+
+        ) {
         val lazyListState = rememberLazyListState()
         ShowNewPostsButton(
             numOfNewPosts = numOfNewPosts,

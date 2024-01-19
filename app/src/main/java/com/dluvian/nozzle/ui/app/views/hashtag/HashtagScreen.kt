@@ -6,6 +6,7 @@ import androidx.compose.runtime.remember
 import com.dluvian.nozzle.model.PostWithMeta
 import com.dluvian.nozzle.ui.app.navigation.PostCardLambdas
 import com.dluvian.nozzle.ui.components.buttons.ShowNewPostsButton
+import com.dluvian.nozzle.ui.components.fabs.CreateNoteFab
 import com.dluvian.nozzle.ui.components.hint.NoPostsHint
 import com.dluvian.nozzle.ui.components.postCard.PostCardList
 import com.dluvian.nozzle.ui.components.scaffolds.ReturnableScaffold
@@ -25,6 +26,7 @@ fun HashtagScreen(
     ReturnableScaffold(
         topBarText = remember(uiState.hashtag) { "#${uiState.hashtag}" },
         onGoBack = onGoBack,
+        fab = { CreateNoteFab(onCreateNote = postCardLambdas.navLambdas.onNavigateToPost) },
     ) {
         val lazyListState = rememberLazyListState()
         ShowNewPostsButton(

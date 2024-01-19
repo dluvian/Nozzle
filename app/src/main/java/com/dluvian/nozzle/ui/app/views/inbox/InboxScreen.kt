@@ -16,6 +16,7 @@ import com.dluvian.nozzle.model.RelaySelection
 import com.dluvian.nozzle.ui.app.navigation.PostCardLambdas
 import com.dluvian.nozzle.ui.components.buttons.ShowNewPostsButton
 import com.dluvian.nozzle.ui.components.dropdown.RelayDropdown
+import com.dluvian.nozzle.ui.components.fabs.CreateNoteFab
 import com.dluvian.nozzle.ui.components.hint.NoPostsHint
 import com.dluvian.nozzle.ui.components.iconButtons.RelayIconButton
 import com.dluvian.nozzle.ui.components.postCard.PostCardList
@@ -36,6 +37,7 @@ fun InboxScreen(
     ReturnableScaffold(
         topBarText = stringResource(id = R.string.inbox),
         onGoBack = onGoBack,
+        fab = { CreateNoteFab(onCreateNote = postCardLambdas.navLambdas.onNavigateToPost) },
         actions = {
             RelayIconButton(
                 onClick = { showRelayMenu.value = true },

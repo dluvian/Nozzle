@@ -116,6 +116,7 @@ class NozzleNavActions(
             onNavigateToReply = navigateToReply,
             onNavigateToQuote = navigateToQuote,
             onNavigateToId = navigateToId,
+            onNavigateToPost = navigateToPost,
         )
     }
 }

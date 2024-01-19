@@ -8,6 +8,7 @@ import com.dluvian.nozzle.R
 import com.dluvian.nozzle.model.PostWithMeta
 import com.dluvian.nozzle.ui.app.navigation.PostCardLambdas
 import com.dluvian.nozzle.ui.components.buttons.ShowNewPostsButton
+import com.dluvian.nozzle.ui.components.fabs.CreateNoteFab
 import com.dluvian.nozzle.ui.components.hint.NoPostsHint
 import com.dluvian.nozzle.ui.components.postCard.PostCardList
 import com.dluvian.nozzle.ui.components.scaffolds.ReturnableScaffold
@@ -31,6 +32,7 @@ fun LikesScreen(
     }
     ReturnableScaffold(
         topBarText = fullTitle,
+        fab = { CreateNoteFab(onCreateNote = postCardLambdas.navLambdas.onNavigateToPost) },
         onGoBack = onGoBack,
     ) {
         val lazyListState = rememberLazyListState()
