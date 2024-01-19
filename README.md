@@ -29,15 +29,15 @@ I don't plan to publish this app in the Google Play Store.
       background will be fully green.
     - Grey question mark: You don't follow this profile and neither do any of your friends. Replies
       from these profiles appear at the end of a thread.
-- Small apk size of less than 8MB
+- Small apk size of less than 9MB
 
 ## Screenshots
 
 <p>
 <img src="screenshots/feed.png" width="24%" height="24%" />
-<img src="screenshots/friend_profile.png" width="24%" height="24%" />
-<img src="screenshots/feed_dark.png" width="24%" height="24%" />
-<img src="screenshots/friend_profile_dark.png" width="24%" height="24%" />
+<img src="screenshots/feed_filter.png" width="24%" height="24%" />
+<img src="screenshots/friend_profile.png.png" width="24%" height="24%" />
+<img src="screenshots/feed_dark.png.png" width="24%" height="24%" />
 </p>
 
 ## Contributing
