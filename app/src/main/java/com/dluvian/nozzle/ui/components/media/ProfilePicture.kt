@@ -9,10 +9,6 @@ import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.Help
-import androidx.compose.material.icons.filled.Verified
-import androidx.compose.material.icons.filled.VerifiedUser
 import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -28,6 +24,8 @@ import com.dluvian.nozzle.model.Oneself
 import com.dluvian.nozzle.model.TrustType
 import com.dluvian.nozzle.model.Unknown
 import com.dluvian.nozzle.ui.theme.Orange500
+import com.dluvian.nozzle.ui.theme.UnknownIcon
+import com.dluvian.nozzle.ui.theme.VerifiedUserIcon
 
 @Composable
 fun ProfilePicture(
@@ -82,21 +80,21 @@ private fun PictureIndicator(
         is Friend -> PictureIndicatorBase(
             modifier = modifier,
             color = Color.Green,
-            imageVector = Icons.Filled.Verified,
+            imageVector = VerifiedUserIcon,
             trustScore = null
         )
 
         is FollowedByFriend -> PictureIndicatorBase(
             modifier = modifier,
             color = Orange500,
-            imageVector = Icons.Filled.VerifiedUser,
+            imageVector = VerifiedUserIcon,
             trustScore = trustType.trustScore
         )
 
         is Unknown -> PictureIndicatorBase(
             modifier = modifier,
             color = Color.Gray,
-            imageVector = Icons.AutoMirrored.Filled.Help,
+            imageVector = UnknownIcon,
             trustScore = null
         )
     }

@@ -2,6 +2,7 @@ package com.dluvian.nozzle.ui.theme
 
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.Help
 import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material.icons.automirrored.outlined.Comment
 import androidx.compose.material.icons.filled.Add
@@ -20,6 +21,7 @@ import androidx.compose.material.icons.filled.FormatQuote
 import androidx.compose.material.icons.filled.MoreHoriz
 import androidx.compose.material.icons.filled.Save
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.VerifiedUser
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material.icons.rounded.OfflineBolt
@@ -48,3 +50,5 @@ val CheckIcon = Icons.Default.Check
 val AddIcon = Icons.Default.Add
 val SettingsIcon = Icons.Default.Settings
 val SendIcon = Icons.AutoMirrored.Filled.Send
+val VerifiedUserIcon = Icons.Filled.VerifiedUser
+val UnknownIcon = Icons.AutoMirrored.Filled.Help
