@@ -18,8 +18,8 @@ android {
         applicationId "com.dluvian.nozzle"
         minSdk 23
         targetSdk 34
-        versionCode 45
-        versionName "v0.15.5"
+        versionCode 46
+        versionName "v0.16.0"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -113,5 +113,4 @@ dependencies {
 
     // Material3
     implementation('androidx.compose.material3:material3:1.2.0-beta02')
-
 }
