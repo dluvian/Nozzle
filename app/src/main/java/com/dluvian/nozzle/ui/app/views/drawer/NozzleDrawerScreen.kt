@@ -37,7 +37,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
@@ -360,13 +359,10 @@ private fun DrawerRow(
     imageVector: ImageVector,
     label: String,
     action: () -> Unit,
-    modifier: Modifier = Modifier,
-    iconModifier: Modifier = Modifier,
-    iconTint: Color = MaterialTheme.colorScheme.primary,
     trailingContent: @Composable () -> Unit = {},
 ) {
     Surface(
-        modifier = modifier
+        modifier = Modifier
             .fillMaxWidth()
             .padding(vertical = spacing.tiny),
         shape = MaterialTheme.shapes.small
@@ -384,16 +380,15 @@ private fun DrawerRow(
                         .weight(1f)
                 ) {
                     Icon(
-                        modifier = iconModifier,
                         imageVector = imageVector,
                         contentDescription = null,
-                        tint = iconTint,
                     )
                     Spacer(Modifier.width(spacing.large))
                     Text(
                         text = label,
-                        maxLines = 3,
+                        maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
+                        style = MaterialTheme.typography.titleMedium
                     )
                 }
                 trailingContent()
