@@ -155,7 +155,7 @@ private fun SearchBar(
             .focusRequester(focusRequester),
         isError = isInvalidNip05,
         input = input,
-        placeholder = stringResource(id = R.string.search_profiles),
+        placeholder = stringResource(id = R.string.search_local_database),
         errorLabel = if (isInvalidNip05) stringResource(id = R.string.failed_to_resolve_nip05)
         else null,
         keyboardImeAction = ImeAction.Search,

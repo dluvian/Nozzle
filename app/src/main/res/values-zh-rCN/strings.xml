@@ -52,7 +52,7 @@
     <string name="post_your_thoughts">想法要大声说出来</string>
     <string name="add">添加</string>
     <string name="invalid_nsec">无效nsec</string>
-    <string name="search_profiles">打开NostrID, hash值或者nip05</string>
+    <string name="search_local_database">打开NostrID, hash值或者nip05</string>
     <string name="post_published">帖子已发送</string>
     <string name="time_abbr_now">现在</string>
     <string name="time_abbr_second">秒</string>
