@@ -4,7 +4,7 @@ import android.util.Log
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.compose.ui.text.buildAnnotatedString
-import com.dluvian.nozzle.data.nostr.utils.EncodingUtils.nostrUriToNostrId
+import com.dluvian.nozzle.data.nostr.utils.EncodingUtils.nostrMentionToNostrId
 import com.dluvian.nozzle.data.nostr.utils.EncodingUtils.note1ToHex
 import com.dluvian.nozzle.data.nostr.utils.EncodingUtils.npubToHex
 import com.dluvian.nozzle.data.nostr.utils.EncodingUtils.readNevent
@@ -51,8 +51,8 @@ class AnnotatedContentHandler : IAnnotatedContentHandler {
         if (cached != null) return cached
 
         val urls = UrlUtils.extractUrls(content)
-        val nostrUris = MentionUtils.extractNostrUris(content)
-        val tokens = (urls + nostrUris).toMutableList()
+        val nostrMentions = MentionUtils.extractNostrMentions(content)
+        val tokens = (urls + nostrMentions).toMutableList()
         val hashtags = HashtagUtils.extractHashtags(content).filter { hashtag ->
             tokens.none { isOverlappingHashtag(hashtag.range, it.range) }
         }
@@ -83,7 +83,7 @@ class AnnotatedContentHandler : IAnnotatedContentHandler {
                         text = token.value
                     )
                 } else {
-                    when (val nostrId = nostrUriToNostrId(token.value)) {
+                    when (val nostrId = nostrMentionToNostrId(token.value)) {
                         is NpubNostrId -> {
                             val mentionedName = mentionedNamesByPubkey[nostrId.pubkeyHex]
                             if (mentionedName.isNullOrBlank()) isCacheable = false

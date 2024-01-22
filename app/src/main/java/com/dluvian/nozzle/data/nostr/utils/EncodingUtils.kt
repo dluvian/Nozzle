@@ -19,6 +19,7 @@ object EncodingUtils {
     const val NPROFILE = "nprofile"
 
     const val URI = "nostr:"
+    const val MENTION_CHAR = "@"
 
     fun hexToNpub(pubkey: String): String {
         return Bech32.encode(NPUB, pubkey.decodeHex())
@@ -33,19 +34,17 @@ object EncodingUtils {
         return runCatching { Hex.encode(Bech32.decodeBytes(npub).second) }.getOrNull()
     }
 
-    fun npubUriToHex(npubUri: String): String? {
-        return if (npubUri.startsWith(URI)) npubToHex(npubUri.drop(URI.length))
-        else null
+    fun npubMentionToHex(npubMention: String): String? {
+        return npubToHex(npub = npubMention.removeMentionCharOrNostrUri())
     }
 
-    fun note1ToHex(noteId: String): String? {
-        if (!noteId.startsWith(NOTE + 1)) return null
-        return runCatching { Hex.encode(Bech32.decodeBytes(noteId).second) }.getOrNull()
+    fun note1ToHex(note1: String): String? {
+        if (!note1.startsWith(NOTE + 1)) return null
+        return runCatching { Hex.encode(Bech32.decodeBytes(note1).second) }.getOrNull()
     }
 
-    fun note1UriToHex(note1Uri: String): String? {
-        return if (note1Uri.startsWith(URI)) note1ToHex(note1Uri.drop(URI.length))
-        else null
+    fun note1MentionToHex(note1Mention: String): String? {
+        return note1ToHex(note1 = note1Mention.removeMentionCharOrNostrUri())
     }
 
     fun nsecToHex(nsec: String): String? {
@@ -64,9 +63,8 @@ object EncodingUtils {
         return Nevent.fromTLVEntries(tlvResult.getOrNull().orEmpty())
     }
 
-    fun readNeventUri(neventUri: String): Nevent? {
-        return if (neventUri.startsWith(URI)) readNevent(neventUri.drop(URI.length))
-        else null
+    fun readNeventMention(neventMention: String): Nevent? {
+        return readNevent(nevent = neventMention.removeMentionCharOrNostrUri())
     }
 
     fun readNprofile(nprofile: String): Nprofile? {
@@ -80,9 +78,8 @@ object EncodingUtils {
         return Nprofile.fromTLVEntries(tlvResult.getOrNull().orEmpty())
     }
 
-    fun readNprofileUri(nprofileUri: String): Nprofile? {
-        return if (nprofileUri.startsWith(URI)) readNprofile(nprofileUri.drop(URI.length))
-        else null
+    fun readNprofileMention(nprofileMention: String): Nprofile? {
+        return readNprofile(nprofile = nprofileMention.removeMentionCharOrNostrUri())
     }
 
     fun createNprofileStr(pubkey: String, relays: Collection<String>): String? {
@@ -156,10 +153,13 @@ object EncodingUtils {
         return null
     }
 
-    fun nostrUriToNostrId(nostrUri: String): NostrId? {
-        if (!nostrUri.startsWith(URI)) return null
-        return nostrStrToNostrId(nostrUri.drop(URI.length))
+    fun nostrMentionToNostrId(nostrMention: String): NostrId? {
+        return nostrStrToNostrId(nostrStr = nostrMention.removeMentionCharOrNostrUri())
+    }
+
+    fun String.removeMentionCharOrNostrUri(): String {
+        if (this.startsWith(MENTION_CHAR)) return this.removePrefix(MENTION_CHAR)
+        if (this.startsWith(URI)) return this.removePrefix(URI)
+        return this
     }
 }
-
-
