@@ -1,4 +1,4 @@
-package com.dluvian.nozzle.data.utils
+package com.dluvian.nozzle.data.nostr.utils
 
 import fr.acinq.secp256k1.Secp256k1
 
