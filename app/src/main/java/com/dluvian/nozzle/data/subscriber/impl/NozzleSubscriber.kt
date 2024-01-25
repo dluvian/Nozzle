@@ -487,7 +487,7 @@ class NozzleSubscriber(
         }
     }
 
-    private suspend fun submitFullProfiles(nprofiles: Collection<Nprofile>) {
+    private suspend fun submitFullNprofiles(nprofiles: Collection<Nprofile>) {
         if (nprofiles.isEmpty()) return
         val myReadRelays = relayProvider.getReadRelays(limit = false)
         val writeRelays =
@@ -534,7 +534,7 @@ class NozzleSubscriber(
         val mentionedProfilesOfMentionedPost = notes
             .flatMap { it.annotatedMentionedPosts }
             .flatMap { annotatedContentHandler.extractNprofiles(it.annotatedContent) }
-        submitFullProfiles(nprofiles = mentionedProfilesOfMentionedPost)
+        submitFullNprofiles(nprofiles = mentionedProfilesOfMentionedPost)
 
         val unknownMentionedNoteIds = notes
             .flatMap { it.annotatedMentionedPosts }

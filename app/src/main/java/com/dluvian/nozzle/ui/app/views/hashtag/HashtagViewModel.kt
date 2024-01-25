@@ -1,6 +1,5 @@
 package com.dluvian.nozzle.ui.app.views.hashtag
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
@@ -36,7 +35,6 @@ class HashtagViewModel(
         scope = viewModelScope,
         onSetRefreshing = { bool -> _uiState.update { it.copy(isRefreshing = bool) } },
         onGetPage = { lastCreatedAt, waitForSubscription ->
-            Log.i("LOLOL", _uiState.value.hashtag)
             feedProvider.getFeedFlow(
                 feedFilter = getFeedFilter(hashtag = _uiState.value.hashtag),
                 limit = DB_BATCH_SIZE,

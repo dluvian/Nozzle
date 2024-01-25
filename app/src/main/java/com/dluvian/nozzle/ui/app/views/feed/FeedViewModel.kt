@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.dluvian.nozzle.data.DB_BATCH_SIZE
 import com.dluvian.nozzle.data.paginator.IPaginator
 import com.dluvian.nozzle.data.paginator.Paginator
+import com.dluvian.nozzle.data.preferences.IFeedSettingsPreferences
 import com.dluvian.nozzle.data.provider.IPubkeyProvider
 import com.dluvian.nozzle.data.provider.feed.IFeedProvider
 import com.dluvian.nozzle.data.utils.getCurrentTimeInSeconds
@@ -28,8 +29,12 @@ import kotlinx.coroutines.launch
 class FeedViewModel(
     private val pubkeyProvider: IPubkeyProvider,
     private val feedProvider: IFeedProvider,
+    private val feedSettingsPreferences: IFeedSettingsPreferences,
 ) : ViewModel() {
-    private val _uiState = MutableStateFlow(FeedViewModelState())
+
+    private val _uiState = MutableStateFlow(
+        FeedViewModelState.from(feedSettingsPreferences.getFeedSettings())
+    )
     val uiState = _uiState.stateIn(viewModelScope, SharingStarted.Eagerly, _uiState.value)
 
     val filterLambdas = FeedFilterLambdas(
@@ -82,12 +87,22 @@ class FeedViewModel(
         }
         .stateIn(viewModelScope, SharingStarted.Eagerly, "")
 
-    val onRefresh: () -> Unit = { refresh() }
+    val onRefresh: () -> Unit = { refresh(uiState = uiState.value) }
 
     val onLoadMore: () -> Unit = { paginator.loadMore() }
 
-    private fun refresh() {
+    private fun refresh(uiState: FeedViewModelState) {
         _uiState.update { it.copy(isRefreshing = true) }
+        val newFilter = FeedFilter(
+            isPosts = uiState.isPosts,
+            isReplies = uiState.isReplies,
+            hashtag = null,
+            authorFilter = if (uiState.isFriendCircle) FriendCircle
+            else if (uiState.isGlobal) Global
+            else Friends,
+            relayFilter = if (uiState.isReadRelays) ReadRelays else Autopilot
+        )
+        feedSettingsPreferences.setFeedSettings(newFilter)
         viewModelScope.launch(Dispatchers.IO) {
             paginator.refresh(waitForSubscription = true, useInitialValue = true)
         }
@@ -109,12 +124,14 @@ class FeedViewModel(
         fun provideFactory(
             pubkeyProvider: IPubkeyProvider,
             feedProvider: IFeedProvider,
+            feedSettingsPreferences: IFeedSettingsPreferences
         ): ViewModelProvider.Factory = object : ViewModelProvider.Factory {
             @Suppress("UNCHECKED_CAST")
             override fun <T : ViewModel> create(modelClass: Class<T>): T {
                 return FeedViewModel(
                     pubkeyProvider = pubkeyProvider,
                     feedProvider = feedProvider,
+                    feedSettingsPreferences = feedSettingsPreferences
                 ) as T
             }
         }
