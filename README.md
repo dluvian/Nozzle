@@ -31,6 +31,20 @@ I don't plan to publish this app in the Google Play Store.
       from these profiles appear at the end of a thread.
 - Small apk size of less than 9MB
 
+## Supported (and partially supported) nips
+
+- [NIP-01: Basic protocol flow description](https://github.com/nostr-protocol/nips/blob/master/01.md)
+- [NIP-02: Follow List](https://github.com/nostr-protocol/nips/blob/master/02.md)
+- [NIP-09: Event Deletion](https://github.com/nostr-protocol/nips/blob/master/09.md)
+- [NIP-10: Conventions for clients' use of e and p tags in text events](https://github.com/nostr-protocol/nips/blob/master/10.md)
+- [NIP-18: Reposts](https://github.com/nostr-protocol/nips/blob/master/18.md)
+- [NIP-19: bech32-encoded entities](https://github.com/nostr-protocol/nips/blob/master/19.md)
+- [NIP-21: nostr: URI scheme](https://github.com/nostr-protocol/nips/blob/master/21.md)
+- [NIP-25: Reactions](https://github.com/nostr-protocol/nips/blob/master/25.md)
+- [NIP-27: Text Note References](https://github.com/nostr-protocol/nips/blob/master/27.md)
+- [NIP-42: Authentication of clients to relays](https://github.com/nostr-protocol/nips/blob/master/42.md)
+- [NIP-65: Relay List Metadata](https://github.com/nostr-protocol/nips/blob/master/65.md)
+
 ## Screenshots
 
 <p>
