@@ -487,6 +487,28 @@ class NozzleSubscriber(
         }
     }
 
+    private suspend fun submitFullProfiles(nprofiles: Collection<Nprofile>) {
+        if (nprofiles.isEmpty()) return
+        val myReadRelays = relayProvider.getReadRelays(limit = false)
+        val writeRelays =
+            relayProvider.getWriteRelaysByPubkeys(pubkeys = nprofiles.map { it.pubkey })
+        nprofiles.forEach { nprofile ->
+            subQueue.submitFullProfile(
+                pubkey = nprofile.pubkey,
+                relays = getMaxRelaysAndAddIfTooSmall(
+                    from = (nprofile.relays + writeRelays[nprofile.pubkey].orEmpty()).distinct(),
+                    prefer = myReadRelays
+                )
+            )
+        }
+        writeRelays.forEach { (pubkey, relays) ->
+            subQueue.submitFullProfile(
+                pubkey = pubkey,
+                relays = getMaxRelaysAndAddIfTooSmall(from = relays, prefer = myReadRelays)
+            )
+        }
+    }
+
     private suspend fun submitSimpleUnknowns(notes: Collection<PostWithMeta>) {
         if (notes.isEmpty()) return
 
@@ -508,6 +530,11 @@ class NozzleSubscriber(
             .flatten()
             .toSet()
         submitFullProfiles(pubkeys = allPubkeys)
+
+        val mentionedProfilesOfMentionedPost = notes
+            .flatMap { it.annotatedMentionedPosts }
+            .flatMap { annotatedContentHandler.extractNprofiles(it.annotatedContent) }
+        submitFullProfiles(nprofiles = mentionedProfilesOfMentionedPost)
 
         val unknownMentionedNoteIds = notes
             .flatMap { it.annotatedMentionedPosts }
