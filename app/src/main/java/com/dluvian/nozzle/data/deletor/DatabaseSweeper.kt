@@ -23,24 +23,30 @@ class DatabaseSweeper(
         }
         Log.i(TAG, "Sweep database")
 
-        when (Random.nextInt(until = 5)) {
+        when (Random.nextInt(until = 6)) {
             0 -> deletePosts()
-            1 -> deleteProfiles()
-            2 -> deleteContactLists()
-            3 -> deleteNip65()
-            4 -> deleteReactions()
+            1 -> deleteOwnPosts()
+            2 -> deleteProfiles()
+            3 -> deleteContactLists()
+            4 -> deleteNip65()
+            5 -> deleteReactions()
             else -> Log.w(TAG, "Delete case not covered")
         }
         isSweeping.set(false)
     }
 
     private suspend fun deletePosts() {
-        val deletePostCount = database.postDao().deleteAllExceptNewest(
+        val deletePostCount = database.postDao().deleteExceptNewestAndOwn(
             amountToKeep = keepPosts,
             exclude = dbSweepExcludingCache.getPostIds().take(MAX_SQL_PARAMS),
         )
         dbSweepExcludingCache.clearPostIds()
         Log.i(TAG, "Deleted $deletePostCount posts")
+    }
+
+    private suspend fun deleteOwnPosts() {
+        val deletePostCount = database.postDao().deleteOwnPosts(amountToKeep = keepPosts)
+        Log.i(TAG, "Deleted $deletePostCount of your own posts")
     }
 
     private suspend fun deleteProfiles() {

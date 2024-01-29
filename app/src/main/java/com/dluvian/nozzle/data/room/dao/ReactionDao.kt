@@ -37,7 +37,11 @@ interface ReactionDao {
     )
     fun getLikeCountFlow(): Flow<Int>
 
-    @Query("DELETE FROM reaction WHERE pubkey NOT IN (SELECT pubkey FROM account)")
+    @Query(
+        "DELETE FROM reaction " +
+                "WHERE pubkey NOT IN (SELECT pubkey FROM account) " +
+                "OR eventId NOT IN (SELECT id FROM post)"
+    )
     suspend fun deleteOrphaned(): Int
 
     @Query("DELETE FROM reaction WHERE eventId = :eventId")
