@@ -54,7 +54,7 @@ class AnnotatedContentHandler : IAnnotatedContentHandler {
         val nostrMentions = MentionUtils.extractNostrMentions(content)
         val tokens = (urls + nostrMentions).toMutableList()
         val hashtags = HashtagUtils.extractHashtags(content).filter { hashtag ->
-            tokens.none { isOverlappingHashtag(hashtag.range, it.range) }
+            tokens.none { isOverlapping(hashtag.range, it.range) }
         }
         tokens.addAll(hashtags)
 
@@ -184,8 +184,9 @@ class AnnotatedContentHandler : IAnnotatedContentHandler {
         return nprofiles + npubs
     }
 
-    private fun isOverlappingHashtag(hashtagRange: IntRange, otherRange: IntRange): Boolean {
-        return hashtagRange.first < otherRange.first
-                && hashtagRange.last > otherRange.first
+    private fun isOverlapping(hashtagRange: IntRange, otherRange: IntRange): Boolean {
+        val isNotOverlapping = hashtagRange.last < otherRange.first
+                || hashtagRange.first > otherRange.last
+        return !isNotOverlapping
     }
 }
