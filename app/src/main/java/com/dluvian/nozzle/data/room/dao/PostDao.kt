@@ -482,17 +482,20 @@ interface PostDao {
         "DELETE FROM post " +
                 "WHERE id NOT IN (:exclude) " +
                 "AND pubkey NOT IN (SELECT pubkey FROM account) " +
-                "AND id NOT IN (" +
-                // Exclude newest without the ones already excluded
-                "SELECT id FROM post WHERE id NOT IN (:exclude) " +
-                "AND pubkey NOT IN (SELECT pubkey FROM account) " +
-                "ORDER BY createdAt DESC LIMIT :amountToKeep" +
-                ")"
+                "AND id NOT IN (SELECT replyToId WHERE pubkey IN (SELECT pubkey FROM account) AND replyToId NOT NUll) " +
+                "AND id NOT IN (SELECT id FROM post ORDER BY createdAt DESC LIMIT :amountToKeep)"
     )
-    suspend fun deleteAllExceptNewest(
+    suspend fun deleteExceptNewestAndOwn(
         amountToKeep: Int,
         exclude: Collection<String>,
     ): Int
+
+    @Query(
+        "DELETE FROM post WHERE id IN (" +
+                "SELECT id FROM post WHERE pubkey IN (SELECT pubkey FROM account) " +
+                "ORDER BY createdAt DESC LIMIT :amountToKeep)"
+    )
+    suspend fun deleteOwnPosts(amountToKeep: Int): Int
 
     @Query(
         "SELECT pubkey " +

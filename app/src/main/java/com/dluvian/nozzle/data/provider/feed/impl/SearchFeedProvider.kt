@@ -6,6 +6,7 @@ import com.dluvian.nozzle.data.provider.feed.ISearchFeedProvider
 import com.dluvian.nozzle.data.room.dao.PostDao
 import com.dluvian.nozzle.model.FeedInfo
 import com.dluvian.nozzle.model.PostWithMeta
+import com.dluvian.nozzle.model.feedFilter.ReadRelays
 import kotlinx.coroutines.flow.Flow
 
 class SearchFeedProvider(
@@ -24,6 +25,9 @@ class SearchFeedProvider(
             mentionedPostIds = emptyList()
         )
 
-        return postWithMetaProvider.getPostsWithMetaFlow(feedInfo = feedInfo)
+        return postWithMetaProvider.getPostsWithMetaFlow(
+            feedInfo = feedInfo,
+            relayFilter = ReadRelays
+        )
     }
 }

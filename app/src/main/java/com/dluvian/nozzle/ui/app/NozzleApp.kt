@@ -93,6 +93,7 @@ fun NozzleApp(appContainer: AppContainer) {
                     factory = FeedViewModel.provideFactory(
                         pubkeyProvider = appContainer.keyManager,
                         feedProvider = appContainer.feedProvider,
+                        feedSettingsPreferences = appContainer.feedSettingsPreferences
                     )
                 ),
                 inboxViewModel = viewModel(

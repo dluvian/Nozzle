@@ -8,6 +8,7 @@ import com.dluvian.nozzle.data.manager.IKeyManager
 import com.dluvian.nozzle.data.preferences.IDarkModePreferences
 import com.dluvian.nozzle.data.provider.IAccountProvider
 import com.dluvian.nozzle.data.subscriber.INozzleSubscriber
+import com.dluvian.nozzle.model.feedFilter.ReadRelays
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.mapNotNull
@@ -67,7 +68,7 @@ class NozzleDrawerViewModel(
 
     init {
         viewModelScope.launch(context = Dispatchers.IO) {
-            nozzleSubscriber.subscribePersonalProfiles()
+            nozzleSubscriber.subscribePersonalProfiles(relayFilter = ReadRelays)
         }
     }
 

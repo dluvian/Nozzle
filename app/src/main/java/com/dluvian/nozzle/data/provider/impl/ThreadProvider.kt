@@ -13,6 +13,7 @@ import com.dluvian.nozzle.data.utils.firstThenDistinctDebounce
 import com.dluvian.nozzle.model.FeedInfo
 import com.dluvian.nozzle.model.PostThread
 import com.dluvian.nozzle.model.PostWithMeta
+import com.dluvian.nozzle.model.feedFilter.Autopilot
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
@@ -38,7 +39,10 @@ class ThreadProvider(
         val previous = listAndSubPrevious(current = current)
 
         val allPosts = (replies + previous + current)
-        val feedInfo = nozzleSubscriber.subscribeFeedInfo(posts = allPosts)
+        val feedInfo = nozzleSubscriber.subscribeFeedInfo(
+            posts = allPosts,
+            relayFilter = Autopilot
+        )
 
         return getMappedThreadFlow(
             currentId = current.id,
@@ -115,7 +119,10 @@ class ThreadProvider(
         replyIds: List<String>,
         feedInfo: FeedInfo
     ): Flow<PostThread> {
-        return postWithMetaProvider.getPostsWithMetaFlow(feedInfo = feedInfo)
+        return postWithMetaProvider.getPostsWithMetaFlow(
+            feedInfo = feedInfo,
+            relayFilter = Autopilot
+        )
             .firstThenDistinctDebounce(NORMAL_DEBOUNCE)
             .map { unsortedPosts ->
                 val currentPost = unsortedPosts.find { currentId == it.entity.id }

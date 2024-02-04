@@ -1,8 +1,8 @@
 package com.dluvian.nozzle.data.postPreparer
 
 import com.dluvian.nozzle.data.nostr.utils.EncodingUtils
+import com.dluvian.nozzle.data.nostr.utils.EncodingUtils.removeMentionCharOrNostrUri
 import com.dluvian.nozzle.data.nostr.utils.MentionUtils
-import com.dluvian.nozzle.data.nostr.utils.MentionUtils.removeMentionCharAndNostrUri
 import com.dluvian.nozzle.data.provider.IRelayProvider
 import com.dluvian.nozzle.data.provider.ISimpleProfileProvider
 import com.dluvian.nozzle.data.utils.HashtagUtils
@@ -32,7 +32,7 @@ class PostPreparer(
             content = finalContent,
             hashtags = HashtagUtils.extractHashtagValues(finalContent).distinct(),
             mentions = allMentions
-                .mapNotNull { EncodingUtils.profileIdToNostrId(it.value.removeMentionCharAndNostrUri()) }
+                .mapNotNull { EncodingUtils.profileIdToNostrId(it.value.removeMentionCharOrNostrUri()) }
                 .map { it.hex }
                 .toList()
                 .distinct()
@@ -44,7 +44,7 @@ class PostPreparer(
     }
 
     private suspend fun getImprovedMention(mention: String): String {
-        val withoutPrefix = mention.removeMentionCharAndNostrUri()
+        val withoutPrefix = mention.removeMentionCharOrNostrUri()
         val nostrId = EncodingUtils.profileIdToNostrId(profileId = withoutPrefix) ?: return mention
 
         val improvedMention = when (nostrId) {

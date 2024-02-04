@@ -14,6 +14,9 @@ import com.dluvian.nozzle.model.ListAndNumberFlow
 import com.dluvian.nozzle.model.PostWithMeta
 import com.dluvian.nozzle.model.feedFilter.Autopilot
 import com.dluvian.nozzle.model.feedFilter.FeedFilter
+import com.dluvian.nozzle.model.feedFilter.MultipleRelays
+import com.dluvian.nozzle.model.feedFilter.ReadRelays
+import com.dluvian.nozzle.model.feedFilter.RelayFilter
 import com.dluvian.nozzle.model.feedFilter.SingularPerson
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
@@ -71,7 +74,11 @@ class FeedProvider(
             limit = limit,
         )
 
-        return getResult(posts = posts, numOfNewPostsFlow = numOfNewPostsFlow)
+        return getResult(
+            posts = posts,
+            numOfNewPostsFlow = numOfNewPostsFlow,
+            relayFilter = feedFilter.relayFilter
+        )
     }
 
     override suspend fun getInboxFeedFlow(
@@ -100,7 +107,11 @@ class FeedProvider(
             limit = limit,
         )
 
-        return getResult(posts = posts, numOfNewPostsFlow = numOfNewPostsFlow)
+        return getResult(
+            posts = posts,
+            numOfNewPostsFlow = numOfNewPostsFlow,
+            relayFilter = MultipleRelays(relays = relays.toList())
+        )
     }
 
     override suspend fun getLikeFeedFlow(
@@ -128,18 +139,26 @@ class FeedProvider(
             limit = limit
         )
 
-        return getResult(posts = posts, numOfNewPostsFlow = numOfNewPostsFlow)
+        return getResult(
+            posts = posts,
+            numOfNewPostsFlow = numOfNewPostsFlow,
+            relayFilter = ReadRelays
+        )
     }
 
     private suspend fun getResult(
         posts: List<PostEntity>,
-        numOfNewPostsFlow: Flow<Int>
+        numOfNewPostsFlow: Flow<Int>,
+        relayFilter: RelayFilter
     ): ListAndNumberFlow<PostWithMeta> {
         if (posts.isEmpty()) return ListAndNumberFlow()
-        val feedInfo = nozzleSubscriber.subscribeFeedInfo(posts = posts)
+        val feedInfo = nozzleSubscriber.subscribeFeedInfo(posts = posts, relayFilter = relayFilter)
 
         return ListAndNumberFlow(
-            listFlow = postWithMetaProvider.getPostsWithMetaFlow(feedInfo = feedInfo),
+            listFlow = postWithMetaProvider.getPostsWithMetaFlow(
+                feedInfo = feedInfo,
+                relayFilter = relayFilter
+            ),
             numFlow = numOfNewPostsFlow
         )
     }

@@ -21,6 +21,7 @@ import com.dluvian.nozzle.model.FeedInfo
 import com.dluvian.nozzle.model.MentionedNamesAndPosts
 import com.dluvian.nozzle.model.MentionedPost
 import com.dluvian.nozzle.model.PostWithMeta
+import com.dluvian.nozzle.model.feedFilter.RelayFilter
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flow
@@ -37,7 +38,10 @@ class PostWithMetaProvider(
     private val contactDao: ContactDao,
     private val profileDao: ProfileDao,
 ) : IPostWithMetaProvider {
-    override suspend fun getPostsWithMetaFlow(feedInfo: FeedInfo): Flow<List<PostWithMeta>> {
+    override suspend fun getPostsWithMetaFlow(
+        feedInfo: FeedInfo,
+        relayFilter: RelayFilter
+    ): Flow<List<PostWithMeta>> {
         if (feedInfo.postIds.isEmpty()) return flowOf(emptyList())
 
         val extendedPostsFlow = postDao
@@ -70,7 +74,7 @@ class PostWithMetaProvider(
             trustScorePerPubkeyFlow = trustScorePerPubkeyFlow,
             mentionedNamesAndPostsFlow = mentionedNamesAndPostsFlow,
         ).onEach { notes ->
-            nozzleSubscriber.subscribeUnknowns(notes = notes)
+            nozzleSubscriber.subscribeUnknowns(notes = notes, relayFilter = relayFilter)
         }
     }
 

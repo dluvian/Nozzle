@@ -1,4 +1,4 @@
-package com.dluvian.nozzle.data.utils
+package com.dluvian.nozzle.data.nostr.utils
 
 import java.security.MessageDigest
 
