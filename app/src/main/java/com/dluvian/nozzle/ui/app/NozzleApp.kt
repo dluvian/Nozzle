@@ -42,6 +42,7 @@ import com.dluvian.nozzle.ui.app.views.profileList.ProfileListViewModel
 import com.dluvian.nozzle.ui.app.views.relayEditor.RelayEditorViewModel
 import com.dluvian.nozzle.ui.app.views.reply.ReplyViewModel
 import com.dluvian.nozzle.ui.app.views.search.SearchViewModel
+import com.dluvian.nozzle.ui.app.views.settings.SettingsViewModel
 import com.dluvian.nozzle.ui.app.views.thread.ThreadViewModel
 import com.dluvian.nozzle.ui.theme.NozzleTheme
 import kotlinx.coroutines.CoroutineScope
@@ -160,6 +161,10 @@ fun NozzleApp(appContainer: AppContainer) {
                     factory = AddAccountViewModel.provideFactory(
                         keyManager = appContainer.keyManager,
                         nozzleSubscriber = appContainer.nozzleSubscriber,
+                    )
+                ),
+                settingsViewModel = viewModel(
+                    factory = SettingsViewModel.provideFactory(
                     )
                 ),
             )

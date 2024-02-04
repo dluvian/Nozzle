@@ -139,6 +139,7 @@
     <string name="selected_account">Selected account</string>
     <string name="copy_profile_id">Copy profile ID</string>
     <string name="copy_lightning_address">Copy lightning address</string>
+    <string name="settings">Settings</string>
 
     <plurals name="other_relays">
         <item quantity="one">other</item>

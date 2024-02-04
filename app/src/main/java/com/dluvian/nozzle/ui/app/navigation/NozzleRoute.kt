@@ -11,6 +11,7 @@ object NozzleRoute {
     const val SEARCH = "search"
     const val RELAY_EDITOR = "relay_editor"
     const val KEYS = "keys"
+    const val SETTINGS = "settings"
     const val THREAD = "thread"
     const val REPLY = "reply"
     const val POST = "post"

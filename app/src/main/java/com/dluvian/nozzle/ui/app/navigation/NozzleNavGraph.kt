@@ -37,6 +37,7 @@ import com.dluvian.nozzle.ui.app.views.profileList.ProfileListRoute
 import com.dluvian.nozzle.ui.app.views.relayEditor.RelayEditorRoute
 import com.dluvian.nozzle.ui.app.views.reply.ReplyRoute
 import com.dluvian.nozzle.ui.app.views.search.SearchRoute
+import com.dluvian.nozzle.ui.app.views.settings.SettingsRoute
 import com.dluvian.nozzle.ui.app.views.thread.ThreadRoute
 import kotlinx.coroutines.launch
 
@@ -162,6 +163,12 @@ fun NozzleNavGraph(
         composable(route = NozzleRoute.KEYS) {
             KeysRoute(
                 keysViewModel = vmContainer.keysViewModel,
+                onGoBack = navActions.popStack,
+            )
+        }
+        composable(route = NozzleRoute.SETTINGS) {
+            SettingsRoute(
+                settingsViewModel = vmContainer.settingsViewModel,
                 onGoBack = navActions.popStack,
             )
         }

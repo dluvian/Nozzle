@@ -18,12 +18,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DarkMode
-import androidx.compose.material.icons.rounded.CellTower
-import androidx.compose.material.icons.rounded.Favorite
-import androidx.compose.material.icons.rounded.Inbox
-import androidx.compose.material.icons.rounded.Key
-import androidx.compose.material.icons.rounded.Newspaper
-import androidx.compose.material.icons.rounded.Search
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -49,6 +43,13 @@ import com.dluvian.nozzle.ui.components.iconButtons.toggle.ExpandToggleIconButto
 import com.dluvian.nozzle.ui.components.media.ProfilePicture
 import com.dluvian.nozzle.ui.theme.AddIcon
 import com.dluvian.nozzle.ui.theme.CheckIcon
+import com.dluvian.nozzle.ui.theme.FeedIcon
+import com.dluvian.nozzle.ui.theme.InboxIcon
+import com.dluvian.nozzle.ui.theme.KeyIcon
+import com.dluvian.nozzle.ui.theme.LikedIcon
+import com.dluvian.nozzle.ui.theme.RelayIcon
+import com.dluvian.nozzle.ui.theme.SearchIcon
+import com.dluvian.nozzle.ui.theme.SettingsIcon
 import com.dluvian.nozzle.ui.theme.sizing
 import com.dluvian.nozzle.ui.theme.spacing
 
@@ -101,12 +102,7 @@ fun NozzleDrawerScreen(
                 modifier = Modifier.padding(spacing.screenEdge),
                 isDarkMode = isDarkMode,
                 onToggleDarkMode = onToggleDarkMode,
-                navigateToFeed = navActions.navigateToFeed,
-                navigateToInbox = navActions.navigateToInbox,
-                navigateToLikes = navActions.navigateToLikes,
-                navigateToSearch = navActions.navigateToSearch,
-                navigateToRelayEditor = navActions.navigateToRelayEditor,
-                navigateToKeys = navActions.navigateToKeys,
+                navActions = navActions,
                 closeDrawer = closeDrawer
             )
         }
@@ -266,61 +262,64 @@ private fun AddAccountRow(onAddAccount: () -> Unit) {
 private fun MainRows(
     isDarkMode: Boolean,
     onToggleDarkMode: () -> Unit,
-    navigateToFeed: () -> Unit,
-    navigateToInbox: () -> Unit,
-    navigateToLikes: () -> Unit,
-    navigateToSearch: () -> Unit,
-    navigateToRelayEditor: () -> Unit,
-    navigateToKeys: () -> Unit,
+    navActions: NozzleNavActions,
     closeDrawer: () -> Unit,
     modifier: Modifier,
 ) {
     Column(modifier = modifier) {
         DrawerRow(
-            imageVector = Icons.Rounded.Newspaper,
+            imageVector = FeedIcon,
             label = stringResource(id = R.string.feed),
             action = {
-                navigateToFeed()
+                navActions.navigateToFeed()
                 closeDrawer()
             }
         )
         DrawerRow(
-            imageVector = Icons.Rounded.Inbox,
+            imageVector = InboxIcon,
             label = stringResource(id = R.string.inbox),
             action = {
-                navigateToInbox()
+                navActions.navigateToInbox()
                 closeDrawer()
             }
         )
         DrawerRow(
-            imageVector = Icons.Rounded.Search,
+            imageVector = SearchIcon,
             label = stringResource(id = R.string.search),
             action = {
-                navigateToSearch()
+                navActions.navigateToSearch()
                 closeDrawer()
             }
         )
         DrawerRow(
-            imageVector = Icons.Rounded.Favorite,
+            imageVector = LikedIcon,
             label = stringResource(id = R.string.likes),
             action = {
-                navigateToLikes()
+                navActions.navigateToLikes()
                 closeDrawer()
             }
         )
         DrawerRow(
-            imageVector = Icons.Rounded.CellTower,
+            imageVector = RelayIcon,
             label = stringResource(id = R.string.relays),
             action = {
-                navigateToRelayEditor()
+                navActions.navigateToRelayEditor()
                 closeDrawer()
             }
         )
         DrawerRow(
-            imageVector = Icons.Rounded.Key,
+            imageVector = KeyIcon,
             label = stringResource(id = R.string.keys),
             action = {
-                navigateToKeys()
+                navActions.navigateToKeys()
+                closeDrawer()
+            }
+        )
+        DrawerRow(
+            imageVector = SettingsIcon,
+            label = stringResource(id = R.string.settings),
+            action = {
+                navActions.navigateToSettings()
                 closeDrawer()
             }
         )

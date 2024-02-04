@@ -24,6 +24,9 @@ import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.VerifiedUser
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
+import androidx.compose.material.icons.rounded.Inbox
+import androidx.compose.material.icons.rounded.Key
+import androidx.compose.material.icons.rounded.Newspaper
 import androidx.compose.material.icons.rounded.OfflineBolt
 import androidx.compose.material.icons.rounded.Search
 
@@ -31,6 +34,8 @@ val WriteIcon = Icons.Default.Edit
 val VisibilityOnIcon = Icons.Default.Visibility
 val VisibilityOffIcon = Icons.Default.VisibilityOff
 val SearchIcon = Icons.Rounded.Search
+val InboxIcon = Icons.Rounded.Inbox
+val FeedIcon = Icons.Rounded.Newspaper
 val SaveIcon = Icons.Default.Save
 val ReturnIcon = Icons.AutoMirrored.Filled.ArrowBack
 val ReplyIcon = Icons.AutoMirrored.Outlined.Comment
@@ -49,6 +54,7 @@ val CloseIcon = Icons.Default.Close
 val CheckIcon = Icons.Default.Check
 val AddIcon = Icons.Default.Add
 val SettingsIcon = Icons.Default.Settings
+val KeyIcon = Icons.Rounded.Key
 val SendIcon = Icons.AutoMirrored.Filled.Send
 val VerifiedUserIcon = Icons.Filled.VerifiedUser
 val UnknownIcon = Icons.AutoMirrored.Filled.Help
