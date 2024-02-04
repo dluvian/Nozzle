@@ -7,14 +7,15 @@ import com.dluvian.nozzle.model.NoteId
 import com.dluvian.nozzle.model.PostWithMeta
 import com.dluvian.nozzle.model.Pubkey
 import com.dluvian.nozzle.model.Relay
+import com.dluvian.nozzle.model.feedFilter.RelayFilter
 
 interface INozzleSubscriber {
 
-    suspend fun subscribePersonalProfiles()
+    suspend fun subscribePersonalProfiles(relayFilter: RelayFilter)
 
-    suspend fun subscribeUnknownContacts()
+    suspend fun subscribeUnknownContacts(relayFilter: RelayFilter)
 
-    suspend fun subscribeUnknowns(notes: Collection<PostWithMeta>)
+    suspend fun subscribeUnknowns(notes: Collection<PostWithMeta>, relayFilter: RelayFilter)
 
     fun subscribeToFeed(
         pubkeysByRelay: Map<Relay, Set<Pubkey>?>,
@@ -39,7 +40,7 @@ interface INozzleSubscriber {
 
     suspend fun subscribeSimpleProfiles(pubkeys: Collection<Pubkey>)
 
-    suspend fun subscribeFeedInfo(posts: List<PostEntity>): FeedInfo
+    suspend fun subscribeFeedInfo(posts: List<PostEntity>, relayFilter: RelayFilter): FeedInfo
 
     // TODO: NostrId instead of String. Prevents parsing nostrStr multiple times
     suspend fun subscribeThreadPost(postId: String)

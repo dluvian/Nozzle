@@ -13,6 +13,7 @@ import com.dluvian.nozzle.data.subscriber.INozzleSubscriber
 import com.dluvian.nozzle.data.utils.HashtagUtils
 import com.dluvian.nozzle.model.PostWithMeta
 import com.dluvian.nozzle.model.SimpleProfile
+import com.dluvian.nozzle.model.feedFilter.ReadRelays
 import com.dluvian.nozzle.model.nostr.NeventNostrId
 import com.dluvian.nozzle.model.nostr.NoteNostrId
 import com.dluvian.nozzle.model.nostr.NprofileNostrId
@@ -80,7 +81,7 @@ class SearchViewModel(
     val onSubscribeUnknownContacts: () -> Unit = {
         subJob?.cancel()
         subJob = viewModelScope.launch(Dispatchers.IO) {
-            nozzleSubscriber.subscribeUnknownContacts()
+            nozzleSubscriber.subscribeUnknownContacts(ReadRelays)
         }
     }
 
