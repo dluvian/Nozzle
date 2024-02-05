@@ -28,7 +28,12 @@ fun FeedTopBar(
             )
         },
         navigationIcon = {
-            PictureIconButton(pubkey = pubkey, trustType = Oneself, onPictureClick = onPictureClick)
+            PictureIconButton(
+                pubkey = pubkey,
+                trustType = Oneself,
+                description = stringResource(id = R.string.open_drawer),
+                onPictureClick = onPictureClick
+            )
         },
         actions = {
             SettingsIconButton(
