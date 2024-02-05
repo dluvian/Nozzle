@@ -9,7 +9,6 @@ import androidx.room.Query
 import androidx.room.RewriteQueriesToDropUnusedColumns
 import androidx.room.Transaction
 import com.dluvian.nozzle.data.room.entity.ProfileEntity
-import com.dluvian.nozzle.data.room.helper.extended.ProfileEntityExtended
 import com.dluvian.nozzle.data.utils.escapeSQLPercentChars
 import com.dluvian.nozzle.model.Pubkey
 import com.dluvian.nozzle.model.nostr.Metadata
@@ -20,27 +19,14 @@ interface ProfileDao {
     @Query("SELECT * FROM profile WHERE pubkey = :pubkey")
     suspend fun getProfile(pubkey: String): ProfileEntity?
 
+    @Query("SELECT * FROM profile WHERE pubkey = :pubkey")
+    fun getProfileFlow(pubkey: String): Flow<ProfileEntity?>
+
     @Query("SELECT * FROM profile WHERE pubkey IN (:pubkeys)")
     fun getProfilesFlow(pubkeys: Collection<Pubkey>): Flow<List<ProfileEntity>>
 
     @Query("SELECT * FROM profile WHERE pubkey IN (:pubkeys)")
     suspend fun getProfiles(pubkeys: Collection<Pubkey>): List<ProfileEntity>
-
-    @Query(
-        // SELECT metadata
-        "SELECT mainProfile.*, " +
-                // SELECT numOfFollowing
-                "(SELECT COUNT(contactPubkey) FROM contact WHERE pubkey = :pubkey) AS numOfFollowing, " +
-                // SELECT numOfFollowers
-                "(SELECT COUNT(pubkey) FROM contact WHERE contactPubkey = :pubkey) AS numOfFollowers, " +
-                // SELECT followsYou
-                "(SELECT EXISTS(SELECT * FROM contact WHERE pubkey = :pubkey " +
-                "AND contactPubkey = (SELECT pubkey FROM account WHERE isActive = 1)" +
-                ")) AS followsYou " +
-                "FROM profile AS mainProfile " +
-                "WHERE mainProfile.pubkey = :pubkey"
-    )
-    fun getProfileEntityExtendedFlow(pubkey: String): Flow<ProfileEntityExtended?>
 
     @RewriteQueriesToDropUnusedColumns
     @Query("SELECT * FROM profile WHERE pubkey = (SELECT pubkey FROM account WHERE isActive = 1)")

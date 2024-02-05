@@ -16,6 +16,7 @@ import com.dluvian.nozzle.data.subscriber.INozzleSubscriber
 import com.dluvian.nozzle.data.utils.LONG_DEBOUNCE
 import com.dluvian.nozzle.data.utils.firstThenDistinctDebounce
 import com.dluvian.nozzle.model.ProfileWithMeta
+import com.dluvian.nozzle.model.Pubkey
 import com.dluvian.nozzle.model.PubkeyVariations
 import com.dluvian.nozzle.model.nostr.Metadata
 import kotlinx.coroutines.flow.Flow
@@ -40,9 +41,6 @@ class ProfileWithMetaProvider(
 
         val pubkey = profileIdToNostrId(profileId)?.hex ?: profileId
 
-        val profileExtendedFlow = profileDao.getProfileEntityExtendedFlow(pubkey = pubkey)
-            .distinctUntilChanged()
-
         // TODO: SQL join (?)
         val seenInRelaysFlow = eventRelayDao.listUsedRelaysFlow(pubkey)
             .firstThenDistinctDebounce(LONG_DEBOUNCE)
@@ -66,7 +64,7 @@ class ProfileWithMetaProvider(
 
         return getFinalFlow(
             pubkeyVariations = PubkeyVariations.fromPubkey(pubkey),
-            profileFlow = profileExtendedFlow,
+            profileFlow = getProfileExtendedFlow(pubkey = pubkey),
             seenInRelaysFlow = seenInRelaysFlow,
             nip65Flow = nip65Flow,
             nprofileFlow = nprofileFlow,
@@ -76,7 +74,7 @@ class ProfileWithMetaProvider(
 
     private fun getFinalFlow(
         pubkeyVariations: PubkeyVariations,
-        profileFlow: Flow<ProfileEntityExtended?>,
+        profileFlow: Flow<ProfileEntityExtended>,
         seenInRelaysFlow: Flow<List<String>>,
         nip65Flow: Flow<List<Nip65Relay>>,
         nprofileFlow: Flow<String?>,
@@ -92,17 +90,26 @@ class ProfileWithMetaProvider(
             ProfileWithMeta(
                 pubkey = pubkeyVariations.pubkey,
                 nprofile = nprofile ?: pubkeyVariations.npub,
-                metadata = profile?.profileEntity?.metadata
+                metadata = profile.profileEntity?.metadata
                     ?: Metadata(name = pubkeyVariations.shortenedNpub),
-                numOfFollowing = profile?.numOfFollowing ?: 0,
-                numOfFollowers = profile?.numOfFollowers ?: 0,
+                numOfFollowing = profile.followInfo.numOfFollowing,
+                numOfFollowers = profile.followInfo.numOfFollowers,
                 seenInRelays = seenInRelays,
                 writesInRelays = nip65s.filter { it.isWrite }.map { it.url },
                 readsInRelays = nip65s.filter { it.isRead }.map { it.url },
                 isOneself = pubkeyProvider.isOneself(pubkeyVariations.pubkey), // TODO: Handle in SQL
-                followsYou = profile?.followsYou ?: false,
+                followsYou = profile.followInfo.followsYou,
                 trustScore = trustScore,
             )
         }
+    }
+
+    // Not in a single SQL query because it would need 7 subqueries to build the profileEntity
+    private fun getProfileExtendedFlow(pubkey: Pubkey): Flow<ProfileEntityExtended> {
+        val profileFlow = profileDao.getProfileFlow(pubkey = pubkey).distinctUntilChanged()
+        val followInfoFlow = contactDao.getFollowInfoFlow(pubkey = pubkey).distinctUntilChanged()
+        return combine(profileFlow, followInfoFlow) { profile, followInfo ->
+            ProfileEntityExtended(profileEntity = profile, followInfo = followInfo)
+        }.distinctUntilChanged()
     }
 }
