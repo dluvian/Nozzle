@@ -50,8 +50,8 @@ import kotlinx.coroutines.launch
 
 @Composable
 fun NozzleApp(appContainer: AppContainer) {
-    val isDarkMode by rememberSaveable(appContainer.darkModePreferences.isDarkMode) {
-        appContainer.darkModePreferences.isDarkMode
+    val isDarkMode by rememberSaveable(appContainer.nozzlePreferences.isDarkMode) {
+        appContainer.nozzlePreferences.isDarkMode
     }
     NozzleTheme(isDarkMode = isDarkMode) {
         Surface(modifier = Modifier.fillMaxSize()) {
@@ -60,7 +60,7 @@ fun NozzleApp(appContainer: AppContainer) {
                     factory = NozzleDrawerViewModel.provideFactory(
                         keyManager = appContainer.keyManager,
                         accountProvider = appContainer.accountProvider,
-                        darkModePreferences = appContainer.darkModePreferences,
+                        darkModePreferences = appContainer.nozzlePreferences,
                         nozzleSubscriber = appContainer.nozzleSubscriber
                     )
                 ),
@@ -94,7 +94,7 @@ fun NozzleApp(appContainer: AppContainer) {
                     factory = FeedViewModel.provideFactory(
                         pubkeyProvider = appContainer.keyManager,
                         feedProvider = appContainer.feedProvider,
-                        feedSettingsPreferences = appContainer.feedSettingsPreferences
+                        feedSettingsPreferences = appContainer.nozzlePreferences
                     )
                 ),
                 inboxViewModel = viewModel(
@@ -165,6 +165,7 @@ fun NozzleApp(appContainer: AppContainer) {
                 ),
                 settingsViewModel = viewModel(
                     factory = SettingsViewModel.provideFactory(
+                        settingsPreferences = appContainer.nozzlePreferences
                     )
                 ),
             )

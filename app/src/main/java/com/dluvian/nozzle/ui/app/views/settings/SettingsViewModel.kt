@@ -2,36 +2,27 @@ package com.dluvian.nozzle.ui.app.views.settings
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.viewModelScope
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.stateIn
-import kotlinx.coroutines.flow.update
+import com.dluvian.nozzle.data.preferences.ISettingsPreferenceStates
+import com.dluvian.nozzle.data.preferences.ISettingsPreferences
 
-class SettingsViewModel : ViewModel() {
-    private val _uiState = MutableStateFlow(SettingsViewModelState())
-    val uiState = _uiState
-        .stateIn(
-            viewModelScope,
-            SharingStarted.WhileSubscribed(),
-            _uiState.value
+class SettingsViewModel(private val settingsPreferences: ISettingsPreferences) : ViewModel() {
+    val settingsPreferenceStates: ISettingsPreferenceStates = settingsPreferences
+
+    val onToggleShowProfilePictures: () -> Unit = {
+        settingsPreferences.setShowProfilePictures(
+            bool = !settingsPreferences.showProfilePictures.value
         )
-
-    val onOpenSettings: () -> Unit = {
-        _uiState.update {
-            it.copy(
-                showProfilePictures = false
-            )
-        }
     }
 
     companion object {
         fun provideFactory(
+            settingsPreferences: ISettingsPreferences
         ): ViewModelProvider.Factory =
             object : ViewModelProvider.Factory {
                 @Suppress("UNCHECKED_CAST")
                 override fun <T : ViewModel> create(modelClass: Class<T>): T {
                     return SettingsViewModel(
+                        settingsPreferences = settingsPreferences
                     ) as T
                 }
             }

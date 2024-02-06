@@ -59,7 +59,6 @@ class NozzleNavActions(
     }
 
     val navigateToSettings: () -> Unit = {
-        vmContainer.settingsViewModel.onOpenSettings()
         navController.navigateToNozzleRoute(NozzleRoute.SETTINGS)
     }
 
