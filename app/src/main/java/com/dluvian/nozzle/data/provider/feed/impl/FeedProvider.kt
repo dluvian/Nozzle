@@ -48,8 +48,8 @@ class FeedProvider(
 
         delay(waitForSubscription)
 
-        val relaysAreIrrelevant = feedFilter.relayFilter is Autopilot ||
-                feedFilter.authorFilter is SingularPerson
+        val isSingularPerson = feedFilter.authorFilter is SingularPerson
+        val relaysAreIrrelevant = feedFilter.relayFilter is Autopilot || isSingularPerson
         val relays = if (relaysAreIrrelevant) null else pubkeysByRelay.keys
         val authorPubkeys = feedFilterResolver.getPubkeys(authorFilter = feedFilter.authorFilter)
 
@@ -77,7 +77,7 @@ class FeedProvider(
         return getResult(
             posts = posts,
             numOfNewPostsFlow = numOfNewPostsFlow,
-            relayFilter = feedFilter.relayFilter
+            relayFilter = if (isSingularPerson) Autopilot else feedFilter.relayFilter
         )
     }
 

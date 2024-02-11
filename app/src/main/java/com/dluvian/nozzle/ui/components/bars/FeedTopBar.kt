@@ -16,6 +16,8 @@ import com.dluvian.nozzle.ui.components.iconButtons.SettingsIconButton
 @Composable
 fun FeedTopBar(
     pubkey: String,
+    picture: String?,
+    showProfilePicture: Boolean,
     onToggleFilterDrawer: () -> Unit,
     onPictureClick: () -> Unit,
     onScrollToTop: () -> Unit
@@ -28,7 +30,14 @@ fun FeedTopBar(
             )
         },
         navigationIcon = {
-            PictureIconButton(pubkey = pubkey, trustType = Oneself, onPictureClick = onPictureClick)
+            PictureIconButton(
+                pubkey = pubkey,
+                picture = picture,
+                showProfilePicture = showProfilePicture,
+                trustType = Oneself,
+                description = stringResource(id = R.string.open_drawer),
+                onPictureClick = onPictureClick
+            )
         },
         actions = {
             SettingsIconButton(

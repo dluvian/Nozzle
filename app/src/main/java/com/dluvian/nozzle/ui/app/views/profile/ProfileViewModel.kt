@@ -172,7 +172,7 @@ class ProfileViewModel(
                         profileProvider = profileProvider,
                         relayProvider = relayProvider,
                         pubkeyProvider = pubkeyProvider,
-                        contactListProvider = contactListProvider
+                        contactListProvider = contactListProvider,
                     ) as T
                 }
             }

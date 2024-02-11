@@ -58,6 +58,10 @@ class NozzleNavActions(
         navController.navigateToNozzleRoute(NozzleRoute.KEYS)
     }
 
+    val navigateToSettings: () -> Unit = {
+        navController.navigateToNozzleRoute(NozzleRoute.SETTINGS)
+    }
+
     val navigateToEditProfile: () -> Unit = {
         navController.navigateToNozzleRoute(NozzleRoute.EDIT_PROFILE)
     }

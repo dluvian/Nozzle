@@ -14,7 +14,7 @@ import kotlinx.coroutines.flow.Flow
 interface AccountDao {
 
     @Query(
-        "SELECT account.pubkey, account.isActive, profile.name " +
+        "SELECT account.pubkey, account.isActive, profile.name, profile.picture " +
                 "FROM account " +
                 "LEFT JOIN profile ON account.pubkey = profile.pubkey"
     )

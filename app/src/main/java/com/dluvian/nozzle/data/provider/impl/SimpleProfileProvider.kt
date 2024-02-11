@@ -69,6 +69,7 @@ class SimpleProfileProvider(
             SimpleProfile(
                 name = profile?.metadata?.name.orEmpty(),
                 pubkey = pubkey,
+                picture = profile?.metadata?.picture,
                 trustScore = trustScores[pubkey] ?: 0f,
                 isOneself = pubkey == pubkeyProvider.getActivePubkey(),
                 isFollowedByMe = myFollowerList.contains(pubkey)
@@ -94,6 +95,7 @@ class SimpleProfileProvider(
                 SimpleProfile(
                     name = profile?.metadata?.name.orEmpty(),
                     pubkey = pubkey,
+                    picture = profile?.metadata?.picture,
                     trustScore = score[pubkey] ?: 0f,
                     isOneself = pubkey == pubkeyProvider.getActivePubkey(),
                     isFollowedByMe = followers.contains(pubkey)

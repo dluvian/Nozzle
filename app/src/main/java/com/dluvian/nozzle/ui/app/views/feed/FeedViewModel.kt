@@ -7,6 +7,7 @@ import com.dluvian.nozzle.data.DB_BATCH_SIZE
 import com.dluvian.nozzle.data.paginator.IPaginator
 import com.dluvian.nozzle.data.paginator.Paginator
 import com.dluvian.nozzle.data.preferences.IFeedSettingsPreferences
+import com.dluvian.nozzle.data.provider.IPersonalProfileProvider
 import com.dluvian.nozzle.data.provider.IPubkeyProvider
 import com.dluvian.nozzle.data.provider.feed.IFeedProvider
 import com.dluvian.nozzle.data.utils.getCurrentTimeInSeconds
@@ -21,6 +22,7 @@ import com.dluvian.nozzle.model.feedFilter.ReadRelays
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
@@ -29,6 +31,7 @@ import kotlinx.coroutines.launch
 class FeedViewModel(
     private val pubkeyProvider: IPubkeyProvider,
     private val feedProvider: IFeedProvider,
+    private val personalProfileProvider: IPersonalProfileProvider,
     private val feedSettingsPreferences: IFeedSettingsPreferences,
 ) : ViewModel() {
 
@@ -86,6 +89,9 @@ class FeedViewModel(
             isInit = false
         }
         .stateIn(viewModelScope, SharingStarted.Eagerly, "")
+    val pictureState = personalProfileProvider.getMetadataStateFlow()
+        .map { it?.picture }
+        .stateIn(viewModelScope, SharingStarted.Eagerly, null)
 
     val onRefresh: () -> Unit = { refresh(uiState = uiState.value) }
 
@@ -124,6 +130,7 @@ class FeedViewModel(
         fun provideFactory(
             pubkeyProvider: IPubkeyProvider,
             feedProvider: IFeedProvider,
+            personalProfileProvider: IPersonalProfileProvider,
             feedSettingsPreferences: IFeedSettingsPreferences
         ): ViewModelProvider.Factory = object : ViewModelProvider.Factory {
             @Suppress("UNCHECKED_CAST")
@@ -131,6 +138,7 @@ class FeedViewModel(
                 return FeedViewModel(
                     pubkeyProvider = pubkeyProvider,
                     feedProvider = feedProvider,
+                    personalProfileProvider = personalProfileProvider,
                     feedSettingsPreferences = feedSettingsPreferences
                 ) as T
             }

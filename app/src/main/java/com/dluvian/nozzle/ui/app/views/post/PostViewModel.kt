@@ -10,6 +10,7 @@ import com.dluvian.nozzle.data.nostr.utils.EncodingUtils.createNeventUri
 import com.dluvian.nozzle.data.nostr.utils.EncodingUtils.nostrStrToNostrId
 import com.dluvian.nozzle.data.nostr.utils.ShortenedNameUtils.getShortenedNpubFromPubkey
 import com.dluvian.nozzle.data.postPreparer.IPostPreparer
+import com.dluvian.nozzle.data.provider.IPersonalProfileProvider
 import com.dluvian.nozzle.data.provider.IPubkeyProvider
 import com.dluvian.nozzle.data.provider.IRelayProvider
 import com.dluvian.nozzle.data.room.FullPostInserter
@@ -24,6 +25,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -31,6 +33,7 @@ import java.util.concurrent.atomic.AtomicBoolean
 
 class PostViewModel(
     private val pubkeyProvider: IPubkeyProvider,
+    private val personalProfileProvider: IPersonalProfileProvider,
     private val nostrService: INostrService,
     private val relayProvider: IRelayProvider,
     private val postPreparer: IPostPreparer,
@@ -40,6 +43,9 @@ class PostViewModel(
     private val postDao: PostDao,
 ) : ViewModel() {
     val pubkeyState = pubkeyProvider.getActivePubkeyStateFlow()
+    val pictureState = personalProfileProvider.getMetadataStateFlow()
+        .map { it?.picture }
+        .stateIn(viewModelScope, SharingStarted.Eagerly, null)
 
     private val _uiState = MutableStateFlow(PostViewModelState())
     val uiState = _uiState
@@ -181,6 +187,7 @@ class PostViewModel(
     companion object {
         fun provideFactory(
             pubkeyProvider: IPubkeyProvider,
+            personalProfileProvider: IPersonalProfileProvider,
             nostrService: INostrService,
             relayProvider: IRelayProvider,
             postPreparer: IPostPreparer,
@@ -193,6 +200,7 @@ class PostViewModel(
             override fun <T : ViewModel> create(modelClass: Class<T>): T {
                 return PostViewModel(
                     pubkeyProvider = pubkeyProvider,
+                    personalProfileProvider = personalProfileProvider,
                     nostrService = nostrService,
                     relayProvider = relayProvider,
                     postPreparer = postPreparer,

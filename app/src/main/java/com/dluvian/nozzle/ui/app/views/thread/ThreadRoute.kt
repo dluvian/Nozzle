@@ -12,6 +12,7 @@ import com.dluvian.nozzle.ui.app.navigation.PostCardLambdas
 @Composable
 fun ThreadRoute(
     threadViewModel: ThreadViewModel,
+    showProfilePicture: Boolean,
     profileFollower: IProfileFollower,
     postCardLambdas: PostCardLambdas,
     onPrepareReply: (PostWithMeta) -> Unit,
@@ -35,6 +36,7 @@ fun ThreadRoute(
 
     ThreadScreen(
         thread = adjustedThread,
+        showProfilePicture = showProfilePicture,
         isRefreshing = isRefreshing,
         postCardLambdas = postCardLambdas,
         onPrepareReply = onPrepareReply,

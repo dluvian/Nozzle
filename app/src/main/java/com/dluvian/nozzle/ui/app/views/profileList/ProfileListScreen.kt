@@ -28,6 +28,7 @@ import com.dluvian.nozzle.ui.theme.spacing
 @Composable
 fun ProfileListScreen(
     profiles: List<SimpleProfile>,
+    showProfilePicture: Boolean,
     pubkey: Pubkey,
     isRefreshing: Boolean,
     type: ProfileListType,
@@ -59,6 +60,7 @@ fun ProfileListScreen(
                 if (profile.name.isEmpty()) subscribeToUnknowns.value = true
                 ProfileRow(
                     profile = profile,
+                    showProfilePicture = showProfilePicture,
                     onFollow = { onFollow(profile.pubkey) },
                     onUnfollow = { onUnfollow(profile.pubkey) },
                     onNavigateToProfile,
@@ -85,6 +87,7 @@ private fun getTitle(type: ProfileListType): String {
 @Composable
 private fun ProfileRow(
     profile: SimpleProfile,
+    showProfilePicture: Boolean,
     onFollow: () -> Unit,
     onUnfollow: () -> Unit,
     onNavigateToProfile: (Pubkey) -> Unit
@@ -93,7 +96,13 @@ private fun ProfileRow(
         modifier = Modifier
             .fillMaxWidth()
             .padding(vertical = spacing.medium, horizontal = spacing.screenEdge),
-        content = { PictureAndName(profile = profile, onNavigateToProfile = onNavigateToProfile) },
+        content = {
+            PictureAndName(
+                profile = profile,
+                showProfilePicture = showProfilePicture,
+                onNavigateToProfile = onNavigateToProfile
+            )
+        },
         onClick = { onNavigateToProfile(profile.pubkey) },
         trailingContent = {
             FollowButton(

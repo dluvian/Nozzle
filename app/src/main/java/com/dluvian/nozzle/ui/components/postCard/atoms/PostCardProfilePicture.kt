@@ -9,6 +9,8 @@ import com.dluvian.nozzle.ui.components.media.ProfilePicture
 @Composable
 fun PostCardProfilePicture(
     pubkey: String,
+    picture: String?,
+    showProfilePicture: Boolean,
     trustType: TrustType,
     onNavigateToProfile: ((String) -> Unit)?,
     modifier: Modifier = Modifier,
@@ -16,6 +18,8 @@ fun PostCardProfilePicture(
     ProfilePicture(
         modifier = modifier,
         pubkey = pubkey,
+        picture = picture,
+        showProfilePicture = showProfilePicture,
         trustType = trustType,
         onOpenProfile = if (onNavigateToProfile != null) {
             { onNavigateToProfile(pubkey) }

@@ -27,6 +27,8 @@ fun FeedScreen(
     uiState: FeedViewModelState,
     filterLambdas: FeedFilterLambdas,
     pubkey: String,
+    picture: String?,
+    showProfilePicture: Boolean,
     feed: List<PostWithMeta>,
     numOfNewPosts: Int,
     postCardLambdas: PostCardLambdas,
@@ -43,6 +45,8 @@ fun FeedScreen(
         topBar = {
             FeedTopBar(
                 pubkey = pubkey,
+                picture = picture,
+                showProfilePicture = showProfilePicture,
                 onToggleFilterDrawer = {
                     scope.launch { drawerState.apply { if (isOpen) close() else open() } }
                 },
@@ -65,6 +69,7 @@ fun FeedScreen(
             FeedContent(
                 feed = feed,
                 uiState = uiState,
+                showProfilePicture = showProfilePicture,
                 numOfNewPosts = numOfNewPosts,
                 paddingValues = it,
                 lazyListState = lazyListState,
@@ -80,6 +85,7 @@ fun FeedScreen(
 @Composable
 private fun FeedContent(
     feed: List<PostWithMeta>,
+    showProfilePicture: Boolean,
     uiState: FeedViewModelState,
     numOfNewPosts: Int,
     paddingValues: PaddingValues,
@@ -103,6 +109,7 @@ private fun FeedContent(
     ) {
         PostCardList(
             posts = feed,
+            showProfilePicture = showProfilePicture,
             isRefreshing = uiState.isRefreshing,
             postCardLambdas = postCardLambdas,
             onRefresh = onRefresh,

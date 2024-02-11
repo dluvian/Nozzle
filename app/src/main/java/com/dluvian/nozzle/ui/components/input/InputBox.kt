@@ -38,6 +38,8 @@ import com.dluvian.nozzle.ui.theme.spacing
 fun InputBox(
     input: MutableState<TextFieldValue>,
     pubkey: Pubkey,
+    picture: String?,
+    showProfilePicture: Boolean,
     placeholder: String,
     searchSuggestions: List<SimpleProfile>,
     onSearch: (String) -> Unit,
@@ -62,12 +64,15 @@ fun InputBox(
             BaseInputBox(
                 input = input,
                 pubkey = pubkey,
+                picture = picture,
+                showProfilePicture = showProfilePicture,
                 placeholder = placeholder,
             )
             postToQuote?.let { quote ->
                 AnnotatedMentionedPostCard(
                     modifier = Modifier.padding(spacing.screenEdge),
                     post = quote,
+                    showProfilePicture = showProfilePicture,
                     maxLines = 4,
                     onNavigateToId = { /* Do nothing. Stay in PostScreen */ },
                 )
@@ -77,6 +82,7 @@ fun InputBox(
             SearchSuggestions(
                 modifier = Modifier.weight(0.4f),
                 suggestions = searchSuggestions,
+                showProfilePicture = showProfilePicture,
                 onReplaceSuggestion = { profile ->
                     input.value = input.value.replaceWithSuggestion(pubkey = profile.pubkey)
                     onClickMention(profile.pubkey)
@@ -89,6 +95,7 @@ fun InputBox(
 @Composable
 private fun SearchSuggestions(
     suggestions: List<SimpleProfile>,
+    showProfilePicture: Boolean,
     onReplaceSuggestion: (SimpleProfile) -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -102,7 +109,12 @@ private fun SearchSuggestions(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(vertical = spacing.medium, horizontal = spacing.screenEdge),
-                    content = { PictureAndName(profile = it, onNavigateToProfile = { }) },
+                    content = {
+                        PictureAndName(
+                            profile = it,
+                            showProfilePicture = showProfilePicture,
+                            onNavigateToProfile = { })
+                    },
                     onClick = { onReplaceSuggestion(it) },
                 )
             }
@@ -114,30 +126,34 @@ private fun SearchSuggestions(
 private fun BaseInputBox(
     input: MutableState<TextFieldValue>,
     pubkey: String,
+    picture: String?,
+    showProfilePicture: Boolean,
     placeholder: String,
 ) {
     val focusRequester = remember { FocusRequester() }
-        Row(modifier = Modifier.fillMaxWidth()) {
-            ProfilePicture(
-                modifier = Modifier
-                    .padding(start = spacing.screenEdge, top = spacing.large)
-                    .padding(top = spacing.small)
-                    .size(sizing.profilePicture),
-                pubkey = pubkey,
-                trustType = Oneself
-            )
-            ChangeableTextField(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .verticalScroll(rememberScrollState())
-                    .focusRequester(focusRequester),
-                input = input,
-                maxLines = Int.MAX_VALUE,
-                keyboardImeAction = ImeAction.Default,
-                placeholder = placeholder,
-                isTransparent = true
-            )
-        }
+    Row(modifier = Modifier.fillMaxWidth()) {
+        ProfilePicture(
+            modifier = Modifier
+                .padding(start = spacing.screenEdge, top = spacing.large)
+                .padding(top = spacing.small)
+                .size(sizing.profilePicture),
+            pubkey = pubkey,
+            picture = picture,
+            showProfilePicture = showProfilePicture,
+            trustType = Oneself
+        )
+        ChangeableTextField(
+            modifier = Modifier
+                .fillMaxWidth()
+                .verticalScroll(rememberScrollState())
+                .focusRequester(focusRequester),
+            input = input,
+            maxLines = Int.MAX_VALUE,
+            keyboardImeAction = ImeAction.Default,
+            placeholder = placeholder,
+            isTransparent = true
+        )
+    }
     LaunchedEffect(Unit) {
         focusRequester.requestFocus()
     }

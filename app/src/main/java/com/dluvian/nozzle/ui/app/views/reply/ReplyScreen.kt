@@ -14,6 +14,8 @@ import com.dluvian.nozzle.ui.components.scaffolds.ContentCreationScaffold
 fun ReplyScreen(
     uiState: ReplyViewModelState,
     pubkey: Pubkey,
+    picture: String?,
+    showProfilePicture: Boolean,
     onToggleRelaySelection: (Int) -> Unit,
     onSearch: (String) -> Unit,
     onClickMention: (Pubkey) -> Unit,
@@ -28,6 +30,8 @@ fun ReplyScreen(
         postToQuote = null,
         replyingTo = uiState.recipientName,
         pubkey = pubkey,
+        picture = picture,
+        showProfilePicture = showProfilePicture,
         toast = stringResource(id = R.string.reply_published),
         placeholder = stringResource(id = R.string.post_your_reply),
         onSearch = onSearch,

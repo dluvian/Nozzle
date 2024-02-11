@@ -23,15 +23,18 @@ const val GLOBAL = "global"
 const val AUTOPILOT = "autopilot"
 const val MY_READ_RELAYS = "my_read_relays"
 
+const val SETTINGS_SHOW_PROFILE_PICTURES = "settings_show_profile_pictures"
+
 class NozzlePreferences(
     private val context: Context
-) : IDarkModePreferences, IFeedSettingsPreferences {
+) : IDarkModePreferences, IFeedSettingsPreferences, ISettingsPreferences {
     private val preferences = context.getSharedPreferences(
         PreferenceFileNames.NOZZLE,
         Context.MODE_PRIVATE
     )
 
     override val isDarkMode = mutableStateOf(isDarkMode())
+    override val showProfilePictures = mutableStateOf(showProfilePictures())
 
     override fun setDarkMode(isDarkMode: Boolean) {
         this.isDarkMode.value = isDarkMode
@@ -93,6 +96,17 @@ class NozzlePreferences(
             .putBoolean(FEED_SETTINGS_IS_REPLIES, feedFilter.isReplies)
             .putString(FEED_SETTINGS_PEOPLE, people)
             .putString(FEED_SETTINGS_RELAYS, relays)
+            .apply()
+    }
+
+    override fun showProfilePictures(): Boolean {
+        return preferences.getBoolean(SETTINGS_SHOW_PROFILE_PICTURES, false)
+    }
+
+    override fun setShowProfilePictures(bool: Boolean) {
+        showProfilePictures.value = bool
+        preferences.edit()
+            .putBoolean(SETTINGS_SHOW_PROFILE_PICTURES, bool)
             .apply()
     }
 }

@@ -9,6 +9,7 @@ import androidx.room.Query
 import androidx.room.Transaction
 import com.dluvian.nozzle.data.TRUST_SCORE_BOOST
 import com.dluvian.nozzle.data.room.entity.ContactEntity
+import com.dluvian.nozzle.data.room.helper.FollowInfo
 import com.dluvian.nozzle.model.Pubkey
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
@@ -276,4 +277,17 @@ interface ContactDao {
                 "LIMIT :limit"
     )
     fun listFriendsOfFriendsFlow(limit: Int): Flow<List<String>>
+
+    @Query(
+        "SELECT " +
+                // SELECT numOfFollowing
+                "(SELECT COUNT(contactPubkey) FROM contact WHERE pubkey = :pubkey) AS numOfFollowing, " +
+                // SELECT numOfFollowers
+                "(SELECT COUNT(pubkey) FROM contact WHERE contactPubkey = :pubkey) AS numOfFollowers, " +
+                // SELECT followsYou
+                "(SELECT EXISTS(SELECT * FROM contact WHERE pubkey = :pubkey " +
+                "AND contactPubkey = (SELECT pubkey FROM account WHERE isActive = 1)" +
+                ")) AS followsYou "
+    )
+    fun getFollowInfoFlow(pubkey: Pubkey): Flow<FollowInfo>
 }

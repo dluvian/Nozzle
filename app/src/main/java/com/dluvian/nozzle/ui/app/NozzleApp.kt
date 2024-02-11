@@ -42,6 +42,7 @@ import com.dluvian.nozzle.ui.app.views.profileList.ProfileListViewModel
 import com.dluvian.nozzle.ui.app.views.relayEditor.RelayEditorViewModel
 import com.dluvian.nozzle.ui.app.views.reply.ReplyViewModel
 import com.dluvian.nozzle.ui.app.views.search.SearchViewModel
+import com.dluvian.nozzle.ui.app.views.settings.SettingsViewModel
 import com.dluvian.nozzle.ui.app.views.thread.ThreadViewModel
 import com.dluvian.nozzle.ui.theme.NozzleTheme
 import kotlinx.coroutines.CoroutineScope
@@ -49,8 +50,8 @@ import kotlinx.coroutines.launch
 
 @Composable
 fun NozzleApp(appContainer: AppContainer) {
-    val isDarkMode by rememberSaveable(appContainer.darkModePreferences.isDarkMode) {
-        appContainer.darkModePreferences.isDarkMode
+    val isDarkMode by rememberSaveable(appContainer.nozzlePreferences.isDarkMode) {
+        appContainer.nozzlePreferences.isDarkMode
     }
     NozzleTheme(isDarkMode = isDarkMode) {
         Surface(modifier = Modifier.fillMaxSize()) {
@@ -59,8 +60,8 @@ fun NozzleApp(appContainer: AppContainer) {
                     factory = NozzleDrawerViewModel.provideFactory(
                         keyManager = appContainer.keyManager,
                         accountProvider = appContainer.accountProvider,
-                        darkModePreferences = appContainer.darkModePreferences,
-                        nozzleSubscriber = appContainer.nozzleSubscriber
+                        darkModePreferences = appContainer.nozzlePreferences,
+                        nozzleSubscriber = appContainer.nozzleSubscriber,
                     )
                 ),
                 editProfileViewModel = viewModel(
@@ -93,7 +94,8 @@ fun NozzleApp(appContainer: AppContainer) {
                     factory = FeedViewModel.provideFactory(
                         pubkeyProvider = appContainer.keyManager,
                         feedProvider = appContainer.feedProvider,
-                        feedSettingsPreferences = appContainer.feedSettingsPreferences
+                        personalProfileProvider = appContainer.personalProfileManager,
+                        feedSettingsPreferences = appContainer.nozzlePreferences
                     )
                 ),
                 inboxViewModel = viewModel(
@@ -117,6 +119,7 @@ fun NozzleApp(appContainer: AppContainer) {
                     factory = ReplyViewModel.provideFactory(
                         nostrService = appContainer.nostrService,
                         pubkeyProvider = appContainer.keyManager,
+                        personalProfileProvider = appContainer.personalProfileManager,
                         relayProvider = appContainer.relayProvider,
                         postPreparer = appContainer.postPreparer,
                         fullPostInserter = appContainer.fullPostInserter,
@@ -127,6 +130,7 @@ fun NozzleApp(appContainer: AppContainer) {
                     factory = PostViewModel.provideFactory(
                         nostrService = appContainer.nostrService,
                         pubkeyProvider = appContainer.keyManager,
+                        personalProfileProvider = appContainer.personalProfileManager,
                         relayProvider = appContainer.relayProvider,
                         postPreparer = appContainer.postPreparer,
                         annotatedContentHandler = appContainer.annotatedContentHandler,
@@ -162,6 +166,11 @@ fun NozzleApp(appContainer: AppContainer) {
                         nozzleSubscriber = appContainer.nozzleSubscriber,
                     )
                 ),
+                settingsViewModel = viewModel(
+                    factory = SettingsViewModel.provideFactory(
+                        settingsPreferences = appContainer.nozzlePreferences
+                    )
+                ),
             )
 
             val navController = rememberNavController()
@@ -173,9 +182,12 @@ fun NozzleApp(appContainer: AppContainer) {
             val hasPrivkey by rememberSaveable(appContainer.keyManager.hasPrivkey) {
                 appContainer.keyManager.hasPrivkey
             }
+            val showProfilePicture by appContainer.nozzlePreferences.showProfilePictures
+
             Screen(
                 drawerState = drawerState,
                 vmContainer = vmContainer,
+                showProfilePicture = showProfilePicture,
                 profileFollower = appContainer.profileFollower,
                 clickedMediaUrlCache = appContainer.clickedMediaUrlCache,
                 postCardInteractor = appContainer.postCardInteractor,
@@ -192,6 +204,7 @@ fun NozzleApp(appContainer: AppContainer) {
 private fun Screen(
     drawerState: DrawerState,
     vmContainer: VMContainer,
+    showProfilePicture: Boolean,
     profileFollower: IProfileFollower,
     clickedMediaUrlCache: IClickedMediaUrlCache,
     postCardInteractor: IPostCardInteractor,
@@ -204,6 +217,7 @@ private fun Screen(
         Drawer(
             drawerState = drawerState,
             vmContainer = vmContainer,
+            showProfilePicture = showProfilePicture,
             profileFollower = profileFollower,
             clickedMediaUrlCache = clickedMediaUrlCache,
             postCardInteractor = postCardInteractor,
@@ -216,6 +230,7 @@ private fun Screen(
         NozzleContent(
             drawerState = drawerState,
             vmContainer = vmContainer,
+            showProfilePicture = showProfilePicture,
             profileFollower = profileFollower,
             clickedMediaUrlCache = clickedMediaUrlCache,
             postCardInteractor = postCardInteractor,
@@ -231,6 +246,7 @@ private fun Screen(
 private fun Drawer(
     drawerState: DrawerState,
     vmContainer: VMContainer,
+    showProfilePicture: Boolean,
     profileFollower: IProfileFollower,
     clickedMediaUrlCache: IClickedMediaUrlCache,
     postCardInteractor: IPostCardInteractor,
@@ -247,6 +263,7 @@ private fun Drawer(
                 NozzleDrawerRoute(
                     nozzleDrawerViewModel = vmContainer.drawerViewModel,
                     navActions = navActions,
+                    showProfilePicture = showProfilePicture,
                     closeDrawer = { scope.launch { drawerState.close() } },
                     modifier = Modifier
                         .statusBarsPadding()
@@ -258,6 +275,7 @@ private fun Drawer(
         NozzleContent(
             vmContainer = vmContainer,
             navActions = navActions,
+            showProfilePicture = showProfilePicture,
             profileFollower = profileFollower,
             clickedMediaUrlCache = clickedMediaUrlCache,
             postCardInteractor = postCardInteractor,
@@ -273,6 +291,7 @@ private fun Drawer(
 private fun NozzleContent(
     drawerState: DrawerState,
     vmContainer: VMContainer,
+    showProfilePicture: Boolean,
     profileFollower: IProfileFollower,
     clickedMediaUrlCache: IClickedMediaUrlCache,
     postCardInteractor: IPostCardInteractor,
@@ -289,6 +308,7 @@ private fun NozzleContent(
         NozzleNavGraph(
             vmContainer = vmContainer,
             navActions = navActions,
+            showProfilePicture = showProfilePicture,
             profileFollower = profileFollower,
             clickedMediaUrlCache = clickedMediaUrlCache,
             postCardInteractor = postCardInteractor,

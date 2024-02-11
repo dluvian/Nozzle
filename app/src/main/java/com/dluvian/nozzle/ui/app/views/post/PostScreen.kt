@@ -14,6 +14,8 @@ import com.dluvian.nozzle.ui.components.scaffolds.ContentCreationScaffold
 fun PostScreen(
     uiState: PostViewModelState,
     pubkey: Pubkey,
+    picture: String?,
+    showProfilePicture: Boolean,
     onToggleRelaySelection: (Int) -> Unit,
     onSearch: (String) -> Unit,
     onClickMention: (Pubkey) -> Unit,
@@ -28,6 +30,8 @@ fun PostScreen(
         postToQuote = uiState.postToQuote,
         replyingTo = null,
         pubkey = pubkey,
+        picture = picture,
+        showProfilePicture = showProfilePicture,
         toast = stringResource(id = R.string.post_published),
         placeholder = stringResource(id = R.string.post_your_thoughts),
         onSearch = onSearch,

@@ -47,6 +47,7 @@ import com.dluvian.nozzle.ui.theme.spacing
 @Composable
 fun SearchScreen(
     uiState: SearchViewModelState,
+    showProfilePicture: Boolean,
     postCardLambdas: PostCardLambdas,
     profileSearchResult: List<SimpleProfile>,
     postSearchResult: List<PostWithMeta>,
@@ -85,11 +86,11 @@ fun SearchScreen(
                 },
             )
         }
-    ) {
+    ) { paddingValues ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(it)
+                .padding(paddingValues)
         ) {
             val currentSearchType =
                 remember(uiState.searchType) { mutableStateOf(uiState.searchType) }
@@ -105,6 +106,7 @@ fun SearchScreen(
                         items(profileSearchResult) {
                             ProfileRow(
                                 profile = it,
+                                showProfilePicture = showProfilePicture,
                                 onNavigateToProfile = postCardLambdas.navLambdas.onNavigateToProfile
                             )
                         }
@@ -117,6 +119,7 @@ fun SearchScreen(
                                 content = {
                                     PostCard(
                                         post = it,
+                                        showProfilePicture = showProfilePicture,
                                         postCardLambdas = postCardLambdas,
                                         onPrepareReply = onPrepareReply,
                                     )
@@ -186,7 +189,11 @@ private fun SelectionOptions(searchType: SearchType, onChangeSearchType: (Search
 }
 
 @Composable
-private fun ProfileRow(profile: SimpleProfile, onNavigateToProfile: (Pubkey) -> Unit) {
+private fun ProfileRow(
+    profile: SimpleProfile,
+    showProfilePicture: Boolean,
+    onNavigateToProfile: (Pubkey) -> Unit
+) {
     ItemRow(
         modifier = Modifier
             .fillMaxWidth()
@@ -197,6 +204,7 @@ private fun ProfileRow(profile: SimpleProfile, onNavigateToProfile: (Pubkey) -> 
         content = {
             PictureAndName(
                 profile = profile,
+                showProfilePicture = showProfilePicture,
                 onNavigateToProfile = onNavigateToProfile
             )
         },

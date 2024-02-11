@@ -28,6 +28,7 @@ import com.dluvian.nozzle.ui.theme.spacing
 @Composable
 fun AnnotatedMentionedPostCard(
     post: AnnotatedMentionedPost,
+    showProfilePicture: Boolean,
     modifier: Modifier = Modifier,
     maxLines: Int? = null,
     onNavigateToId: (String) -> Unit,
@@ -43,12 +44,14 @@ fun AnnotatedMentionedPostCard(
             Column(modifier = Modifier.padding(spacing.large)) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     PostCardProfilePicture(
+                        pubkey = post.mentionedPost.pubkey.orEmpty(),
+                        picture = post.mentionedPost.picture,
+                        showProfilePicture = showProfilePicture,
+                        trustType = Oneself, // TODO: Find correct trust type
+                        onNavigateToProfile = onNavigateToProfile,
                         modifier = Modifier
                             .size(sizing.smallProfilePicture)
                             .clip(CircleShape),
-                        pubkey = post.mentionedPost.pubkey.orEmpty(),
-                        trustType = Oneself, // TODO: Find correct trust type
-                        onNavigateToProfile = onNavigateToProfile,
                     )
                     Spacer(modifier = Modifier.width(spacing.medium))
                     PostCardHeader(

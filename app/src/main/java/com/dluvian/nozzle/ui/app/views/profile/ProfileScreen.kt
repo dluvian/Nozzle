@@ -60,6 +60,7 @@ import com.dluvian.nozzle.ui.theme.spacing
 fun ProfileScreen(
     isRefreshing: Boolean,
     profile: ProfileWithMeta,
+    showProfilePicture: Boolean,
     isFollowedByMe: Boolean,
     feed: List<PostWithMeta>,
     numOfNewPosts: Int,
@@ -75,6 +76,7 @@ fun ProfileScreen(
         topBar = {
             ProfileData(
                 profile = profile,
+                showProfilePicture = showProfilePicture,
                 isFollowedByMe = isFollowedByMe,
                 onFollow = postCardLambdas.onFollow,
                 onUnfollow = postCardLambdas.onUnfollow,
@@ -114,6 +116,7 @@ fun ProfileScreen(
             HorizontalDivider()
             PostCardList(
                 posts = feed,
+                showProfilePicture = showProfilePicture,
                 isRefreshing = isRefreshing,
                 postCardLambdas = postCardLambdas,
                 onRefresh = onRefresh,
@@ -129,6 +132,7 @@ fun ProfileScreen(
 @Composable
 private fun ProfileData(
     profile: ProfileWithMeta,
+    showProfilePicture: Boolean,
     isFollowedByMe: Boolean,
     onFollow: (Pubkey) -> Unit,
     onUnfollow: (Pubkey) -> Unit,
@@ -141,6 +145,8 @@ private fun ProfileData(
     ) {
         ProfilePictureAndActions(
             pubkey = profile.pubkey,
+            picture = profile.metadata.picture,
+            showProfilePicture = showProfilePicture,
             isOneself = profile.isOneself,
             isFollowed = isFollowedByMe,
             trustScore = profile.trustScore,
@@ -171,6 +177,8 @@ private fun ProfileData(
 @Composable
 private fun ProfilePictureAndActions(
     pubkey: String,
+    picture: String?,
+    showProfilePicture: Boolean,
     isOneself: Boolean,
     isFollowed: Boolean,
     trustScore: Float?,
@@ -197,6 +205,8 @@ private fun ProfilePictureAndActions(
                 .size(sizing.largeProfilePicture)
                 .aspectRatio(1f),
             pubkey = pubkey,
+            showProfilePicture = showProfilePicture,
+            picture = picture,
             trustType = trustType
         )
         FollowOrEditButton(

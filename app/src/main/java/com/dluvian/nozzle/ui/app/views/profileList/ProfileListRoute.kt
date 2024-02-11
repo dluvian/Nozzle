@@ -10,6 +10,7 @@ import com.dluvian.nozzle.ui.app.navigation.PostCardLambdas
 @Composable
 fun ProfileListRoute(
     profileListViewModel: ProfileListViewModel,
+    showProfilePicture: Boolean,
     profileFollower: IProfileFollower,
     postCardLambdas: PostCardLambdas,
     onGoBack: () -> Unit,
@@ -27,6 +28,7 @@ fun ProfileListRoute(
     ProfileListScreen(
         profiles = adjustedProfiles,
         pubkey = pubkey,
+        showProfilePicture = showProfilePicture,
         isRefreshing = isRefreshing,
         type = type,
         onFollow = postCardLambdas.onFollow,

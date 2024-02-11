@@ -7,14 +7,18 @@ import androidx.compose.runtime.getValue
 @Composable
 fun PostRoute(
     postViewModel: PostViewModel,
+    showProfilePicture: Boolean,
     onGoBack: () -> Unit,
 ) {
     val uiState by postViewModel.uiState.collectAsState()
-    val pubkeyState by postViewModel.pubkeyState.collectAsState()
+    val pubkey by postViewModel.pubkeyState.collectAsState()
+    val picture by postViewModel.pictureState.collectAsState()
 
     PostScreen(
         uiState = uiState,
-        pubkey = pubkeyState,
+        pubkey = pubkey,
+        picture = picture,
+        showProfilePicture = showProfilePicture,
         onToggleRelaySelection = postViewModel.onToggleRelaySelection,
         onSend = { content -> postViewModel.onSend(content, uiState) },
         onSearch = postViewModel.onSearch,

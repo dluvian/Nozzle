@@ -18,12 +18,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DarkMode
-import androidx.compose.material.icons.rounded.CellTower
-import androidx.compose.material.icons.rounded.Favorite
-import androidx.compose.material.icons.rounded.Inbox
-import androidx.compose.material.icons.rounded.Key
-import androidx.compose.material.icons.rounded.Newspaper
-import androidx.compose.material.icons.rounded.Search
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -49,12 +43,20 @@ import com.dluvian.nozzle.ui.components.iconButtons.toggle.ExpandToggleIconButto
 import com.dluvian.nozzle.ui.components.media.ProfilePicture
 import com.dluvian.nozzle.ui.theme.AddIcon
 import com.dluvian.nozzle.ui.theme.CheckIcon
+import com.dluvian.nozzle.ui.theme.FeedIcon
+import com.dluvian.nozzle.ui.theme.InboxIcon
+import com.dluvian.nozzle.ui.theme.KeyIcon
+import com.dluvian.nozzle.ui.theme.LikedIcon
+import com.dluvian.nozzle.ui.theme.RelayIcon
+import com.dluvian.nozzle.ui.theme.SearchIcon
+import com.dluvian.nozzle.ui.theme.SettingsIcon
 import com.dluvian.nozzle.ui.theme.sizing
 import com.dluvian.nozzle.ui.theme.spacing
 
 @Composable
 fun NozzleDrawerScreen(
     uiState: NozzleDrawerViewModelState,
+    showProfilePicture: Boolean,
     isDarkMode: Boolean,
     navActions: NozzleNavActions,
     onActivateAccount: (Int) -> Unit,
@@ -73,6 +75,7 @@ fun NozzleDrawerScreen(
                 modifier = Modifier.padding(horizontal = spacing.medium),
                 activeAccount = uiState.activeAccount,
                 allAccounts = uiState.allAccounts,
+                showProfilePicture = showProfilePicture,
                 onActiveProfileClick = {
                     navActions.navigateToProfile(uiState.activeAccount.pubkey)
                     closeDrawer()
@@ -101,12 +104,7 @@ fun NozzleDrawerScreen(
                 modifier = Modifier.padding(spacing.screenEdge),
                 isDarkMode = isDarkMode,
                 onToggleDarkMode = onToggleDarkMode,
-                navigateToFeed = navActions.navigateToFeed,
-                navigateToInbox = navActions.navigateToInbox,
-                navigateToLikes = navActions.navigateToLikes,
-                navigateToSearch = navActions.navigateToSearch,
-                navigateToRelayEditor = navActions.navigateToRelayEditor,
-                navigateToKeys = navActions.navigateToKeys,
+                navActions = navActions,
                 closeDrawer = closeDrawer
             )
         }
@@ -118,6 +116,7 @@ fun NozzleDrawerScreen(
 private fun TopRow(
     activeAccount: Account,
     allAccounts: List<Account>,
+    showProfilePicture: Boolean,
     onActiveProfileClick: () -> Unit,
     onActivateAccount: (Int) -> Unit,
     onAddAccount: () -> Unit,
@@ -136,6 +135,7 @@ private fun TopRow(
         Column {
             ActiveAccount(
                 account = activeAccount,
+                showProfilePicture = showProfilePicture,
                 isExpanded = isExpanded.value,
                 onToggleExpand = { isExpanded.value = !isExpanded.value },
                 onClick = onActiveProfileClick
@@ -143,6 +143,7 @@ private fun TopRow(
             AnimatedVisibility(visible = isExpanded.value) {
                 AccountRows(
                     accounts = allAccounts,
+                    showProfilePicture = showProfilePicture,
                     onActivateAccount = onActivateAccount,
                     onAddAccount = onAddAccount,
                     onDeleteAccount = onDeleteAccount,
@@ -156,6 +157,7 @@ private fun TopRow(
 @Composable
 private fun ActiveAccount(
     account: Account,
+    showProfilePicture: Boolean,
     isExpanded: Boolean,
     onToggleExpand: () -> Unit,
     onClick: () -> Unit,
@@ -165,7 +167,12 @@ private fun ActiveAccount(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            PictureAndName(modifier = Modifier.weight(1f), account = account, isTop = true)
+            PictureAndName(
+                modifier = Modifier.weight(1f),
+                account = account,
+                showProfilePicture = showProfilePicture,
+                isTop = true
+            )
             ExpandToggleIconButton(isExpanded = isExpanded, onToggle = onToggleExpand)
         }
     }
@@ -174,6 +181,7 @@ private fun ActiveAccount(
 @Composable
 private fun AccountRows(
     accounts: List<Account>,
+    showProfilePicture: Boolean,
     onActivateAccount: (Int) -> Unit,
     onAddAccount: () -> Unit,
     onDeleteAccount: (Int) -> Unit,
@@ -183,6 +191,7 @@ private fun AccountRows(
         accounts.forEachIndexed { i, account ->
             AccountRow(
                 account = account,
+                showProfilePicture = showProfilePicture,
                 onActivateAccount = { onActivateAccount(i) },
                 onOpenProfile = { navigateToProfile(account.pubkey) },
                 onDeleteAccount = { onDeleteAccount(i) })
@@ -195,6 +204,7 @@ private fun AccountRows(
 @Composable
 private fun AccountRow(
     account: Account,
+    showProfilePicture: Boolean,
     onActivateAccount: () -> Unit,
     onOpenProfile: () -> Unit,
     onDeleteAccount: () -> Unit,
@@ -217,14 +227,24 @@ private fun AccountRow(
             ),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            PictureAndName(modifier = Modifier.weight(1f), account = account, isTop = false)
+            PictureAndName(
+                modifier = Modifier.weight(1f),
+                account = account,
+                showProfilePicture = showProfilePicture,
+                isTop = false
+            )
             if (account.isActive) Icon(imageVector = CheckIcon, contentDescription = null)
         }
     }
 }
 
 @Composable
-private fun PictureAndName(account: Account, isTop: Boolean, modifier: Modifier = Modifier) {
+private fun PictureAndName(
+    account: Account,
+    showProfilePicture: Boolean,
+    isTop: Boolean,
+    modifier: Modifier = Modifier
+) {
     Row(modifier = modifier, verticalAlignment = Alignment.CenterVertically) {
         ProfilePicture(
             modifier = Modifier
@@ -232,6 +252,8 @@ private fun PictureAndName(account: Account, isTop: Boolean, modifier: Modifier 
                 .aspectRatio(1f)
                 .clip(CircleShape),
             pubkey = account.pubkey,
+            picture = account.picture,
+            showProfilePicture = showProfilePicture,
             trustType = Oneself
         )
         Spacer(Modifier.width(spacing.large))
@@ -266,61 +288,64 @@ private fun AddAccountRow(onAddAccount: () -> Unit) {
 private fun MainRows(
     isDarkMode: Boolean,
     onToggleDarkMode: () -> Unit,
-    navigateToFeed: () -> Unit,
-    navigateToInbox: () -> Unit,
-    navigateToLikes: () -> Unit,
-    navigateToSearch: () -> Unit,
-    navigateToRelayEditor: () -> Unit,
-    navigateToKeys: () -> Unit,
+    navActions: NozzleNavActions,
     closeDrawer: () -> Unit,
     modifier: Modifier,
 ) {
     Column(modifier = modifier) {
         DrawerRow(
-            imageVector = Icons.Rounded.Newspaper,
+            imageVector = FeedIcon,
             label = stringResource(id = R.string.feed),
             action = {
-                navigateToFeed()
+                navActions.navigateToFeed()
                 closeDrawer()
             }
         )
         DrawerRow(
-            imageVector = Icons.Rounded.Inbox,
+            imageVector = InboxIcon,
             label = stringResource(id = R.string.inbox),
             action = {
-                navigateToInbox()
+                navActions.navigateToInbox()
                 closeDrawer()
             }
         )
         DrawerRow(
-            imageVector = Icons.Rounded.Search,
+            imageVector = SearchIcon,
             label = stringResource(id = R.string.search),
             action = {
-                navigateToSearch()
+                navActions.navigateToSearch()
                 closeDrawer()
             }
         )
         DrawerRow(
-            imageVector = Icons.Rounded.Favorite,
+            imageVector = LikedIcon,
             label = stringResource(id = R.string.likes),
             action = {
-                navigateToLikes()
+                navActions.navigateToLikes()
                 closeDrawer()
             }
         )
         DrawerRow(
-            imageVector = Icons.Rounded.CellTower,
+            imageVector = RelayIcon,
             label = stringResource(id = R.string.relays),
             action = {
-                navigateToRelayEditor()
+                navActions.navigateToRelayEditor()
                 closeDrawer()
             }
         )
         DrawerRow(
-            imageVector = Icons.Rounded.Key,
+            imageVector = KeyIcon,
             label = stringResource(id = R.string.keys),
             action = {
-                navigateToKeys()
+                navActions.navigateToKeys()
+                closeDrawer()
+            }
+        )
+        DrawerRow(
+            imageVector = SettingsIcon,
+            label = stringResource(id = R.string.settings),
+            action = {
+                navActions.navigateToSettings()
                 closeDrawer()
             }
         )

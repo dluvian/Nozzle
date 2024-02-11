@@ -10,6 +10,7 @@ import com.dluvian.nozzle.ui.app.navigation.NozzleNavActions
 @Composable
 fun NozzleDrawerRoute(
     nozzleDrawerViewModel: NozzleDrawerViewModel,
+    showProfilePicture: Boolean,
     navActions: NozzleNavActions,
     closeDrawer: () -> Unit,
     modifier: Modifier = Modifier,
@@ -20,6 +21,7 @@ fun NozzleDrawerRoute(
     NozzleDrawerScreen(
         modifier = modifier,
         uiState = uiState,
+        showProfilePicture = showProfilePicture,
         isDarkMode = isDarkMode,
         navActions = navActions,
         onActivateAccount = nozzleDrawerViewModel.onActivateAccount,

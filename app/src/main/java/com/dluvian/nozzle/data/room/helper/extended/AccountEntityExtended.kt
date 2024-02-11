@@ -4,4 +4,5 @@ data class AccountEntityExtended(
     val pubkey: String,
     val isActive: Boolean,
     val name: String?,
+    val picture: String?,
 )

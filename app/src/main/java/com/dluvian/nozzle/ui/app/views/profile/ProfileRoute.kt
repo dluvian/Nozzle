@@ -13,6 +13,7 @@ fun ProfileRoute(
     profileViewModel: ProfileViewModel,
     profileFollower: IProfileFollower,
     postCardLambdas: PostCardLambdas,
+    showProfilePicture: Boolean,
     onOpenFollowerList: (String) -> Unit,
     onOpenFollowedByList: (String) -> Unit,
     onPrepareReply: (PostWithMeta) -> Unit,
@@ -36,6 +37,7 @@ fun ProfileRoute(
     ProfileScreen(
         isRefreshing = isRefreshing,
         profile = profile,
+        showProfilePicture = showProfilePicture,
         isFollowedByMe = forceFollowed[profile.pubkey] ?: contactList.contains(profile.pubkey),
         feed = adjustedFeed,
         numOfNewPosts = numOfNewPosts,

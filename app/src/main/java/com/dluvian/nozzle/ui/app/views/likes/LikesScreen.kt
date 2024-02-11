@@ -16,6 +16,7 @@ import com.dluvian.nozzle.ui.components.scaffolds.ReturnableScaffold
 @Composable
 fun LikesScreen(
     feed: List<PostWithMeta>,
+    showProfilePicture: Boolean,
     numOfNewPosts: Int,
     likeCount: Int,
     isRefreshing: Boolean,
@@ -45,6 +46,7 @@ fun LikesScreen(
         )
         PostCardList(
             posts = feed,
+            showProfilePicture = showProfilePicture,
             isRefreshing = isRefreshing,
             postCardLambdas = postCardLambdas,
             onRefresh = onRefresh,
