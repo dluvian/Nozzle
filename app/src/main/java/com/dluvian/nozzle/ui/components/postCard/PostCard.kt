@@ -11,12 +11,15 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.DrawScope
+import androidx.compose.ui.semantics.invisibleToUser
+import androidx.compose.ui.semantics.semantics
 import com.dluvian.nozzle.model.PostWithMeta
 import com.dluvian.nozzle.model.ThreadPosition
 import com.dluvian.nozzle.model.TrustType
@@ -29,7 +32,7 @@ import com.dluvian.nozzle.ui.theme.sizing
 import com.dluvian.nozzle.ui.theme.spacing
 
 
-@OptIn(ExperimentalFoundationApi::class)
+@OptIn(ExperimentalFoundationApi::class, ExperimentalComposeUiApi::class)
 @Composable
 fun PostCard(
     post: PostWithMeta,
@@ -96,7 +99,9 @@ fun PostCard(
         .clipToBounds()
     ) {
         PostCardProfilePicture(
-            modifier = Modifier.size(sizing.profilePicture),
+            modifier = Modifier
+                .size(sizing.profilePicture)
+                .semantics { this.invisibleToUser() },
             pubkey = post.pubkey,
             picture = post.picture,
             showProfilePicture = showProfilePicture,
