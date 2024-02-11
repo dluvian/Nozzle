@@ -2,6 +2,7 @@ package com.dluvian.nozzle.model
 
 data class SimpleProfile(
     val name: String,
+    val picture: String?,
     val pubkey: Pubkey,
     val trustScore: Float,
     val isOneself: Boolean,

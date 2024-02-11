@@ -123,7 +123,7 @@ class AppContainer(context: Context) {
         database = roomDb,
     )
 
-    val autopilotProvider: IAutopilotProvider = AutopilotProvider(
+    private val autopilotProvider: IAutopilotProvider = AutopilotProvider(
         relayProvider = relayProvider,
         contactListProvider = contactListProvider,
         nip65Dao = roomDb.nip65Dao(),

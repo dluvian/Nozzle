@@ -11,6 +11,7 @@ import com.dluvian.nozzle.ui.app.navigation.PostCardLambdas
 @Composable
 fun HashtagRoute(
     hashtagViewModel: HashtagViewModel,
+    showProfilePicture: Boolean,
     profileFollower: IProfileFollower,
     postCardLambdas: PostCardLambdas,
     onPrepareReply: (PostWithMeta) -> Unit,
@@ -32,6 +33,7 @@ fun HashtagRoute(
     HashtagScreen(
         uiState = uiState,
         feed = adjustedFeed,
+        showProfilePicture = showProfilePicture,
         numOfNewPosts = numOfNewPosts,
         postCardLambdas = postCardLambdas,
         onRefresh = hashtagViewModel.onRefresh,

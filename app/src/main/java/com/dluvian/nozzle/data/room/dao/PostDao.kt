@@ -364,8 +364,8 @@ interface PostDao {
                 "FROM reaction " +
                 "WHERE eventId = mainPost.id AND pubkey = (SELECT pubkey FROM account WHERE isActive = 1)) " +
                 "AS isLikedByMe, " +
-                // SELECT name
-                "mainProfile.name, " +
+                // SELECT name and picture
+                "mainProfile.name, mainProfile.picture, " +
                 // SELECT numOfReplies
                 "(SELECT COUNT(*) FROM post WHERE post.replyToId = mainPost.id) " +
                 "AS numOfReplies, " +

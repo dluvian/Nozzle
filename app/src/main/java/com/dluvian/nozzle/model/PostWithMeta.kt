@@ -14,6 +14,7 @@ data class PostWithMeta(
     val mediaUrls: List<String>,
     val annotatedMentionedPosts: List<AnnotatedMentionedPost>,
     val name: String,
+    val picture: String?,
     val isLikedByMe: Boolean,
     val isFollowedByMe: Boolean,
     val isOneself: Boolean,

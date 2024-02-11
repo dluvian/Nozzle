@@ -9,6 +9,7 @@ import com.dluvian.nozzle.ui.app.navigation.PostCardLambdas
 @Composable
 fun SearchRoute(
     searchViewModel: SearchViewModel,
+    showProfilePicture: Boolean,
     postCardLambdas: PostCardLambdas,
     onPrepareReply: (PostWithMeta) -> Unit,
     onGoBack: () -> Unit,
@@ -19,6 +20,7 @@ fun SearchRoute(
 
     SearchScreen(
         uiState = uiState,
+        showProfilePicture = showProfilePicture,
         postCardLambdas = postCardLambdas,
         profileSearchResult = profileSearchResult,
         postSearchResult = postSearchResult,

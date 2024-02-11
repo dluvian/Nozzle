@@ -6,7 +6,7 @@ import com.dluvian.nozzle.model.Account
 
 @Immutable
 data class NozzleDrawerViewModelState(
-    val activeAccount: Account = Account(name = "", pubkey = "", isActive = true),
+    val activeAccount: Account = Account(name = "", pubkey = "", picture = null, isActive = true),
     val allAccounts: List<Account> = emptyList(),
 ) {
     companion object {

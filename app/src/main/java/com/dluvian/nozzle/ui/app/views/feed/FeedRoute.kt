@@ -12,6 +12,7 @@ import com.dluvian.nozzle.ui.app.navigation.PostCardLambdas
 @Composable
 fun FeedRoute(
     feedViewModel: FeedViewModel,
+    showProfilePicture: Boolean,
     profileFollower: IProfileFollower,
     postCardLambdas: PostCardLambdas,
     onPrepareReply: (PostWithMeta) -> Unit,
@@ -20,6 +21,7 @@ fun FeedRoute(
 ) {
     val uiState by feedViewModel.uiState.collectAsState()
     val pubkey by feedViewModel.pubkeyState.collectAsState()
+    val picture by feedViewModel.pictureState.collectAsState()
 
     val numOfNewPostsFlow by feedViewModel.numOfNewPosts.collectAsState()
     val numOfNewPosts by numOfNewPostsFlow.collectAsState()
@@ -35,6 +37,8 @@ fun FeedRoute(
     FeedScreen(
         uiState = uiState,
         filterLambdas = feedViewModel.filterLambdas,
+        picture = picture,
+        showProfilePicture = showProfilePicture,
         pubkey = pubkey,
         feed = adjustedFeed,
         numOfNewPosts = numOfNewPosts,

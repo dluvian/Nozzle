@@ -7,14 +7,18 @@ import androidx.compose.runtime.getValue
 @Composable
 fun ReplyRoute(
     replyViewModel: ReplyViewModel,
+    showProfilePicture: Boolean,
     onGoBack: () -> Unit,
 ) {
     val uiState by replyViewModel.uiState.collectAsState()
-    val pubkeyState by replyViewModel.pubkeyState.collectAsState()
+    val pubkey by replyViewModel.pubkeyState.collectAsState()
+    val picture by replyViewModel.pictureState.collectAsState()
 
     ReplyScreen(
         uiState = uiState,
-        pubkey = pubkeyState,
+        showProfilePicture = showProfilePicture,
+        pubkey = pubkey,
+        picture = picture,
         onToggleRelaySelection = replyViewModel.onToggleRelaySelection,
         onSend = replyViewModel.onSend,
         onSearch = replyViewModel.onSearch,

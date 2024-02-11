@@ -142,7 +142,8 @@
     <string name="settings">Settings</string>
     <string name="open_drawer">Open drawer</string>
     <string name="show_profile_pictures">Show profile pictures</string>
-    <string name="show_profile_pictures_summary">Fetch and show profile pictures. This will increase data usage.</string>
+    <string name="show_profile_pictures_summary">Fetch and show profile pictures. Activating this will increase data usage.</string>
+    <string name="profile_picture">Profile picture</string>
 
     <plurals name="other_relays">
         <item quantity="one">other</item>

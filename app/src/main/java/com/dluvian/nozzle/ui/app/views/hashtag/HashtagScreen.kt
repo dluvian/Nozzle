@@ -16,6 +16,7 @@ import com.dluvian.nozzle.ui.components.scaffolds.ReturnableScaffold
 fun HashtagScreen(
     uiState: HashtagViewModelState,
     feed: List<PostWithMeta>,
+    showProfilePicture: Boolean,
     numOfNewPosts: Int,
     postCardLambdas: PostCardLambdas,
     onRefresh: () -> Unit,
@@ -38,6 +39,7 @@ fun HashtagScreen(
         )
         PostCardList(
             posts = feed,
+            showProfilePicture = showProfilePicture,
             isRefreshing = uiState.isRefreshing,
             postCardLambdas = postCardLambdas,
             onRefresh = onRefresh,

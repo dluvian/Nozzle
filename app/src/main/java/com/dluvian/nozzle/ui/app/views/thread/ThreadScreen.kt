@@ -34,6 +34,7 @@ import com.dluvian.nozzle.ui.theme.spacing
 @Composable
 fun ThreadScreen(
     thread: PostThread,
+    showProfilePicture: Boolean,
     isRefreshing: Boolean,
     postCardLambdas: PostCardLambdas,
     onPrepareReply: (PostWithMeta) -> Unit,
@@ -47,6 +48,7 @@ fun ThreadScreen(
     ) {
         ThreadedPosts(
             thread = thread,
+            showProfilePicture = showProfilePicture,
             isRefreshing = isRefreshing,
             postCardLambdas = postCardLambdas,
             onPrepareReply = onPrepareReply,
@@ -61,6 +63,7 @@ fun ThreadScreen(
 @Composable
 private fun ThreadedPosts(
     thread: PostThread,
+    showProfilePicture: Boolean,
     isRefreshing: Boolean,
     postCardLambdas: PostCardLambdas,
     onPrepareReply: (PostWithMeta) -> Unit,
@@ -94,6 +97,7 @@ private fun ThreadedPosts(
                     }
                     PostCard(
                         post = post,
+                        showProfilePicture = showProfilePicture,
                         postCardLambdas = postCardLambdas,
                         onPrepareReply = onPrepareReply,
                         threadPosition = if (index == 0) ThreadPosition.START else ThreadPosition.MIDDLE,
@@ -109,6 +113,7 @@ private fun ThreadedPosts(
                     val focusColor = MaterialTheme.colorScheme.onPrimaryContainer
                     PostCard(
                         post = it,
+                        showProfilePicture = showProfilePicture,
                         postCardLambdas = postCardLambdas,
                         onPrepareReply = onPrepareReply,
                         modifier = Modifier.drawBehind {
@@ -129,6 +134,7 @@ private fun ThreadedPosts(
                 items(items = thread.replies, key = { it.entity.id }) { post ->
                     PostCard(
                         post = post,
+                        showProfilePicture = showProfilePicture,
                         postCardLambdas = postCardLambdas,
                         onPrepareReply = onPrepareReply,
                     )

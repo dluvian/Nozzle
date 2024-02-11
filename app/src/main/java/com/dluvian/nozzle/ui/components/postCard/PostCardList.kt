@@ -15,6 +15,7 @@ import com.dluvian.nozzle.ui.components.pullRefresh.PullRefreshBox
 @Composable
 fun PostCardList(
     posts: List<PostWithMeta>,
+    showProfilePicture: Boolean,
     isRefreshing: Boolean,
     postCardLambdas: PostCardLambdas,
     onRefresh: () -> Unit,
@@ -30,6 +31,7 @@ fun PostCardList(
             itemsIndexed(items = posts, key = { _, item -> item.entity.id }) { index, post ->
                 PostCard(
                     post = post,
+                    showProfilePicture = showProfilePicture,
                     postCardLambdas = postCardLambdas,
                     onPrepareReply = onPrepareReply,
                 )

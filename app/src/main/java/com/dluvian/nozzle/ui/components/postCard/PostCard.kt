@@ -33,6 +33,7 @@ import com.dluvian.nozzle.ui.theme.spacing
 @Composable
 fun PostCard(
     post: PostWithMeta,
+    showProfilePicture: Boolean,
     postCardLambdas: PostCardLambdas,
     onPrepareReply: (PostWithMeta) -> Unit,
     modifier: Modifier = Modifier,
@@ -97,6 +98,8 @@ fun PostCard(
         PostCardProfilePicture(
             modifier = Modifier.size(sizing.profilePicture),
             pubkey = post.pubkey,
+            picture = post.picture,
+            showProfilePicture = showProfilePicture,
             trustType = TrustType.determineTrustType(
                 isOneself = post.isOneself,
                 isFollowed = post.isFollowedByMe,
@@ -126,6 +129,7 @@ fun PostCard(
                 Spacer(Modifier.height(spacing.medium))
                 AnnotatedMentionedPostCard(
                     post = mentionedPost,
+                    showProfilePicture = showProfilePicture,
                     onNavigateToProfile = postCardLambdas.navLambdas.onNavigateToProfile,
                     onNavigateToThread = postCardLambdas.navLambdas.onNavigateToThread,
                     onNavigateToId = postCardLambdas.navLambdas.onNavigateToId,

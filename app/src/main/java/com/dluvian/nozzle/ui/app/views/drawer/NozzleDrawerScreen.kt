@@ -56,6 +56,7 @@ import com.dluvian.nozzle.ui.theme.spacing
 @Composable
 fun NozzleDrawerScreen(
     uiState: NozzleDrawerViewModelState,
+    showProfilePicture: Boolean,
     isDarkMode: Boolean,
     navActions: NozzleNavActions,
     onActivateAccount: (Int) -> Unit,
@@ -74,6 +75,7 @@ fun NozzleDrawerScreen(
                 modifier = Modifier.padding(horizontal = spacing.medium),
                 activeAccount = uiState.activeAccount,
                 allAccounts = uiState.allAccounts,
+                showProfilePicture = showProfilePicture,
                 onActiveProfileClick = {
                     navActions.navigateToProfile(uiState.activeAccount.pubkey)
                     closeDrawer()
@@ -114,6 +116,7 @@ fun NozzleDrawerScreen(
 private fun TopRow(
     activeAccount: Account,
     allAccounts: List<Account>,
+    showProfilePicture: Boolean,
     onActiveProfileClick: () -> Unit,
     onActivateAccount: (Int) -> Unit,
     onAddAccount: () -> Unit,
@@ -132,6 +135,7 @@ private fun TopRow(
         Column {
             ActiveAccount(
                 account = activeAccount,
+                showProfilePicture = showProfilePicture,
                 isExpanded = isExpanded.value,
                 onToggleExpand = { isExpanded.value = !isExpanded.value },
                 onClick = onActiveProfileClick
@@ -139,6 +143,7 @@ private fun TopRow(
             AnimatedVisibility(visible = isExpanded.value) {
                 AccountRows(
                     accounts = allAccounts,
+                    showProfilePicture = showProfilePicture,
                     onActivateAccount = onActivateAccount,
                     onAddAccount = onAddAccount,
                     onDeleteAccount = onDeleteAccount,
@@ -152,6 +157,7 @@ private fun TopRow(
 @Composable
 private fun ActiveAccount(
     account: Account,
+    showProfilePicture: Boolean,
     isExpanded: Boolean,
     onToggleExpand: () -> Unit,
     onClick: () -> Unit,
@@ -161,7 +167,12 @@ private fun ActiveAccount(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            PictureAndName(modifier = Modifier.weight(1f), account = account, isTop = true)
+            PictureAndName(
+                modifier = Modifier.weight(1f),
+                account = account,
+                showProfilePicture = showProfilePicture,
+                isTop = true
+            )
             ExpandToggleIconButton(isExpanded = isExpanded, onToggle = onToggleExpand)
         }
     }
@@ -170,6 +181,7 @@ private fun ActiveAccount(
 @Composable
 private fun AccountRows(
     accounts: List<Account>,
+    showProfilePicture: Boolean,
     onActivateAccount: (Int) -> Unit,
     onAddAccount: () -> Unit,
     onDeleteAccount: (Int) -> Unit,
@@ -179,6 +191,7 @@ private fun AccountRows(
         accounts.forEachIndexed { i, account ->
             AccountRow(
                 account = account,
+                showProfilePicture = showProfilePicture,
                 onActivateAccount = { onActivateAccount(i) },
                 onOpenProfile = { navigateToProfile(account.pubkey) },
                 onDeleteAccount = { onDeleteAccount(i) })
@@ -191,6 +204,7 @@ private fun AccountRows(
 @Composable
 private fun AccountRow(
     account: Account,
+    showProfilePicture: Boolean,
     onActivateAccount: () -> Unit,
     onOpenProfile: () -> Unit,
     onDeleteAccount: () -> Unit,
@@ -213,14 +227,24 @@ private fun AccountRow(
             ),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            PictureAndName(modifier = Modifier.weight(1f), account = account, isTop = false)
+            PictureAndName(
+                modifier = Modifier.weight(1f),
+                account = account,
+                showProfilePicture = showProfilePicture,
+                isTop = false
+            )
             if (account.isActive) Icon(imageVector = CheckIcon, contentDescription = null)
         }
     }
 }
 
 @Composable
-private fun PictureAndName(account: Account, isTop: Boolean, modifier: Modifier = Modifier) {
+private fun PictureAndName(
+    account: Account,
+    showProfilePicture: Boolean,
+    isTop: Boolean,
+    modifier: Modifier = Modifier
+) {
     Row(modifier = modifier, verticalAlignment = Alignment.CenterVertically) {
         ProfilePicture(
             modifier = Modifier
@@ -228,6 +252,8 @@ private fun PictureAndName(account: Account, isTop: Boolean, modifier: Modifier 
                 .aspectRatio(1f)
                 .clip(CircleShape),
             pubkey = account.pubkey,
+            picture = account.picture,
+            showProfilePicture = showProfilePicture,
             trustType = Oneself
         )
         Spacer(Modifier.width(spacing.large))

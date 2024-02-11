@@ -124,6 +124,7 @@ class PostWithMetaProvider(
                     pubkey = pubkey,
                     name = it.name.orEmpty()
                         .ifEmpty { getShortenedNpubFromPubkey(pubkey).orEmpty() },
+                    picture = it.picture,
                     replyToPubkey = it.replyToPubkey,
                     replyToName = getReplyToName(it),
                     isLikedByMe = it.isLikedByMe,
@@ -156,6 +157,7 @@ class PostWithMetaProvider(
                         pubkey = null,
                         content = null,
                         name = null,
+                        picture = null,
                         createdAt = null
                     )
                 val annotated = if (post.content.isNullOrEmpty()) AnnotatedString("")

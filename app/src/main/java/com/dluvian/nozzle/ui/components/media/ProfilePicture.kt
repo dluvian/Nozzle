@@ -17,6 +17,12 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
+import coil.compose.SubcomposeAsyncImage
+import coil.request.ImageRequest
+import com.dluvian.nozzle.R
 import com.dluvian.nozzle.data.utils.getDefaultPictureBrush
 import com.dluvian.nozzle.model.FollowedByFriend
 import com.dluvian.nozzle.model.Friend
@@ -31,12 +37,15 @@ import com.dluvian.nozzle.ui.theme.VerifiedUserIcon
 fun ProfilePicture(
     modifier: Modifier = Modifier,
     pubkey: String,
+    picture: String?,
+    showProfilePicture: Boolean,
     trustType: TrustType,
     onOpenProfile: (() -> Unit)? = null,
 ) {
     BaseProfilePicture(
         modifier = modifier,
         pubkey = pubkey,
+        picture = if (showProfilePicture) picture else null,
         trustType = trustType,
         onOpenProfile = onOpenProfile,
     )
@@ -46,19 +55,29 @@ fun ProfilePicture(
 private fun BaseProfilePicture(
     modifier: Modifier = Modifier,
     pubkey: String,
+    picture: String?,
     trustType: TrustType,
     onOpenProfile: (() -> Unit)? = null,
 ) {
     Box(modifier = modifier) {
-        DefaultPicture(
-            modifier = Modifier
-                .clip(CircleShape)
-                .fillMaxSize()
-                .let {
-                    if (onOpenProfile != null) it.clickable(onClick = onOpenProfile)
-                    else it
-                },
-            pubkey = pubkey
+        val imgModifier = Modifier
+            .clip(CircleShape)
+            .fillMaxSize()
+            .let {
+                if (onOpenProfile != null) it.clickable(onClick = onOpenProfile)
+                else it
+            }
+        SubcomposeAsyncImage(
+            modifier = imgModifier,
+            model = ImageRequest.Builder(LocalContext.current)
+                .data(picture)
+                .crossfade(true)
+                .size(300)
+                .build(),
+            contentScale = ContentScale.Crop,
+            loading = { DefaultPicture(modifier = imgModifier, pubkey = pubkey) },
+            error = { DefaultPicture(modifier = imgModifier, pubkey = pubkey) },
+            contentDescription = stringResource(id = R.string.profile_picture)
         )
         PictureIndicator(modifier = Modifier.fillMaxWidth(), trustType = trustType)
     }

@@ -61,7 +61,7 @@ fun NozzleApp(appContainer: AppContainer) {
                         keyManager = appContainer.keyManager,
                         accountProvider = appContainer.accountProvider,
                         darkModePreferences = appContainer.nozzlePreferences,
-                        nozzleSubscriber = appContainer.nozzleSubscriber
+                        nozzleSubscriber = appContainer.nozzleSubscriber,
                     )
                 ),
                 editProfileViewModel = viewModel(
@@ -94,6 +94,7 @@ fun NozzleApp(appContainer: AppContainer) {
                     factory = FeedViewModel.provideFactory(
                         pubkeyProvider = appContainer.keyManager,
                         feedProvider = appContainer.feedProvider,
+                        personalProfileProvider = appContainer.personalProfileManager,
                         feedSettingsPreferences = appContainer.nozzlePreferences
                     )
                 ),
@@ -118,6 +119,7 @@ fun NozzleApp(appContainer: AppContainer) {
                     factory = ReplyViewModel.provideFactory(
                         nostrService = appContainer.nostrService,
                         pubkeyProvider = appContainer.keyManager,
+                        personalProfileProvider = appContainer.personalProfileManager,
                         relayProvider = appContainer.relayProvider,
                         postPreparer = appContainer.postPreparer,
                         fullPostInserter = appContainer.fullPostInserter,
@@ -128,6 +130,7 @@ fun NozzleApp(appContainer: AppContainer) {
                     factory = PostViewModel.provideFactory(
                         nostrService = appContainer.nostrService,
                         pubkeyProvider = appContainer.keyManager,
+                        personalProfileProvider = appContainer.personalProfileManager,
                         relayProvider = appContainer.relayProvider,
                         postPreparer = appContainer.postPreparer,
                         annotatedContentHandler = appContainer.annotatedContentHandler,
@@ -179,9 +182,12 @@ fun NozzleApp(appContainer: AppContainer) {
             val hasPrivkey by rememberSaveable(appContainer.keyManager.hasPrivkey) {
                 appContainer.keyManager.hasPrivkey
             }
+            val showProfilePicture by appContainer.nozzlePreferences.showProfilePictures
+
             Screen(
                 drawerState = drawerState,
                 vmContainer = vmContainer,
+                showProfilePicture = showProfilePicture,
                 profileFollower = appContainer.profileFollower,
                 clickedMediaUrlCache = appContainer.clickedMediaUrlCache,
                 postCardInteractor = appContainer.postCardInteractor,
@@ -198,6 +204,7 @@ fun NozzleApp(appContainer: AppContainer) {
 private fun Screen(
     drawerState: DrawerState,
     vmContainer: VMContainer,
+    showProfilePicture: Boolean,
     profileFollower: IProfileFollower,
     clickedMediaUrlCache: IClickedMediaUrlCache,
     postCardInteractor: IPostCardInteractor,
@@ -210,6 +217,7 @@ private fun Screen(
         Drawer(
             drawerState = drawerState,
             vmContainer = vmContainer,
+            showProfilePicture = showProfilePicture,
             profileFollower = profileFollower,
             clickedMediaUrlCache = clickedMediaUrlCache,
             postCardInteractor = postCardInteractor,
@@ -222,6 +230,7 @@ private fun Screen(
         NozzleContent(
             drawerState = drawerState,
             vmContainer = vmContainer,
+            showProfilePicture = showProfilePicture,
             profileFollower = profileFollower,
             clickedMediaUrlCache = clickedMediaUrlCache,
             postCardInteractor = postCardInteractor,
@@ -237,6 +246,7 @@ private fun Screen(
 private fun Drawer(
     drawerState: DrawerState,
     vmContainer: VMContainer,
+    showProfilePicture: Boolean,
     profileFollower: IProfileFollower,
     clickedMediaUrlCache: IClickedMediaUrlCache,
     postCardInteractor: IPostCardInteractor,
@@ -253,6 +263,7 @@ private fun Drawer(
                 NozzleDrawerRoute(
                     nozzleDrawerViewModel = vmContainer.drawerViewModel,
                     navActions = navActions,
+                    showProfilePicture = showProfilePicture,
                     closeDrawer = { scope.launch { drawerState.close() } },
                     modifier = Modifier
                         .statusBarsPadding()
@@ -264,6 +275,7 @@ private fun Drawer(
         NozzleContent(
             vmContainer = vmContainer,
             navActions = navActions,
+            showProfilePicture = showProfilePicture,
             profileFollower = profileFollower,
             clickedMediaUrlCache = clickedMediaUrlCache,
             postCardInteractor = postCardInteractor,
@@ -279,6 +291,7 @@ private fun Drawer(
 private fun NozzleContent(
     drawerState: DrawerState,
     vmContainer: VMContainer,
+    showProfilePicture: Boolean,
     profileFollower: IProfileFollower,
     clickedMediaUrlCache: IClickedMediaUrlCache,
     postCardInteractor: IPostCardInteractor,
@@ -295,6 +308,7 @@ private fun NozzleContent(
         NozzleNavGraph(
             vmContainer = vmContainer,
             navActions = navActions,
+            showProfilePicture = showProfilePicture,
             profileFollower = profileFollower,
             clickedMediaUrlCache = clickedMediaUrlCache,
             postCardInteractor = postCardInteractor,

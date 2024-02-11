@@ -11,6 +11,7 @@ import com.dluvian.nozzle.ui.app.navigation.PostCardLambdas
 @Composable
 fun InboxRoute(
     inboxViewModel: InboxViewModel,
+    showProfilePicture: Boolean,
     profileFollower: IProfileFollower,
     postCardLambdas: PostCardLambdas,
     onPrepareReply: (PostWithMeta) -> Unit,
@@ -32,6 +33,7 @@ fun InboxRoute(
     InboxScreen(
         uiState = uiState,
         feed = adjustedFeed,
+        showProfilePicture = showProfilePicture,
         numOfNewPosts = numOfNewPosts,
         postCardLambdas = postCardLambdas,
         onRefresh = inboxViewModel.onRefresh,

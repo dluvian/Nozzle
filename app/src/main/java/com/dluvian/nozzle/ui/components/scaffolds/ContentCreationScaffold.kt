@@ -32,6 +32,8 @@ fun ContentCreationScaffold(
     postToQuote: AnnotatedMentionedPost?,
     replyingTo: String?,
     pubkey: Pubkey,
+    picture: String?,
+    showProfilePicture: Boolean,
     toast: String,
     placeholder: String,
     onSearch: (String) -> Unit,
@@ -82,6 +84,8 @@ fun ContentCreationScaffold(
                 InputBox(
                     input = input,
                     pubkey = pubkey,
+                    picture = picture,
+                    showProfilePicture = showProfilePicture,
                     placeholder = placeholder,
                     postToQuote = postToQuote,
                     searchSuggestions = searchSuggestions,

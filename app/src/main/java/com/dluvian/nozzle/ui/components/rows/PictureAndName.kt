@@ -16,16 +16,22 @@ import com.dluvian.nozzle.ui.theme.sizing
 import com.dluvian.nozzle.ui.theme.spacing
 
 @Composable
-fun PictureAndName(profile: SimpleProfile, onNavigateToProfile: (Pubkey) -> Unit) {
+fun PictureAndName(
+    profile: SimpleProfile,
+    showProfilePicture: Boolean,
+    onNavigateToProfile: (Pubkey) -> Unit
+) {
     PostCardProfilePicture(
-        modifier = Modifier.size(sizing.profilePicture),
         pubkey = profile.pubkey,
+        picture = profile.picture,
+        showProfilePicture = showProfilePicture,
         trustType = TrustType.determineTrustType(
             isOneself = profile.isOneself,
             isFollowed = profile.isFollowedByMe,
             trustScore = profile.trustScore,
         ),
-        onNavigateToProfile = onNavigateToProfile
+        onNavigateToProfile = onNavigateToProfile,
+        modifier = Modifier.size(sizing.profilePicture)
     )
     Spacer(Modifier.width(spacing.large))
     Text(

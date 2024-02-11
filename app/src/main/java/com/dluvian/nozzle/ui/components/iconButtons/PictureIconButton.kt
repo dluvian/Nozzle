@@ -12,6 +12,8 @@ import com.dluvian.nozzle.ui.theme.sizing
 @Composable
 fun PictureIconButton(
     pubkey: String,
+    picture: String?,
+    showProfilePicture: Boolean,
     trustType: TrustType,
     description: String?,
     onPictureClick: () -> Unit
@@ -23,6 +25,8 @@ fun PictureIconButton(
         ProfilePicture(
             modifier = Modifier.size(sizing.smallProfilePicture),
             pubkey = pubkey,
+            picture = picture,
+            showProfilePicture = showProfilePicture,
             trustType = trustType
         )
     }

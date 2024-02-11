@@ -6,6 +6,7 @@ import com.dluvian.nozzle.data.room.helper.extended.AccountEntityExtended
 data class Account(
     val name: String,
     val pubkey: String,
+    val picture: String?,
     val isActive: Boolean
 ) {
     companion object {
@@ -15,7 +16,8 @@ data class Account(
                     .orEmpty()
                     .ifBlank { getShortenedNpubFromPubkey(accountEntityExtended.pubkey).orEmpty() },
                 pubkey = accountEntityExtended.pubkey,
-                isActive = accountEntityExtended.isActive
+                isActive = accountEntityExtended.isActive,
+                picture = accountEntityExtended.picture
             )
         }
     }

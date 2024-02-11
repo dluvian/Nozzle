@@ -25,6 +25,7 @@ import com.dluvian.nozzle.ui.components.scaffolds.ReturnableScaffold
 @Composable
 fun InboxScreen(
     uiState: InboxViewModelState,
+    showProfilePicture: Boolean,
     feed: List<PostWithMeta>,
     numOfNewPosts: Int,
     postCardLambdas: PostCardLambdas,
@@ -73,6 +74,7 @@ fun InboxScreen(
         Column(modifier = Modifier.fillMaxSize()) {
             PostCardList(
                 posts = feed,
+                showProfilePicture = showProfilePicture,
                 isRefreshing = uiState.isRefreshing,
                 postCardLambdas = postCardLambdas,
                 onRefresh = onRefresh,

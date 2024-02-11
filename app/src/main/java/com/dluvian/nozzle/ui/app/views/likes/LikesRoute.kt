@@ -11,6 +11,7 @@ import com.dluvian.nozzle.ui.app.navigation.PostCardLambdas
 @Composable
 fun LikesRoute(
     likesViewModel: LikesViewModel,
+    showProfilePicture: Boolean,
     profileFollower: IProfileFollower,
     postCardLambdas: PostCardLambdas,
     onPrepareReply: (PostWithMeta) -> Unit,
@@ -32,6 +33,7 @@ fun LikesRoute(
 
     LikesScreen(
         feed = adjustedFeed,
+        showProfilePicture = showProfilePicture,
         numOfNewPosts = numOfNewPosts,
         likeCount = likeCount,
         isRefreshing = isRefreshing,

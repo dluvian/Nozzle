@@ -7,6 +7,7 @@ import com.dluvian.nozzle.data.cache.IIdCache
 import com.dluvian.nozzle.data.nostr.INostrService
 import com.dluvian.nozzle.data.nostr.utils.ShortenedNameUtils.getShortenedNpubFromPubkey
 import com.dluvian.nozzle.data.postPreparer.IPostPreparer
+import com.dluvian.nozzle.data.provider.IPersonalProfileProvider
 import com.dluvian.nozzle.data.provider.IPubkeyProvider
 import com.dluvian.nozzle.data.provider.IRelayProvider
 import com.dluvian.nozzle.data.room.FullPostInserter
@@ -21,6 +22,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -28,6 +30,7 @@ import kotlinx.coroutines.launch
 class ReplyViewModel(
     private val nostrService: INostrService,
     private val pubkeyProvider: IPubkeyProvider,
+    private val personalProfileProvider: IPersonalProfileProvider,
     private val relayProvider: IRelayProvider,
     private val postPreparer: IPostPreparer,
     private val fullPostInserter: FullPostInserter,
@@ -37,6 +40,9 @@ class ReplyViewModel(
     private var postToReplyTo: PostWithMeta? = null
 
     val pubkeyState = pubkeyProvider.getActivePubkeyStateFlow()
+    val pictureState = personalProfileProvider.getMetadataStateFlow()
+        .map { it?.picture }
+        .stateIn(viewModelScope, SharingStarted.Eagerly, null)
 
     private val _uiState = MutableStateFlow(ReplyViewModelState())
     val uiState = _uiState
@@ -147,6 +153,7 @@ class ReplyViewModel(
         fun provideFactory(
             nostrService: INostrService,
             pubkeyProvider: IPubkeyProvider,
+            personalProfileProvider: IPersonalProfileProvider,
             relayProvider: IRelayProvider,
             postPreparer: IPostPreparer,
             fullPostInserter: FullPostInserter,
@@ -157,6 +164,7 @@ class ReplyViewModel(
                 return ReplyViewModel(
                     nostrService = nostrService,
                     pubkeyProvider = pubkeyProvider,
+                    personalProfileProvider = personalProfileProvider,
                     relayProvider = relayProvider,
                     postPreparer = postPreparer,
                     fullPostInserter = fullPostInserter,
