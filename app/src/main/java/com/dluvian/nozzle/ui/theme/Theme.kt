@@ -26,6 +26,9 @@ private val darkColorPalette = darkColorScheme(
     onSecondary = Color(0xFF4a2800),
     secondaryContainer = Color(0xFF693c00),
     onSecondaryContainer = Color(0xFFffdcbe),
+    background = Color.Black,
+    surface = Color.Black,
+    surfaceVariant = Color.Black,
 )
 
 @Composable
