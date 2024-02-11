@@ -22,7 +22,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color.Companion.DarkGray
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import com.dluvian.nozzle.R
@@ -228,7 +227,6 @@ private fun RelayRow(relay: String, trailingContent: @Composable (() -> Unit)) {
                     spacing = MarqueeSpacing.fractionOfContainer(1f / 4f)
                 ),
             text = relay,
-            color = DarkGray,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis
         )

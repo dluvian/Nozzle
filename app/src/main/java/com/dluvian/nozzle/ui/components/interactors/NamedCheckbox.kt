@@ -19,6 +19,6 @@ fun NamedCheckbox(
                 onCheckedChange = { onClick() },
             )
         },
-        name = name
+        name = name,
     )
 }
