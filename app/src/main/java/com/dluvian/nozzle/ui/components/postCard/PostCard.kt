@@ -101,7 +101,7 @@ fun PostCard(
         PostCardProfilePicture(
             modifier = Modifier
                 .size(sizing.profilePicture)
-                .semantics { this.invisibleToUser() },
+                .semantics(mergeDescendants = true) { this.invisibleToUser() },
             pubkey = post.pubkey,
             picture = post.picture,
             showProfilePicture = showProfilePicture,
