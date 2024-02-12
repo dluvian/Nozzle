@@ -27,11 +27,9 @@ import com.dluvian.nozzle.ui.theme.spacing
 
 @Composable
 fun ProfileListScreen(
+    uiState: ProfileListViewModelState,
     profiles: List<SimpleProfile>,
     showProfilePicture: Boolean,
-    pubkey: Pubkey,
-    isRefreshing: Boolean,
-    type: ProfileListType,
     onFollow: (Pubkey) -> Unit,
     onUnfollow: (Pubkey) -> Unit,
     onLoadMore: () -> Unit,
@@ -41,10 +39,10 @@ fun ProfileListScreen(
 ) {
 
     ReturnableScaffold(
-        topBarText = getTitle(type = type),
+        topBarText = getTitle(type = uiState.type),
         onGoBack = onGoBack,
         actions = {
-            if (isRefreshing) {
+            if (uiState.isRefreshing) {
                 TopBarCircleProgressIndicator()
                 Spacer(modifier = Modifier.width(spacing.screenEdge))
             }
@@ -52,7 +50,7 @@ fun ProfileListScreen(
     ) {
         val subscribeToUnknowns = remember(profiles.size) { mutableStateOf(false) }
         LaunchedEffect(key1 = subscribeToUnknowns) {
-            if (subscribeToUnknowns.value) onSubscribeToUnknowns(pubkey)
+            if (subscribeToUnknowns.value) onSubscribeToUnknowns(uiState.pubkey)
         }
 
         LazyColumn(modifier = Modifier.fillMaxSize()) {

@@ -4,4 +4,5 @@ import androidx.compose.runtime.State
 
 interface ISettingsPreferenceStates {
     val showProfilePictures: State<Boolean>
+    val isDarkMode: State<Boolean>
 }

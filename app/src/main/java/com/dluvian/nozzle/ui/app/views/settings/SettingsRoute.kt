@@ -8,6 +8,7 @@ fun SettingsRoute(settingsViewModel: SettingsViewModel, onGoBack: () -> Unit) {
     SettingsScreen(
         preferenceStates = settingsViewModel.settingsPreferenceStates,
         onToggleShowProfilePictures = settingsViewModel.onToggleShowProfilePictures,
+        onToggleDarkMode = settingsViewModel.onToggleDarkMode,
         onGoBack = onGoBack
     )
 }

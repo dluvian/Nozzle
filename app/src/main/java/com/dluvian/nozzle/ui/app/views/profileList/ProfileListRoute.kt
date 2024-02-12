@@ -15,22 +15,18 @@ fun ProfileListRoute(
     postCardLambdas: PostCardLambdas,
     onGoBack: () -> Unit,
 ) {
-    val isRefreshing by profileListViewModel.isRefreshing.collectAsState()
+    val uiState by profileListViewModel.uiState.collectAsState()
     val profilesFlow by profileListViewModel.profiles.collectAsState()
     val profiles by profilesFlow.collectAsState()
     val forceFollowed by profileFollower.getForceFollowedState()
-    val type by profileListViewModel.type
-    val pubkey by profileListViewModel.pubkey
     val adjustedProfiles = remember(forceFollowed, profiles) {
         profiles.map { it.copy(isFollowedByMe = forceFollowed[it.pubkey] ?: it.isFollowedByMe) }
     }
 
     ProfileListScreen(
+        uiState = uiState,
         profiles = adjustedProfiles,
-        pubkey = pubkey,
         showProfilePicture = showProfilePicture,
-        isRefreshing = isRefreshing,
-        type = type,
         onFollow = postCardLambdas.onFollow,
         onUnfollow = postCardLambdas.onUnfollow,
         onLoadMore = profileListViewModel.onLoadMore,

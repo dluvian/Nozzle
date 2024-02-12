@@ -20,6 +20,8 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.onClick
+import androidx.compose.ui.semantics.semantics
 import coil.compose.SubcomposeAsyncImage
 import coil.request.ImageRequest
 import com.dluvian.nozzle.R
@@ -47,6 +49,7 @@ fun ProfilePicture(
         pubkey = pubkey,
         picture = if (showProfilePicture) picture else null,
         trustType = trustType,
+        description = stringResource(id = R.string.profile_picture),
         onOpenProfile = onOpenProfile,
     )
 }
@@ -57,6 +60,7 @@ private fun BaseProfilePicture(
     pubkey: String,
     picture: String?,
     trustType: TrustType,
+    description: String,
     onOpenProfile: (() -> Unit)? = null,
 ) {
     Box(modifier = modifier) {
@@ -75,17 +79,31 @@ private fun BaseProfilePicture(
                 .size(300)
                 .build(),
             contentScale = ContentScale.Crop,
-            loading = { DefaultPicture(modifier = imgModifier, pubkey = pubkey) },
-            error = { DefaultPicture(modifier = imgModifier, pubkey = pubkey) },
-            contentDescription = stringResource(id = R.string.profile_picture)
+            loading = {
+                DefaultPicture(
+                    modifier = imgModifier,
+                    pubkey = pubkey,
+                    description = description
+                )
+            },
+            error = {
+                DefaultPicture(
+                    modifier = imgModifier,
+                    pubkey = pubkey,
+                    description = description
+                )
+            },
+            contentDescription = description
         )
         PictureIndicator(modifier = Modifier.fillMaxWidth(), trustType = trustType)
     }
 }
 
 @Composable
-private fun DefaultPicture(pubkey: String, modifier: Modifier = Modifier) {
-    Box(modifier = modifier.background(brush = getDefaultPictureBrush(pubkey = pubkey)))
+private fun DefaultPicture(pubkey: String, description: String, modifier: Modifier = Modifier) {
+    Box(modifier = modifier
+        .background(brush = getDefaultPictureBrush(pubkey = pubkey))
+        .semantics { this.onClick(label = description, action = null) })
 }
 
 @Composable

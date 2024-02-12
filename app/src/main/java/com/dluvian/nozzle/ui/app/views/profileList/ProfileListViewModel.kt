@@ -1,7 +1,5 @@
 package com.dluvian.nozzle.ui.app.views.profileList
 
-import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
@@ -18,6 +16,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.getAndUpdate
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -31,22 +30,22 @@ class ProfileListViewModel(
     private val nozzleSubscriber: INozzleSubscriber,
     val contactDao: ContactDao,
 ) : ViewModel() {
-    private val _isRefreshing = MutableStateFlow(false)
-    val isRefreshing = _isRefreshing
+    private val _uiState = MutableStateFlow(ProfileListViewModelState())
+    val uiState = _uiState
         .stateIn(
             viewModelScope,
             SharingStarted.WhileSubscribed(),
-            false
+            _uiState.value
         )
 
     private val paginator: IPaginator<SimpleProfile, Pubkey> = Paginator(
         scope = viewModelScope,
-        onSetRefreshing = { bool -> _isRefreshing.update { bool } },
+        onSetRefreshing = { bool -> _uiState.update { it.copy(isRefreshing = bool) } },
         onGetPage = { lastPubkey, waitForSubscription ->
             ListAndNumberFlow(
                 listFlow = simpleProfileProvider.getSimpleProfilesFlow(
-                    type = type.value,
-                    pubkey = pubkey.value,
+                    type = _uiState.value.type,
+                    pubkey = _uiState.value.pubkey,
                     underPubkey = lastPubkey,
                     limit = MAX_LIST_LENGTH,
                     waitForSubscription = waitForSubscription
@@ -57,24 +56,27 @@ class ProfileListViewModel(
     )
 
     val profiles: StateFlow<StateFlow<List<SimpleProfile>>> = paginator.getList()
-    val type: MutableState<ProfileListType> = mutableStateOf(ProfileListType.FOLLOWER_LIST)
-    val pubkey: MutableState<Pubkey> = mutableStateOf("")
 
-    val onSetFollowerList: (Pubkey) -> Unit = local@{
-        val isSame = pubkey.value == it && type.value == ProfileListType.FOLLOWER_LIST
-        pubkey.value = it
-        type.value = ProfileListType.FOLLOWER_LIST
-        paginator.refresh(waitForSubscription = isSame, useInitialValue = isSame)
+    val onSetFollowerList: (Pubkey) -> Unit = local@{ pubkey ->
+        val current = _uiState.getAndUpdate {
+            it.copy(pubkey = pubkey, type = ProfileListType.FOLLOWER_LIST)
+        }
+        val isSame = current.let { it.pubkey == pubkey && it.type == ProfileListType.FOLLOWER_LIST }
+        if (!isSame) paginator.refresh(waitForSubscription = true, useInitialValue = false)
     }
 
-    val onSetFollowedByList: (Pubkey) -> Unit = {
-        val isSame = pubkey.value == it && type.value == ProfileListType.FOLLOWED_BY_LIST
-        pubkey.value = it
-        type.value = ProfileListType.FOLLOWED_BY_LIST
-        paginator.refresh(waitForSubscription = isSame, useInitialValue = isSame)
+    val onSetFollowedByList: (Pubkey) -> Unit = local@{ pubkey ->
+        val current = _uiState.getAndUpdate {
+            it.copy(pubkey = pubkey, type = ProfileListType.FOLLOWED_BY_LIST)
+        }
+        val isSame =
+            current.let { it.pubkey == pubkey && it.type == ProfileListType.FOLLOWED_BY_LIST }
+        if (!isSame) paginator.refresh(waitForSubscription = true, useInitialValue = false)
     }
 
-    val onLoadMore: () -> Unit = { paginator.loadMore() }
+    val onLoadMore: () -> Unit = {
+        paginator.loadMore()
+    }
 
     private val lastSize = AtomicInteger(0)
     val onSubscribeToUnknowns: (Pubkey) -> Unit = local@{

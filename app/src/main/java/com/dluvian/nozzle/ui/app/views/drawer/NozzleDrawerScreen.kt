@@ -16,13 +16,10 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.DarkMode
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
-import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -57,11 +54,9 @@ import com.dluvian.nozzle.ui.theme.spacing
 fun NozzleDrawerScreen(
     uiState: NozzleDrawerViewModelState,
     showProfilePicture: Boolean,
-    isDarkMode: Boolean,
     navActions: NozzleNavActions,
     onActivateAccount: (Int) -> Unit,
     onDeleteAccount: (Int) -> Unit,
-    onToggleDarkMode: () -> Unit,
     closeDrawer: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -102,8 +97,6 @@ fun NozzleDrawerScreen(
             )
             MainRows(
                 modifier = Modifier.padding(spacing.screenEdge),
-                isDarkMode = isDarkMode,
-                onToggleDarkMode = onToggleDarkMode,
                 navActions = navActions,
                 closeDrawer = closeDrawer
             )
@@ -286,8 +279,6 @@ private fun AddAccountRow(onAddAccount: () -> Unit) {
 
 @Composable
 private fun MainRows(
-    isDarkMode: Boolean,
-    onToggleDarkMode: () -> Unit,
     navActions: NozzleNavActions,
     closeDrawer: () -> Unit,
     modifier: Modifier,
@@ -347,19 +338,6 @@ private fun MainRows(
             action = {
                 navActions.navigateToSettings()
                 closeDrawer()
-            }
-        )
-        DrawerRow(
-            imageVector = Icons.Default.DarkMode,
-            label = stringResource(id = R.string.dark_mode),
-            action = onToggleDarkMode,
-            trailingContent = {
-                Switch(
-                    checked = isDarkMode,
-                    onCheckedChange = {
-                        onToggleDarkMode()
-                    }
-                )
             }
         )
     }
