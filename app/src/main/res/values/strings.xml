@@ -144,6 +144,7 @@
     <string name="show_profile_pictures">Show profile pictures</string>
     <string name="show_profile_pictures_summary">Fetch and show profile pictures. Activating this will increase data usage.</string>
     <string name="profile_picture">Profile picture</string>
+    <string name="changes_interface_to_darker_tones">Changes interface to darker tones.</string>
 
     <plurals name="other_relays">
         <item quantity="one">other</item>

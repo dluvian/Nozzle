@@ -27,7 +27,7 @@ const val SETTINGS_SHOW_PROFILE_PICTURES = "settings_show_profile_pictures"
 
 class NozzlePreferences(
     private val context: Context
-) : IDarkModePreferences, IFeedSettingsPreferences, ISettingsPreferences {
+) : IFeedSettingsPreferences, ISettingsPreferences {
     private val preferences = context.getSharedPreferences(
         PreferenceFileNames.NOZZLE,
         Context.MODE_PRIVATE

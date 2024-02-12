@@ -60,7 +60,6 @@ fun NozzleApp(appContainer: AppContainer) {
                     factory = NozzleDrawerViewModel.provideFactory(
                         keyManager = appContainer.keyManager,
                         accountProvider = appContainer.accountProvider,
-                        darkModePreferences = appContainer.nozzlePreferences,
                         nozzleSubscriber = appContainer.nozzleSubscriber,
                     )
                 ),
