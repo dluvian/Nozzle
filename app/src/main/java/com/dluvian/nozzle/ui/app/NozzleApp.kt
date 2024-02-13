@@ -1,5 +1,6 @@
 package com.dluvian.nozzle.ui.app
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.navigationBarsPadding
@@ -177,11 +178,16 @@ fun NozzleApp(appContainer: AppContainer) {
                 NozzleNavActions(navController = navController, vmContainer = vmContainer)
             }
             val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
+            val scope = rememberCoroutineScope()
 
             val hasPrivkey by rememberSaveable(appContainer.keyManager.hasPrivkey) {
                 appContainer.keyManager.hasPrivkey
             }
             val showProfilePicture by appContainer.nozzlePreferences.showProfilePictures
+
+            BackHandler(enabled = drawerState.isOpen) {
+                scope.launch { drawerState.close() }
+            }
 
             Screen(
                 drawerState = drawerState,
@@ -193,7 +199,8 @@ fun NozzleApp(appContainer: AppContainer) {
                 noteDeletor = appContainer.noteDeletor,
                 navActions = navActions,
                 navController = navController,
-                hasPrivkey = hasPrivkey
+                hasPrivkey = hasPrivkey,
+                scope = scope
             )
         }
     }
@@ -211,6 +218,7 @@ private fun Screen(
     navActions: NozzleNavActions,
     navController: NavHostController,
     hasPrivkey: Boolean,
+    scope: CoroutineScope
 ) {
     if (hasPrivkey) {
         Drawer(
@@ -223,7 +231,7 @@ private fun Screen(
             noteDeletor = noteDeletor,
             navActions = navActions,
             navController = navController,
-            scope = rememberCoroutineScope()
+            scope = scope
         )
     } else {
         NozzleContent(
