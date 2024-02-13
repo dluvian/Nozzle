@@ -11,11 +11,13 @@ import com.dluvian.nozzle.data.subscriber.INozzleSubscriber
 import com.dluvian.nozzle.data.utils.NORMAL_DEBOUNCE
 import com.dluvian.nozzle.data.utils.firstThenDistinctDebounce
 import com.dluvian.nozzle.model.FeedInfo
+import com.dluvian.nozzle.model.NoteId
 import com.dluvian.nozzle.model.PostThread
 import com.dluvian.nozzle.model.PostWithMeta
 import com.dluvian.nozzle.model.feedFilter.Autopilot
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 
@@ -47,7 +49,6 @@ class ThreadProvider(
         return getMappedThreadFlow(
             currentId = current.id,
             previousIds = previous.map { it.id },
-            replyIds = replies.map { it.id },
             feedInfo = feedInfo
         )
     }
@@ -114,15 +115,20 @@ class ThreadProvider(
     }
 
     private suspend fun getMappedThreadFlow(
-        currentId: String,
-        previousIds: List<String>, // Order is important
-        replyIds: List<String>,
+        currentId: NoteId,
+        previousIds: List<NoteId>, // Order is important
         feedInfo: FeedInfo
     ): Flow<PostThread> {
+        val personalReplies = postWithMetaProvider.getPersonalRepliesWithMetaFlow(
+            currentId = currentId
+        )
         return postWithMetaProvider.getPostsWithMetaFlow(
             feedInfo = feedInfo,
             relayFilter = Autopilot
-        )
+        ).combine(personalReplies) { posts, myReplies ->
+            // Adding replies for when we just replied
+            (posts + myReplies).distinctBy { it.entity.id }
+        }
             .firstThenDistinctDebounce(NORMAL_DEBOUNCE)
             .map { unsortedPosts ->
                 val currentPost = unsortedPosts.find { currentId == it.entity.id }
@@ -137,7 +143,7 @@ class ThreadProvider(
                         },
                     replies = sortReplies(
                         replies = unsortedPosts.filter { unsorted ->
-                            replyIds.any { replyId -> replyId == unsorted.entity.id }
+                            unsorted.entity.replyToId == currentId
                         },
                         originalAuthor = currentPost?.pubkey.orEmpty().ifEmpty {
                             Log.w(TAG, "Failed to find current post in thread")

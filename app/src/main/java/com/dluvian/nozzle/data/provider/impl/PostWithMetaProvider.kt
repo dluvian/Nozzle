@@ -2,7 +2,6 @@ package com.dluvian.nozzle.data.provider.impl
 
 import androidx.compose.ui.text.AnnotatedString
 import com.dluvian.nozzle.data.annotatedContent.IAnnotatedContentHandler
-import com.dluvian.nozzle.data.nostr.utils.ShortenedNameUtils.getShortenedNpubFromPubkey
 import com.dluvian.nozzle.data.provider.IContactListProvider
 import com.dluvian.nozzle.data.provider.IPostWithMetaProvider
 import com.dluvian.nozzle.data.provider.IPubkeyProvider
@@ -12,7 +11,6 @@ import com.dluvian.nozzle.data.room.dao.PostDao
 import com.dluvian.nozzle.data.room.dao.ProfileDao
 import com.dluvian.nozzle.data.room.helper.extended.PostEntityExtended
 import com.dluvian.nozzle.data.subscriber.INozzleSubscriber
-import com.dluvian.nozzle.data.utils.LONG_DEBOUNCE
 import com.dluvian.nozzle.data.utils.NORMAL_DEBOUNCE
 import com.dluvian.nozzle.data.utils.SHORT_DEBOUNCE
 import com.dluvian.nozzle.data.utils.firstThenDistinctDebounce
@@ -20,10 +18,12 @@ import com.dluvian.nozzle.model.AnnotatedMentionedPost
 import com.dluvian.nozzle.model.FeedInfo
 import com.dluvian.nozzle.model.MentionedNamesAndPosts
 import com.dluvian.nozzle.model.MentionedPost
+import com.dluvian.nozzle.model.NoteId
 import com.dluvian.nozzle.model.PostWithMeta
 import com.dluvian.nozzle.model.feedFilter.RelayFilter
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.onEach
@@ -56,7 +56,7 @@ class PostWithMetaProvider(
         // TODO: In initial SQL query possible?
         val relaysFlow = eventRelayDao
             .getRelaysPerEventIdMapFlow(feedInfo.postIds)
-            .firstThenDistinctDebounce(LONG_DEBOUNCE)
+            .firstThenDistinctDebounce(NORMAL_DEBOUNCE)
 
         val trustScorePerPubkeyFlow = contactDao
             .getTrustScoreByPubkeyFlow(contactPubkeys = feedInfo.authorPubkeys)
@@ -78,6 +78,24 @@ class PostWithMetaProvider(
         }
     }
 
+    override suspend fun getPersonalRepliesWithMetaFlow(
+        currentId: NoteId
+    ): Flow<List<PostWithMeta>> {
+        val extendedPostsFlow = postDao
+            .listExtendedPersonalRepliesFlow(currentId = currentId)
+            .distinctUntilChanged()
+
+        // TODO: In initial SQL query possible?
+        val relaysFlow = eventRelayDao
+            .getRelaysOfPersonalRepliesFlow(currentId = currentId)
+            .distinctUntilChanged()
+
+        return getPersonalRepliesFlow(
+            extendedPostsFlow = extendedPostsFlow,
+            relaysFlow = relaysFlow,
+        )
+    }
+
     private fun getMentionedNamesAndPostsFlow(
         mentionedPubkeys: Collection<String>,
         mentionedPostIds: Collection<String>
@@ -95,6 +113,35 @@ class PostWithMetaProvider(
                 mentionedNamesByPubkey = names,
                 mentionedPostsById = posts
             )
+        }
+    }
+
+    private fun getPersonalRepliesFlow(
+        extendedPostsFlow: Flow<List<PostEntityExtended>>,
+        relaysFlow: Flow<Map<String, List<String>>>,
+    ): Flow<List<PostWithMeta>> {
+        return combine(extendedPostsFlow, relaysFlow) { extended, relays ->
+            extended.map {
+                val annotatedContent = annotatedContentHandler.annotateContent(
+                    content = it.postEntity.content,
+                    // TODO: Get mentioned names and pubkeys
+                    mentionedNamesByPubkey = emptyMap()
+                )
+                PostWithMeta.from(
+                    extendedPostEntity = it,
+                    relays = relays[it.postEntity.id].orEmpty(),
+                    isOneself = true,
+                    isFollowedByMe = false,
+                    trustScore = null,
+                    annotatedContent = annotatedContent,
+                    mediaUrls = annotatedContentHandler.extractMediaLinks(annotatedContent),
+                    annotatedMentionedPosts = getAnnotatedMentionedPosts(
+                        annotatedContent = annotatedContent,
+                        // TODO: Get mentioned names and posts
+                        mentionedNamesAndPosts = MentionedNamesAndPosts(),
+                    )
+                )
+            }
         }
     }
 
@@ -119,16 +166,8 @@ class PostWithMetaProvider(
                     content = it.postEntity.content,
                     mentionedNamesByPubkey = mentionedNamesAndPosts.mentionedNamesByPubkey
                 )
-                PostWithMeta(
-                    entity = it.postEntity,
-                    pubkey = pubkey,
-                    name = it.name.orEmpty()
-                        .ifEmpty { getShortenedNpubFromPubkey(pubkey).orEmpty() },
-                    picture = it.picture,
-                    replyToPubkey = it.replyToPubkey,
-                    replyToName = getReplyToName(it),
-                    isLikedByMe = it.isLikedByMe,
-                    numOfReplies = it.numOfReplies,
+                PostWithMeta.from(
+                    extendedPostEntity = it,
                     relays = relays[it.postEntity.id].orEmpty(),
                     isOneself = isOneself,
                     isFollowedByMe = if (isOneself) false else contacts.contains(pubkey),
@@ -138,8 +177,7 @@ class PostWithMetaProvider(
                     annotatedMentionedPosts = getAnnotatedMentionedPosts(
                         annotatedContent = annotatedContent,
                         mentionedNamesAndPosts = mentionedNamesAndPosts,
-                    ),
-                    hasUnknownAuthor = it.name == null
+                    )
                 )
             }
         }
@@ -171,14 +209,5 @@ class PostWithMetaProvider(
                     mentionedPost = post
                 )
             }
-    }
-
-    private fun getReplyToName(post: PostEntityExtended): String? {
-        return if (post.replyToPubkey != null) {
-            post.replyToName.orEmpty().ifEmpty {
-                getShortenedNpubFromPubkey(post.replyToPubkey)
-            }
-        } else if (post.postEntity.replyToId != null) ""
-        else null
     }
 }

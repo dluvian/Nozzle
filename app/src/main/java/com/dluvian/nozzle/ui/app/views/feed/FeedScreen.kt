@@ -1,5 +1,6 @@
 package com.dluvian.nozzle.ui.app.views.feed
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
@@ -78,6 +79,9 @@ fun FeedScreen(
                 onPrepareReply = onPrepareReply,
                 onLoadMore = onLoadMore
             )
+        }
+        BackHandler(enabled = drawerState.isOpen) {
+            scope.launch { drawerState.close() }
         }
     }
 }

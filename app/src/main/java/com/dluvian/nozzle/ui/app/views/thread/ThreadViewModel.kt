@@ -53,8 +53,8 @@ class ThreadViewModel(
         currentPostId = postId
         viewModelScope.launch(context = Dispatchers.IO) {
             updateScreen(postId = postId)
-            isRefreshingFlow.update { false }
         }.invokeOnCompletion {
+            isRefreshingFlow.update { false }
             isSettingThread.set(false)
         }
     }

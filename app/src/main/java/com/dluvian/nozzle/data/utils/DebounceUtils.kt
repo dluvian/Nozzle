@@ -11,7 +11,6 @@ import kotlinx.coroutines.flow.take
 
 const val SHORT_DEBOUNCE = 100L
 const val NORMAL_DEBOUNCE = 300L
-const val LONG_DEBOUNCE = 600L
 
 @OptIn(FlowPreview::class)
 fun <T> Flow<T>.firstThenDistinctDebounce(millis: Long): Flow<T> {

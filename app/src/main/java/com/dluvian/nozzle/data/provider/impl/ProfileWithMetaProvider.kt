@@ -13,7 +13,7 @@ import com.dluvian.nozzle.data.room.dao.ProfileDao
 import com.dluvian.nozzle.data.room.helper.Nip65Relay
 import com.dluvian.nozzle.data.room.helper.extended.ProfileEntityExtended
 import com.dluvian.nozzle.data.subscriber.INozzleSubscriber
-import com.dluvian.nozzle.data.utils.LONG_DEBOUNCE
+import com.dluvian.nozzle.data.utils.NORMAL_DEBOUNCE
 import com.dluvian.nozzle.data.utils.firstThenDistinctDebounce
 import com.dluvian.nozzle.model.ProfileWithMeta
 import com.dluvian.nozzle.model.Pubkey
@@ -43,10 +43,10 @@ class ProfileWithMetaProvider(
 
         // TODO: SQL join (?)
         val seenInRelaysFlow = eventRelayDao.listUsedRelaysFlow(pubkey)
-            .firstThenDistinctDebounce(LONG_DEBOUNCE)
+            .firstThenDistinctDebounce(NORMAL_DEBOUNCE)
 
         val nip65Flow = nip65Dao.getNip65RelaysOfPubkeyFlow(pubkey = pubkey)
-            .firstThenDistinctDebounce(LONG_DEBOUNCE)
+            .firstThenDistinctDebounce(NORMAL_DEBOUNCE)
 
         val nprofileFlow = seenInRelaysFlow.combine(nip65Flow) { seenIn, nip65s ->
             val writeRelays = nip65s.filter { it.isWrite }.map { it.url }.toSet()
