@@ -8,6 +8,7 @@ import androidx.room.Query
 import com.dluvian.nozzle.data.room.entity.EventRelayEntity
 import com.dluvian.nozzle.model.CountedRelayUsage
 import com.dluvian.nozzle.model.EventId
+import com.dluvian.nozzle.model.NoteId
 import com.dluvian.nozzle.model.Relay
 import kotlinx.coroutines.flow.Flow
 
@@ -27,6 +28,20 @@ interface EventRelayDao {
                 "WHERE eventId IN (:eventIds)"
     )
     fun getRelaysPerEventIdMapFlow(eventIds: Collection<String>): Flow<Map<String, List<String>>>
+
+    @MapInfo(keyColumn = "eventId", valueColumn = "relayUrl")
+    @Query(
+        "SELECT eventId, relayUrl " +
+                "FROM eventRelay " +
+                "WHERE eventId IN " +
+                // My replies to :currentId
+                "(SELECT id " +
+                "FROM post " +
+                "WHERE pubkey = (SELECT pubkey FROM account WHERE isActive = 1) " +
+                "AND replyToId = :currentId)"
+
+    )
+    fun getRelaysOfPersonalRepliesFlow(currentId: NoteId): Flow<Map<String, List<String>>>
 
     @Query(
         "SELECT relayUrl " +

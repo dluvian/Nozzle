@@ -391,6 +391,42 @@ interface PostDao {
     )
     fun listExtendedPostsFlow(postIds: Collection<String>): Flow<List<PostEntityExtended>>
 
+    @Query(
+        // SELECT PostEntity
+        "SELECT mainPost.*, " +
+                // SELECT likedByMe
+                "(SELECT eventId IS NOT NULL " +
+                "FROM reaction " +
+                "WHERE eventId = mainPost.id AND pubkey = (SELECT pubkey FROM account WHERE isActive = 1)) " +
+                "AS isLikedByMe, " +
+                // SELECT name and picture
+                "mainProfile.name, mainProfile.picture, " +
+                // SELECT numOfReplies
+                "(SELECT COUNT(*) FROM post WHERE post.replyToId = mainPost.id) " +
+                "AS numOfReplies, " +
+                // SELECT replyToPubkey
+                "(SELECT post.pubkey " +
+                "FROM post " +
+                "WHERE post.id = mainPost.replyToId) " +
+                "AS replyToPubkey, " +
+                // SELECT replyToName
+                "(SELECT profile.name " +
+                "FROM profile " +
+                "JOIN post " +
+                "ON (profile.pubkey = post.pubkey AND post.id = mainPost.replyToId)) " +
+                "AS replyToName " +
+                // PostEntity
+                "FROM post AS mainPost " +
+                // Join author
+                "LEFT JOIN profile AS mainProfile " +
+                "ON mainPost.pubkey = mainProfile.pubkey " +
+                // Conditioned by active pubkey and parentId
+                "WHERE mainPost.pubkey = (SELECT pubkey FROM account WHERE isActive = 1) " +
+                "AND mainPost.replyToId = :currentId " +
+                "ORDER BY createdAt DESC "
+    )
+    fun listExtendedPersonalRepliesFlow(currentId: NoteId): Flow<List<PostEntityExtended>>
+
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insertOrIgnore(vararg posts: PostEntity)
 
