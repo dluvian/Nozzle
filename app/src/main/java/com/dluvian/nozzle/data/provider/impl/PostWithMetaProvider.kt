@@ -11,7 +11,6 @@ import com.dluvian.nozzle.data.room.dao.PostDao
 import com.dluvian.nozzle.data.room.dao.ProfileDao
 import com.dluvian.nozzle.data.room.helper.extended.PostEntityExtended
 import com.dluvian.nozzle.data.subscriber.INozzleSubscriber
-import com.dluvian.nozzle.data.utils.LONG_DEBOUNCE
 import com.dluvian.nozzle.data.utils.NORMAL_DEBOUNCE
 import com.dluvian.nozzle.data.utils.SHORT_DEBOUNCE
 import com.dluvian.nozzle.data.utils.firstThenDistinctDebounce
@@ -57,7 +56,7 @@ class PostWithMetaProvider(
         // TODO: In initial SQL query possible?
         val relaysFlow = eventRelayDao
             .getRelaysPerEventIdMapFlow(feedInfo.postIds)
-            .firstThenDistinctDebounce(LONG_DEBOUNCE)
+            .firstThenDistinctDebounce(NORMAL_DEBOUNCE)
 
         val trustScorePerPubkeyFlow = contactDao
             .getTrustScoreByPubkeyFlow(contactPubkeys = feedInfo.authorPubkeys)
@@ -89,7 +88,7 @@ class PostWithMetaProvider(
         // TODO: In initial SQL query possible?
         val relaysFlow = eventRelayDao
             .getRelaysOfPersonalRepliesFlow(currentId = currentId)
-            .firstThenDistinctDebounce(LONG_DEBOUNCE)
+            .distinctUntilChanged()
 
         return getPersonalRepliesFlow(
             extendedPostsFlow = extendedPostsFlow,
