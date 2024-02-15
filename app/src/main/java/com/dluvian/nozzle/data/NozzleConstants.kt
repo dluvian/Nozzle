@@ -30,7 +30,5 @@ const val MAX_SQL_PARAMS = 250
 // Max num of friends of friends
 const val FRIEND_CIRCLE_LIMIT = 500
 
-
-const val GOOD_PING_THRESHOLD = 250
 const val PING_INTERVAL = 7_000L
 const val PING_WAIT_TIME = 500L
