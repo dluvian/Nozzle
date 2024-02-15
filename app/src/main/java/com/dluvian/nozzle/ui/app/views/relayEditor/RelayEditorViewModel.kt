@@ -139,8 +139,6 @@ class RelayEditorViewModel(
     }
 
     private fun setOnlineStatuses(relays: Collection<Relay>) {
-        if (onlineStatuses.value.keys.containsAll(relays)) return
-
         onlineStatuses = onlineStatusProvider.getOnlineStatuses(relays = relays)
             .stateIn(
                 viewModelScope,

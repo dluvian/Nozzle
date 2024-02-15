@@ -1,6 +1,6 @@
 package com.dluvian.nozzle.data.provider.impl
 
-import com.dluvian.nozzle.data.MAX_LIST_LENGTH
+import com.dluvian.nozzle.data.MAX_POPULAR_RELAYS
 import com.dluvian.nozzle.data.getDefaultRelays
 import com.dluvian.nozzle.data.provider.IContactListProvider
 import com.dluvian.nozzle.data.provider.IRelayProvider
@@ -70,7 +70,7 @@ class RelayProvider(
 
     override suspend fun getPopularRelays(): List<Relay> {
         val pubkeys = contactListProvider.listPersonalContactPubkeysOrDefault()
-        return nip65Dao.getRelaysOfPubkeys(pubkeys = pubkeys, limit = MAX_LIST_LENGTH)
+        return nip65Dao.getRelaysOfPubkeys(pubkeys = pubkeys, limit = MAX_POPULAR_RELAYS)
     }
 
     private fun getDefaultNip65s() = getDefaultRelays()

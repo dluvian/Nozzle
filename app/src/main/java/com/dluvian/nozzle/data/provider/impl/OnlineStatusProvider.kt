@@ -10,6 +10,7 @@ import com.dluvian.nozzle.model.Relay
 import com.dluvian.nozzle.model.Waiting
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
@@ -35,25 +36,32 @@ class OnlineStatusProvider(private val httpClient: OkHttpClient) : IOnlineStatus
                 val currentTime = System.currentTimeMillis()
                 if (currentTime - lastPing > PING_INTERVAL) {
                     lastPing = currentTime
-                    ping(relays = distinctRelays)
+                    ping(relays = distinctRelays.shuffled().take(distinctRelays.size / 3))
                 }
             }
         }
     }
 
-    private fun ping(relays: Set<Relay>) {
+    val jobs = mutableMapOf<Relay, Job>()
+
+    private fun ping(relays: Collection<Relay>) {
         relays.forEach { relay ->
-            val request = Request.Builder()
-                .url(relay)
-                .build()
-            scope.launch {
-                cache[relay] = try {
-                    httpClient.newCall(request).execute().use { response ->
-                        val ping = response.receivedResponseAtMillis - response.sentRequestAtMillis
-                        Online(ping = ping)
+            synchronized(jobs) {
+                if (jobs[relay]?.isActive != true) {
+                    val request = Request.Builder()
+                        .url(relay)
+                        .build()
+                    jobs[relay] = scope.launch {
+                        cache[relay] = try {
+                            httpClient.newCall(request).execute().use { response ->
+                                val ping =
+                                    response.receivedResponseAtMillis - response.sentRequestAtMillis
+                                Online(ping = ping)
+                            }
+                        } catch (e: Exception) {
+                            Offline
+                        }
                     }
-                } catch (e: Exception) {
-                    Offline
                 }
             }
         }
