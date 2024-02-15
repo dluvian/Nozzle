@@ -15,6 +15,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.dluvian.nozzle.R
+import com.dluvian.nozzle.data.BAD_PING_THRESHOLD
 import com.dluvian.nozzle.data.GOOD_PING_THRESHOLD
 import com.dluvian.nozzle.model.Offline
 import com.dluvian.nozzle.model.Online
@@ -51,9 +52,11 @@ fun OnlineStatusChip(onlineStatus: OnlineStatus) {
 @Composable
 private fun OnlineStatusDot(onlineStatus: OnlineStatus) {
     val color = when (onlineStatus) {
-        is Online -> if (onlineStatus.ping < GOOD_PING_THRESHOLD) Color.Green else Color.Yellow
-        is Waiting -> HintGray
-        is Offline -> Color.Red
+        is Online -> if (onlineStatus.ping < GOOD_PING_THRESHOLD) Color.Green
+        else if (onlineStatus.ping >= BAD_PING_THRESHOLD) Color.Red
+        else Color.Yellow
+
+        is Waiting, is Offline -> HintGray
     }
     Box(
         modifier = Modifier
