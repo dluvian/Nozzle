@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.dluvian.nozzle.data.MAX_RELAYS
 import com.dluvian.nozzle.data.SHORT_WAIT_TIME
 import com.dluvian.nozzle.data.nostr.INostrService
+import com.dluvian.nozzle.data.provider.IOnlineStatusProvider
 import com.dluvian.nozzle.data.provider.IPubkeyProvider
 import com.dluvian.nozzle.data.provider.IRelayProvider
 import com.dluvian.nozzle.data.room.dao.Nip65Dao
@@ -14,10 +15,13 @@ import com.dluvian.nozzle.data.room.helper.Nip65Relay
 import com.dluvian.nozzle.data.utils.UrlUtils.WEBSOCKET_PREFIX
 import com.dluvian.nozzle.data.utils.UrlUtils.isWebsocketUrl
 import com.dluvian.nozzle.data.utils.UrlUtils.removeTrailingSlashes
+import com.dluvian.nozzle.model.OnlineStatus
+import com.dluvian.nozzle.model.Relay
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -26,6 +30,7 @@ class RelayEditorViewModel(
     private val nostrService: INostrService,
     private val relayProvider: IRelayProvider,
     private val pubkeyProvider: IPubkeyProvider,
+    private val onlineStatusProvider: IOnlineStatusProvider,
     private val nip65Dao: Nip65Dao
 ) : ViewModel() {
 
@@ -36,16 +41,20 @@ class RelayEditorViewModel(
         _uiState.value
     )
 
+    var onlineStatuses: StateFlow<Map<Relay, OnlineStatus>> = MutableStateFlow(emptyMap())
+
     private val originalRelays: MutableList<Nip65Relay> = mutableListOf()
     val onOpenRelayEditor: () -> Unit = {
         _uiState.update { it.copy(isLoading = true) }
         val relays = relayProvider.getNip65Relays()
         clearAndAddRelays(list = originalRelays, toAdd = relays)
         viewModelScope.launch(context = Dispatchers.IO) {
+            val popularRelays = relayProvider.getPopularRelays()
+            setOnlineStatuses(relays = relays.map { it.url } + popularRelays)
             _uiState.update {
                 RelayEditorViewModelState(
                     myRelays = relays,
-                    popularRelays = relayProvider.getRelaysOfContacts(),
+                    popularRelays = popularRelays,
                     isError = false,
                     isLoading = false,
                     addIsEnabled = addRelayIsEnabled(relays.size)
@@ -79,6 +88,7 @@ class RelayEditorViewModel(
                 addIsEnabled = addRelayIsEnabled(relays.size)
             )
         }
+        setOnlineStatuses(relays = onlineStatuses.value.keys + url)
         return@local true
     }
 
@@ -128,6 +138,17 @@ class RelayEditorViewModel(
         }
     }
 
+    private fun setOnlineStatuses(relays: Collection<Relay>) {
+        if (onlineStatuses.value.keys.containsAll(relays)) return
+
+        onlineStatuses = onlineStatusProvider.getOnlineStatuses(relays = relays)
+            .stateIn(
+                viewModelScope,
+                SharingStarted.WhileSubscribed(),
+                onlineStatuses.value,
+            )
+    }
+
     private suspend fun publishAndSaveInDb(nip65Relays: List<Nip65Relay>) {
         val event = nostrService.publishNip65(nip65Relays = nip65Relays)
         _uiState.update {
@@ -140,9 +161,11 @@ class RelayEditorViewModel(
         clearAndAddRelays(list = originalRelays, toAdd = nip65Relays)
         val entities = nip65Relays.map {
             Nip65Entity(
-                url = it.url,
-                isRead = it.isRead,
-                isWrite = it.isWrite,
+                nip65Relay = Nip65Relay(
+                    url = it.url,
+                    isRead = it.isRead,
+                    isWrite = it.isWrite,
+                ),
                 pubkey = pubkeyProvider.getActivePubkey(),
                 createdAt = event.createdAt
             )
@@ -164,6 +187,7 @@ class RelayEditorViewModel(
             nostrService: INostrService,
             relayProvider: IRelayProvider,
             pubkeyProvider: IPubkeyProvider,
+            onlineStatusProvider: IOnlineStatusProvider,
             nip65Dao: Nip65Dao
         ): ViewModelProvider.Factory =
             object : ViewModelProvider.Factory {
@@ -173,6 +197,7 @@ class RelayEditorViewModel(
                         nostrService = nostrService,
                         relayProvider = relayProvider,
                         pubkeyProvider = pubkeyProvider,
+                        onlineStatusProvider = onlineStatusProvider,
                         nip65Dao = nip65Dao
                     ) as T
                 }

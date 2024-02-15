@@ -13,5 +13,5 @@ interface IRelayProvider {
     suspend fun getReadRelaysOfPubkeys(pubkeys: Collection<String>): Map<Pubkey, List<Relay>>
     suspend fun getWriteRelaysOfPubkey(pubkey: String): List<Relay>
     suspend fun getWriteRelaysByPubkeys(pubkeys: Collection<Pubkey>): Map<Pubkey, List<Relay>>
-    suspend fun getRelaysOfContacts(): List<Relay>
+    suspend fun getPopularRelays(): List<Relay>
 }

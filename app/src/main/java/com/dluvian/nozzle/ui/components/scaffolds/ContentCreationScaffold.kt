@@ -16,8 +16,8 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.TextFieldValue
 import com.dluvian.nozzle.model.AnnotatedMentionedPost
 import com.dluvian.nozzle.model.Pubkey
-import com.dluvian.nozzle.model.RelaySelection
 import com.dluvian.nozzle.model.SimpleProfile
+import com.dluvian.nozzle.model.relay.RelaySelection
 import com.dluvian.nozzle.ui.components.bars.ContentCreationTopBar
 import com.dluvian.nozzle.ui.components.dropdown.RelayDropdown
 import com.dluvian.nozzle.ui.components.input.InputBox

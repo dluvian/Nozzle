@@ -17,7 +17,6 @@ import com.dluvian.nozzle.data.subscriber.ISubscriptionQueue
 import com.dluvian.nozzle.data.utils.getMaxRelaysAndAddIfTooSmall
 import com.dluvian.nozzle.data.utils.takeRandom80percent
 import com.dluvian.nozzle.model.FeedInfo
-import com.dluvian.nozzle.model.IdAndRelays
 import com.dluvian.nozzle.model.NoteId
 import com.dluvian.nozzle.model.PostWithMeta
 import com.dluvian.nozzle.model.Pubkey
@@ -29,6 +28,7 @@ import com.dluvian.nozzle.model.feedFilter.RelayFilter
 import com.dluvian.nozzle.model.nostr.Nevent
 import com.dluvian.nozzle.model.nostr.Nprofile
 import com.dluvian.nozzle.model.nostr.ReplyTo
+import com.dluvian.nozzle.model.relay.IdAndRelays
 import kotlinx.coroutines.delay
 
 private const val TAG = "NozzleSubscriber"

@@ -12,7 +12,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import com.dluvian.nozzle.R
 import com.dluvian.nozzle.model.PostWithMeta
-import com.dluvian.nozzle.model.RelaySelection
+import com.dluvian.nozzle.model.relay.RelaySelection
 import com.dluvian.nozzle.ui.app.navigation.PostCardLambdas
 import com.dluvian.nozzle.ui.components.buttons.ShowNewPostsButton
 import com.dluvian.nozzle.ui.components.dropdown.RelayDropdown

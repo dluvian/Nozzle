@@ -6,10 +6,10 @@ import androidx.room.MapInfo
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import com.dluvian.nozzle.data.room.entity.EventRelayEntity
-import com.dluvian.nozzle.model.CountedRelayUsage
 import com.dluvian.nozzle.model.EventId
 import com.dluvian.nozzle.model.NoteId
 import com.dluvian.nozzle.model.Relay
+import com.dluvian.nozzle.model.relay.CountedRelayUsage
 import kotlinx.coroutines.flow.Flow
 
 

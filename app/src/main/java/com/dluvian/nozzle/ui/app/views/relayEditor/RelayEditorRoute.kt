@@ -10,9 +10,11 @@ fun RelayEditorRoute(
     onGoBack: () -> Unit,
 ) {
     val uiState by relayEditorViewModel.uiState.collectAsState()
+    val onlineStatuses by relayEditorViewModel.onlineStatuses.collectAsState()
 
     RelayEditorScreen(
         uiState = uiState,
+        onlineStatuses = onlineStatuses,
         onSaveRelays = relayEditorViewModel.onSaveRelays,
         onAddRelay = relayEditorViewModel.onAddRelay,
         onDeleteRelay = relayEditorViewModel.onDeleteRelay,
