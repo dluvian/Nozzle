@@ -139,7 +139,7 @@ private fun ScreenContent(
         item { Spacer(modifier = Modifier.height(spacing.xxl)) }
 
         if (popularRelays.isNotEmpty()) {
-            item { SpacedHeaderText(text = stringResource(id = R.string.my_friends_relays)) }
+            item { SpacedHeaderText(text = stringResource(id = R.string.popular_relays)) }
             itemsIndexed(items = popularRelays) { index, relay ->
                 PopularRelayRow(
                     relayWithOnlineStatus = relay,
