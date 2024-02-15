@@ -1,10 +1,14 @@
 package com.dluvian.nozzle.ui.theme
 
+import android.os.Build
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
+import androidx.compose.material3.dynamicDarkColorScheme
+import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 
 private val lightColorPalette = lightColorScheme(
     primary = Color(0xFF6d23f9),
@@ -33,7 +37,18 @@ private val darkColorPalette = darkColorScheme(
 
 @Composable
 fun NozzleTheme(isDarkMode: Boolean, content: @Composable () -> Unit) {
-    val colors = if (isDarkMode) darkColorPalette else lightColorPalette
+    val dynamicColor = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
+    val colors = when {
+        dynamicColor && isDarkMode -> dynamicDarkColorScheme(LocalContext.current).copy(
+            background = Color.Black,
+            surface = Color.Black,
+            surfaceVariant = Color.Black,
+        )
+
+        dynamicColor && !isDarkMode -> dynamicLightColorScheme(LocalContext.current)
+        isDarkMode -> darkColorPalette
+        else -> lightColorPalette
+    }
 
     MaterialTheme(colorScheme = colors) {
         content()
