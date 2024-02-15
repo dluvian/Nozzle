@@ -68,7 +68,7 @@ class RelayProvider(
         return dbResult
     }
 
-    override suspend fun getRelaysOfContacts(): List<Relay> {
+    override suspend fun getPopularRelays(): List<Relay> {
         val pubkeys = contactListProvider.listPersonalContactPubkeysOrDefault()
         return nip65Dao.getRelaysOfPubkeys(pubkeys = pubkeys, limit = MAX_LIST_LENGTH)
     }

@@ -157,6 +157,7 @@ fun NozzleApp(appContainer: AppContainer) {
                         nostrService = appContainer.nostrService,
                         relayProvider = appContainer.relayProvider,
                         pubkeyProvider = appContainer.keyManager,
+                        onlineStatusProvider = appContainer.onlineStatusProvider,
                         nip65Dao = appContainer.roomDb.nip65Dao()
                     )
                 ),

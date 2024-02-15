@@ -3,6 +3,7 @@ package com.dluvian.nozzle.ui.app.views.relayEditor
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.MarqueeSpacing
 import androidx.compose.foundation.basicMarquee
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
@@ -28,6 +29,11 @@ import com.dluvian.nozzle.R
 import com.dluvian.nozzle.data.room.helper.Nip65Relay
 import com.dluvian.nozzle.data.utils.UrlUtils.WEBSOCKET_PREFIX
 import com.dluvian.nozzle.data.utils.UrlUtils.removeWebsocketPrefix
+import com.dluvian.nozzle.model.ItemWithOnlineStatus
+import com.dluvian.nozzle.model.OnlineStatus
+import com.dluvian.nozzle.model.Relay
+import com.dluvian.nozzle.model.Waiting
+import com.dluvian.nozzle.ui.components.chips.OnlineStatusChip
 import com.dluvian.nozzle.ui.components.iconButtons.AddIconButton
 import com.dluvian.nozzle.ui.components.iconButtons.DeleteIconButton
 import com.dluvian.nozzle.ui.components.iconButtons.SaveIconButton
@@ -41,6 +47,7 @@ import com.dluvian.nozzle.ui.theme.spacing
 @Composable
 fun RelayEditorScreen(
     uiState: RelayEditorViewModelState,
+    onlineStatuses: Map<Relay, OnlineStatus>,
     onSaveRelays: () -> Unit,
     onAddRelay: (String) -> Boolean,
     onDeleteRelay: (Int) -> Unit,
@@ -64,11 +71,21 @@ fun RelayEditorScreen(
             }
         }
     ) {
-        val myRelays = remember(uiState.myRelays) {
-            uiState.myRelays.map { relay -> relay.copy(url = relay.url.removeWebsocketPrefix()) }
+        val myRelays = remember(uiState.myRelays, onlineStatuses) {
+            uiState.myRelays.map { nip65Relay ->
+                ItemWithOnlineStatus(
+                    item = nip65Relay.copy(url = nip65Relay.url.removeWebsocketPrefix()),
+                    onlineStatus = onlineStatuses[nip65Relay.url] ?: Waiting
+                )
+            }
         }
-        val popularRelays = remember(uiState.popularRelays) {
-            uiState.popularRelays.map { it.removeWebsocketPrefix() }
+        val popularRelays = remember(uiState.popularRelays, onlineStatuses) {
+            uiState.popularRelays.map { relay ->
+                ItemWithOnlineStatus(
+                    item = relay.removeWebsocketPrefix(),
+                    onlineStatus = onlineStatuses[relay] ?: Waiting
+                )
+            }
         }
         ScreenContent(
             myRelays = myRelays,
@@ -86,8 +103,8 @@ fun RelayEditorScreen(
 
 @Composable
 private fun ScreenContent(
-    myRelays: List<Nip65Relay>,
-    popularRelays: List<String>,
+    myRelays: List<ItemWithOnlineStatus<Nip65Relay>>,
+    popularRelays: List<ItemWithOnlineStatus<Relay>>,
     addIsEnabled: Boolean,
     isError: Boolean,
     onAddRelay: (String) -> Boolean,
@@ -110,26 +127,24 @@ private fun ScreenContent(
         item { SpacedHeaderText(text = stringResource(id = R.string.my_relays)) }
         itemsIndexed(items = myRelays) { index, relay ->
             MyRelayRow(
-                relay = relay,
+                nip65RelayWithOnlineStatus = relay,
                 isDeletable = myRelays.size > 1,
                 onDeleteRelay = { onDeleteRelay(index) },
-                onToggleRead = { onToggleRead(index) },
-                onToggleWrite = { onToggleWrite(index) }
-            )
+                onToggleRead = { onToggleRead(index) }
+            ) { onToggleWrite(index) }
             if (index != myRelays.size - 1) {
                 HorizontalDivider()
             }
         }
         item { Spacer(modifier = Modifier.height(spacing.xxl)) }
 
-
         if (popularRelays.isNotEmpty()) {
             item { SpacedHeaderText(text = stringResource(id = R.string.my_friends_relays)) }
             itemsIndexed(items = popularRelays) { index, relay ->
                 PopularRelayRow(
-                    relay = relay,
-                    isAddable = addIsEnabled && myRelays.none { it.url == relay },
-                    onUseRelay = { onUsePopularRelay(index) })
+                    relayWithOnlineStatus = relay,
+                    isAddable = addIsEnabled && myRelays.none { it.item.url == relay.item }
+                ) { onUsePopularRelay(index) }
                 if (index != popularRelays.size - 1) {
                     HorizontalDivider()
                 }
@@ -165,8 +180,12 @@ private fun AddRelay(
 }
 
 @Composable
-private fun PopularRelayRow(relay: String, isAddable: Boolean, onUseRelay: () -> Unit) {
-    RelayRow(relay = relay) {
+private fun PopularRelayRow(
+    relayWithOnlineStatus: ItemWithOnlineStatus<Relay>,
+    isAddable: Boolean,
+    onUseRelay: () -> Unit
+) {
+    RelayRow(relayWithOnlineStatus = relayWithOnlineStatus) {
         if (isAddable) AddIconButton(
             modifier = Modifier.size(sizing.mediumItem),
             onAdd = onUseRelay,
@@ -177,48 +196,76 @@ private fun PopularRelayRow(relay: String, isAddable: Boolean, onUseRelay: () ->
 
 @Composable
 private fun MyRelayRow(
-    relay: Nip65Relay,
+    nip65RelayWithOnlineStatus: ItemWithOnlineStatus<Nip65Relay>,
     isDeletable: Boolean,
     onDeleteRelay: () -> Unit,
     onToggleRead: () -> Unit,
     onToggleWrite: () -> Unit
 ) {
-    RelayRow(relay = relay.url) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Spacer(modifier = Modifier.width(spacing.large))
-            NamedCheckbox(
-                isChecked = relay.isRead,
-                name = stringResource(id = R.string.read),
-                isEnabled = relay.isWrite || !relay.isRead,
-                onClick = onToggleRead
-            )
-            Spacer(modifier = Modifier.width(spacing.xxl))
-
-            NamedCheckbox(
-                isChecked = relay.isWrite,
-                name = stringResource(id = R.string.write),
-                isEnabled = relay.isRead || !relay.isWrite,
-                onClick = onToggleWrite
-            )
-            Spacer(modifier = Modifier.width(spacing.xl))
-
+    RelayRow(
+        relayWithOnlineStatus = ItemWithOnlineStatus(
+            item = nip65RelayWithOnlineStatus.item.url,
+            onlineStatus = nip65RelayWithOnlineStatus.onlineStatus
+        ),
+        secondRow = {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                NamedCheckbox(
+                    isChecked = nip65RelayWithOnlineStatus.item.isRead,
+                    name = stringResource(id = R.string.read),
+                    isEnabled = nip65RelayWithOnlineStatus.item.isWrite || !nip65RelayWithOnlineStatus.item.isRead,
+                    onClick = onToggleRead
+                )
+                Spacer(modifier = Modifier.width(spacing.xxl))
+                NamedCheckbox(
+                    isChecked = nip65RelayWithOnlineStatus.item.isWrite,
+                    name = stringResource(id = R.string.write),
+                    isEnabled = nip65RelayWithOnlineStatus.item.isRead || !nip65RelayWithOnlineStatus.item.isWrite,
+                    onClick = onToggleWrite
+                )
+            }
+        },
+        trailingContent = {
             if (isDeletable) DeleteIconButton(
                 onDelete = onDeleteRelay,
                 description = stringResource(id = R.string.delete_relay)
             )
         }
+    )
+}
+
+@Composable
+private fun RelayRow(
+    relayWithOnlineStatus: ItemWithOnlineStatus<Relay>,
+    secondRow: @Composable (() -> Unit) = {},
+    trailingContent: @Composable (() -> Unit) = {}
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = spacing.large),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween
+    ) {
+        Column(Modifier.weight(weight = 1f, fill = false)) {
+            FirstRelayRow(
+                relay = relayWithOnlineStatus.item,
+                onlineStatus = relayWithOnlineStatus.onlineStatus
+            )
+            secondRow()
+        }
+        trailingContent()
     }
 }
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-private fun RelayRow(relay: String, trailingContent: @Composable (() -> Unit)) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = spacing.large),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
+fun FirstRelayRow(relay: Relay, onlineStatus: OnlineStatus) {
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        OnlineStatusChip(onlineStatus = onlineStatus)
+        Spacer(modifier = Modifier.width(spacing.large))
         Text(
             modifier = Modifier
                 .weight(1f)
@@ -230,6 +277,5 @@ private fun RelayRow(relay: String, trailingContent: @Composable (() -> Unit)) {
             maxLines = 1,
             overflow = TextOverflow.Ellipsis
         )
-        trailingContent()
     }
 }
