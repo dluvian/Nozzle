@@ -140,9 +140,11 @@ class RelayEditorViewModel(
         clearAndAddRelays(list = originalRelays, toAdd = nip65Relays)
         val entities = nip65Relays.map {
             Nip65Entity(
-                url = it.url,
-                isRead = it.isRead,
-                isWrite = it.isWrite,
+                nip65Relay = Nip65Relay(
+                    url = it.url,
+                    isRead = it.isRead,
+                    isWrite = it.isWrite,
+                ),
                 pubkey = pubkeyProvider.getActivePubkey(),
                 createdAt = event.createdAt
             )

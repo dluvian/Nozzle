@@ -12,6 +12,7 @@ import com.dluvian.nozzle.data.room.entity.EventRelayEntity
 import com.dluvian.nozzle.data.room.entity.Nip65Entity
 import com.dluvian.nozzle.data.room.entity.ProfileEntity
 import com.dluvian.nozzle.data.room.entity.ReactionEntity
+import com.dluvian.nozzle.data.room.helper.Nip65Relay
 import com.dluvian.nozzle.data.utils.JsonUtils.gson
 import com.dluvian.nozzle.data.utils.TimeConstants
 import com.dluvian.nozzle.data.utils.UrlUtils.removeTrailingSlashes
@@ -241,9 +242,11 @@ class EventProcessor(
                 event.getNip65Entries().map { entry ->
                     Nip65Entity(
                         pubkey = event.pubkey,
-                        url = entry.url,
-                        isRead = entry.isRead,
-                        isWrite = entry.isWrite,
+                        nip65Relay = Nip65Relay(
+                            url = entry.url,
+                            isRead = entry.isRead,
+                            isWrite = entry.isWrite
+                        ),
                         createdAt = event.createdAt,
                     )
                 }
