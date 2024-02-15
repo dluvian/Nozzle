@@ -2,7 +2,7 @@ package com.dluvian.nozzle.data.utils
 
 import com.dluvian.nozzle.data.MAX_RELAYS
 import com.dluvian.nozzle.model.Relay
-import com.dluvian.nozzle.model.RelaySelection
+import com.dluvian.nozzle.model.relay.RelaySelection
 
 fun toggleRelay(relays: List<RelaySelection>, index: Int): List<RelaySelection> {
     return relays.mapIndexed { i, relay ->

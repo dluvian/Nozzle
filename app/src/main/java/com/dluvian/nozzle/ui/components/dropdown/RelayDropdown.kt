@@ -6,7 +6,7 @@ import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import com.dluvian.nozzle.data.utils.UrlUtils.removeWebsocketPrefix
-import com.dluvian.nozzle.model.RelaySelection
+import com.dluvian.nozzle.model.relay.RelaySelection
 import com.dluvian.nozzle.ui.components.text.NamedItem
 
 @Composable
