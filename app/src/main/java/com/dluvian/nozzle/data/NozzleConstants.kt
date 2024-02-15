@@ -32,6 +32,6 @@ const val FRIEND_CIRCLE_LIMIT = 500
 
 const val MAX_POPULAR_RELAYS = 50
 
-const val GOOD_PING_THRESHOLD = 200
+const val GOOD_PING_THRESHOLD = 250
 const val PING_INTERVAL = 3_000L
 const val PING_WAIT_TIME = 600L

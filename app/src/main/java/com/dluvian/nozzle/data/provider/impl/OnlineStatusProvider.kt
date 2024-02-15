@@ -42,7 +42,7 @@ class OnlineStatusProvider(private val httpClient: OkHttpClient) : IOnlineStatus
         }
     }
 
-    val jobs = mutableMapOf<Relay, Job>()
+    private val jobs = mutableMapOf<Relay, Job>()
 
     private fun ping(relays: Collection<Relay>) {
         relays.forEach { relay ->
