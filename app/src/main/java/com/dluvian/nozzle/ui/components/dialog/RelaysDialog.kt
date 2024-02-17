@@ -32,7 +32,8 @@ fun RelaysDialog(
                     DialogSection(
                         header = stringResource(id = R.string.writes_in),
                         relays = writesInRelays,
-                        onOpenRelayProfile = onOpenRelayProfile
+                        onOpenRelayProfile = onOpenRelayProfile,
+                        onCloseDialog = onCloseDialog
                     )
                 }
             }
@@ -41,7 +42,8 @@ fun RelaysDialog(
                     DialogSection(
                         header = stringResource(id = R.string.reads_in),
                         relays = readsInRelays,
-                        onOpenRelayProfile = onOpenRelayProfile
+                        onOpenRelayProfile = onOpenRelayProfile,
+                        onCloseDialog = onCloseDialog
                     )
                 }
             }
@@ -49,7 +51,8 @@ fun RelaysDialog(
                 DialogSection(
                     header = stringResource(id = R.string.seen_in),
                     relays = seenInRelays,
-                    onOpenRelayProfile = onOpenRelayProfile
+                    onOpenRelayProfile = onOpenRelayProfile,
+                    onCloseDialog = onCloseDialog
                 )
             }
         }
@@ -59,8 +62,9 @@ fun RelaysDialog(
 @Composable
 private fun DialogSection(
     header: String,
-    relays: List<String>,
-    onOpenRelayProfile: (Relay) -> Unit
+    relays: List<Relay>,
+    onOpenRelayProfile: (Relay) -> Unit,
+    onCloseDialog: () -> Unit
 ) {
     Column {
         Text(
@@ -73,19 +77,30 @@ private fun DialogSection(
             maxLines = 1,
             overflow = TextOverflow.Ellipsis
         )
-        RelayList(relays = relays, onOpenRelayProfile = onOpenRelayProfile)
+        RelayList(
+            relays = relays,
+            onOpenRelayProfile = onOpenRelayProfile,
+            onCloseDialog = onCloseDialog
+        )
     }
 }
 
 @Composable
-private fun RelayList(relays: List<Relay>, onOpenRelayProfile: (Relay) -> Unit) {
+private fun RelayList(
+    relays: List<Relay>,
+    onOpenRelayProfile: (Relay) -> Unit,
+    onCloseDialog: () -> Unit
+) {
     Column {
         for (relay in relays) {
             Text(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = spacing.dialogEdge, vertical = spacing.medium)
-                    .clickable(onClick = { onOpenRelayProfile(relay) }),
+                    .clickable(onClick = {
+                        onCloseDialog()
+                        onOpenRelayProfile(relay)
+                    }),
                 text = relay,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
