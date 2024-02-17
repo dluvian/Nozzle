@@ -37,6 +37,7 @@ import com.dluvian.nozzle.data.provider.IContactListProvider
 import com.dluvian.nozzle.data.provider.IOnlineStatusProvider
 import com.dluvian.nozzle.data.provider.IPostWithMetaProvider
 import com.dluvian.nozzle.data.provider.IProfileWithMetaProvider
+import com.dluvian.nozzle.data.provider.IRelayProfileProvider
 import com.dluvian.nozzle.data.provider.IRelayProvider
 import com.dluvian.nozzle.data.provider.ISimpleProfileProvider
 import com.dluvian.nozzle.data.provider.IThreadProvider
@@ -49,6 +50,7 @@ import com.dluvian.nozzle.data.provider.impl.ContactListProvider
 import com.dluvian.nozzle.data.provider.impl.OnlineStatusProvider
 import com.dluvian.nozzle.data.provider.impl.PostWithMetaProvider
 import com.dluvian.nozzle.data.provider.impl.ProfileWithMetaProvider
+import com.dluvian.nozzle.data.provider.impl.RelayProfileProvider
 import com.dluvian.nozzle.data.provider.impl.RelayProvider
 import com.dluvian.nozzle.data.provider.impl.SimpleProfileProvider
 import com.dluvian.nozzle.data.provider.impl.ThreadProvider
@@ -230,4 +232,5 @@ class AppContainer(context: Context) {
     )
 
     val onlineStatusProvider: IOnlineStatusProvider = OnlineStatusProvider(httpClient = httpClient)
+    val relayProfileProvider: IRelayProfileProvider = RelayProfileProvider()
 }

@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.AnnotatedString
+import com.dluvian.nozzle.model.Relay
 import com.dluvian.nozzle.ui.components.text.AnnotatedText
 import com.dluvian.nozzle.ui.components.text.InRelays
 import com.dluvian.nozzle.ui.components.text.ReplyingTo
@@ -18,11 +19,12 @@ fun PostCardContentBase(
     annotatedContent: AnnotatedString,
     isCurrent: Boolean,
     maxLines: Int? = null,
+    onOpenRelayProfile: (Relay) -> Unit,
     onNavigateToThread: () -> Unit,
     onNavigateToId: (String) -> Unit,
 ) {
     replyToName?.let { ReplyingTo(name = it, replyRelayHint = replyRelayHint) }
-    relays?.let { InRelays(relays = it) }
+    relays?.let { InRelays(relays = it, onOpenRelayProfile = onOpenRelayProfile) }
     Spacer(Modifier.height(spacing.medium))
     if (annotatedContent.text.isNotBlank()) {
         AnnotatedText(

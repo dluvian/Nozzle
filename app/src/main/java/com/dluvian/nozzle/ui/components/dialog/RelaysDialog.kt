@@ -1,5 +1,6 @@
 package com.dluvian.nozzle.ui.components.dialog
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -19,6 +20,7 @@ import com.dluvian.nozzle.ui.theme.spacing
 @Composable
 fun RelaysDialog(
     seenInRelays: List<Relay>,
+    onOpenRelayProfile: (Relay) -> Unit,
     onCloseDialog: () -> Unit,
     writesInRelays: List<Relay>? = null,
     readsInRelays: List<Relay>? = null,
@@ -29,7 +31,8 @@ fun RelaysDialog(
                 item {
                     DialogSection(
                         header = stringResource(id = R.string.writes_in),
-                        relays = writesInRelays
+                        relays = writesInRelays,
+                        onOpenRelayProfile = onOpenRelayProfile
                     )
                 }
             }
@@ -37,19 +40,28 @@ fun RelaysDialog(
                 item {
                     DialogSection(
                         header = stringResource(id = R.string.reads_in),
-                        relays = readsInRelays
+                        relays = readsInRelays,
+                        onOpenRelayProfile = onOpenRelayProfile
                     )
                 }
             }
             item {
-                DialogSection(header = stringResource(id = R.string.seen_in), relays = seenInRelays)
+                DialogSection(
+                    header = stringResource(id = R.string.seen_in),
+                    relays = seenInRelays,
+                    onOpenRelayProfile = onOpenRelayProfile
+                )
             }
         }
     }
 }
 
 @Composable
-private fun DialogSection(header: String, relays: List<String>) {
+private fun DialogSection(
+    header: String,
+    relays: List<String>,
+    onOpenRelayProfile: (Relay) -> Unit
+) {
     Column {
         Text(
             modifier = Modifier
@@ -61,18 +73,19 @@ private fun DialogSection(header: String, relays: List<String>) {
             maxLines = 1,
             overflow = TextOverflow.Ellipsis
         )
-        RelayList(relays = relays)
+        RelayList(relays = relays, onOpenRelayProfile = onOpenRelayProfile)
     }
 }
 
 @Composable
-private fun RelayList(relays: List<Relay>) {
+private fun RelayList(relays: List<Relay>, onOpenRelayProfile: (Relay) -> Unit) {
     Column {
         for (relay in relays) {
             Text(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = spacing.dialogEdge, vertical = spacing.medium),
+                    .padding(horizontal = spacing.dialogEdge, vertical = spacing.medium)
+                    .clickable(onClick = { onOpenRelayProfile(relay) }),
                 text = relay,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis

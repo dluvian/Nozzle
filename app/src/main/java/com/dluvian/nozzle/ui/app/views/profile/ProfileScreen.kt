@@ -36,6 +36,7 @@ import com.dluvian.nozzle.data.utils.copyAndToast
 import com.dluvian.nozzle.model.PostWithMeta
 import com.dluvian.nozzle.model.ProfileWithMeta
 import com.dluvian.nozzle.model.Pubkey
+import com.dluvian.nozzle.model.Relay
 import com.dluvian.nozzle.model.TrustType
 import com.dluvian.nozzle.ui.app.navigation.PostCardLambdas
 import com.dluvian.nozzle.ui.components.buttons.EditProfileButton
@@ -110,7 +111,8 @@ fun ProfileScreen(
                 writesInRelays = profile.writesInRelays,
                 readsInRelays = profile.readsInRelays,
                 onOpenFollowerList = { onOpenFollowerList(profile.pubkey) },
-                onOpenFollowedByList = { onOpenFollowedByList(profile.pubkey) }
+                onOpenFollowedByList = { onOpenFollowedByList(profile.pubkey) },
+                onOpenRelayProfile = postCardLambdas.navLambdas.onNavigateToRelayProfile
             )
             Spacer(Modifier.height(spacing.xl))
             HorizontalDivider()
@@ -247,6 +249,7 @@ private fun NumberedCategories(
     readsInRelays: List<String>,
     onOpenFollowerList: () -> Unit,
     onOpenFollowedByList: () -> Unit,
+    onOpenRelayProfile: (Relay) -> Unit,
 ) {
     Row(
         Modifier
@@ -270,9 +273,10 @@ private fun NumberedCategories(
             if (openRelayDialog.value) {
                 RelaysDialog(
                     seenInRelays = seenInRelays,
+                    onOpenRelayProfile = onOpenRelayProfile,
+                    onCloseDialog = { openRelayDialog.value = false },
                     writesInRelays = writesInRelays,
-                    readsInRelays = readsInRelays,
-                    onCloseDialog = { openRelayDialog.value = false }
+                    readsInRelays = readsInRelays
                 )
             }
             NumberedCategory(

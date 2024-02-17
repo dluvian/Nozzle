@@ -90,7 +90,7 @@
     <string name="read">Read</string>
     <string name="write">Write</string>
     <string name="save">Save</string>
-    <string name="popular_relays">Popular Relays</string>
+    <string name="popular_relays">Popular relays</string>
     <string name="inbox">Inbox</string>
     <string name="collapse">Collapse</string>
     <string name="expand">Expand</string>
@@ -145,6 +145,7 @@
     <string name="show_profile_pictures_summary">Fetch and show profile pictures. Activating this will increase data usage.</string>
     <string name="profile_picture">Profile picture</string>
     <string name="changes_interface_to_darker_tones">Changes interface to darker tones.</string>
+    <string name="relay_profile">Relay profile</string>
 
     <plurals name="other_relays">
         <item quantity="one">other</item>

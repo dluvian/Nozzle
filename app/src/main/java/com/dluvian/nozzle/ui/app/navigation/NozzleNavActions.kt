@@ -4,6 +4,7 @@ import android.util.Log
 import androidx.navigation.NavHostController
 import com.dluvian.nozzle.data.nostr.utils.EncodingUtils.nostrStrToNostrId
 import com.dluvian.nozzle.data.utils.HashtagUtils
+import com.dluvian.nozzle.model.Relay
 import com.dluvian.nozzle.model.nostr.NeventNostrId
 import com.dluvian.nozzle.model.nostr.NoteNostrId
 import com.dluvian.nozzle.model.nostr.NprofileNostrId
@@ -53,6 +54,11 @@ class NozzleNavActions(
         navController.navigateToNozzleRoute(NozzleRoute.RELAY_EDITOR)
     }
 
+    val navigateToRelayProfile: (Relay) -> Unit = { relay ->
+        vmContainer.relayProfileViewModel.onOpenRelayProfile(relay)
+        navController.navigateToNozzleRoute(NozzleRoute.RELAY_PROFILE)
+    }
+
     val navigateToKeys: () -> Unit = {
         vmContainer.keysViewModel.onOpenKeys()
         navController.navigateToNozzleRoute(NozzleRoute.KEYS)
@@ -88,7 +94,7 @@ class NozzleNavActions(
         navController.navigateToNozzleRoute("${NozzleRoute.QUOTE}/${postId}")
     }
 
-    val navigateToId: (String) -> Unit = { id ->
+    private val navigateToId: (String) -> Unit = { id ->
         if (id.isNotEmpty()) {
             val route = if (HashtagUtils.isHashtag(id)) "${NozzleRoute.HASHTAG}/${id}"
             else when (nostrStrToNostrId(nostrStr = id)) {
@@ -121,6 +127,7 @@ class NozzleNavActions(
             onNavigateToQuote = navigateToQuote,
             onNavigateToId = navigateToId,
             onNavigateToPost = navigateToPost,
+            onNavigateToRelayProfile = navigateToRelayProfile
         )
     }
 }

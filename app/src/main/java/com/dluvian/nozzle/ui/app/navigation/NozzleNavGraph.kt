@@ -35,6 +35,7 @@ import com.dluvian.nozzle.ui.app.views.post.PostRoute
 import com.dluvian.nozzle.ui.app.views.profile.ProfileRoute
 import com.dluvian.nozzle.ui.app.views.profileList.ProfileListRoute
 import com.dluvian.nozzle.ui.app.views.relayEditor.RelayEditorRoute
+import com.dluvian.nozzle.ui.app.views.relayProfile.RelayProfileRoute
 import com.dluvian.nozzle.ui.app.views.reply.ReplyRoute
 import com.dluvian.nozzle.ui.app.views.search.SearchRoute
 import com.dluvian.nozzle.ui.app.views.settings.SettingsRoute
@@ -165,6 +166,12 @@ fun NozzleNavGraph(
         composable(route = NozzleRoute.RELAY_EDITOR) {
             RelayEditorRoute(
                 relayEditorViewModel = vmContainer.relayEditorViewModel,
+                onGoBack = navActions.popStack,
+            )
+        }
+        composable(route = NozzleRoute.RELAY_PROFILE) {
+            RelayProfileRoute(
+                relayProfileViewModel = vmContainer.relayProfileViewModel,
                 onGoBack = navActions.popStack,
             )
         }

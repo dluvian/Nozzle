@@ -12,6 +12,7 @@ import com.dluvian.nozzle.ui.app.views.post.PostViewModel
 import com.dluvian.nozzle.ui.app.views.profile.ProfileViewModel
 import com.dluvian.nozzle.ui.app.views.profileList.ProfileListViewModel
 import com.dluvian.nozzle.ui.app.views.relayEditor.RelayEditorViewModel
+import com.dluvian.nozzle.ui.app.views.relayProfile.RelayProfileViewModel
 import com.dluvian.nozzle.ui.app.views.reply.ReplyViewModel
 import com.dluvian.nozzle.ui.app.views.search.SearchViewModel
 import com.dluvian.nozzle.ui.app.views.settings.SettingsViewModel
@@ -32,6 +33,7 @@ data class VMContainer(
     val searchViewModel: SearchViewModel,
     val hashtagViewModel: HashtagViewModel,
     val relayEditorViewModel: RelayEditorViewModel,
+    val relayProfileViewModel: RelayProfileViewModel,
     val addAccountViewModel: AddAccountViewModel,
     val settingsViewModel: SettingsViewModel,
 )
