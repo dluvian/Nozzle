@@ -20,6 +20,8 @@ import com.dluvian.nozzle.data.manager.IKeyManager
 import com.dluvian.nozzle.data.manager.IPersonalProfileManager
 import com.dluvian.nozzle.data.manager.impl.KeyManager
 import com.dluvian.nozzle.data.manager.impl.PersonalProfileManager
+import com.dluvian.nozzle.data.nip65Updater.INip65Updater
+import com.dluvian.nozzle.data.nip65Updater.Nip65Updater
 import com.dluvian.nozzle.data.nostr.INostrService
 import com.dluvian.nozzle.data.nostr.NostrService
 import com.dluvian.nozzle.data.nostr.nip05.INip05Resolver
@@ -233,4 +235,9 @@ class AppContainer(context: Context) {
 
     val onlineStatusProvider: IOnlineStatusProvider = OnlineStatusProvider(httpClient = httpClient)
     val relayProfileProvider: IRelayProfileProvider = RelayProfileProvider()
+    val nip65Updater: INip65Updater = Nip65Updater(
+        nostrService = nostrService,
+        pubkeyProvider = keyManager,
+        nip65Dao = roomDb.nip65Dao()
+    )
 }

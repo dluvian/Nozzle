@@ -155,16 +155,16 @@ fun NozzleApp(appContainer: AppContainer) {
                 ),
                 relayEditorViewModel = viewModel(
                     factory = RelayEditorViewModel.provideFactory(
-                        nostrService = appContainer.nostrService,
                         relayProvider = appContainer.relayProvider,
-                        pubkeyProvider = appContainer.keyManager,
                         onlineStatusProvider = appContainer.onlineStatusProvider,
-                        nip65Dao = appContainer.roomDb.nip65Dao()
+                        nip65Updater = appContainer.nip65Updater,
                     )
                 ),
                 relayProfileViewModel = viewModel(
                     factory = RelayProfileViewModel.provideFactory(
                         relayProfileProvider = appContainer.relayProfileProvider,
+                        relayProvider = appContainer.relayProvider,
+                        nip65Updater = appContainer.nip65Updater,
                     )
                 ),
                 addAccountViewModel = viewModel(

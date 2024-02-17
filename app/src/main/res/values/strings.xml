@@ -146,6 +146,7 @@
     <string name="profile_picture">Profile picture</string>
     <string name="changes_interface_to_darker_tones">Changes interface to darker tones.</string>
     <string name="relay_profile">Relay profile</string>
+    <string name="add_to_my_relays">Add to my relays</string>
 
     <plurals name="other_relays">
         <item quantity="one">other</item>

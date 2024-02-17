@@ -10,14 +10,13 @@ fun RelayProfileRoute(
     onGoBack: () -> Unit,
 ) {
     val relayProfile by relayProfileViewModel.relayProfile.collectAsState()
-    val relay by relayProfileViewModel.currentRelay
-    val isRefreshing by relayProfileViewModel.isRefreshing.collectAsState()
+    val uiState by relayProfileViewModel.uiState.collectAsState()
 
     RelayProfileScreen(
         relayProfile = relayProfile,
-        relay = relay,
-        isRefreshing = isRefreshing,
+        uiState = uiState,
         onRefresh = relayProfileViewModel.onRefresh,
+        onAddToNip65 = relayProfileViewModel.onAddToNip65,
         onGoBack = onGoBack,
     )
 }
