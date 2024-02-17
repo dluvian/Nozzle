@@ -33,10 +33,10 @@ import com.dluvian.nozzle.model.ItemWithOnlineStatus
 import com.dluvian.nozzle.model.OnlineStatus
 import com.dluvian.nozzle.model.Relay
 import com.dluvian.nozzle.model.Waiting
-import com.dluvian.nozzle.ui.components.chips.OnlineStatusChip
 import com.dluvian.nozzle.ui.components.iconButtons.AddIconButton
 import com.dluvian.nozzle.ui.components.iconButtons.DeleteIconButton
 import com.dluvian.nozzle.ui.components.iconButtons.SaveIconButton
+import com.dluvian.nozzle.ui.components.indicators.OnlineStatusIndicator
 import com.dluvian.nozzle.ui.components.indicators.TopBarCircleProgressIndicator
 import com.dluvian.nozzle.ui.components.input.AddingTextFieldWithButton
 import com.dluvian.nozzle.ui.components.interactors.NamedCheckbox
@@ -264,7 +264,7 @@ private fun RelayRow(
 @Composable
 fun FirstRelayRow(relay: Relay, onlineStatus: OnlineStatus) {
     Row(verticalAlignment = Alignment.CenterVertically) {
-        OnlineStatusChip(onlineStatus = onlineStatus)
+        OnlineStatusIndicator(onlineStatus = onlineStatus)
         Spacer(modifier = Modifier.width(spacing.large))
         Text(
             modifier = Modifier
