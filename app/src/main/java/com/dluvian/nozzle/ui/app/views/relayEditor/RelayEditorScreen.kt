@@ -3,6 +3,7 @@ package com.dluvian.nozzle.ui.app.views.relayEditor
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.MarqueeSpacing
 import androidx.compose.foundation.basicMarquee
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
@@ -28,7 +29,6 @@ import androidx.compose.ui.text.style.TextOverflow
 import com.dluvian.nozzle.R
 import com.dluvian.nozzle.data.room.helper.Nip65Relay
 import com.dluvian.nozzle.data.utils.UrlUtils.WEBSOCKET_PREFIX
-import com.dluvian.nozzle.data.utils.UrlUtils.removeWebsocketPrefix
 import com.dluvian.nozzle.model.ItemWithOnlineStatus
 import com.dluvian.nozzle.model.OnlineStatus
 import com.dluvian.nozzle.model.Relay
@@ -54,6 +54,7 @@ fun RelayEditorScreen(
     onToggleRead: (Int) -> Unit,
     onToggleWrite: (Int) -> Unit,
     onUsePopularRelay: (Int) -> Unit,
+    onOpenRelayProfile: (Relay) -> Unit,
     onGoBack: () -> Unit,
 ) {
     ReturnableScaffold(
@@ -74,7 +75,7 @@ fun RelayEditorScreen(
         val myRelays = remember(uiState.myRelays, onlineStatuses) {
             uiState.myRelays.map { nip65Relay ->
                 ItemWithOnlineStatus(
-                    item = nip65Relay.copy(url = nip65Relay.url.removeWebsocketPrefix()),
+                    item = nip65Relay,
                     onlineStatus = onlineStatuses[nip65Relay.url] ?: Waiting
                 )
             }
@@ -82,7 +83,7 @@ fun RelayEditorScreen(
         val popularRelays = remember(uiState.popularRelays, onlineStatuses) {
             uiState.popularRelays.map { relay ->
                 ItemWithOnlineStatus(
-                    item = relay.removeWebsocketPrefix(),
+                    item = relay,
                     onlineStatus = onlineStatuses[relay] ?: Waiting
                 )
             }
@@ -96,7 +97,8 @@ fun RelayEditorScreen(
             onDeleteRelay = onDeleteRelay,
             onToggleRead = onToggleRead,
             onToggleWrite = onToggleWrite,
-            onUsePopularRelay = onUsePopularRelay
+            onUsePopularRelay = onUsePopularRelay,
+            onOpenRelayProfile = onOpenRelayProfile,
         )
     }
 }
@@ -111,7 +113,8 @@ private fun ScreenContent(
     onDeleteRelay: (Int) -> Unit,
     onToggleRead: (Int) -> Unit,
     onToggleWrite: (Int) -> Unit,
-    onUsePopularRelay: (Int) -> Unit
+    onUsePopularRelay: (Int) -> Unit,
+    onOpenRelayProfile: (Relay) -> Unit
 ) {
     LazyColumn(
         modifier = Modifier
@@ -130,8 +133,10 @@ private fun ScreenContent(
                 nip65RelayWithOnlineStatus = relay,
                 isDeletable = myRelays.size > 1,
                 onDeleteRelay = { onDeleteRelay(index) },
-                onToggleRead = { onToggleRead(index) }
-            ) { onToggleWrite(index) }
+                onToggleRead = { onToggleRead(index) },
+                onToggleWrite = { onToggleWrite(index) },
+                onOpenRelayProfile = onOpenRelayProfile,
+            )
             if (index != myRelays.size - 1) {
                 HorizontalDivider()
             }
@@ -143,8 +148,10 @@ private fun ScreenContent(
             itemsIndexed(items = popularRelays) { index, relay ->
                 PopularRelayRow(
                     relayWithOnlineStatus = relay,
-                    isAddable = addIsEnabled && myRelays.none { it.item.url == relay.item }
-                ) { onUsePopularRelay(index) }
+                    isAddable = addIsEnabled && myRelays.none { it.item.url == relay.item },
+                    onUseRelay = { onUsePopularRelay(index) },
+                    onOpenRelayProfile = onOpenRelayProfile
+                )
                 if (index != popularRelays.size - 1) {
                     HorizontalDivider()
                 }
@@ -183,9 +190,12 @@ private fun AddRelay(
 private fun PopularRelayRow(
     relayWithOnlineStatus: ItemWithOnlineStatus<Relay>,
     isAddable: Boolean,
-    onUseRelay: () -> Unit
+    onUseRelay: () -> Unit,
+    onOpenRelayProfile: (Relay) -> Unit
 ) {
-    RelayRow(relayWithOnlineStatus = relayWithOnlineStatus) {
+    RelayRow(
+        relayWithOnlineStatus = relayWithOnlineStatus,
+        onOpenRelayProfile = { onOpenRelayProfile(relayWithOnlineStatus.item) }) {
         if (isAddable) AddIconButton(
             modifier = Modifier.size(sizing.mediumItem),
             onAdd = onUseRelay,
@@ -200,13 +210,15 @@ private fun MyRelayRow(
     isDeletable: Boolean,
     onDeleteRelay: () -> Unit,
     onToggleRead: () -> Unit,
-    onToggleWrite: () -> Unit
+    onToggleWrite: () -> Unit,
+    onOpenRelayProfile: (Relay) -> Unit
 ) {
     RelayRow(
         relayWithOnlineStatus = ItemWithOnlineStatus(
             item = nip65RelayWithOnlineStatus.item.url,
             onlineStatus = nip65RelayWithOnlineStatus.onlineStatus
         ),
+        onOpenRelayProfile = { onOpenRelayProfile(nip65RelayWithOnlineStatus.item.url) },
         secondRow = {
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -239,8 +251,9 @@ private fun MyRelayRow(
 @Composable
 private fun RelayRow(
     relayWithOnlineStatus: ItemWithOnlineStatus<Relay>,
-    secondRow: @Composable (() -> Unit) = {},
-    trailingContent: @Composable (() -> Unit) = {}
+    onOpenRelayProfile: () -> Unit,
+    secondRow: @Composable () -> Unit = {},
+    trailingContent: @Composable () -> Unit = {},
 ) {
     Row(
         modifier = Modifier
@@ -252,7 +265,8 @@ private fun RelayRow(
         Column(Modifier.weight(weight = 1f, fill = false)) {
             FirstRelayRow(
                 relay = relayWithOnlineStatus.item,
-                onlineStatus = relayWithOnlineStatus.onlineStatus
+                onlineStatus = relayWithOnlineStatus.onlineStatus,
+                onOpenRelayProfile = onOpenRelayProfile
             )
             secondRow()
         }
@@ -262,7 +276,7 @@ private fun RelayRow(
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun FirstRelayRow(relay: Relay, onlineStatus: OnlineStatus) {
+fun FirstRelayRow(relay: Relay, onlineStatus: OnlineStatus, onOpenRelayProfile: () -> Unit) {
     Row(verticalAlignment = Alignment.CenterVertically) {
         OnlineStatusIndicator(onlineStatus = onlineStatus)
         Spacer(modifier = Modifier.width(spacing.large))
@@ -272,7 +286,8 @@ fun FirstRelayRow(relay: Relay, onlineStatus: OnlineStatus) {
                 .basicMarquee(
                     iterations = Int.MAX_VALUE,
                     spacing = MarqueeSpacing.fractionOfContainer(1f / 4f)
-                ),
+                )
+                .clickable(onClick = onOpenRelayProfile),
             text = relay,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis

@@ -166,6 +166,7 @@ fun NozzleNavGraph(
         composable(route = NozzleRoute.RELAY_EDITOR) {
             RelayEditorRoute(
                 relayEditorViewModel = vmContainer.relayEditorViewModel,
+                onOpenRelayProfile = postCardLambdas.navLambdas.onNavigateToRelayProfile,
                 onGoBack = navActions.popStack,
             )
         }
