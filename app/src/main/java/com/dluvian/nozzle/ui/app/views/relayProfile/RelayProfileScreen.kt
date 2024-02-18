@@ -44,15 +44,15 @@ fun RelayProfileScreen(
             ) {
                 item { Text(text = uiState.relay) }
                 item { Text(text = relayProfile.onlineStatus.toString()) }
-                item { Text(text = relayProfile.item?.name.orEmpty()) }
-                item { Text(text = relayProfile.item?.description.orEmpty()) }
-                item { Text(text = relayProfile.item?.pubkey.orEmpty()) }
+                item { Text(text = relayProfile.item?.name ?: "?") }
+                item { Text(text = relayProfile.item?.description ?: "?") }
+                item { Text(text = relayProfile.item?.pubkey ?: "?") }
+                item { Text(text = relayProfile.item?.limitation?.paymentRequired.toString()) }
                 item { Text(text = relayProfile.item?.limitation?.authRequired.toString()) }
                 item { Text(text = relayProfile.item?.limitation?.restrictedWrites.toString()) }
-                item { Text(text = relayProfile.item?.paymentRequired.toString()) }
-                item { Text(text = relayProfile.item?.paymentsUrl.orEmpty()) }
-                item { Text(text = relayProfile.item?.software.orEmpty()) }
-                item { Text(text = relayProfile.item?.version.orEmpty()) }
+                item { Text(text = relayProfile.item?.paymentsUrl ?: "?") }
+                item { Text(text = relayProfile.item?.software ?: "?") }
+                item { Text(text = relayProfile.item?.version ?: "?") }
                 item {
                     Row(
                         modifier = Modifier.fillMaxWidth(),

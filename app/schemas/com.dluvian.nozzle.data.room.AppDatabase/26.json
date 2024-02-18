@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 26,
-    "identityHash": "39725c69b37471d5cce876a848b16c85",
+    "identityHash": "621f85ec646e2d727cf6ef2992e093f6",
     "entities": [
       {
         "tableName": "contact",
@@ -448,7 +448,7 @@
       },
       {
         "tableName": "relayProfile",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`relayUrl` TEXT NOT NULL, `name` TEXT NOT NULL, `description` TEXT NOT NULL, `pubkey` TEXT NOT NULL, `paymentRequired` INTEGER NOT NULL, `paymentsUrl` TEXT NOT NULL, `software` TEXT NOT NULL, `version` TEXT NOT NULL, `authRequired` INTEGER NOT NULL, `restrictedWrites` INTEGER NOT NULL, PRIMARY KEY(`relayUrl`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`relayUrl` TEXT NOT NULL, `name` TEXT, `description` TEXT, `pubkey` TEXT, `paymentsUrl` TEXT, `software` TEXT, `version` TEXT, `paymentRequired` INTEGER, `authRequired` INTEGER, `restrictedWrites` INTEGER, PRIMARY KEY(`relayUrl`))",
         "fields": [
           {
             "fieldPath": "relayUrl",
@@ -460,55 +460,55 @@
             "fieldPath": "profile.name",
             "columnName": "name",
             "affinity": "TEXT",
-            "notNull": true
+            "notNull": false
           },
           {
             "fieldPath": "profile.description",
             "columnName": "description",
             "affinity": "TEXT",
-            "notNull": true
+            "notNull": false
           },
           {
             "fieldPath": "profile.pubkey",
             "columnName": "pubkey",
             "affinity": "TEXT",
-            "notNull": true
-          },
-          {
-            "fieldPath": "profile.paymentRequired",
-            "columnName": "paymentRequired",
-            "affinity": "INTEGER",
-            "notNull": true
+            "notNull": false
           },
           {
             "fieldPath": "profile.paymentsUrl",
             "columnName": "paymentsUrl",
             "affinity": "TEXT",
-            "notNull": true
+            "notNull": false
           },
           {
             "fieldPath": "profile.software",
             "columnName": "software",
             "affinity": "TEXT",
-            "notNull": true
+            "notNull": false
           },
           {
             "fieldPath": "profile.version",
             "columnName": "version",
             "affinity": "TEXT",
-            "notNull": true
+            "notNull": false
+          },
+          {
+            "fieldPath": "profile.limitation.paymentRequired",
+            "columnName": "paymentRequired",
+            "affinity": "INTEGER",
+            "notNull": false
           },
           {
             "fieldPath": "profile.limitation.authRequired",
             "columnName": "authRequired",
             "affinity": "INTEGER",
-            "notNull": true
+            "notNull": false
           },
           {
             "fieldPath": "profile.limitation.restrictedWrites",
             "columnName": "restrictedWrites",
             "affinity": "INTEGER",
-            "notNull": true
+            "notNull": false
           }
         ],
         "primaryKey": {
@@ -524,7 +524,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '39725c69b37471d5cce876a848b16c85')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '621f85ec646e2d727cf6ef2992e093f6')"
     ]
   }
 }

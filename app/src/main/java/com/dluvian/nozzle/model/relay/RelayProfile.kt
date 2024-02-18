@@ -5,12 +5,11 @@ import com.dluvian.nozzle.model.Pubkey
 import com.google.gson.annotations.SerializedName
 
 data class RelayProfile(
-    val name: String = "",
-    val description: String = "",
-    val pubkey: Pubkey = "",
-    @Embedded val limitation: RelayProfileLimitation = RelayProfileLimitation(),
-    @SerializedName("payment_required") val paymentRequired: Boolean = false,
-    @SerializedName("payments_url") val paymentsUrl: String = "",
-    val software: String = "",
-    val version: String = ""
+    val name: String? = null,
+    val description: String? = null,
+    val pubkey: Pubkey? = null,
+    @Embedded val limitation: RelayProfileLimitation? = null,
+    @SerializedName("payments_url") val paymentsUrl: String? = null,
+    val software: String? = null,
+    val version: String? = null
 )
