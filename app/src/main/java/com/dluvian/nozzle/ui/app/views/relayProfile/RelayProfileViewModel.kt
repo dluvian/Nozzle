@@ -62,9 +62,9 @@ class RelayProfileViewModel(
         if (_uiState.value.isRefreshing) return@local
 
         _uiState.update { it.copy(isRefreshing = true) }
+        updateNip65Info(relay = _uiState.value.relay)
         viewModelScope.launch(Dispatchers.IO) {
             relayProfileProvider.update(relayUrl = _uiState.value.relay)
-            updateNip65Info(relay = _uiState.value.relay)
             delay(WAIT_TIME)
         }.invokeOnCompletion {
             _uiState.update { it.copy(isRefreshing = false) }

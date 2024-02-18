@@ -234,7 +234,11 @@ class AppContainer(context: Context) {
     )
 
     val onlineStatusProvider: IOnlineStatusProvider = OnlineStatusProvider(httpClient = httpClient)
-    val relayProfileProvider: IRelayProfileProvider = RelayProfileProvider()
+    val relayProfileProvider: IRelayProfileProvider = RelayProfileProvider(
+        httpClient = httpClient,
+        relayProfileDao = roomDb.relayProfileDao(),
+        onlineStatusProvider = onlineStatusProvider
+    )
     val nip65Updater: INip65Updater = Nip65Updater(
         nostrService = nostrService,
         pubkeyProvider = keyManager,
