@@ -1,10 +1,13 @@
 package com.dluvian.nozzle.ui.app.views.relayProfile
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.Button
@@ -12,6 +15,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import com.dluvian.nozzle.R
 import com.dluvian.nozzle.model.ItemWithOnlineStatus
 import com.dluvian.nozzle.model.relay.RelayProfile
@@ -42,17 +46,72 @@ fun RelayProfileScreen(
                     .padding(horizontal = spacing.screenEdge),
                 state = rememberLazyListState()
             ) {
-                item { Text(text = uiState.relay) }
-                item { Text(text = relayProfile.onlineStatus.toString()) }
-                item { Text(text = relayProfile.item?.name ?: "?") }
-                item { Text(text = relayProfile.item?.description ?: "?") }
-                item { Text(text = relayProfile.item?.pubkey ?: "?") }
-                item { Text(text = relayProfile.item?.limitation?.paymentRequired.toString()) }
-                item { Text(text = relayProfile.item?.limitation?.authRequired.toString()) }
-                item { Text(text = relayProfile.item?.limitation?.restrictedWrites.toString()) }
-                item { Text(text = relayProfile.item?.paymentsUrl ?: "?") }
-                item { Text(text = relayProfile.item?.software ?: "?") }
-                item { Text(text = relayProfile.item?.version ?: "?") }
+                item {
+                    InfoRow(
+                        infoType = stringResource(id = R.string.url),
+                        value = uiState.relay
+                    )
+                }
+                item {
+                    InfoRow(
+                        infoType = stringResource(id = R.string.status),
+                        value = relayProfile.onlineStatus.toString()
+                    )
+                }
+                item {
+                    InfoRow(
+                        infoType = stringResource(id = R.string.name),
+                        value = relayProfile.item?.name
+                    )
+                }
+                item {
+                    InfoRow(
+                        infoType = stringResource(id = R.string.description),
+                        value = relayProfile.item?.description
+                    )
+                }
+                item {
+                    InfoRow(
+                        infoType = stringResource(id = R.string.admin),
+                        value = relayProfile.item?.pubkey
+                    )
+                }
+                item {
+                    InfoRow(
+                        infoType = stringResource(id = R.string.auth_required),
+                        value = booleanString(value = relayProfile.item?.limitation?.authRequired)
+                    )
+                }
+                item {
+                    InfoRow(
+                        infoType = stringResource(id = R.string.restricted_writes),
+                        value = booleanString(relayProfile.item?.limitation?.restrictedWrites)
+                    )
+                }
+                item {
+                    InfoRow(
+                        infoType = stringResource(id = R.string.payment_required),
+                        value = booleanString(relayProfile.item?.limitation?.paymentRequired)
+                    )
+                }
+                item {
+                    InfoRow(
+                        infoType = stringResource(id = R.string.payment_url),
+                        value = relayProfile.item?.paymentsUrl
+                    )
+                }
+                item {
+                    InfoRow(
+                        infoType = stringResource(id = R.string.software),
+                        value = relayProfile.item?.software
+                    )
+                }
+                item {
+                    InfoRow(
+                        infoType = stringResource(id = R.string.version),
+                        value = relayProfile.item?.version
+                    )
+                }
                 item {
                     Row(
                         modifier = Modifier.fillMaxWidth(),
@@ -70,5 +129,29 @@ fun RelayProfileScreen(
 
             }
         }
+    }
+}
+
+
+@Composable
+private fun InfoRow(infoType: String, value: String?) {
+    Row(modifier = Modifier.padding(vertical = spacing.medium)) {
+        Column(modifier = Modifier.weight(weight = 0.3f, fill = true)) {
+            Text(text = infoType, fontWeight = FontWeight.Bold)
+        }
+        Spacer(modifier = Modifier.width(spacing.medium))
+        Column(modifier = Modifier.weight(weight = 0.7f, fill = true)) {
+            if (value != null) Text(text = value)
+            else Text(text = stringResource(id = R.string.unknown))
+        }
+    }
+}
+
+@Composable
+private fun booleanString(value: Boolean?): String? {
+    return when (value) {
+        null -> null
+        true -> stringResource(id = R.string.yes)
+        false -> stringResource(id = R.string.no)
     }
 }

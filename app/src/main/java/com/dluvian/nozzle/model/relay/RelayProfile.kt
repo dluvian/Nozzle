@@ -1,9 +1,11 @@
 package com.dluvian.nozzle.model.relay
 
+import androidx.compose.runtime.Immutable
 import androidx.room.Embedded
 import com.dluvian.nozzle.model.Pubkey
 import com.google.gson.annotations.SerializedName
 
+@Immutable
 data class RelayProfile(
     val name: String? = null,
     val description: String? = null,

@@ -44,6 +44,10 @@ data class Sizing(
      * 320 dp
      */
     val dialogHeight: Dp = 320.dp,
+    /**
+     * 48 dp
+     */
+    val categoryRowLength: Dp = 70.dp,
 )
 
 val LocalSizing = compositionLocalOf { Sizing() }

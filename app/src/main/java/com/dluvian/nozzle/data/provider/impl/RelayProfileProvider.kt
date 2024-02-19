@@ -50,7 +50,18 @@ class RelayProfileProvider(
                 JsonUtils.gson.fromJson(body, RelayProfile::class.java)
             }
         }.onSuccess { relayProfile ->
-            val entity = RelayProfileEntity(relayUrl = relayUrl, profile = relayProfile)
+            val entity = RelayProfileEntity(
+                relayUrl = relayUrl,
+                profile = relayProfile.copy(
+                    name = relayProfile.name?.trim(),
+                    description = relayProfile.description?.trim(),
+                    pubkey = relayProfile.pubkey?.trim(),
+                    limitation = relayProfile.limitation,
+                    paymentsUrl = relayProfile.paymentsUrl?.trim(),
+                    software = relayProfile.software?.trim(),
+                    version = relayProfile.version?.trim()
+                )
+            )
             relayProfileDao.insertOrReplace(entity)
         }.onFailure {
             Log.w(TAG, "Failed to fetch relay profile of $relayUrl", it)
