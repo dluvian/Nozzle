@@ -15,7 +15,7 @@ import androidx.compose.ui.zIndex
 import com.dluvian.nozzle.R
 import com.dluvian.nozzle.data.DB_BATCH_SIZE
 import com.dluvian.nozzle.data.Z_INDEX_UNDER_PULL_REFRESH
-import com.dluvian.nozzle.data.utils.isScrollingUp
+import com.dluvian.nozzle.ui.components.isScrollingUp
 import kotlinx.coroutines.launch
 
 @Composable

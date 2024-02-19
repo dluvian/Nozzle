@@ -1,17 +1,14 @@
 package com.dluvian.nozzle.model.relay
 
 import androidx.compose.runtime.Immutable
-import androidx.room.Embedded
-import com.dluvian.nozzle.model.Pubkey
-import com.google.gson.annotations.SerializedName
+import androidx.compose.ui.text.AnnotatedString
+import com.dluvian.nozzle.data.room.entity.RelayProfileEntity
 
 @Immutable
 data class RelayProfile(
-    val name: String? = null,
-    val description: String? = null,
-    val pubkey: Pubkey? = null,
-    @Embedded val limitation: RelayProfileLimitation? = null,
-    @SerializedName("payments_url") val paymentsUrl: String? = null,
-    val software: String? = null,
-    val version: String? = null
+    val entity: RelayProfileEntity,
+    val annotatedDescription: AnnotatedString?,
+    val annotatedPubkey: AnnotatedString?,
+    val annotatedPaymentsUrl: AnnotatedString?,
+    val annotatedSoftware: AnnotatedString?,
 )

@@ -8,7 +8,7 @@ import com.dluvian.nozzle.model.nostr.Nprofile
 interface IAnnotatedContentHandler {
     fun annotateContent(
         content: String,
-        mentionedNamesByPubkey: Map<Pubkey, String>
+        mentionedNamesByPubkey: Map<Pubkey, String> = emptyMap()
     ): AnnotatedString
 
     fun extractMediaLinks(annotatedContent: AnnotatedString): List<String>

@@ -173,6 +173,7 @@ fun NozzleNavGraph(
         composable(route = NozzleRoute.RELAY_PROFILE) {
             RelayProfileRoute(
                 relayProfileViewModel = vmContainer.relayProfileViewModel,
+                onNavigateToProfile = navActions.navigateToProfile,
                 onGoBack = navActions.popStack,
             )
         }

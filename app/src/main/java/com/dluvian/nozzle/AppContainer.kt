@@ -237,7 +237,10 @@ class AppContainer(context: Context) {
     val relayProfileProvider: IRelayProfileProvider = RelayProfileProvider(
         httpClient = httpClient,
         relayProfileDao = roomDb.relayProfileDao(),
-        onlineStatusProvider = onlineStatusProvider
+        onlineStatusProvider = onlineStatusProvider,
+        annotatedContentHandler = annotatedContentHandler,
+        profileDao = roomDb.profileDao(),
+        nozzleSubscriber = nozzleSubscriber
     )
     val nip65Updater: INip65Updater = Nip65Updater(
         nostrService = nostrService,

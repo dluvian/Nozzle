@@ -25,6 +25,7 @@ import com.dluvian.nozzle.ui.components.indicators.OnlineStatusIndicator
 import com.dluvian.nozzle.ui.components.indicators.TopBarCircleProgressIndicator
 import com.dluvian.nozzle.ui.components.pullRefresh.PullRefreshBox
 import com.dluvian.nozzle.ui.components.scaffolds.ReturnableScaffold
+import com.dluvian.nozzle.ui.components.text.AnnotatedText
 import com.dluvian.nozzle.ui.theme.spacing
 
 @Composable
@@ -33,6 +34,7 @@ fun RelayProfileScreen(
     uiState: RelayProfileViewModelState,
     onRefresh: () -> Unit,
     onAddToNip65: () -> Unit,
+    onNavigateToProfile: (String) -> Unit,
     onGoBack: () -> Unit
 ) {
     ReturnableScaffold(
@@ -49,6 +51,7 @@ fun RelayProfileScreen(
                     .padding(horizontal = spacing.screenEdge),
                 state = rememberLazyListState()
             ) {
+                val profile = relayProfile.item?.entity?.profile
                 item {
                     InfoRow(
                         infoType = stringResource(id = R.string.url),
@@ -67,7 +70,7 @@ fun RelayProfileScreen(
                     InfoRow(
                         infoType = stringResource(id = R.string.name),
                         secondCol = {
-                            Text(text = getStrOrUnknown(value = relayProfile.item?.name))
+                            Text(text = getStrOrUnknown(value = profile?.name))
                         }
                     )
                 }
@@ -75,7 +78,11 @@ fun RelayProfileScreen(
                     InfoRow(
                         infoType = stringResource(id = R.string.description),
                         secondCol = {
-                            Text(text = getStrOrUnknown(value = relayProfile.item?.description))
+                            AnnotatedText(
+                                text = getStrOrUnknown(relayProfile.item?.annotatedDescription),
+                                onClickNonLink = { },
+                                onNavigateToId = onNavigateToProfile,
+                            )
                         }
                     )
                 }
@@ -83,7 +90,35 @@ fun RelayProfileScreen(
                     InfoRow(
                         infoType = stringResource(id = R.string.admin),
                         secondCol = {
-                            Text(text = getStrOrUnknown(value = relayProfile.item?.pubkey))
+                            AnnotatedText(
+                                text = getStrOrUnknown(relayProfile.item?.annotatedPubkey),
+                                onClickNonLink = { },
+                                onNavigateToId = onNavigateToProfile,
+                            )
+                        }
+                    )
+                }
+                item {
+                    InfoRow(
+                        infoType = stringResource(id = R.string.payment_required),
+                        secondCol = {
+                            Text(
+                                text = getStrOrUnknown(
+                                    value = getYesOrNo(value = profile?.limitation?.paymentRequired)
+                                )
+                            )
+                        }
+                    )
+                }
+                item {
+                    InfoRow(
+                        infoType = stringResource(id = R.string.payment_url),
+                        secondCol = {
+                            AnnotatedText(
+                                text = getStrOrUnknown(relayProfile.item?.annotatedPaymentsUrl),
+                                onClickNonLink = { },
+                                onNavigateToId = onNavigateToProfile,
+                            )
                         }
                     )
                 }
@@ -93,9 +128,7 @@ fun RelayProfileScreen(
                         secondCol = {
                             Text(
                                 text = getStrOrUnknown(
-                                    value = getYesOrNo(
-                                        value = relayProfile.item?.limitation?.authRequired
-                                    )
+                                    value = getYesOrNo(value = profile?.limitation?.authRequired)
                                 )
                             )
                         }
@@ -107,33 +140,9 @@ fun RelayProfileScreen(
                         secondCol = {
                             Text(
                                 text = getStrOrUnknown(
-                                    value = getYesOrNo(
-                                        value = relayProfile.item?.limitation?.restrictedWrites
-                                    )
+                                    value = getYesOrNo(value = profile?.limitation?.restrictedWrites)
                                 )
                             )
-                        }
-                    )
-                }
-                item {
-                    InfoRow(
-                        infoType = stringResource(id = R.string.payment_required),
-                        secondCol = {
-                            Text(
-                                text = getStrOrUnknown(
-                                    value = getYesOrNo(
-                                        value = relayProfile.item?.limitation?.paymentRequired
-                                    )
-                                )
-                            )
-                        }
-                    )
-                }
-                item {
-                    InfoRow(
-                        infoType = stringResource(id = R.string.payment_url),
-                        secondCol = {
-                            Text(text = getStrOrUnknown(value = relayProfile.item?.paymentsUrl))
                         }
                     )
                 }
@@ -141,16 +150,18 @@ fun RelayProfileScreen(
                     InfoRow(
                         infoType = stringResource(id = R.string.software),
                         secondCol = {
-                            Text(text = getStrOrUnknown(value = relayProfile.item?.software))
+                            AnnotatedText(
+                                text = getStrOrUnknown(relayProfile.item?.annotatedSoftware),
+                                onClickNonLink = { },
+                                onNavigateToId = onNavigateToProfile,
+                            )
                         }
                     )
                 }
                 item {
                     InfoRow(
                         infoType = stringResource(id = R.string.version),
-                        secondCol = {
-                            Text(text = getStrOrUnknown(value = relayProfile.item?.version))
-                        }
+                        secondCol = { Text(text = getStrOrUnknown(value = profile?.version)) }
                     )
                 }
                 item {
@@ -172,7 +183,6 @@ fun RelayProfileScreen(
         }
     }
 }
-
 
 @Composable
 private fun InfoRow(infoType: String, secondCol: @Composable () -> Unit) {

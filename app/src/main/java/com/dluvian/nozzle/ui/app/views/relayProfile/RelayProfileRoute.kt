@@ -7,6 +7,7 @@ import androidx.compose.runtime.getValue
 @Composable
 fun RelayProfileRoute(
     relayProfileViewModel: RelayProfileViewModel,
+    onNavigateToProfile: (String) -> Unit,
     onGoBack: () -> Unit,
 ) {
     val relayProfile by relayProfileViewModel.relayProfile.collectAsState()
@@ -17,6 +18,7 @@ fun RelayProfileRoute(
         uiState = uiState,
         onRefresh = relayProfileViewModel.onRefresh,
         onAddToNip65 = relayProfileViewModel.onAddToNip65,
+        onNavigateToProfile = onNavigateToProfile,
         onGoBack = onGoBack,
     )
 }

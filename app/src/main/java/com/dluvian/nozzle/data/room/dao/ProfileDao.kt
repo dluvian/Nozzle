@@ -17,10 +17,13 @@ import kotlinx.coroutines.flow.Flow
 @Dao
 interface ProfileDao {
     @Query("SELECT * FROM profile WHERE pubkey = :pubkey")
-    suspend fun getProfile(pubkey: String): ProfileEntity?
+    suspend fun getProfile(pubkey: Pubkey): ProfileEntity?
+
+    @Query("SELECT name FROM profile WHERE pubkey = :pubkey")
+    suspend fun getName(pubkey: Pubkey): String?
 
     @Query("SELECT * FROM profile WHERE pubkey = :pubkey")
-    fun getProfileFlow(pubkey: String): Flow<ProfileEntity?>
+    fun getProfileFlow(pubkey: Pubkey): Flow<ProfileEntity?>
 
     @Query("SELECT * FROM profile WHERE pubkey IN (:pubkeys)")
     fun getProfilesFlow(pubkeys: Collection<Pubkey>): Flow<List<ProfileEntity>>
