@@ -37,6 +37,7 @@ I don't plan to publish this app in the Google Play Store.
 - [NIP-02: Follow List](https://github.com/nostr-protocol/nips/blob/master/02.md)
 - [NIP-09: Event Deletion](https://github.com/nostr-protocol/nips/blob/master/09.md)
 - [NIP-10: Conventions for clients' use of e and p tags in text events](https://github.com/nostr-protocol/nips/blob/master/10.md)
+- [NIP-11: Relay Information Document](https://github.com/nostr-protocol/nips/blob/master/11.md)
 - [NIP-18: Reposts](https://github.com/nostr-protocol/nips/blob/master/18.md)
 - [NIP-19: bech32-encoded entities](https://github.com/nostr-protocol/nips/blob/master/19.md)
 - [NIP-21: nostr: URI scheme](https://github.com/nostr-protocol/nips/blob/master/21.md)
