@@ -61,6 +61,7 @@ fun PostCardHeaderAndContent(
             relays = post.relays,
             annotatedContent = post.annotatedContent,
             isCurrent = isCurrent,
+            onOpenRelayProfile = postCardLambdas.navLambdas.onNavigateToRelayProfile,
             onNavigateToThread = {
                 if (!isCurrent) {
                     postCardLambdas.navLambdas.onNavigateToThread(post.entity.id)

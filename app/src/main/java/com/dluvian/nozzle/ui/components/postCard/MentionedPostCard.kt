@@ -72,6 +72,7 @@ fun AnnotatedMentionedPostCard(
                     annotatedContent = post.annotatedContent,
                     isCurrent = false,
                     maxLines = maxLines,
+                    onOpenRelayProfile = { },
                     onNavigateToThread = { onNavigateToThread?.let { it(post.mentionedPost.id) } },
                     onNavigateToId = onNavigateToId,
                 )

@@ -41,6 +41,7 @@ import com.dluvian.nozzle.ui.app.views.post.PostViewModel
 import com.dluvian.nozzle.ui.app.views.profile.ProfileViewModel
 import com.dluvian.nozzle.ui.app.views.profileList.ProfileListViewModel
 import com.dluvian.nozzle.ui.app.views.relayEditor.RelayEditorViewModel
+import com.dluvian.nozzle.ui.app.views.relayProfile.RelayProfileViewModel
 import com.dluvian.nozzle.ui.app.views.reply.ReplyViewModel
 import com.dluvian.nozzle.ui.app.views.search.SearchViewModel
 import com.dluvian.nozzle.ui.app.views.settings.SettingsViewModel
@@ -154,11 +155,16 @@ fun NozzleApp(appContainer: AppContainer) {
                 ),
                 relayEditorViewModel = viewModel(
                     factory = RelayEditorViewModel.provideFactory(
-                        nostrService = appContainer.nostrService,
                         relayProvider = appContainer.relayProvider,
-                        pubkeyProvider = appContainer.keyManager,
                         onlineStatusProvider = appContainer.onlineStatusProvider,
-                        nip65Dao = appContainer.roomDb.nip65Dao()
+                        nip65Updater = appContainer.nip65Updater,
+                    )
+                ),
+                relayProfileViewModel = viewModel(
+                    factory = RelayProfileViewModel.provideFactory(
+                        relayProfileProvider = appContainer.relayProfileProvider,
+                        relayProvider = appContainer.relayProvider,
+                        nip65Updater = appContainer.nip65Updater,
                     )
                 ),
                 addAccountViewModel = viewModel(

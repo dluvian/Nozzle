@@ -36,7 +36,10 @@ class OnlineStatusProvider(private val httpClient: OkHttpClient) : IOnlineStatus
                 val currentTime = System.currentTimeMillis()
                 if (currentTime - lastPing > PING_INTERVAL) {
                     lastPing = currentTime
-                    ping(relays = distinctRelays.shuffled().take(distinctRelays.size / 3))
+                    ping(
+                        relays = distinctRelays.shuffled()
+                            .take(1.coerceAtLeast(distinctRelays.size / 2))
+                    )
                 }
             }
         }

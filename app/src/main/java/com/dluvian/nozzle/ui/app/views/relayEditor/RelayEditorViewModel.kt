@@ -5,12 +5,9 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.dluvian.nozzle.data.MAX_RELAYS
 import com.dluvian.nozzle.data.SHORT_WAIT_TIME
-import com.dluvian.nozzle.data.nostr.INostrService
+import com.dluvian.nozzle.data.nip65Updater.INip65Updater
 import com.dluvian.nozzle.data.provider.IOnlineStatusProvider
-import com.dluvian.nozzle.data.provider.IPubkeyProvider
 import com.dluvian.nozzle.data.provider.IRelayProvider
-import com.dluvian.nozzle.data.room.dao.Nip65Dao
-import com.dluvian.nozzle.data.room.entity.Nip65Entity
 import com.dluvian.nozzle.data.room.helper.Nip65Relay
 import com.dluvian.nozzle.data.utils.UrlUtils.WEBSOCKET_PREFIX
 import com.dluvian.nozzle.data.utils.UrlUtils.isWebsocketUrl
@@ -27,11 +24,9 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 class RelayEditorViewModel(
-    private val nostrService: INostrService,
     private val relayProvider: IRelayProvider,
-    private val pubkeyProvider: IPubkeyProvider,
     private val onlineStatusProvider: IOnlineStatusProvider,
-    private val nip65Dao: Nip65Dao
+    private val nip65Updater: INip65Updater
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(RelayEditorViewModelState())
@@ -148,7 +143,6 @@ class RelayEditorViewModel(
     }
 
     private suspend fun publishAndSaveInDb(nip65Relays: List<Nip65Relay>) {
-        val event = nostrService.publishNip65(nip65Relays = nip65Relays)
         _uiState.update {
             it.copy(
                 myRelays = nip65Relays,
@@ -157,18 +151,7 @@ class RelayEditorViewModel(
             )
         }
         clearAndAddRelays(list = originalRelays, toAdd = nip65Relays)
-        val entities = nip65Relays.map {
-            Nip65Entity(
-                nip65Relay = Nip65Relay(
-                    url = it.url,
-                    isRead = it.isRead,
-                    isWrite = it.isWrite,
-                ),
-                pubkey = pubkeyProvider.getActivePubkey(),
-                createdAt = event.createdAt
-            )
-        }
-        nip65Dao.insertAndDeleteOutdated(nip65s = entities)
+        nip65Updater.publishAndSaveInDb(nip65Relays = nip65Relays)
     }
 
     private fun clearAndAddRelays(list: MutableList<Nip65Relay>, toAdd: List<Nip65Relay>) {
@@ -182,21 +165,17 @@ class RelayEditorViewModel(
 
     companion object {
         fun provideFactory(
-            nostrService: INostrService,
             relayProvider: IRelayProvider,
-            pubkeyProvider: IPubkeyProvider,
             onlineStatusProvider: IOnlineStatusProvider,
-            nip65Dao: Nip65Dao
+            nip65Updater: INip65Updater,
         ): ViewModelProvider.Factory =
             object : ViewModelProvider.Factory {
                 @Suppress("UNCHECKED_CAST")
                 override fun <T : ViewModel> create(modelClass: Class<T>): T {
                     return RelayEditorViewModel(
-                        nostrService = nostrService,
                         relayProvider = relayProvider,
-                        pubkeyProvider = pubkeyProvider,
                         onlineStatusProvider = onlineStatusProvider,
-                        nip65Dao = nip65Dao
+                        nip65Updater = nip65Updater
                     ) as T
                 }
             }

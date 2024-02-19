@@ -90,7 +90,7 @@
     <string name="read">Read</string>
     <string name="write">Write</string>
     <string name="save">Save</string>
-    <string name="my_friends_relays">My Friends Relays</string>
+    <string name="popular_relays">Popular relays</string>
     <string name="inbox">Inbox</string>
     <string name="collapse">Collapse</string>
     <string name="expand">Expand</string>
@@ -145,7 +145,23 @@
     <string name="show_profile_pictures_summary">Fetch and show profile pictures. Activating this will increase data usage.</string>
     <string name="profile_picture">Profile picture</string>
     <string name="changes_interface_to_darker_tones">Changes interface to darker tones.</string>
+    <string name="relay_profile">Relay profile</string>
+    <string name="add_to_my_relays">Add to my relays</string>
+    <string name="unknown">Unknown</string>
+    <string name="status">Status</string>
+    <string name="url">URL</string>
+    <string name="description">Description</string>
+    <string name="admin">Admin</string>
+    <string name="payment_required">Payment required</string>
+    <string name="yes">Yes</string>
+    <string name="no">No</string>
+    <string name="auth_required">AUTH required</string>
+    <string name="restricted_writes">Restricted writes</string>
+    <string name="payment_url">Payment URL</string>
+    <string name="software">Software</string>
+    <string name="version">Version</string>
     <string name="waiting">Waiting…</string>
+    <string name="online">Online</string>
     <string name="offline">Offline</string>
 
     <plurals name="other_relays">

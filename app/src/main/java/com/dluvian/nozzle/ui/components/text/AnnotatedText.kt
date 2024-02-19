@@ -15,10 +15,10 @@ import androidx.compose.ui.text.style.TextOverflow
 @Composable
 fun AnnotatedText(
     text: AnnotatedString,
-    onClickNonLink: () -> Unit,
     onNavigateToId: (String) -> Unit,
     maxLines: Int? = null,
-    overflow: TextOverflow = TextOverflow.Ellipsis
+    overflow: TextOverflow = TextOverflow.Ellipsis,
+    onClickNonLink: () -> Unit = {},
 ) {
     val uriHandler = LocalUriHandler.current
     val style = MaterialTheme.typography.bodyLarge.copy(color = MaterialTheme.colorScheme.onSurface)

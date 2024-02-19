@@ -10,6 +10,7 @@ object NozzleRoute {
     const val LIKES = "likes"
     const val SEARCH = "search"
     const val RELAY_EDITOR = "relay_editor"
+    const val RELAY_PROFILE = "relay_profile"
     const val KEYS = "keys"
     const val SETTINGS = "settings"
     const val THREAD = "thread"

@@ -34,4 +34,3 @@ object UrlUtils {
 
     fun String.removeWebsocketPrefix() = this.removePrefix(WEBSOCKET_PREFIX)
 }
-

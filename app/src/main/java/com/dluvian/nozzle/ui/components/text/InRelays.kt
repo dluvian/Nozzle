@@ -15,21 +15,26 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.withStyle
 import com.dluvian.nozzle.R
 import com.dluvian.nozzle.data.utils.UrlUtils.removeWebsocketPrefix
+import com.dluvian.nozzle.model.Relay
 import com.dluvian.nozzle.ui.components.dialog.RelaysDialog
 import com.dluvian.nozzle.ui.theme.BoldHintGrayStyle
 import com.dluvian.nozzle.ui.theme.HintGrayStyle
 import com.dluvian.nozzle.ui.theme.Shapes
 
 @Composable
-fun InRelays(relays: List<String>) {
+fun InRelays(relays: List<Relay>, onOpenRelayProfile: (Relay) -> Unit) {
     val openDialog = remember { mutableStateOf(false) }
     if (openDialog.value) {
-        RelaysDialog(seenInRelays = relays, onCloseDialog = { openDialog.value = false })
+        RelaysDialog(
+            seenInRelays = relays,
+            onOpenRelayProfile = onOpenRelayProfile,
+            onCloseDialog = { openDialog.value = false })
     }
     if (relays.isNotEmpty()) {
-        Row(modifier = Modifier
-            .clip(Shapes.small)
-            .clickable { openDialog.value = true }) {
+        Row(
+            modifier = Modifier
+                .clip(Shapes.small)
+                .clickable { openDialog.value = true }) {
             InRelay(
                 modifier = Modifier.weight(weight = 0.65f, fill = false), relay = relays.first()
             )
