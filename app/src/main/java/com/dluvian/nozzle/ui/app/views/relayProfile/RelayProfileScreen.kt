@@ -19,6 +19,9 @@ import androidx.compose.ui.text.font.FontWeight
 import com.dluvian.nozzle.R
 import com.dluvian.nozzle.model.ItemWithOnlineStatus
 import com.dluvian.nozzle.model.relay.RelayProfile
+import com.dluvian.nozzle.ui.components.getStrOrUnknown
+import com.dluvian.nozzle.ui.components.getYesOrNo
+import com.dluvian.nozzle.ui.components.indicators.OnlineStatusIndicator
 import com.dluvian.nozzle.ui.components.indicators.TopBarCircleProgressIndicator
 import com.dluvian.nozzle.ui.components.pullRefresh.PullRefreshBox
 import com.dluvian.nozzle.ui.components.scaffolds.ReturnableScaffold
@@ -49,67 +52,105 @@ fun RelayProfileScreen(
                 item {
                     InfoRow(
                         infoType = stringResource(id = R.string.url),
-                        value = uiState.relay
+                        secondCol = { Text(text = uiState.relay) }
                     )
                 }
                 item {
                     InfoRow(
                         infoType = stringResource(id = R.string.status),
-                        value = relayProfile.onlineStatus.toString()
+                        secondCol = {
+                            OnlineStatusIndicator(onlineStatus = relayProfile.onlineStatus)
+                        }
                     )
                 }
                 item {
                     InfoRow(
                         infoType = stringResource(id = R.string.name),
-                        value = relayProfile.item?.name
+                        secondCol = {
+                            Text(text = getStrOrUnknown(value = relayProfile.item?.name))
+                        }
                     )
                 }
                 item {
                     InfoRow(
                         infoType = stringResource(id = R.string.description),
-                        value = relayProfile.item?.description
+                        secondCol = {
+                            Text(text = getStrOrUnknown(value = relayProfile.item?.description))
+                        }
                     )
                 }
                 item {
                     InfoRow(
                         infoType = stringResource(id = R.string.admin),
-                        value = relayProfile.item?.pubkey
+                        secondCol = {
+                            Text(text = getStrOrUnknown(value = relayProfile.item?.pubkey))
+                        }
                     )
                 }
                 item {
                     InfoRow(
                         infoType = stringResource(id = R.string.auth_required),
-                        value = booleanString(value = relayProfile.item?.limitation?.authRequired)
+                        secondCol = {
+                            Text(
+                                text = getStrOrUnknown(
+                                    value = getYesOrNo(
+                                        value = relayProfile.item?.limitation?.authRequired
+                                    )
+                                )
+                            )
+                        }
                     )
                 }
                 item {
                     InfoRow(
                         infoType = stringResource(id = R.string.restricted_writes),
-                        value = booleanString(relayProfile.item?.limitation?.restrictedWrites)
+                        secondCol = {
+                            Text(
+                                text = getStrOrUnknown(
+                                    value = getYesOrNo(
+                                        value = relayProfile.item?.limitation?.restrictedWrites
+                                    )
+                                )
+                            )
+                        }
                     )
                 }
                 item {
                     InfoRow(
                         infoType = stringResource(id = R.string.payment_required),
-                        value = booleanString(relayProfile.item?.limitation?.paymentRequired)
+                        secondCol = {
+                            Text(
+                                text = getStrOrUnknown(
+                                    value = getYesOrNo(
+                                        value = relayProfile.item?.limitation?.paymentRequired
+                                    )
+                                )
+                            )
+                        }
                     )
                 }
                 item {
                     InfoRow(
                         infoType = stringResource(id = R.string.payment_url),
-                        value = relayProfile.item?.paymentsUrl
+                        secondCol = {
+                            Text(text = getStrOrUnknown(value = relayProfile.item?.paymentsUrl))
+                        }
                     )
                 }
                 item {
                     InfoRow(
                         infoType = stringResource(id = R.string.software),
-                        value = relayProfile.item?.software
+                        secondCol = {
+                            Text(text = getStrOrUnknown(value = relayProfile.item?.software))
+                        }
                     )
                 }
                 item {
                     InfoRow(
                         infoType = stringResource(id = R.string.version),
-                        value = relayProfile.item?.version
+                        secondCol = {
+                            Text(text = getStrOrUnknown(value = relayProfile.item?.version))
+                        }
                     )
                 }
                 item {
@@ -134,24 +175,14 @@ fun RelayProfileScreen(
 
 
 @Composable
-private fun InfoRow(infoType: String, value: String?) {
+private fun InfoRow(infoType: String, secondCol: @Composable () -> Unit) {
     Row(modifier = Modifier.padding(vertical = spacing.medium)) {
         Column(modifier = Modifier.weight(weight = 0.3f, fill = true)) {
             Text(text = infoType, fontWeight = FontWeight.Bold)
         }
         Spacer(modifier = Modifier.width(spacing.medium))
         Column(modifier = Modifier.weight(weight = 0.7f, fill = true)) {
-            if (value != null) Text(text = value)
-            else Text(text = stringResource(id = R.string.unknown))
+            secondCol()
         }
-    }
-}
-
-@Composable
-private fun booleanString(value: Boolean?): String? {
-    return when (value) {
-        null -> null
-        true -> stringResource(id = R.string.yes)
-        false -> stringResource(id = R.string.no)
     }
 }

@@ -160,6 +160,9 @@
     <string name="payment_url">Payment URL</string>
     <string name="software">Software</string>
     <string name="version">Version</string>
+    <string name="waiting">Waiting…</string>
+    <string name="online">Online</string>
+    <string name="offline">Offline</string>
 
     <plurals name="other_relays">
         <item quantity="one">other</item>

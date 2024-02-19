@@ -25,7 +25,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.style.TextOverflow
 import com.dluvian.nozzle.R
 import com.dluvian.nozzle.data.room.helper.Nip65Relay
 import com.dluvian.nozzle.data.utils.UrlUtils.WEBSOCKET_PREFIX
@@ -278,9 +277,7 @@ private fun RelayRow(
 @Composable
 fun FirstRelayRow(relay: Relay, onlineStatus: OnlineStatus, onOpenRelayProfile: () -> Unit) {
     Row(verticalAlignment = Alignment.CenterVertically) {
-        OnlineStatusIndicator(onlineStatus = onlineStatus)
-        Spacer(modifier = Modifier.width(spacing.large))
-        Text(
+        OnlineStatusIndicator(
             modifier = Modifier
                 .weight(1f)
                 .basicMarquee(
@@ -288,9 +285,7 @@ fun FirstRelayRow(relay: Relay, onlineStatus: OnlineStatus, onOpenRelayProfile: 
                     spacing = MarqueeSpacing.fractionOfContainer(1f / 4f)
                 )
                 .clickable(onClick = onOpenRelayProfile),
-            text = relay,
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis
+            onlineStatus = onlineStatus, text = relay
         )
     }
 }
