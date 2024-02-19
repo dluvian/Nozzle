@@ -285,7 +285,8 @@ fun FirstRelayRow(relay: Relay, onlineStatus: OnlineStatus, onOpenRelayProfile: 
                     spacing = MarqueeSpacing.fractionOfContainer(1f / 4f)
                 )
                 .clickable(onClick = onOpenRelayProfile),
-            onlineStatus = onlineStatus, text = relay
+            onlineStatus = onlineStatus,
+            text = relay
         )
     }
 }

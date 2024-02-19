@@ -80,7 +80,6 @@ fun RelayProfileScreen(
                         secondCol = {
                             AnnotatedText(
                                 text = getStrOrUnknown(relayProfile.item?.annotatedDescription),
-                                onClickNonLink = { },
                                 onNavigateToId = onNavigateToProfile,
                             )
                         }
@@ -92,7 +91,6 @@ fun RelayProfileScreen(
                         secondCol = {
                             AnnotatedText(
                                 text = getStrOrUnknown(relayProfile.item?.annotatedPubkey),
-                                onClickNonLink = { },
                                 onNavigateToId = onNavigateToProfile,
                             )
                         }
@@ -116,7 +114,6 @@ fun RelayProfileScreen(
                         secondCol = {
                             AnnotatedText(
                                 text = getStrOrUnknown(relayProfile.item?.annotatedPaymentsUrl),
-                                onClickNonLink = { },
                                 onNavigateToId = onNavigateToProfile,
                             )
                         }
@@ -152,7 +149,6 @@ fun RelayProfileScreen(
                         secondCol = {
                             AnnotatedText(
                                 text = getStrOrUnknown(relayProfile.item?.annotatedSoftware),
-                                onClickNonLink = { },
                                 onNavigateToId = onNavigateToProfile,
                             )
                         }
