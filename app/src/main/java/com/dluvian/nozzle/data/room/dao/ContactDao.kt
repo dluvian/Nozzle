@@ -100,30 +100,37 @@ interface ContactDao {
     fun isFollowedFlow(pubkey: String, contactPubkey: String): Flow<Boolean>
 
     @Query(
-        "SELECT pubkey, MAX(createdAt) AS maxCreatedAt " +
+        "SELECT pubkey, MIN(createdAt) AS minCreatedAt " +
                 "FROM contact " +
                 "WHERE pubkey IN (:pubkeys)" +
                 "GROUP BY pubkey"
     )
     suspend fun getTimestampByPubkey(pubkeys: Collection<String>): Map<
             @MapColumn("pubkey") Pubkey,
-            @MapColumn("maxCreatedAt") Long
+            @MapColumn("minCreatedAt") Long
             >
 
     @Transaction
     suspend fun insertAndDeleteOutdated(contacts: Collection<ContactEntity>) {
         if (contacts.isEmpty()) return
 
+        // TODO: Refac: same as in Nip65Dao::insertAndDeleteOutdated
         val pubkeys = contacts.map(ContactEntity::pubkey).toSet()
         val timestamps = getTimestampByPubkey(pubkeys = pubkeys)
-        val outdatedPubkeys = contacts
-            .filter { it.createdAt > (timestamps[it.pubkey] ?: Long.MAX_VALUE) }
-            .map { it.pubkey }
-            .toSet()
+        val pubkeysToUpdate = contacts.filter { contact ->
+            val createdAt = timestamps[contact.pubkey]
+            createdAt == null || createdAt < contact.createdAt
+        }.map { it.pubkey }
+        if (pubkeysToUpdate.isNotEmpty()) delete(pubkeys = pubkeysToUpdate)
 
-        if (outdatedPubkeys.isNotEmpty()) delete(pubkeys = outdatedPubkeys)
+        val toInsert = contacts.filter { pubkeysToUpdate.contains(it.pubkey) }
+            .groupBy { it.pubkey }
+            .flatMap { (_, contactList) ->
+                val maxCreatedAt = contactList.maxBy { it.createdAt }.createdAt
+                contactList.filter { it.createdAt >= maxCreatedAt }
+            }
 
-        insertOrIgnore(*contacts.toTypedArray())
+        insertOrIgnore(*toInsert.toTypedArray())
     }
 
     @Query(
