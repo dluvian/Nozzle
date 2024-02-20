@@ -24,6 +24,7 @@
 -keep class com.dluvian.nozzle.model.nostr.Event { <fields>; }
 -keep class com.dluvian.nozzle.model.nostr.Metadata { <fields>; }
 -keep class com.dluvian.nozzle.model.nostr.nip05.Nip05Response { <fields>; }
+-keep class com.dluvian.nozzle.model.nostr.nip11.Nip11Document { <fields>; }
 
 # Please add these rules to your existing keep rules in order to suppress warnings.
 # This is generated automatically by the Android Gradle plugin.
