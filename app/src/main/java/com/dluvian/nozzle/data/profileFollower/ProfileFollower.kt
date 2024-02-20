@@ -3,18 +3,18 @@ package com.dluvian.nozzle.data.profileFollower
 import android.util.Log
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
+import com.dluvian.nozzle.data.WAIT_TIME
 import com.dluvian.nozzle.data.nostr.INostrService
 import com.dluvian.nozzle.data.provider.IPubkeyProvider
 import com.dluvian.nozzle.data.provider.IRelayProvider
 import com.dluvian.nozzle.data.room.dao.ContactDao
 import com.dluvian.nozzle.data.room.entity.ContactEntity
+import com.dluvian.nozzle.data.utils.getCurrentTimeInSeconds
 import com.dluvian.nozzle.model.Pubkey
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.onEach
-import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.util.concurrent.CancellationException
 
@@ -28,12 +28,7 @@ class ProfileFollower(
 ) : IProfileFollower {
     private val scope = CoroutineScope(Dispatchers.IO)
     private val followProcesses: MutableMap<Pubkey, Job> = mutableMapOf()
-
     private val forcedFollowState = mutableStateOf(emptyMap<Pubkey, Boolean>())
-
-    val pubkeyState = pubkeyProvider.getActivePubkeyStateFlow()
-        .onEach local@{ forcedFollowState.value = emptyMap() }
-        .stateIn(scope, SharingStarted.Eagerly, "")
 
     override fun follow(pubkeyToFollow: Pubkey) {
         putForcedFollowState(pubkey = pubkeyToFollow, isFollowed = true)
@@ -85,10 +80,27 @@ class ProfileFollower(
             .apply { this[pubkey] = isFollowed }
     }
 
-    private suspend fun updateContactList(personalPubkey: String) {
-        val contactPubkeys = contactDao.listContactPubkeys(pubkey = personalPubkey)
+    private var updateJob: Job? = null
+    private suspend fun updateContactList(personalPubkey: Pubkey) {
+        contactDao.updateTime(pubkey = personalPubkey, createdAt = getCurrentTimeInSeconds())
+        updateJob?.cancel(CancellationException("Cancel to prevent spamming relay"))
+        updateJob = scope.launch {
+            var jobs: List<Job>
+            do {
+                delay(WAIT_TIME)
+                jobs = followProcesses.values.toList()
+            } while (jobs.any { it.isActive })
+            updateContactListOverNostr(pubkey = pubkeyProvider.getActivePubkey())
+        }
+        updateJob?.invokeOnCompletion {
+            Log.i(TAG, "Completed contact list update. Error = ${it?.localizedMessage}")
+        }
+    }
+
+    private suspend fun updateContactListOverNostr(pubkey: Pubkey) {
         val event = nostrService.updateContactList(
-            contactPubkeys = contactPubkeys, relays = relayProvider.getWriteRelays()
+            contactPubkeys = contactDao.listContactPubkeys(pubkey = pubkey),
+            relays = relayProvider.getWriteRelays()
         )
         contactDao.updateTime(pubkey = event.pubkey, createdAt = event.createdAt)
     }
