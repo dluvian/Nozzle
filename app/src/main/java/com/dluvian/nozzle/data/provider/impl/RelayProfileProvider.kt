@@ -115,7 +115,7 @@ class RelayProfileProvider(
         if (nostrId == null) return AnnotatedString(text = str)
 
         if (nameCache[nostrId.hex] == null) {
-            nozzleSubscriber.subscribeSimpleProfiles(pubkeys = listOf(nostrId.hex))
+            nozzleSubscriber.subscribeFullProfile(nostrId.nostrStr)
             profileDao.getName(pubkey = nostrId.hex)?.let { dbName ->
                 nameCache[nostrId.hex] = dbName
             }
