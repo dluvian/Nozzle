@@ -23,6 +23,7 @@ fun RelayEditorRoute(
         onToggleRead = relayEditorViewModel.onToggleRead,
         onToggleWrite = relayEditorViewModel.onToggleWrite,
         onUsePopularRelay = relayEditorViewModel.onUsePopularRelay,
+        onResetScreen = relayEditorViewModel.onOpenRelayEditor,
         onOpenRelayProfile = onOpenRelayProfile,
         onGoBack = onGoBack,
     )

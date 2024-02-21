@@ -15,6 +15,7 @@ import com.dluvian.nozzle.data.utils.UrlUtils.removeTrailingSlashes
 import com.dluvian.nozzle.model.OnlineStatus
 import com.dluvian.nozzle.model.Relay
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -39,11 +40,15 @@ class RelayEditorViewModel(
     var onlineStatuses: StateFlow<Map<Relay, OnlineStatus>> = MutableStateFlow(emptyMap())
 
     private val originalRelays: MutableList<Nip65Relay> = mutableListOf()
-    val onOpenRelayEditor: () -> Unit = {
+
+    private var openingJob: Job? = null
+    val onOpenRelayEditor: () -> Unit = local@{
+        if (openingJob?.isActive == true) return@local
+
         _uiState.update { it.copy(isLoading = true) }
-        val relays = relayProvider.getNip65Relays()
-        clearAndAddRelays(list = originalRelays, toAdd = relays)
-        viewModelScope.launch(context = Dispatchers.IO) {
+        openingJob = viewModelScope.launch(context = Dispatchers.IO) {
+            val relays = relayProvider.getNip65Relays()
+            clearAndAddRelays(list = originalRelays, toAdd = relays)
             val popularRelays = relayProvider.getPopularRelays()
             setOnlineStatuses(relays = relays.map { it.url } + popularRelays)
             _uiState.update {
@@ -55,6 +60,9 @@ class RelayEditorViewModel(
                     addIsEnabled = addRelayIsEnabled(relays.size)
                 )
             }
+        }
+        openingJob?.invokeOnCompletion { _ ->
+            _uiState.update { it.copy(isLoading = false) }
         }
     }
 

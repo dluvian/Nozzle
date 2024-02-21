@@ -21,6 +21,7 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -53,9 +54,13 @@ fun RelayEditorScreen(
     onToggleRead: (Int) -> Unit,
     onToggleWrite: (Int) -> Unit,
     onUsePopularRelay: (Int) -> Unit,
+    onResetScreen: () -> Unit,
     onOpenRelayProfile: (Relay) -> Unit,
     onGoBack: () -> Unit,
 ) {
+    LaunchedEffect(Unit) {
+        onResetScreen()
+    }
     ReturnableScaffold(
         topBarText = stringResource(id = R.string.relays),
         onGoBack = onGoBack,
