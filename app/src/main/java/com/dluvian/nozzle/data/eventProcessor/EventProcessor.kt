@@ -344,9 +344,7 @@ class EventProcessor(
 
     private fun matchesFilter(subId: SubId, event: Event): Boolean {
         val cache = filterCache.getOrDefault(subId, emptyList())
-        if (cache.isEmpty()) {
-            return false
-        }
+        if (cache.isEmpty()) return false
         return cache.any { it.matches(event) }
     }
 }

@@ -145,9 +145,7 @@ class AppContainer(context: Context) {
     )
 
     init {
-        nostrService.initialize(
-            initRelays = relayProvider.getReadRelays(limit = true)
-                .map { it.replace("wss://", "ws://") })
+        nostrService.initialize(initRelays = relayProvider.getReadRelays(limit = true))
     }
 
     val postCardInteractor: IPostCardInteractor = PostCardInteractor(

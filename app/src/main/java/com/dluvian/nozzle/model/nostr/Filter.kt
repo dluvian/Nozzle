@@ -31,7 +31,7 @@ data class Filter(
     private fun checkTags(filter: List<String>?, index: String, event: Event): Boolean {
         return filter == null ||
                 event.tags.filter { it.firstOrNull() == index }
-                    .map { it.getOrNull(1) }
+                    .mapNotNull { it.getOrNull(1) }
                     .any { tagValue -> filter.contains(tagValue) }
     }
 
