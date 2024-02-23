@@ -21,6 +21,7 @@ class NostrService(
     httpClient: OkHttpClient,
     private val keyManager: IKeyManager,
     private val eventProcessor: IEventProcessor,
+    private val filterCache: MutableMap<SubId, List<Filter>>
 ) : INostrService {
     private val client = Client(httpClient = httpClient)
     private val unsubOnEOSECache = Collections.synchronizedSet(mutableSetOf<String>())
@@ -30,24 +31,26 @@ class NostrService(
         }
 
         override fun onEvent(subscriptionId: SubId, event: Event, relayUrl: Relay?) {
-            eventProcessor.submit(event = event, relayUrl = relayUrl)
+            eventProcessor.submit(event = event, subId = subscriptionId, relayUrl = relayUrl)
         }
 
         override fun onError(relay: Relay, msg: String, throwable: Throwable?) {
             Log.w(TAG, "OnError($relay): $msg", throwable)
         }
 
-        override fun onEOSE(relay: Relay, subscriptionId: String) {
+        override fun onEOSE(relay: Relay, subscriptionId: SubId) {
             Log.d(TAG, "OnEOSE($relay): $subscriptionId")
             if (unsubOnEOSECache.remove(subscriptionId)) {
                 Log.d(TAG, "Unsubscribe onEOSE($relay) $subscriptionId")
                 client.unsubscribe(subscriptionId)
             }
+            filterCache.remove(subscriptionId)
         }
 
         override fun onClosed(relay: Relay, subscriptionId: SubId, reason: String) {
             Log.d(TAG, "OnClosed($relay): $subscriptionId, reason: $reason")
             unsubOnEOSECache.remove(subscriptionId)
+            filterCache.remove(subscriptionId)
         }
 
         override fun onClose(relay: Relay, reason: String) {
@@ -68,9 +71,9 @@ class NostrService(
         }
     }
 
-    override fun initialize(initRelays: Collection<String>) {
+    override fun initialize(initRelays: Collection<Relay>) {
         client.setListener(listener)
-        Log.i(TAG, "Add ${initRelays.size} relays")
+        Log.i(TAG, "Add ${initRelays.size} relays: $initRelays")
         client.addRelays(initRelays)
     }
 
@@ -181,16 +184,20 @@ class NostrService(
             Log.w(TAG, "Failed to create subscription ID")
             return null
         }
+        filterCache[subId] = filters
         unsubOnEOSECache.add(subId)
 
         return subId
     }
 
-    override fun unsubscribe(subscriptionIds: Collection<String>) {
+    override fun unsubscribe(subscriptionIds: Collection<SubId>) {
         if (subscriptionIds.isEmpty()) return
 
         subscriptionIds.forEach {
             client.unsubscribe(it)
+        }
+        subscriptionIds.forEach {
+            filterCache.remove(it)
         }
     }
 

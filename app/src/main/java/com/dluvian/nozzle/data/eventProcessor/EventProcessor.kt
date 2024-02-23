@@ -17,7 +17,9 @@ import com.dluvian.nozzle.data.utils.JsonUtils.gson
 import com.dluvian.nozzle.data.utils.TimeConstants
 import com.dluvian.nozzle.data.utils.UrlUtils.removeTrailingSlashes
 import com.dluvian.nozzle.data.utils.getCurrentTimeInSeconds
+import com.dluvian.nozzle.model.SubId
 import com.dluvian.nozzle.model.nostr.Event
+import com.dluvian.nozzle.model.nostr.Filter
 import com.dluvian.nozzle.model.nostr.Metadata
 import com.dluvian.nozzle.model.nostr.RelayedEvent
 import kotlinx.coroutines.CoroutineScope
@@ -33,6 +35,7 @@ class EventProcessor(
     private val dbSweepExcludingCache: IIdCache,
     private val fullPostInserter: FullPostInserter,
     private val database: AppDatabase,
+    private val filterCache: Map<SubId, List<Filter>>
 ) : IEventProcessor {
     private val scope = CoroutineScope(Dispatchers.IO)
     private val eventIdCache = Collections.synchronizedSet(mutableSetOf<String>())
@@ -46,13 +49,17 @@ class EventProcessor(
         startProcessingJob()
     }
 
-    override fun submit(event: Event, relayUrl: String?) {
+    override fun submit(event: Event, subId: SubId, relayUrl: String?) {
         if (relayUrl == null) {
             Log.w(TAG, "Origin relay of ${event.id} is unknown")
             return
         }
         if (isFromFuture(event)) {
-            Log.w(TAG, "Discard event from the future ${event.id}")
+            Log.w(TAG, "Discard event from the future, ${event.id} from $relayUrl")
+            return
+        }
+        if (!matchesFilter(subId = subId, event = event)) {
+            Log.w(TAG, "Discard event not matching filter, ${event.id} from $relayUrl")
             return
         }
         if (!isNewAndValid(event)) return
@@ -333,5 +340,13 @@ class EventProcessor(
             return event.createdAt > upperTimeBoundary
         }
         return false
+    }
+
+    private fun matchesFilter(subId: SubId, event: Event): Boolean {
+        val cache = filterCache.getOrDefault(subId, emptyList())
+        if (cache.isEmpty()) {
+            return false
+        }
+        return cache.any { it.matches(event) }
     }
 }

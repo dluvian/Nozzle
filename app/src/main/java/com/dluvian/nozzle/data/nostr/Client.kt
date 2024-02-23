@@ -2,6 +2,7 @@ package com.dluvian.nozzle.data.nostr
 
 import android.util.Log
 import com.dluvian.nozzle.data.utils.JsonUtils
+import com.dluvian.nozzle.data.utils.UrlUtils.WEBSOCKET_PREFIX
 import com.dluvian.nozzle.model.Relay
 import com.dluvian.nozzle.model.SubId
 import com.dluvian.nozzle.model.nostr.Event
@@ -165,9 +166,9 @@ class Client(private val httpClient: OkHttpClient) {
         return sockets.keys.toList()
     }
 
-    private fun addRelay(url: String) {
+    private fun addRelay(url: Relay) {
         if (sockets.containsKey(url)) return
-        if (!url.startsWith("wss://")) return
+        if (!url.startsWith(WEBSOCKET_PREFIX)) return
 
         Log.i(TAG, "Add relay $url")
         try {
