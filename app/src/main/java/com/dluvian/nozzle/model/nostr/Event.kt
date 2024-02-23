@@ -6,6 +6,7 @@ import com.dluvian.nozzle.data.nostr.utils.SchnorrUtils.secp256k1
 import com.dluvian.nozzle.data.nostr.utils.Sha256Utils.sha256
 import com.dluvian.nozzle.data.room.helper.Nip65Relay
 import com.dluvian.nozzle.data.utils.JsonUtils.gson
+import com.dluvian.nozzle.data.utils.UrlUtils.WEBSOCKET_PREFIX
 import com.dluvian.nozzle.data.utils.UrlUtils.removeTrailingSlashes
 import com.dluvian.nozzle.data.utils.getCurrentTimeInSeconds
 import com.dluvian.nozzle.model.Relay
@@ -282,7 +283,7 @@ class Event(
         return tags.filter {
             it.size >= 2
                     && it.first() == "r"
-                    && it[1].startsWith("wss://")
+                    && it[1].startsWith(WEBSOCKET_PREFIX)
                     && it[1].length >= 10
         }
             .map {

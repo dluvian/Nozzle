@@ -1,11 +1,12 @@
 package com.dluvian.nozzle.model.nostr
 
 import com.dluvian.nozzle.data.utils.JsonUtils
+import com.dluvian.nozzle.model.Pubkey
 import com.google.gson.annotations.SerializedName
 
 data class Filter(
     val ids: List<String>? = null,
-    val authors: List<String>? = null,
+    val authors: List<Pubkey>? = null,
     val kinds: List<Int>? = null,
     @SerializedName("#e") val e: List<String>? = null,
     @SerializedName("#p") val p: List<String>? = null,
@@ -15,6 +16,24 @@ data class Filter(
     val limit: Int? = null
 ) {
     fun toJson(): String = JsonUtils.gson.toJson(this)
+
+    fun matches(event: Event): Boolean {
+        return ((this.until ?: Long.MAX_VALUE) >= event.createdAt) &&
+                (this.kinds == null || this.kinds.contains(event.kind)) &&
+                (this.ids == null || this.ids.contains(event.id)) &&
+                checkTags(filter = this.t, index = "t", event = event) &&
+                checkTags(filter = this.p, index = "p", event = event) &&
+                checkTags(filter = this.e, index = "e", event = event) &&
+                (this.authors == null || this.authors.contains(event.pubkey)) &&
+                ((this.since ?: 0) <= event.createdAt)
+    }
+
+    private fun checkTags(filter: List<String>?, index: String, event: Event): Boolean {
+        return filter == null ||
+                event.tags.filter { it.firstOrNull() == index }
+                    .map { it.getOrNull(1) }
+                    .any { tagValue -> filter.contains(tagValue) }
+    }
 
     fun isSimpleNoteFilter() = ids != null
             && authors == null

@@ -62,7 +62,10 @@ import com.dluvian.nozzle.data.subscriber.INozzleSubscriber
 import com.dluvian.nozzle.data.subscriber.ISubscriptionQueue
 import com.dluvian.nozzle.data.subscriber.impl.NozzleSubscriber
 import com.dluvian.nozzle.data.subscriber.impl.SubscriptionQueue
+import com.dluvian.nozzle.model.SubId
+import com.dluvian.nozzle.model.nostr.Filter
 import okhttp3.OkHttpClient
+import java.util.Collections
 
 class AppContainer(context: Context) {
     val roomDb: AppDatabase = Room.databaseBuilder(
@@ -88,10 +91,13 @@ class AppContainer(context: Context) {
         repostDao = roomDb.repostDao(),
     )
 
+    val filterCache: MutableMap<SubId, List<Filter>> = Collections.synchronizedMap(mutableMapOf())
+
     private val eventProcessor: IEventProcessor = EventProcessor(
         dbSweepExcludingCache = dbSweepExcludingCache,
         fullPostInserter = fullPostInserter,
         database = roomDb,
+        filterCache = filterCache
     )
 
     private val httpClient = OkHttpClient()
@@ -101,7 +107,8 @@ class AppContainer(context: Context) {
     val nostrService: INostrService = NostrService(
         httpClient = httpClient,
         keyManager = keyManager,
-        eventProcessor = eventProcessor
+        eventProcessor = eventProcessor,
+        filterCache = filterCache
     )
 
 
@@ -138,7 +145,9 @@ class AppContainer(context: Context) {
     )
 
     init {
-        nostrService.initialize(initRelays = relayProvider.getReadRelays(limit = true))
+        nostrService.initialize(
+            initRelays = relayProvider.getReadRelays(limit = true)
+                .map { it.replace("wss://", "ws://") })
     }
 
     val postCardInteractor: IPostCardInteractor = PostCardInteractor(

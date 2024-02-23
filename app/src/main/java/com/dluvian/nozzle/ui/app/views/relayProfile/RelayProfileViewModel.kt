@@ -42,6 +42,7 @@ class RelayProfileViewModel(
     val relayProfile get() = _relayProfile
 
     val onOpenRelayProfile: (Relay) -> Unit = local@{ relay ->
+        updateNip65Info(relay = relay)
         if (_uiState.value.relay == relay) return@local
 
         _uiState.update { it.copy(isRefreshing = true, relay = relay) }
@@ -51,7 +52,6 @@ class RelayProfileViewModel(
                 SharingStarted.WhileSubscribed(),
                 defaultValue
             )
-            updateNip65Info(relay = relay)
             delay(WAIT_TIME)
         }.invokeOnCompletion {
             _uiState.update { it.copy(isRefreshing = false) }
