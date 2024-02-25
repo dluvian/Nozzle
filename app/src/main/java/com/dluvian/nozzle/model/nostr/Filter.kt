@@ -11,6 +11,7 @@ data class Filter(
     @SerializedName("#e") val e: List<String>? = null,
     @SerializedName("#p") val p: List<String>? = null,
     @SerializedName("#t") val t: List<String>? = null,
+    @SerializedName("#k") val k: List<String>? = null,
     val since: Long? = null,
     val until: Long? = null,
     val limit: Int? = null
@@ -24,6 +25,7 @@ data class Filter(
                 checkTags(filter = this.t, index = "t", event = event) &&
                 checkTags(filter = this.p, index = "p", event = event) &&
                 checkTags(filter = this.e, index = "e", event = event) &&
+                checkTags(filter = this.k, index = "k", event = event) &&
                 (this.authors == null || this.authors.contains(event.pubkey)) &&
                 ((this.since ?: 0) <= event.createdAt)
     }
@@ -94,8 +96,9 @@ data class Filter(
         ): Filter {
             return Filter(
                 authors = pubkeys,
-                kinds = Event.noteKinds,
+                kinds = listOf(Event.Kind.REACTION),
                 e = e,
+                k = Event.noteKinds.map { it.toString() },
                 until = until,
                 limit = limit
             )
