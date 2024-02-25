@@ -2,6 +2,8 @@ package com.dluvian.nozzle.data.nostr
 
 import com.dluvian.nozzle.data.room.helper.Nip65Relay
 import com.dluvian.nozzle.model.EventId
+import com.dluvian.nozzle.model.NoteId
+import com.dluvian.nozzle.model.Pubkey
 import com.dluvian.nozzle.model.Relay
 import com.dluvian.nozzle.model.SubId
 import com.dluvian.nozzle.model.nostr.Event
@@ -18,9 +20,10 @@ interface INostrService {
 
     fun sendPost(
         content: String,
-        mentions: List<String>,
+        mentions: List<Pubkey>,
         hashtags: List<String>,
-        relays: Collection<String>?
+        quotes: List<NoteId>,
+        relays: Collection<Relay>?
     ): Event
 
     fun sendLike(
@@ -33,8 +36,9 @@ interface INostrService {
     fun sendReply(
         replyTo: ReplyTo,
         content: String,
-        mentions: List<String>,
+        mentions: List<Pubkey>,
         hashtags: List<String>,
+        quotes: List<NoteId>,
         relays: Collection<String>?
     ): Event
 

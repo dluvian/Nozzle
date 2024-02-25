@@ -17,7 +17,7 @@ class PostPreparer(
 ) : IPostPreparer {
     override suspend fun getCleanPostWithTagsAndMentions(content: String): PostWithTagsAndMentions {
         val strBuilder = StringBuilder(content.trim())
-        val allMentions = MentionUtils.extractMentionedProfiles(content)
+        val allMentions = MentionUtils.extractNostrMentions(content)
         allMentions
             .sortedByDescending { it.range.first }
             .forEach {
@@ -34,8 +34,11 @@ class PostPreparer(
             mentions = allMentions
                 .mapNotNull { EncodingUtils.profileIdToNostrId(it.value.removeMentionCharOrNostrUri()) }
                 .map { it.hex }
-                .toList()
-                .distinct()
+                .distinct(),
+            quotes = allMentions
+                .mapNotNull { EncodingUtils.postIdToNostrId(it.value.removeMentionCharOrNostrUri()) }
+                .map { it.hex }
+                .distinct(),
         )
     }
 

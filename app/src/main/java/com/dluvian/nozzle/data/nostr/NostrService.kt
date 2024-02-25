@@ -6,6 +6,8 @@ import com.dluvian.nozzle.data.getDefaultRelays
 import com.dluvian.nozzle.data.manager.IKeyManager
 import com.dluvian.nozzle.data.room.helper.Nip65Relay
 import com.dluvian.nozzle.model.EventId
+import com.dluvian.nozzle.model.NoteId
+import com.dluvian.nozzle.model.Pubkey
 import com.dluvian.nozzle.model.Relay
 import com.dluvian.nozzle.model.SubId
 import com.dluvian.nozzle.model.nostr.Event
@@ -104,6 +106,7 @@ class NostrService(
         content: String,
         mentions: List<String>,
         hashtags: List<String>,
+        quotes: List<NoteId>,
         relays: Collection<String>?
     ): Event {
         val event = Event.createTextNoteEvent(
@@ -111,6 +114,7 @@ class NostrService(
             replyTo = null,
             mentions = mentions,
             hashtags = hashtags,
+            quotes = quotes,
             keys = keyManager.getActiveKeys(),
         )
         client.publishToRelays(event = event, relays = relays)
@@ -139,8 +143,9 @@ class NostrService(
     override fun sendReply(
         replyTo: ReplyTo,
         content: String,
-        mentions: List<String>,
+        mentions: List<Pubkey>,
         hashtags: List<String>,
+        quotes: List<NoteId>,
         relays: Collection<String>?
     ): Event {
         val event = Event.createTextNoteEvent(
@@ -148,6 +153,7 @@ class NostrService(
             replyTo = replyTo,
             mentions = mentions,
             hashtags = hashtags,
+            quotes = quotes,
             keys = keyManager.getActiveKeys(),
         )
         client.publishToRelays(event = event, relays = relays)

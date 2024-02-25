@@ -159,6 +159,7 @@ class PostViewModel(
             content = post.content,
             mentions = post.mentions,
             hashtags = post.hashtags,
+            quotes = post.quotes,
             relays = selectedRelays
         )
     }

@@ -11,8 +11,6 @@ object MentionUtils {
     private val nostrMentionPattern = Regex("(nostr:|@)(npub1|note1|nevent1|nprofile1)[a-zA-Z0-9]+")
     private val nostrMentionProfilePattern = Regex("(nostr:|@)(npub1|nprofile1)[a-zA-Z0-9]+")
     private val nostrMentionPostPattern = Regex("(nostr:|@)(note1|nevent1)[a-zA-Z0-9]+")
-    private val mentionedProfilePattern = Regex("(nostr:|@)(npub1|nprofile1)[a-zA-Z0-9]+")
-
 
     fun extractNprofilesAndNpubs(contents: Collection<String>): List<Nprofile> {
         if (contents.isEmpty()) return emptyList()
@@ -34,6 +32,4 @@ object MentionUtils {
 
     fun extractNostrMentions(extractFrom: String) =
         nostrMentionPattern.findAll(extractFrom).toList()
-
-    fun extractMentionedProfiles(extractFrom: String) = mentionedProfilePattern.findAll(extractFrom)
 }

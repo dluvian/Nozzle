@@ -46,6 +46,10 @@ I don't plan to publish this app in the Google Play Store.
 - [NIP-42: Authentication of clients to relays](https://github.com/nostr-protocol/nips/blob/master/42.md)
 - [NIP-65: Relay List Metadata](https://github.com/nostr-protocol/nips/blob/master/65.md)
 
+### Other
+
+- [DIP-02: Quote Reposts](https://github.com/damus-io/dips/blob/master/02.md)
+
 ## Screenshots
 
 <p>
