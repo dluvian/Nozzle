@@ -134,6 +134,7 @@ class ReplyViewModel(
             content = post.content,
             mentions = (post.mentions + parentPost.pubkey).distinct(),
             hashtags = post.hashtags,
+            quotes = post.quotes,
             relays = selectedRelays
         )
     }

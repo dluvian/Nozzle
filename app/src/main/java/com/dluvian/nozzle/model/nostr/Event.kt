@@ -9,6 +9,8 @@ import com.dluvian.nozzle.data.utils.JsonUtils.gson
 import com.dluvian.nozzle.data.utils.UrlUtils.WEBSOCKET_PREFIX
 import com.dluvian.nozzle.data.utils.UrlUtils.removeTrailingSlashes
 import com.dluvian.nozzle.data.utils.getCurrentTimeInSeconds
+import com.dluvian.nozzle.model.NoteId
+import com.dluvian.nozzle.model.Pubkey
 import com.dluvian.nozzle.model.Relay
 import com.google.gson.JsonElement
 import com.google.gson.annotations.SerializedName
@@ -125,8 +127,9 @@ class Event(
         fun createTextNoteEvent(
             content: String,
             replyTo: ReplyTo?,
-            mentions: List<String>,
+            mentions: List<Pubkey>,
             hashtags: List<String>,
+            quotes: List<NoteId>,
             keys: Keys
         ): Event {
             val tags = mutableListOf<List<String>>()
@@ -136,9 +139,12 @@ class Event(
             if (mentions.isNotEmpty()) {
                 tags.add(mutableListOf("p") + mentions)
             }
-
             if (hashtags.isNotEmpty()) {
                 tags.addAll(hashtags.map { listOf("t", it) })
+            }
+            // https://github.com/damus-io/dips/blob/master/02.md
+            if (quotes.isNotEmpty()) {
+                quotes.forEach { tags.add(listOf("q", it)) }
             }
 
             return create(
