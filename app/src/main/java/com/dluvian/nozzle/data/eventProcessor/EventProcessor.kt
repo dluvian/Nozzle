@@ -343,7 +343,7 @@ class EventProcessor(
     }
 
     private fun matchesFilter(subId: SubId, event: Event): Boolean {
-        val cache = filterCache.getOrDefault(subId, emptyList())
+        val cache = filterCache.getOrDefault(subId, emptyList()).toList()
         if (cache.isEmpty()) return false
         return cache.any { it.matches(event) }
     }
