@@ -16,16 +16,19 @@ fun LikeToggleIconButton(
     isLiked: Boolean,
     onToggleLike: () -> Unit,
     modifier: Modifier = Modifier,
+    iconModifier: Modifier = Modifier,
 ) {
     IconButton(modifier = modifier, onClick = onToggleLike) {
         if (isLiked) {
             Icon(
+                modifier = iconModifier,
                 imageVector = LikedIcon,
                 tint = Color.Red,
                 contentDescription = stringResource(id = R.string.remove_like),
             )
         } else {
             Icon(
+                modifier = iconModifier,
                 imageVector = NotLikedIcon,
                 tint = MaterialTheme.colorScheme.onSurface,
                 contentDescription = stringResource(id = R.string.like)

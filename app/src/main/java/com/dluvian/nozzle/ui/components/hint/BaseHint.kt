@@ -27,7 +27,7 @@ fun BaseHint(text: String) {
     ) {
         Icon(
             modifier = Modifier
-                .size(sizing.largeItem)
+                .size(sizing.extraLargeItem)
                 .aspectRatio(1f),
             imageVector = SearchIcon,
             contentDescription = text,

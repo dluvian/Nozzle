@@ -8,10 +8,12 @@ import com.dluvian.nozzle.ui.theme.ReplyIcon
 fun ReplyIconButton(
     onReply: () -> Unit,
     description: String,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    iconModifier: Modifier = Modifier,
 ) {
     BaseIconButton(
         modifier = modifier,
+        iconModifier = iconModifier,
         imageVector = ReplyIcon,
         description = description,
         onClick = onReply
