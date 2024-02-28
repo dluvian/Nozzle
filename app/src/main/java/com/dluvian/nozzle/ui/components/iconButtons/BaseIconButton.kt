@@ -11,9 +11,10 @@ fun BaseIconButton(
     imageVector: ImageVector,
     description: String,
     onClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    iconModifier: Modifier = Modifier
 ) {
-    IconButton(onClick = onClick) {
-        Icon(modifier = modifier, imageVector = imageVector, contentDescription = description)
+    IconButton(modifier = modifier, onClick = onClick) {
+        Icon(modifier = iconModifier, imageVector = imageVector, contentDescription = description)
     }
 }

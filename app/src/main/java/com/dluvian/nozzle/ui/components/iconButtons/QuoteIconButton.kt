@@ -8,10 +8,12 @@ import com.dluvian.nozzle.ui.theme.QuoteIcon
 fun QuoteIconButton(
     onQuote: () -> Unit,
     description: String,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    iconModifier: Modifier = Modifier,
 ) {
     BaseIconButton(
         modifier = modifier,
+        iconModifier = iconModifier,
         imageVector = QuoteIcon,
         description = description,
         onClick = onQuote

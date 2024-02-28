@@ -25,9 +25,13 @@ data class Sizing(
      */
     val mediumItem: Dp = 24.dp,
     /**
+     * 32 dp
+     */
+    val largeItem: Dp = 32.dp,
+    /**
      * 48 dp
      */
-    val largeItem: Dp = 48.dp,
+    val extraLargeItem: Dp = 48.dp,
     /**
      * 32 dp
      */

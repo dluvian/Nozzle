@@ -76,7 +76,8 @@ private fun ReplyAction(
 ) {
     Row(modifier = modifier, verticalAlignment = Alignment.CenterVertically) {
         ReplyIconButton(
-            modifier = Modifier.size(sizing.smallItem),
+            modifier = Modifier.size(sizing.largeItem),
+            iconModifier = Modifier.size(sizing.smallItem),
             onReply = {
                 onPrepareReply(postToReplyTo)
                 onNavigateToReply()
@@ -102,7 +103,8 @@ private fun QuoteAction(
         verticalAlignment = Alignment.CenterVertically
     ) {
         QuoteIconButton(
-            modifier = Modifier.size(sizing.smallItem),
+            modifier = Modifier.size(sizing.largeItem),
+            iconModifier = Modifier.size(sizing.smallItem),
             onQuote = onNavigateToQuote,
             description = stringResource(R.string.quote)
         )
@@ -124,7 +126,8 @@ private fun LikeAction(
         verticalAlignment = Alignment.CenterVertically
     ) {
         LikeToggleIconButton(
-            modifier = Modifier.size(sizing.smallItem),
+            modifier = Modifier.size(sizing.largeItem),
+            iconModifier = Modifier.size(sizing.smallItem),
             isLiked = isLiked.value,
             onToggleLike = {
                 if (isLiked.value) showDeletePopup.value = true
