@@ -2,6 +2,8 @@
 
 Nozzle is a lightweight nostr client for Android.
 
+**This project is no longer maintained. Check out [Voyage](https://github.com/dluvian/voyage) instead**
+
 ## Installation
 
 Install it via [Obtainium](https://github.com/ImranR98/Obtainium) or go to
